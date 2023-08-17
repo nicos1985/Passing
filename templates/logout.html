@@ -1,0 +1,29 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<div class ='justify-content-sm-center'>
+<div class="d-flex justify-content-center" >
+
+    <div class="card center">
+            <div class="card-title">
+                <div class="container" style="height: 105px; padding-top: 20px;">
+                    <h2><i class="fa-solid fa-right-from-bracket" ></i> {{title}}</h2>
+                    
+                </div>
+            </div>
+
+            <div class="card-body "style="background-color: #F7F7F7; width: 26rem;">
+
+                <h4> Has terminado la sesion </h4>
+                <button type="submit" class="btn btn-primary btn-flat">
+                <a style="color: white; text-decoration-line: None;" href = "{% url 'login' %}"><i class="fas fa-sign-out-alt" style="color: white;"></i> Ingresar nuevamente</a>
+                </button>
+                        
+              </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

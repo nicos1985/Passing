@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+    <div class="container">
+        
+
+
+            <table class="table" id="data">
+                <thead class="table-dark">
+                    <tr >
+                        <th scope="col">Nombre Contraseña</th>
+                        <th scope="col">Seccion</th>
+                        <th scope="col">Link</th>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Contraseña</th>
+                        <th scope="col">Acción</th>
+                        
+            
+                    </tr>
+                    
+                </thead>
+
+                <tbody>
+                    {% for contra in object_list %}
+                    <tr>
+
+                        <td>{{ contra.nombre_contra }}</td>
+                        <td>{{ contra.seccion }}</td>
+                        <td>{{ contra.link }}</td>
+                        <td>{{ contra.usuario }}</td>
+                        <td>{{ contra.contraseña }}</td>
+
+                        
+                        <td> <a href=" {% url 'updatepass' contra.id %} "<i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None;color: rgb(68, 94, 243);"></i></a>
+                            <a href=" {% url 'deletepass' contra.id %} "<i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color: rgb(216, 48, 48);"></i></a>
+                            </td>
+                        
+                        
+                    </tr>
+                            
+
+                </tbody>
+                {% endfor %}
+                
+                    <h2>{{permisos}}</h2>
+            </table>
+
+            <div>
+                <button class="btn">
+                    <a class="btn btn-primary btn-flat" href = "{% url 'createpass' %}">
+                    <i class="fas fa-plus"></i> Nueva contraseña </a>
+                </button>
+            </div>
+            {% else %}
+            <div class="container-fluid text-center">
+                <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para navegar. Si no tienes cuenta puedes registrarte.</h5>
+                <div class="row justify-content-center mt-4">
+                    <div class="col-sm-6 d-flex justify-content-center">
+                        <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+                    </div>
+                    <div class="col-sm-6 d-flex justify-content-center mt-2 mt-sm-0">
+                        <a class="btn btn-primary" href="{% url 'register' %}">Registrarse</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+        
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="application/javascript">
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            
+            autoWidth: false,
+            "language": {
+                url : "{% static 'lib/datatables-1.13.1/spanish.txt' %}"
+            }
+        });
+    
+              /*.fail(function(jqXHR, textStatus, thrownError ) {
+                alert(textStatus +' : ' + thrownError );
+              })
+              .always(function(data) {
+                
+              });*/
+
+        });
+    
+</script>
+            
+{% endblock %}
+</html>

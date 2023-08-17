@@ -1,0 +1,41 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+
+<div class="container pt-5" >
+
+    <div class="card center">
+            <div class="card-title">
+                <div class="container" style="height: 85px; padding-top: 20px;">
+                    <h2><i class="fas fa-trash" ></i> {{title}}</h2>
+                    
+                </div>
+            </div>
+
+            <div class="card-body"style="background-color: #F7F7F7 ;">
+                <div class="card-body">
+                    <form method="POST" >
+                        {% csrf_token %}
+                    <h5> ¿Estas Seguro que deseas borrar esta contraseña de {{ object.nombre_contra }}? </h5>
+
+                </div>
+                                     
+                <button type="submit" class="btn btn-danger">           
+                    <i class="fas fa-trash" class="btn btn-danger"></i> Eliminar
+                </button>        
+                            
+                            <button  class="btn">
+                                <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fas fa-ban"></i> Cancelar </a>
+                            </button>
+                        </div> 
+                    </form>
+            </div>
+            
+        </div>
+    </div>
+
+    {% endblock %}
+
+        
+</div>

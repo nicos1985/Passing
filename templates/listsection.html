@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/datatables-1.13.1/js/jquery.dataTables.js' %}"></script>
+<script src="{% static 'lib/datatables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+
+    <div class="container">
+        
+
+
+            <table class="table" id="data">
+                <thead class="table-dark">
+                    <tr >
+                        <th scope="col">Nombre Seccion</th>
+                        <th scope="col">Activo</th>
+                        <th scope="col">Creado</th>
+                        <th scope="col">Accion</th>
+                       
+            
+                    </tr>
+                    
+                </thead>
+
+                <tbody>
+                    {% for section in object_list %}
+                    <tr>
+
+                        <td>{{ section.nombre_seccion}}</td>
+                        <td class ="form-check-label" type = "checkbox">
+                            {% if section.active == True %}
+                            Activo
+                            {% else %}
+                            Inactivo
+                            {% endif %}
+                        </td>
+                        <td>{{ section.created }}</td>
+
+                        <td> <a href=" {% url 'updatesection' section.id %} " <i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None; color:rgb(68, 94, 243);"></i></a>
+
+                            {% if section.active == True %}
+                            <a href=" {% url 'deletesection' section.id %} " <i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color:rgb(216, 48, 48);"></i></a></td>
+                            {% elif section.active == False %}
+                            <a href=" {% url 'activesection' section.id %} " <i class="fa-solid fa-power-off" style="margin-right:10px; text-decoration-line: None; color:rgb(54, 173, 54);"></i></a></td>
+                            {% endif %}
+                    </tr>
+                            
+
+                </tbody>
+                    {% endfor %}
+
+            </table>
+
+            <div>
+                <button class="btn">
+                    <a class="btn btn-primary btn-flat" href = "{% url 'createsection' %}">
+                    <i class="fas fa-plus"></i> Nueva Seccion </a>
+                </button>
+            </div>
+
+            
+        
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="application/javascript">
+    $(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            autoWidth: false,
+            "language": {
+                url : "{% static 'lib/datatables-1.13.1/spanish.txt' %}"
+            }
+        });
+    
+              /*.fail(function(jqXHR, textStatus, thrownError ) {
+                alert(textStatus +' : ' + thrownError );
+              })
+              .always(function(data) {
+                
+              });*/
+
+        });
+    
+</script>
+            
+{% endblock %}
+</html>

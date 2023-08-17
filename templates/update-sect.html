@@ -1,0 +1,51 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<div class="container pt-5" >
+
+    <div class="card center">
+            <div class="card-title">
+                <div class="container" style="height: 105px; padding-top: 20px;">
+                    <h2><i class="fas fa-pen" ></i> {{title}}</h2>
+                    <button class="btn">
+                        <a class="btn btn-primary btn-flat" href= {% url 'listsection' %}> <i class="fa-solid fa-bars"></i>Ver Secciones</a>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body"style="background-color: #F7F7F7 ;">
+                    <form method="POST" >
+                        {% csrf_token %}
+
+                        {{form.errors}}
+                        
+                        {% for field in form.visible_fields %}
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{field}}
+                        </div>
+                        {% endfor %}
+                            
+                     
+                        <div class = 'card-body'>       
+                            <button type="submit" class="btn btn-primary btn-flat">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+
+                        </div>
+                        </div> 
+                    </form>
+            </div>
+            
+        </div>
+    </div>
+
+
+        
+        
+        
+</div>
+
+{% endblock %}
