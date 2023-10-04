@@ -29,28 +29,31 @@ class PermissionFormView(FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['contraseñas'] = Contrasena.objects.filter(active = True)
+        print(f'kwargs [contraseñas] {kwargs["contraseñas"]}')
         return kwargs
 
     def form_valid(self, form):
-        contraseñas = self.get_form_kwargs().get('contraseñas', None)
+
+        contraseñas = self.get_form_kwargs().get('contraseñas', None) #recupera las contraseñas Activas de kwargs
         if contraseñas is not None:
-            usuario_id = form.cleaned_data['usuario']
-            permisos = ContraPermission.objects.filter(user_id=usuario_id)
+            usuario_id = form.cleaned_data['usuario'] #obtengo el usuario del formulario
             
-            for contraseña in contraseñas:
+            
+            
+            for contraseña in contraseñas: #recorro cada contraseña y filtro los permisos dados. 
                 valor = form.cleaned_data[contraseña.nombre_contra]
                 print(f'valor: {valor}')
-                
-                for permiso in permisos:
-                    
-                    print(f'permiso: {permiso.contra_id} || {contraseña}')
-                    if permiso.contra_id == contraseña:
-                        print(f'update: {contraseña} = {valor}')
-                        ContraPermission.objects.get(id).update(permission=valor)
-                        
-                        break
+                permiso = ContraPermission.objects.filter(user_id=usuario_id, contra_id = contraseña)
+                print(f'objetos permisos : {permiso}')
 
-            ContraPermission.objects.create(contra_id=contraseña, user_id=usuario_id, permission=valor)
+                if permiso.exists():
+                    
+                    print(f'update: {contraseña} = {valor}')
+                    permiso.update(permission=valor) #si existe el permiso, le doy el valor del formulario (actualiza)
+                    
+                else:    # si no existe el permiso de esa contraseña, lo creo con los valores dados en el form. 
+                    print('crea objeto sin query')
+                    ContraPermission.objects.create(contra_id=contraseña, user_id=usuario_id, permission=valor)
         return super().form_valid(form)
     
     def get_success_url(self):

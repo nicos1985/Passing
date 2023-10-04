@@ -37,7 +37,7 @@ class Contrasena(models.Model):
         verbose_name_plural= "Contraseñas"
         
     def __str__(self):
-        return self.nombre_contra
+        return str(self.id)
     
     def toJSON(self):
         item = model_to_dict(self)
