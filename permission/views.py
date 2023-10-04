@@ -1,9 +1,10 @@
 from django.shortcuts import render
+from django import forms
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 from .models import ContraPermission
 from passbase.models import Contrasena
-from .forms import PermissionForm
+from .forms import PermissionUserForm, PremissionForm
 # Create your views here.
 
 class PermissionListView(ListView):
@@ -22,8 +23,8 @@ class PermissionListView(ListView):
 
 class PermissionFormView(FormView):
     
-    template_name = 'create-perm.html'
-    form_class = PermissionForm
+    template_name = 'create-perm-p2.html'
+    form_class = PremissionForm
     
 
     def get_form_kwargs(self):
@@ -31,6 +32,32 @@ class PermissionFormView(FormView):
         kwargs['contraseñas'] = Contrasena.objects.filter(active = True)
         print(f'kwargs [contraseñas] {kwargs["contraseñas"]}')
         return kwargs
+    
+    def get_form(self, form_class=None):
+
+        form = super().get_form(form_class)
+
+        usuario_id = self.request.session.get('usuario_seleccionado_id')
+        print(f'usuario_id: {usuario_id}')
+        permisos_usuario = ContraPermission.objects.filter(user_id=usuario_id)
+        print(f'permisos_usuario: {permisos_usuario}')
+        for contraseña in permisos_usuario:
+            self.fields[contraseña.nombre_contra] = forms.BooleanField(required=False, initial=contraseña.permission)
+
+        return form
+    # def get_form(self, form_class=None):
+    #     # Recuperar el usuario seleccionado de la sesión
+    #     usuario_id = self.request.session.get('usuario_seleccionado_id')
+        
+    #     # Recuperar los valores de la base de datos correspondientes al usuario
+    #     permisos_usuario = ContraPermission.objects.filter(user_id=usuario_id)
+        
+    #     # Pasar los valores recuperados al formulario
+    #     form = super().get_form(form_class)
+    #     for contraseña in contraseñas:
+    #         self.fields[contraseña.nombre_contra] = forms.BooleanField(required=False, initial=contraseña.permission)
+        
+    #     return form
 
     def form_valid(self, form):
 
@@ -58,3 +85,15 @@ class PermissionFormView(FormView):
     
     def get_success_url(self):
         return reverse('listpass')
+    
+    
+class PermissionUserFormView(FormView):
+
+    template_name = 'create-perm-p1.html'
+    form_class = PermissionUserForm
+    
+    def form_valid(self, form):
+        # Almacenar el usuario seleccionado en la sesión
+        self.request.session['usuario_seleccionado_id'] = form.cleaned_data['usuario'].id
+        print(f"usuario de sesion: {self.request.session['usuario_seleccionado_id']}")
+        return super().form_valid(form)
