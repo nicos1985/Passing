@@ -5,6 +5,6 @@ from permission.views import PermissionListView, PermissionFormView, PermissionU
 urlpatterns = [
     
     path('permissionlist',PermissionListView.as_view(), name='permissionlist'),
-    path('permissionform1',PermissionUserFormView.as_view(), name='permissionform1'),
-    path('permissionform2',PermissionFormView.as_view(), name='permissionform2'),
+    path('permissionform1/',PermissionUserFormView.as_view(), name='permissionform1'),
+    path('permissionform2/',PermissionFormView.as_view(), name='permissionform2'),
 ]
