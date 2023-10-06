@@ -33,7 +33,7 @@ class PermissionFormView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['usuario'] = self.request
+        kwargs['usuario'] = self.request['usuario']
         kwargs['contraseñas'] = Contrasena.objects.filter(active=True)
         return kwargs
     
@@ -85,10 +85,10 @@ class PermissionUserFormView(FormView):
 
     def form_valid(self, request, form):
         # Almacenar el usuario seleccionado en la sesión
-        usuario = form.cleaned_data[request.POST('usuario')]
+        usuario = form.cleaned_data['usuario']
         print(f"usuario de sesion: {self.request.session['usuario_seleccionado_id']}")
 
         # Resto de la lógica del formulario PermissionUserForm
-        return redirect('permissionform2', usuario = 1)  # Usa el nombre de la URL
+        return redirect('permissionform2', request ={'usuario' : usuario })  # Usa el nombre de la URL
         
     
