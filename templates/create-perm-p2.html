@@ -15,7 +15,7 @@
             </div>
 
             <div class="card-body"style="background-color: #F7F7F7 ;">
-                    <form method="POST" action="{% url 'permissionform2' %}">
+                    <form method="POST" action="{% url 'listpass' %}">
                         {% csrf_token %}
 
                         <div class="form-group">
@@ -31,7 +31,7 @@
                            
 
                         </div> 
-                        {% request.session %}
+                        
                     </form>
             </div>
             

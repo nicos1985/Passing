@@ -26,11 +26,16 @@ class PermissionFormView(FormView):
     template_name = 'create-perm-p2.html'
     form_class = PermissionForm
     
+    def get_initial(self):
+        # Obten el objeto request de la redirección
+        request = self.request
+        return {'request': request}  # Esto inicializa el campo 'request' en Form2
 
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-      
-    #     return kwargs
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['usuario'] = self.request
+        kwargs['contraseñas'] = Contrasena.objects.filter(active=True)
+        return kwargs
     
   
     # def get_form(self, form_class=None):
@@ -48,30 +53,29 @@ class PermissionFormView(FormView):
     #     return form
     
 
-    # def form_valid(self, form):
+    def form_valid(self, form):
 
-    #     # contraseñas = self.get_form_kwargs().get('contraseñas', None) #recupera las contraseñas Activas de kwargs
-    #     # if contraseñas is not None:
-    #     #     usuario_id = form.cleaned_data['usuario'] #obtengo el usuario del formulario
+        
+        # contraseñas = self.get_form_kwargs().get('contraseñas', None) #recupera las contraseñas Activas de kwargs
+        # if contraseñas is not None:
+        #     usuario_id = form.cleaned_data['usuario'] #obtengo el usuario del formulario
 
-    #     #     for contraseña in contraseñas: #recorro cada contraseña y filtro los permisos dados. 
-    #     #         valor = form.cleaned_data[contraseña.nombre_contra]
-    #     #         print(f'valor: {valor}')
-    #     #         permiso = ContraPermission.objects.filter(user_id=usuario_id, contra_id = contraseña)
-    #     #         print(f'objetos permisos : {permiso}')
+        #     for contraseña in contraseñas: #recorro cada contraseña y filtro los permisos dados. 
+        #         valor = form.cleaned_data[contraseña.nombre_contra]
+        #         print(f'valor: {valor}')
+        #         permiso = ContraPermission.objects.filter(user_id=usuario_id, contra_id = contraseña)
+        #         print(f'objetos permisos : {permiso}')
 
-    #     #         if permiso.exists():
+        #         if permiso.exists():
                     
-    #     #             print(f'update: {contraseña} = {valor}')
-    #     #             permiso.update(permission=valor) #si existe el permiso, le doy el valor del formulario (actualiza)
+        #             print(f'update: {contraseña} = {valor}')
+        #             permiso.update(permission=valor) #si existe el permiso, le doy el valor del formulario (actualiza)
                     
-    #     #         else:    # si no existe el permiso de esa contraseña, lo creo con los valores dados en el form. 
-    #     #             print('crea objeto sin query')
-    #     #             ContraPermission.objects.create(contra_id=contraseña, user_id=usuario_id, permission=valor)
-    #     return super().form_valid(form)
+        #         else:    # si no existe el permiso de esa contraseña, lo creo con los valores dados en el form. 
+        #             print('crea objeto sin query')
+        #             ContraPermission.objects.create(contra_id=contraseña, user_id=usuario_id, permission=valor)
+        return redirect('listpass')
     
-    def get_success_url(self):
-        return reverse('listpass')
     
     
 class PermissionUserFormView(FormView):
@@ -79,15 +83,12 @@ class PermissionUserFormView(FormView):
     template_name = 'create-perm-p1.html'
     form_class = PermissionUserForm
 
-    def form_valid(self, form):
+    def form_valid(self, request, form):
         # Almacenar el usuario seleccionado en la sesión
-        self.request.session['usuario_seleccionado_id'] = form.cleaned_data['usuario'].id
+        usuario = form.cleaned_data[request.POST('usuario')]
         print(f"usuario de sesion: {self.request.session['usuario_seleccionado_id']}")
-        
-        # Crear una instancia de PermissionForm y pasar el objeto request
-        permission_form = PermissionForm(request=self.request)
-        
+
         # Resto de la lógica del formulario PermissionUserForm
-        return redirect('permissionform2')  # Usa el nombre de la URL
+        return redirect('permissionform2', usuario = 1)  # Usa el nombre de la URL
         
     

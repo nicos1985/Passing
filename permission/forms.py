@@ -27,10 +27,13 @@ class PermissionUserForm(forms.Form):
         
 class PermissionForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        request = kwargs.pop('request', None)
+        usuario_id = kwargs.pop('usuario', None)
+        contraseñas = kwargs.pop('contraseñas', None)  # Recupera la lista de contraseñas activas
         super(PermissionForm, self).__init__(*args, **kwargs)
 
-        usuario_id = request.session.get('usuario_seleccionado_id')
+        #usuario_id = request.session.get('usuario_seleccionado_id')
+        print(f'usuario_id: {usuario_id}')
+        print(f'contraseña: {contraseñas}')
         if usuario_id is not None:
             # Obtener las Contraseñas con 'active' igual a True
             contraseñas_activas = Contrasena.objects.filter(active=True)
