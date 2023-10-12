@@ -81,8 +81,7 @@ class ContrasCreateView(CreateView):
         if form.is_valid():
             
             form.save()
-            
-            
+
             return HttpResponseRedirect(self.success_url)
             
         self.object = None
@@ -97,7 +96,15 @@ class ContrasCreateView(CreateView):
         #obtengo el objeto contraseña a traves del form.save()
         contrasena = form.save()
         
-        LogData.objects.create(contraseña = contrasena.id , entidad = 'Contraseña', usuario = self.request.user , action = 'Create', detail = f'Nombre: {contrasena.nombre_contra}, Seccion: {contrasena.seccion}, Usuario: {contrasena.usuario}, Link:{contrasena.link}, Info:{contrasena.info}' )
+        LogData.objects.create(contraseña = contrasena.id , 
+                               entidad = 'Contraseña', 
+                               usuario = self.request.user , 
+                               action = 'Create', 
+                               detail = f'''Nombre: {contrasena.nombre_contra}, 
+                                                    Seccion: {contrasena.seccion}, 
+                                                    Usuario: {contrasena.usuario}, 
+                                                    Link:{contrasena.link}, 
+                                                    Info:{contrasena.info}''')
         return response
     
     
@@ -139,9 +146,7 @@ class ContrasUpdateView(UpdateView):
         LogData.objects.create(contraseña = contrasena.pk, entidad = context['entity'] , usuario = self.request.user, action = context['action'], detail = f'Nombre: {contrasena.nombre_contra}, Seccion: {contrasena.seccion}, Usuario: {contrasena.usuario}, Link:{contrasena.link}, Info:{contrasena.info}')
 
         return response
-    
-
-    
+       
 
 class ContrasDeleteView(DeleteView):
     model = Contrasena
@@ -166,8 +171,7 @@ class ContrasDeleteView(DeleteView):
         context['list_url'] = reverse_lazy('listpass')
         context['action'] = 'Inactive'
         return context
-
-   
+ 
 
 class SectionCreateView(CreateView):
     model = SeccionContra

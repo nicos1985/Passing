@@ -17,12 +17,18 @@
                 <h4>Estas cambiando los permisos de: {{usuario}}</h4>
             </div>
             <div class="card-body"style="background-color: #F7F7F7 ;">
-                    <form method="POST" action="{% url 'listpass' %}">
+                    <form method="POST" >
                         {% csrf_token %}
 
                         <div class="form-group">
-                            {{ permiso_form.as_p }}
-                        
+                            {% for field in permiso_form %}
+                            
+                                <label width=200px for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            
+                            
+                                <div width=100px>{{ field }}</div>
+                            
+                            {% endfor %}
                         </div>
                         
            

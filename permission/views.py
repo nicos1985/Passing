@@ -37,28 +37,34 @@ def seleccionar_usuario(request):
     return render(request, 'create-perm-p1.html', {'usuario_form': usuario_form})
 
 def gestion_permisos(request, usuario_id):
-
+    print(f'usuario_id (gestion permisos): {usuario_id} ')
     usuario = get_object_or_404(CustomUser, id=usuario_id)
+    print(f'usuario (gestion permisos): {usuario} ')
     permiso_form = PermisoForm(usuario, request.POST or None)
 
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
             for contraseña in Contrasena.objects.all():
+                
                 permiso = permiso_form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
                 permissions, _ = ContraPermission.objects.get_or_create(
                     user_id=usuario,
                     contra_id=contraseña
                 )
+                print(f'permissions: {permissions}')
                 permissions.permission = permiso
+                print(f'permissions.permission: {permissions.permission}')
                 permissions.save()
 
             # Redirige a donde desees después de guardar los cambios
             return redirect('listpass')
-
-    return render(request, 'create-perm-p2.html', {
-        'permiso_form': permiso_form,
-    })
+    else:
+        print(f'permiso_form: {permiso_form}')
+        return render(request, 'create-perm-p2.html', {
+            'permiso_form': permiso_form,
+            'usuario' : usuario,
+        })
 
 """
 class PermissionFormView(FormView):

@@ -8,20 +8,36 @@ class PermissionUserForm(forms.Form):
         
         super(PermissionUserForm, self).__init__(*args, **kwargs)
         
-        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.objects.all())
+        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.objects.all(), widget=forms.Select(attrs={'class': 'form-select'}))
         
 
 class PermisoForm(forms.Form):
     def __init__(self, usuario, *args, **kwargs):
+        print(f'usuario (PermisoForms): {usuario} ')
         super().__init__(*args, **kwargs)
         contraseñas = Contrasena.objects.all()
         
         for contraseña in contraseñas:
-            self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
+            initial_value = False
+
+            permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contraseña).exists()
+
+            if permission_exists:
+                permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
+                initial_value = permission_instance.permission
+                print(f'inicial_value: {initial_value}')
+            
+                
+            choices = [('True', 'Sí'), ('False', 'No')]
+            self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.ChoiceField(
                 label=contraseña.nombre_contra,
-                initial=ContraPermission.objects.filter(user_id=usuario, contra_id=contraseña).exists(),
+                choices=choices,
+                initial=initial_value,
+                widget=forms.RadioSelect(),
                 required=False
             )
+            print(self.fields[f'permiso_{contraseña.nombre_contra}'].initial)
+            
         
 # class PermissionForm(forms.Form):
 #     def __init__(self, *args, **kwargs):
