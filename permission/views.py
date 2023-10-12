@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django import forms
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
@@ -21,38 +21,44 @@ class PermissionListView(ListView):
         
         return ContraPermission.objects.all()
 
-def gestion_permisos(request):
-    usuario = None
+def seleccionar_usuario(request):
+    usuario_form = PermissionUserForm()
+    print(f'usuario_form no post: {usuario_form}')
     if request.method == 'POST':
         usuario_form = PermissionUserForm(request.POST)
-        permiso_form = PermisoForm(usuario, request.POST)
-
+        print(f'usuario_form post: {usuario_form}')
         if usuario_form.is_valid():
+            print(f'formulario userform es valido')
             usuario = usuario_form.cleaned_data['usuario']
-            permiso_form = PermisoForm(usuario, request.POST)
+            print(f'usuario = {usuario}')
+            # Redirige a la vista de permisos y pasa el usuario
+            return redirect('permissionform2', usuario_id=usuario.id)
 
-            if permiso_form.is_valid():
-                # Procesa el formulario de permisos y guarda los cambios
-                for contraseña in Contrasena.objects.all():
-                    permiso = permiso_form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
-                    permissions, _ = ContraPermission.objects.get_or_create(
-                        user=usuario,
-                        contraseña=contraseña
-                    )
-                    permissions.permission = permiso
-                    permissions.save()
+    return render(request, 'create-perm-p1.html', {'usuario_form': usuario_form})
 
-                # Redirige a donde desees después de guardar los cambios
-                return redirect('listpass')
+def gestion_permisos(request, usuario_id):
 
-    else:
-        usuario_form = PermissionUserForm()
-        permiso_form = PermisoForm(usuario)
+    usuario = get_object_or_404(CustomUser, id=usuario_id)
+    permiso_form = PermisoForm(usuario, request.POST or None)
+
+    if request.method == 'POST':
+        if permiso_form.is_valid():
+            # Procesa el formulario de permisos y guarda los cambios
+            for contraseña in Contrasena.objects.all():
+                permiso = permiso_form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
+                permissions, _ = ContraPermission.objects.get_or_create(
+                    user_id=usuario,
+                    contra_id=contraseña
+                )
+                permissions.permission = permiso
+                permissions.save()
+
+            # Redirige a donde desees después de guardar los cambios
+            return redirect('listpass')
 
     return render(request, 'create-perm-p2.html', {
-        'usuario_form': usuario_form,
         'permiso_form': permiso_form,
-    })   
+    })
 
 """
 class PermissionFormView(FormView):

@@ -13,13 +13,15 @@
                     </button>
                 </div>
             </div>
-
+            <div>
+                <h4>Estas cambiando los permisos de: {{usuario}}</h4>
+            </div>
             <div class="card-body"style="background-color: #F7F7F7 ;">
                     <form method="POST" action="{% url 'listpass' %}">
                         {% csrf_token %}
 
                         <div class="form-group">
-                            {{ form.as_p }}
+                            {{ permiso_form.as_p }}
                         
                         </div>
                         
