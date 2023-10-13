@@ -71,7 +71,7 @@ class ContrasDetailView(DetailView):
         if log_data.exists():
             context['log_data'] = log_data
             context['user'] = user_log
-            
+            print(f'user: {context["user"]}')
         else:
             context['log_data'] = None           
         return context

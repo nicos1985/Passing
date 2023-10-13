@@ -46,25 +46,27 @@
                 <tbody>
                     {% for contra in object_list %}
                     <tr>
-
-                        <td>{{ contra.nombre_contra }}</td>
+                        <td><b>{{ contra.nombre_contra }}</b></td>
                         <td>{{ contra.seccion }}</td>
                         <td>{{ contra.link }}</td>
                         <td>{{ contra.usuario }}</td>
-                        <td style="display: none;">{{ contra.contraseña }}</td>
-
-                        
-                        <td> <a href=" {% url 'updatepass' contra.id %} "<i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None;color: rgb(68, 94, 243);"></i></a>
-                            <a href=" {% url 'deletepass' contra.id %} "<i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color: rgb(216, 48, 48);"></i></a>
-                            <a href=" {% url 'detailpass' contra.id %} "<i class="fas fa-eye" style="margin-right:10px; text-decoration-line: None; color: rgb(68, 94, 200);"></i></a>
-                            </td>
-                        
-                        
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <input type='password' id="passwordField{{ contra.id }}" value="{{ contra.contraseña }}" style="flex: 1; border: none;" disabled >
+                                <i class="fas fa-eye toggle-password-icon" data-password-field="passwordField{{ contra.id }}" style="cursor: pointer; color: rgb(68, 94, 200);"></i>
+                                <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" style="cursor: pointer;"></i>
+                            </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
+                            <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
+                            <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-eye" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
+                        </td>
                     </tr>
-                            
-
+                    {% endfor %}
                 </tbody>
-                {% endfor %}
+                
                 
                     <h2>{{permisos}}</h2>
             </table>
@@ -116,8 +118,51 @@
               });*/
 
         });
-    
+
+
 </script>
+
+<script>
+    document.querySelectorAll('.toggle-password-icon').forEach(function(icon) {
+        icon.addEventListener('click', function() {
+            const passwordFieldId = icon.getAttribute('data-password-field');
+            const passwordField = document.getElementById(passwordFieldId);
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                console.log('habilita contra');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    document.querySelectorAll('.copy-icon').forEach(function(icon) {
+        icon.addEventListener('click', function() {
+            console.log('Icon clicked');
+            const copyTargetId = icon.getAttribute('data-copy-target');
+            const copyTarget = document.getElementById(copyTargetId);
+    
+            // Seleccionar el contenido del campo de entrada
+            copyTarget.select();
+            copyTarget.setSelectionRange(0, 99999); // Para dispositivos móviles
+    
+            // Intentar copiar al portapapeles dentro de la función de callback
+            document.execCommand('copy');
+    
+            // Deseleccionar el campo de entrada
+            copyTarget.blur();
+        });
+    });
+    
+
+</script>
+
+
             
 {% endblock %}
 </html>
