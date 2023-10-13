@@ -66,8 +66,14 @@ class ContrasDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['log_data'] =  LogData.objects.filter(contraseña=self.kwargs['pk'])                     
-                    
+        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])
+        user_log = CustomUser.objects.get(id=self.kwargs['pk'])                     
+        if log_data.exists():
+            context['log_data'] = log_data
+            context['user'] = user_log
+            
+        else:
+            context['log_data'] = None           
         return context
 
 class ContrasCreateView(CreateView):

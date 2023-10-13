@@ -23,40 +23,74 @@
 </div>
 
 {% if request.user.is_authenticated %}
+<div class="container">
+    <h3>Contraseña</h3>
+</div>
+<div>
+<div class="container">
+<table class="table" id="data">
+    <thead class="table-dark">
+       
+            <tr >
+                <th scope="col">Nombre Contraseña</th>
+                <th scope="col">Seccion</th>
+                <th scope="col">Link</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Contraseña</th>
+                <th scope="col">Info</th>
+                <th scope="col">Created</th>
+                
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+
+                <td>{{object.nombre_contra}}</td>
+                <td>{{object.seccion}}</td>
+                <td>{{object.link}}</td>
+                <td>{{object.usuario}}</td>
+                <td>{{object.contraseña}}</td>
+                <td>{{object.info}}</td>
+                <td>{{object.created}}</td>
+            </tr>    
+        </tbody>
+</div>
+</div>
+
+
     <div class="container">
-        <tr >
-            <th scope="col">Nombre Contraseña</th>
-            <th scope="col">Seccion</th>
-            <th scope="col">Link</th>
-            <th scope="col">Usuario</th>
-            <th scope="col">Contraseña</th>
-            <th scope="col">Info</th>
-            <th scope="col">Created</th>
-            
+        
+        <table class="table" id="detail">
+            <div class="container">
+                <h3>Detalle de modificaciones</h3>
+            </div>
+            <thead class="table-dark">
+               
+                    <tr >
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Accion</th>
+                        <th scope="col">Detalle</th>
+                       
+        
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for detail in log_data%}
+                    <tr>
+                        
+                        <td>{{user_id.username}}</td>
+                        <td>{{detail.created}}</td>
+                        <td>{{detail.action}}</td>
+                        <td>{{detail.detail}}</td>
+                      
+                    </tr>   
+                    {%endfor%} 
+                </tbody>        
 
-        </tr>
-        <tr>
-
-            <td>{{object.nombre_contra}}</td>
-            <td>{{object.seccion}}</td>
-            <td>{{object.link}}</td>
-            <td>{{object.usuario}}</td>
-            <td>{{object.contraseña}}</td>
-            <td>{{object.info}}</td>
-            <td>{{object.created}}</td>
-        </tr>    
+            </div>    
         
-        
-        
-        
-        
-        
-        <div class="container">
-            {%for detail in log_data.detail%}
-            <p>{{detail}}</p>
-            {%endfor%}
-        </div>
-    </div>
 
           
 {% endif %}
