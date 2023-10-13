@@ -51,11 +51,12 @@
                         <td>{{ contra.seccion }}</td>
                         <td>{{ contra.link }}</td>
                         <td>{{ contra.usuario }}</td>
-                        <td>{{ contra.contraseña }}</td>
+                        <td style="display: none;">{{ contra.contraseña }}</td>
 
                         
                         <td> <a href=" {% url 'updatepass' contra.id %} "<i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None;color: rgb(68, 94, 243);"></i></a>
                             <a href=" {% url 'deletepass' contra.id %} "<i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color: rgb(216, 48, 48);"></i></a>
+                            <a href=" {% url 'detailpass' contra.id %} "<i class="fas fa-eye" style="margin-right:10px; text-decoration-line: None; color: rgb(68, 94, 200);"></i></a>
                             </td>
                         
                         

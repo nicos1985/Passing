@@ -1,9 +1,10 @@
+from typing import Any
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from datetime import datetime
@@ -57,6 +58,17 @@ class ContrasListView(ListView):
         context['title'] = 'Lista de Contraseñas'
         return context
 
+
+class ContrasDetailView(DetailView):
+    model=Contrasena
+    template_name = 'detail-cont.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['log_data'] =  LogData.objects.filter(contraseña=self.kwargs['pk'])                     
+                    
+        return context
 
 class ContrasCreateView(CreateView):
     model = Contrasena, SeccionContra

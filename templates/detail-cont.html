@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+    <div class="container">
+        <tr >
+            <th scope="col">Nombre Contraseña</th>
+            <th scope="col">Seccion</th>
+            <th scope="col">Link</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Contraseña</th>
+            <th scope="col">Info</th>
+            <th scope="col">Created</th>
+            
+
+        </tr>
+        <tr>
+
+            <td>{{object.nombre_contra}}</td>
+            <td>{{object.seccion}}</td>
+            <td>{{object.link}}</td>
+            <td>{{object.usuario}}</td>
+            <td>{{object.contraseña}}</td>
+            <td>{{object.info}}</td>
+            <td>{{object.created}}</td>
+        </tr>    
+        
+        
+        
+        
+        
+        
+        <div class="container">
+            {%for detail in log_data.detail%}
+            <p>{{detail}}</p>
+            {%endfor%}
+        </div>
+    </div>
+
+          
+{% endif %}
+{% endblock %}
