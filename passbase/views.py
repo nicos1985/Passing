@@ -67,11 +67,11 @@ class ContrasDetailView(DetailView):
         context = super().get_context_data(**kwargs)
 
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])
-        user_log = CustomUser.objects.get(id=self.kwargs['pk'])                     
+                            
         if log_data.exists():
             context['log_data'] = log_data
-            context['user'] = user_log
-            print(f'user: {context["user"]}')
+            
+            
         else:
             context['log_data'] = None           
         return context
