@@ -14,7 +14,9 @@ from selenium import webdriver
 from permission.models import ContraPermission
 from login.models import CustomUser
 
-# Create your views here.
+
+
+
 
 class ContrasListView(ListView):
     model = Contrasena
@@ -24,20 +26,16 @@ class ContrasListView(ListView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-    
-    
-    
+ 
     def post(self, request, *args, **kwargs):
          data = {}
         
          try:
              data= Contrasena.objects.get(pk=request.POST['id']).toJSON()
-           
-        
+ 
          except Exception as e:
              data['error'] = str(e)
-            
-        
+    
          return JsonResponse(data)
     
     def get_queryset(self):

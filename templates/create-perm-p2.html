@@ -17,30 +17,26 @@
                 <h4>Estas cambiando los permisos de: {{usuario}}</h4>
             </div>
             <div class="card-body"style="background-color: #F7F7F7 ;">
-                    <form method="POST" >
-                        {% csrf_token %}
-
-                        <div class="form-group">
-                            {% for field in permiso_form %}
-                            
-                                <label width=200px for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            
-                            
-                                <div width=100px>{{ field }}</div>
-                            
-                            {% endfor %}
-                        </div>
-                        
-           
-                            <button type="submit" class="btn btn-primary btn-flat">
-                                <i class="fas fa-save"></i> Guardar Permisos
-                            </button>
-                       
-                           
-
-                        </div> 
-                        
-                    </form>
+                <form method="POST">
+                    {% csrf_token %}
+                
+                    <div class="form">
+                        {% for field in permiso_form %}
+                            <div class="form-check form-switch">
+                                {% if field.value == "True" %}
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input" checked>
+                                {% elif field.value == "False"  %}
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input">
+                                {% endif %}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                
+                    <button type="submit" class="btn btn-primary btn-flat">
+                        <i class="fas fa-save"></i> Guardar Permisos
+                    </button>
+                </form>
             </div>
             
         </div>

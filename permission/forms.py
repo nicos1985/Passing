@@ -28,12 +28,12 @@ class PermisoForm(forms.Form):
                 print(f'inicial_value: {initial_value}')
             
                 
-            choices = [('True', 'Sí'), ('False', 'No')]
-            self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.ChoiceField(
+            #choices = [('True', 'Sí'), ('False', 'No')]
+            self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
                 label=contraseña.nombre_contra,
-                choices=choices,
+                #choices=choices,
                 initial=initial_value,
-                widget=forms.RadioSelect(),
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
                 required=False
             )
             print(self.fields[f'permiso_{contraseña.nombre_contra}'].initial)

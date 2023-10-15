@@ -54,6 +54,7 @@
                             <div style="display: flex; align-items: center;">
                                 <input type='password' id="passwordField{{ contra.id }}" value="{{ contra.contraseña }}" style="flex: 1; border: none;" disabled >
                                 <i class="fas fa-eye toggle-password-icon" data-password-field="passwordField{{ contra.id }}" style="cursor: pointer; color: rgb(68, 94, 200);"></i>
+                                <span></span>
                                 <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" style="cursor: pointer;"></i>
                             </div>
                             </div>
@@ -61,7 +62,7 @@
                         <td>
                             <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
                             <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
-                            <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-eye" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
+                            <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
                         </td>
                     </tr>
                     {% endfor %}

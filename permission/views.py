@@ -6,8 +6,16 @@ from .models import ContraPermission
 from passbase.models import Contrasena
 from .forms import PermissionUserForm, PermisoForm
 from login.models import CustomUser
-# Create your views here.
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
+#devuelve si es administrador
+def is_administrator(user):
+    return user.is_superuser
+
+
+
+@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser
 class PermissionListView(ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
@@ -20,7 +28,10 @@ class PermissionListView(ListView):
     def get_queryset(self):
         
         return ContraPermission.objects.all()
+    
 
+
+@user_passes_test(is_administrator)
 def seleccionar_usuario(request):
     usuario_form = PermissionUserForm()
     print(f'usuario_form no post: {usuario_form}')
@@ -36,6 +47,7 @@ def seleccionar_usuario(request):
 
     return render(request, 'create-perm-p1.html', {'usuario_form': usuario_form})
 
+@user_passes_test(is_administrator)
 def gestion_permisos(request, usuario_id):
     print(f'usuario_id (gestion permisos): {usuario_id} ')
     usuario = get_object_or_404(CustomUser, id=usuario_id)
