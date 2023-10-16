@@ -21,7 +21,7 @@ class SeccionContra(models.Model):
     
 
 class Contrasena(models.Model):
-    nombre_contra = models.CharField(max_length=20, unique=True)
+    nombre_contra = models.CharField(max_length=50, unique=True)
     seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE)
     link = models.CharField(max_length=265)
     usuario = models.CharField(max_length=60)

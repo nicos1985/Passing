@@ -107,6 +107,10 @@ class ContrasCreateView(CreateView):
                                                     Usuario: {contrasena.usuario}, 
                                                     Link:{contrasena.link}, 
                                                     Info:{contrasena.info}''')
+        ContraPermission.objects.create(user_id=self.request.user,
+                                        permission=True,
+                                        contra_id=contrasena
+                                        )
         return response
     
     
