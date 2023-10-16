@@ -60,10 +60,11 @@ class ContrasDetailView(DetailView):
         context = super().get_context_data(**kwargs)
     #hacer que esto esté por cada fecha del logdata
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])[:10]
-        fecha_ult_up_pass= timezone.now()
-        fecha_hoy = timezone.now() 
+        fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
+        fecha_hoy = timezone.now()
         diferencia = fecha_hoy - fecha_ult_up_pass
         cant_dias = diferencia.days 
+        print(f'cantidad de dias: {cant_dias}')
                             
         if log_data.exists():
             context['log_data'] = log_data

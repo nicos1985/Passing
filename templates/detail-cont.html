@@ -39,6 +39,8 @@
                 <th scope="col">Contraseña</th>
                 <th scope="col">Info</th>
                 <th scope="col">Created</th>
+                <th scope="col">Desde ult. cambio</th>
+
                 
 
             </tr>
@@ -53,6 +55,22 @@
                 <td>{{object.contraseña}}</td>
                 <td>{{object.info}}</td>
                 <td>{{object.created}}</td>
+                {% if last_update < 30 %}
+                
+                <td> <button type="button" class="btn btn-success">{{last_update}} días</button> </td>
+                {% else %}
+                <td> 
+                    <button type="button" class="btn btn-danger">{{last_update}} días</button>
+                    
+                        <a href="{% url 'updatepass' object.id %}">
+                            <button type="button" class="btn btn-primary">
+                            <i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i>
+                            Cambiar contraseña
+                            </button> 
+                        </a>
+                        
+                </td>
+                {% endif%}
             </tr>    
         </tbody>
 </div>
@@ -70,7 +88,6 @@
                     <tr >
                         <th scope="col">Usuario</th>
                         <th scope="col">Fecha</th>
-                        <th scope="col">Ult cambio</th>
                         <th scope="col">Accion</th>
                         <th scope="col">Detalle</th>
                        
@@ -83,7 +100,6 @@
                         
                         <td>{{detail.usuario_id}}</td>
                         <td>{{detail.created}}</td>
-                        <td>{{last_update}}</td>
                         <td>{{detail.action}}</td>
                         <td>{{detail.detail}}</td>
                       
