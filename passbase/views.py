@@ -11,8 +11,6 @@ from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
 from django.utils import timezone
-from datetime import timedelta
-
 
 
 class ContrasListView(ListView):
@@ -37,7 +35,9 @@ class ContrasListView(ListView):
     def get_queryset(self):
         try: 
             # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
-            obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, perm_active = True, permission = True).values_list('contra_id', flat=True)
+            obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
+                                                          perm_active = True, 
+                                                          permission = True).values_list('contra_id', flat=True)
             #convierto en lista
             permisos = list(obj_permiso)
             #retorno solo los objetos en los que el id se encuentran dentro de la lista
@@ -58,7 +58,7 @@ class ContrasDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-    #hacer que esto esté por cada fecha del logdata
+    
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])[:10]
         fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
         fecha_hoy = timezone.now()
@@ -112,8 +112,7 @@ class ContrasCreateView(CreateView):
                                         contra_id=contrasena
                                         )
         return response
-    
-    
+        
 class ContrasUpdateView(UpdateView):
     model = Contrasena
     form_class = ContrasenaUForm
