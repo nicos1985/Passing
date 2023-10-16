@@ -1,5 +1,5 @@
 from typing import Any
-from django.contrib.auth.decorators import login_required
+
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -7,12 +7,11 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from datetime import datetime
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
-from selenium import webdriver
 from permission.models import ContraPermission
-from login.models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
 
 
 
@@ -59,11 +58,16 @@ class ContrasDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])
+    #hacer que esto esté por cada fecha del logdata
+        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])[:10]
+        fecha_ult_up_pass= timezone.now()
+        fecha_hoy = timezone.now() 
+        diferencia = fecha_hoy - fecha_ult_up_pass
+        cant_dias = diferencia.days 
                             
         if log_data.exists():
             context['log_data'] = log_data
+            context['last_update'] = cant_dias
 
         else:
             context['log_data'] = None           
@@ -111,6 +115,7 @@ class ContrasUpdateView(UpdateView):
     template_name = 'update-cont.html'
     success_url = reverse_lazy('listpass')
     
+    
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -125,39 +130,51 @@ class ContrasUpdateView(UpdateView):
          context['action'] = 'edit new'
          context['user_id'] = user.id
          context['username'] = user.username
-         print(context)
+         
          return context
     
 
     def get_object(self, queryset=None):
-        # Obtener el objeto del modelo que se va a actualizar
+        # Obtener el objeto del modelo que se va 
         objeto_previo = super().get_object(queryset=queryset)
         LogData.objects.create(entidad = 'Contraseña', 
                                action= 'edit old', 
                                detail= f'''Nombre: {objeto_previo.nombre_contra}, 
-                                            Seccion: {objeto_previo.seccion}, 
-                                            Usuario: {objeto_previo.usuario}, 
-                                            Link:{objeto_previo.link}, 
-                                            Info:{objeto_previo.info}''', 
+                                           Seccion: {objeto_previo.seccion}, 
+                                           Usuario: {objeto_previo.usuario}, 
+                                           Link:{objeto_previo.link}, 
+                                           Info:{objeto_previo.info}''', 
                                usuario=self.request.user, 
                                contraseña=objeto_previo.id)
+        
         return objeto_previo
 
     def form_valid(self, form, *args, **kwargs):
+        contrasena = form.save(commit=False)
+        objeto_previo = Contrasena.objects.get(id=self.kwargs['pk'])
+        context = self.get_context_data()
+        print(f'old_contra: {objeto_previo.contraseña} == new_contra: {contrasena.contraseña}')
+    # Verifica si la contraseña ha cambiado
+        if objeto_previo.contraseña != contrasena.contraseña:
+            action = 'change pass'
+        else:
+            action = 'edit new'
+        
+        LogData.objects.create(
+            contraseña=contrasena.pk,
+            entidad=context['entity'],
+            usuario=self.request.user,
+            action=action,
+            detail=f'''Nombre: {contrasena.nombre_contra},
+                        Seccion: {contrasena.seccion},
+                        Usuario: {contrasena.usuario},
+                        Link: {contrasena.link},
+                        Info: {contrasena.info}'''
+        )
+        
+        # Llama al método form_valid original para guardar la instancia
         response = super().form_valid(form)
         
-        context = ContrasUpdateView.get_context_data(self)
-        contrasena = form.save()
-        LogData.objects.create(contraseña = contrasena.pk, 
-                               entidad = context['entity'], 
-                               usuario = self.request.user, 
-                               action = context['action'], 
-                               detail = f'''Nombre: {contrasena.nombre_contra}, 
-                                        Seccion: {contrasena.seccion}, 
-                                        Usuario: {contrasena.usuario}, 
-                                        Link:{contrasena.link}, 
-                                        Info:{contrasena.info}''')
-
         return response
        
 
