@@ -42,7 +42,7 @@ class ContrasListView(ListView):
             permisos = list(obj_permiso)
             #retorno solo los objetos en los que el id se encuentran dentro de la lista
             print(f'permisos: {permisos}')
-            return Contrasena.objects.filter(active=True, id__in = permisos)
+            return Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
         except Exception as e:
             return redirect(reverse_lazy('login'))
 
