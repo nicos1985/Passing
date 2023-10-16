@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+
+
+{% if request.user.is_authenticated %}
+<html>
+<head>
+    <title>Perfil de {{ user_profile.username }}</title>
+</head>
+<body>
+    <div class='container'>
+        <div class="profile-image-container">
+            {% if user_profile.avatar %}
+                <img class="rounded-circle" src="{{ user_profile.avatar.url }}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
+            {% else %}
+                <img class="rounded-circle" src="{% static 'default-avatar.png' %}" alt="Default Avatar" width="125" height="125">
+            {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mx-auto">
+                <form method='POST' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ profile_form.errors }}
+                    {{ profile_form.non_field_errors }}
+                    <h2>Perfil de {{ user_profile.username }}</h2>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="first_name" class="form-label">Nombre: </label>
+                        <input name="first_name" id="first_name" class="form-control" value="{{ user_profile.first_name }}"></input>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="last_name" class="form-label">Apellido: </label>
+                        <input name="last_name" id="last_name" class="form-control" value="{{ user_profile.last_name }}"></input>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="email" class="form-label">Correo electrónico:</label>
+                        <input name="email" id="email" class="form-control" value="{{ user_profile.email }}"></input>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="position" class="form-label">Puesto:</label>
+                        <input name="position" id="position" class="form-control" value="{{ user_profile.position }}"></input>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="avatar" class="form-label">Avatar:</label>
+                        <input type="file" name="avatar" id="avatar" class="form-control" value="{{ user_profile.avatar }}"></input>
+                    </div>
+                       
+                    
+                    <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
+                        <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>
+                        Guardar
+                        </button> 
+                    </div>
+
+                </form>
+            </div>  
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+</body>
+</html>

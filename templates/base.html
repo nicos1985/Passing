@@ -73,7 +73,7 @@
                 </ul>
                 
               </div>
-              <a class="nav-link" href="#" style="color:white"><b>Hola {{request.user}}!</b></a>
+              <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>Hola {{request.user}}!</b></a>
             </div>
           </nav>
         

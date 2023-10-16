@@ -3,12 +3,13 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, ProfileForm
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
 from django.forms import forms
 from django.contrib.auth import get_user_model
+from .models import CustomUser
 
 
 
@@ -72,7 +73,24 @@ class LogoutFormView(LogoutView):
           return context
 
         
+@login_required
+def profile_view(request, username):
+    user = CustomUser.objects.get(username=username)
+    if request.method == 'POST':
+        profile_form = ProfileForm(request.POST, request.FILES, instance=user)
+        if profile_form.is_valid():
+            profile_form.save()
+        else:
+            print('Formulario no válido')
+    else:
+        profile_form = ProfileForm(instance=user)
 
+    context = {
+        'user_profile': user,
+        'profile_form': profile_form,
+    }
+
+    return render(request, 'profile.html', context)
 
 
 
