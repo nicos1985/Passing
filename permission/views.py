@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django import forms
 from django.urls import reverse
+from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 from .models import ContraPermission
 from passbase.models import Contrasena
@@ -70,6 +71,7 @@ def gestion_permisos(request, usuario_id):
                 permissions.save()
 
             # Redirige a donde desees después de guardar los cambios
+            messages.success(request,  'los permisos han sido asignados correctamente.')
             return redirect('listpass')
     else:
         print(f'permiso_form: {permiso_form}')

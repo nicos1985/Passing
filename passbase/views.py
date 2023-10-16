@@ -16,8 +16,6 @@ from login.models import CustomUser
 
 
 
-
-
 class ContrasListView(ListView):
     model = Contrasena
     template_name = 'listpass.html'
@@ -29,7 +27,6 @@ class ContrasListView(ListView):
  
     def post(self, request, *args, **kwargs):
          data = {}
-        
          try:
              data= Contrasena.objects.get(pk=request.POST['id']).toJSON()
  
@@ -49,8 +46,7 @@ class ContrasListView(ListView):
             return Contrasena.objects.filter(active=True, id__in = permisos)
         except Exception as e:
             return redirect(reverse_lazy('login'))
-    
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Lista de Contraseñas'
@@ -68,8 +64,7 @@ class ContrasDetailView(DetailView):
                             
         if log_data.exists():
             context['log_data'] = log_data
-            
-            
+
         else:
             context['log_data'] = None           
         return context
@@ -90,21 +85,7 @@ class ContrasCreateView(CreateView):
         context['sections'] =  SeccionContra.objects.filter(active=True)
         return context
     
-    """def post(self, request,*args, **kwargs):
 
-        form = ContrasenaForm(request.POST)
-        
-        if form.is_valid():
-            
-            form.save()
-
-            return HttpResponseRedirect(self.success_url)
-            
-        self.object = None
-        context = self.get_context_data(**kwargs)
-        context['form'] = form
-
-        return render(request, self.template_name, context)"""
     
     def form_valid(self,form, *args, **kwargs):
         
@@ -151,7 +132,15 @@ class ContrasUpdateView(UpdateView):
     def get_object(self, queryset=None):
         # Obtener el objeto del modelo que se va a actualizar
         objeto_previo = super().get_object(queryset=queryset)
-        LogData.objects.create(entidad = 'Contraseña',action= 'edit old' ,detail= f'Nombre: {objeto_previo.nombre_contra}, Seccion: {objeto_previo.seccion}, Usuario: {objeto_previo.usuario}, Link:{objeto_previo.link}, Info:{objeto_previo.info}', usuario=self.request.user, contraseña=objeto_previo.id)
+        LogData.objects.create(entidad = 'Contraseña', 
+                               action= 'edit old', 
+                               detail= f'''Nombre: {objeto_previo.nombre_contra}, 
+                                            Seccion: {objeto_previo.seccion}, 
+                                            Usuario: {objeto_previo.usuario}, 
+                                            Link:{objeto_previo.link}, 
+                                            Info:{objeto_previo.info}''', 
+                               usuario=self.request.user, 
+                               contraseña=objeto_previo.id)
         return objeto_previo
 
     def form_valid(self, form, *args, **kwargs):
@@ -159,7 +148,15 @@ class ContrasUpdateView(UpdateView):
         
         context = ContrasUpdateView.get_context_data(self)
         contrasena = form.save()
-        LogData.objects.create(contraseña = contrasena.pk, entidad = context['entity'] , usuario = self.request.user, action = context['action'], detail = f'Nombre: {contrasena.nombre_contra}, Seccion: {contrasena.seccion}, Usuario: {contrasena.usuario}, Link:{contrasena.link}, Info:{contrasena.info}')
+        LogData.objects.create(contraseña = contrasena.pk, 
+                               entidad = context['entity'], 
+                               usuario = self.request.user, 
+                               action = context['action'], 
+                               detail = f'''Nombre: {contrasena.nombre_contra}, 
+                                        Seccion: {contrasena.seccion}, 
+                                        Usuario: {contrasena.usuario}, 
+                                        Link:{contrasena.link}, 
+                                        Info:{contrasena.info}''')
 
         return response
        
@@ -177,7 +174,15 @@ class ContrasDeleteView(DeleteView):
         contrasena = self.object
         contrasena.active = False
         contrasena.save()
-        LogData.objects.create(contraseña = id_contraseña , entidad = context['entity'] , usuario = self.request.user, action = context['action'], detail = f'Nombre: {contrasena.nombre_contra}, Seccion: {contrasena.seccion}, Usuario: {contrasena.usuario}, Link:{contrasena.link}, Info:{contrasena.info}')
+        LogData.objects.create(contraseña = id_contraseña, 
+                               entidad = context['entity'], 
+                               usuario = self.request.user, 
+                               action = context['action'], 
+                               detail = f'''Nombre: {contrasena.nombre_contra}, 
+                                            Seccion: {contrasena.seccion},
+                                            Usuario: {contrasena.usuario}, 
+                                            Link:{contrasena.link}, 
+                                            Info:{contrasena.info}''')
         return response 
     
     def get_context_data(self, **kwargs):
@@ -206,27 +211,17 @@ class SectionCreateView(CreateView):
     def get_queryset(self):
         return SeccionContra.objects.get()
     
-    """def post(self, request,*args, **kwargs):
-
-        form = SectionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(self.success_url)
-        self.object = None
-        context = self.get_context_data(**kwargs)
-        context['form'] = form
-        return render(request, self.template_name, context)"""
-    
     def form_valid(self, form, *args, **kwargs):
-        
-        
 
         response = super().form_valid(form)
-        
         #obtengo el objeto seccion a traves del form.save()
         seccion = form.save()
 
-        LogData.objects.create(contraseña = seccion.id, entidad = 'Seccion', usuario = self.request.user, action = 'add', detail = f'Nombre: {seccion.nombre_seccion}')
+        LogData.objects.create(contraseña = seccion.id, 
+                               entidad = 'Seccion', 
+                               usuario = self.request.user, 
+                               action = 'add', 
+                               detail = f'Nombre: {seccion.nombre_seccion}')
         return response
 
 
@@ -241,17 +236,16 @@ class SectionListView(ListView):
     
     
     def post(self, request, *args, **kwargs):
-         data = {}
+        data = {}
+        try:
+            data= SeccionContra.objects.get(pk=request.POST['id']).toJSON()
+
+        except Exception as e:
+            data['error'] = str(e)
         
-         try:
-             data= SeccionContra.objects.get(pk=request.POST['id']).toJSON()
-           
-        
-         except Exception as e:
-             data['error'] = str(e)
-            
-        
-         return JsonResponse(data)
+        messages.success(request,  f'La {self.model.__name__} ha sido creada exitosamente.')
+
+        return JsonResponse(data)
     
     def get_queryset(self):
         return SeccionContra.objects.all()
@@ -278,20 +272,15 @@ class SectionUpdateView(UpdateView):
          context['action'] = 'edit new'
          return context
     
-    """def post(self, request, pk,*args, **kwargs):
-        context = super().get_context_data(**kwargs)
-        object = SeccionContra.objects.get(id=pk)
-        object.active = False
-        object.save()
-        messages.success(request,  'La seccion ha sido borrada exitosamente.')
-
-        LogData.objects.create(contraseña_id = object.pk, entidad = context['entity'] , usuario = self.request.user, action = context['action'], detail = f'Nombre: {object.nombre_seccion}')
-        return redirect('listpass')"""
     
     def get_object(self, queryset=None):
         # Obtener el objeto del modelo que se va a actualizar
         objeto_previo = super().get_object(queryset=queryset)
-        LogData.objects.create(entidad = 'Seccion',action= 'edit old' ,detail= f'Nombre: {objeto_previo.nombre_seccion}', usuario=self.request.user, contraseña=objeto_previo.id)
+        LogData.objects.create(entidad = 'Seccion', 
+                               action= 'edit old' ,
+                               detail= f'Nombre: {objeto_previo.nombre_seccion}', 
+                               usuario=self.request.user, 
+                               contraseña=objeto_previo.id)
         return objeto_previo
     
 
@@ -299,7 +288,12 @@ class SectionUpdateView(UpdateView):
         response = super().form_valid(form)
         context = SectionUpdateView.get_context_data(self)
         seccion = form.save()
-        LogData.objects.create(contraseña = seccion.pk, entidad = context['entity'] , usuario = self.request.user, action = context['action'], detail = f'Nombre: {seccion.nombre_seccion}')
+        LogData.objects.create(contraseña = seccion.pk, 
+                               entidad = context['entity'], 
+                               usuario = self.request.user, 
+                               action = context['action'], 
+                               detail = f'Nombre: {seccion.nombre_seccion}')
+        
 
         return response
 
@@ -326,11 +320,16 @@ class SectionDeleteView(DeleteView):
         seccion = self.object
         seccion.active = False
         seccion.save()
-        LogData.objects.create(contraseña = id_seccion , entidad = 'Seccion' , usuario = self.request.user, action = 'inactive', detail = f'Nombre: {seccion.nombre_seccion}')
+        LogData.objects.create(contraseña = id_seccion, 
+                               entidad = 'Seccion', 
+                               usuario = self.request.user, 
+                               action = 'inactive', 
+                               detail = f'Nombre: {seccion.nombre_seccion}')
+        
         return response 
 
 
-class SectionActiveView(DeleteView):
+class SectionActiveView(DetailView):
     model = SeccionContra
     template_name = 'active-sect.html'
     success_url = reverse_lazy('listsection')
@@ -346,15 +345,20 @@ class SectionActiveView(DeleteView):
           return context
     
     def post(self, request, pk,*args, **kwargs):
-        seccion = SeccionContra.objects.get(id=pk)
+        
+        seccion = self.get_object()
         #context = SectionActiveView.get_context_data(self)
         if seccion.active == True:
             seccion.active = False
         else:
             seccion.active = True
         seccion.save()
-        LogData.objects.create(contraseña = seccion.id , entidad = 'Seccion' , usuario = self.request.user, action = 'active', detail = f'Nombre: {seccion.nombre_seccion}')
+        LogData.objects.create(contraseña = seccion.id, 
+                               entidad = 'Seccion', 
+                               usuario = self.request.user, 
+                               action = 'active', 
+                               detail = f'Nombre: {seccion.nombre_seccion}')
 
-        messages.success(request,  'La seccion ha sido activada exitosamente.')
+        messages.success(request,  f'La {self.model.__name__} ha sido activada exitosamente.')
 
         return redirect('listsection')
