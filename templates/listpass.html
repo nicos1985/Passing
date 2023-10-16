@@ -32,6 +32,7 @@
                 <thead class="table-dark">
                     <tr >
                         <th scope="col">Nombre Contraseña</th>
+                        <th scope="col">Actualiza</th>
                         <th scope="col">Seccion</th>
                         <th scope="col">Link</th>
                         <th scope="col">Usuario</th>
@@ -47,6 +48,7 @@
                     {% for contra in object_list %}
                     <tr>
                         <td><b>{{ contra.nombre_contra }}</b></td>
+                        <td>{{ contra.actualizacion}} días</td>
                         <td>{{ contra.seccion }}</td>
                         <td>
                             <a href="https://{{ contra.link }}" target="_blank" rel="noopener">{{ contra.link }}</a>
@@ -61,6 +63,7 @@
                             </div>
                             </div>
                         </td>
+                        
                         <td>
                             <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
                             <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>

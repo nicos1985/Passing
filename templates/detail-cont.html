@@ -23,7 +23,13 @@
 </div>
 
 {% if request.user.is_authenticated %}
+
+
+
 <div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
+    </button>
     <h3>Contraseña</h3>
 </div>
 <div>
@@ -55,7 +61,7 @@
                 <td>{{object.contraseña}}</td>
                 <td>{{object.info}}</td>
                 <td>{{object.created}}</td>
-                {% if last_update < 30 %}
+                {% if last_update < actualizacion %}
                 
                 <td> <button type="button" class="btn btn-success">{{last_update}} días</button> </td>
                 {% else %}
@@ -79,7 +85,7 @@
 
     <div class="container">
         
-        <table class="table" id="detail">
+        <table class="table table-striped table-hover" id="detail">
             <div class="container">
                 <h3>Detalle de modificaciones</h3>
             </div>

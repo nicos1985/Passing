@@ -42,6 +42,10 @@ class ContrasenaForm(ModelForm):
                 attrs={
                     'placeholder' : 'Ingrese la contraseña'
                 }),
+            'Actualizacion': TextInput(
+                attrs={
+                    'placeholder' : 'Ingrese la cantidad de dias para actualizar la contraseña'
+                }),
             'info': Textarea(
                 attrs={
                     'placeholder' : 'Ingrese informacion adicional',
@@ -95,6 +99,10 @@ class ContrasenaUForm(ModelForm):
             'contraseña': TextInput(
                 attrs={
                     'placeholder' : 'Ingrese la contraseña'
+                }),
+            'Actualizacion': TextInput(
+                attrs={
+                    'placeholder' : 'Ingrese la cantidad de dias para actualizar la contraseña'
                 }),
             'info': Textarea(
                 attrs={

@@ -59,16 +59,24 @@ class ContrasDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
     
-        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk'])[:10]
-        fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
-        fecha_hoy = timezone.now()
-        diferencia = fecha_hoy - fecha_ult_up_pass
-        cant_dias = diferencia.days 
-        print(f'cantidad de dias: {cant_dias}')
+        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
+        dias_actual_contrasena = Contrasena.objects.get(id=self.kwargs['pk']).actualizacion
+        try:
+            fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
+            fecha_hoy = timezone.now()
+            diferencia = fecha_hoy - fecha_ult_up_pass
+            cant_dias = diferencia.days 
+            print(f'cantidad de dias: {cant_dias}')
+        except:
+            fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'Create').order_by('-created').first().created
+            fecha_hoy = timezone.now()
+            diferencia = fecha_hoy - fecha_ult_up_pass
+            cant_dias = diferencia.days 
                             
         if log_data.exists():
             context['log_data'] = log_data
             context['last_update'] = cant_dias
+            context['actualizacion'] = dias_actual_contrasena
 
         else:
             context['log_data'] = None           
@@ -83,7 +91,6 @@ class ContrasCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Crear Contraseña'
-        
         context['entity'] = 'Contraseñas'
         context['list_url'] = reverse_lazy('listpass')
         context['action'] = 'add'
@@ -101,7 +108,7 @@ class ContrasCreateView(CreateView):
         LogData.objects.create(contraseña = contrasena.id , 
                                entidad = 'Contraseña', 
                                usuario = self.request.user , 
-                               action = 'Create', 
+                               action = 'Create',
                                detail = f'''Nombre: {contrasena.nombre_contra}, 
                                                     Seccion: {contrasena.seccion}, 
                                                     Usuario: {contrasena.usuario}, 

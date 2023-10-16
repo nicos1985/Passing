@@ -20,19 +20,14 @@
 
                         {{form.errors}}
                         
-                       
-                        
-                        <div class="form-group">
-                          
 
+                        <div class="form-group">
 
                             <label for="nombre_contra">Nombre de Contraseña: </label>
                             <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" required>
                             
-                            
-                            
+
                             <label for="seccion">Sección:</label>
-                            
 
                             <div class="input-group">
                             
@@ -43,8 +38,6 @@
                                      
                                 </select>
                                 <a class="btn btn-primary center" href={% url 'createsection' %}><i class="fas fa-plus"></i></a> 
-                                        
-                                    
 
                             </div>
 
@@ -57,19 +50,17 @@
                             <label for="contraseña">Contraseña: </label>
                             <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" required>
 
+                            <label for="actualizacion">Actualizacion: </label>
+                            <input id="actualizacion" type="number" class='form-control' name="actualizacion" maxlength="100" required>
+
                             <label for="info">Info: </label>
                             <input id="info" type="textarea" class='form-control' name="info" maxlength="100" required>
 
                         </div>
-                        
-                            
-                     
-                            
+
                             <button type="submit" class="btn btn-primary btn-flat">
                                 <i class="fas fa-save"></i> Guardar registro
                             </button>
-                       
-                            
 
                         </div> 
                     </form>

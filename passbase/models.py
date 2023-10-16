@@ -21,17 +21,19 @@ class SeccionContra(models.Model):
     
 
 class Contrasena(models.Model):
+  
+
     nombre_contra = models.CharField(max_length=50, unique=True)
     seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE)
     link = models.CharField(max_length=265)
     usuario = models.CharField(max_length=60)
     contraseña = models.CharField(max_length=60)
+    actualizacion= models.IntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
     info = models.CharField(max_length=260)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     
-
     def Meta():
         verbose_name = "Contraseña"
         verbose_name_plural= "Contraseñas"
@@ -41,7 +43,6 @@ class Contrasena(models.Model):
     
     def toJSON(self):
         item = model_to_dict(self)
-        
         return item
         
 class LogData(models.Model):
@@ -55,13 +56,6 @@ class LogData(models.Model):
     def Meta():
         verbose_name = "Log"
         
-        
     def __str__(self):
         return self.contraseña
     
-# def save_contrasena_historial(sender, instance,**kwargs):
-#     contrasena = instance.id 
-#     hcontrasena = Contrasena.objects.filter(id = contrasena)                                                                                                                           
-#     print(hcontrasena)
-
-# post_save.connect(save_contrasena_historial, sender = Contrasena)
