@@ -71,10 +71,15 @@
                     </div>
                   </li>
                 </ul>
-                
+                {% if request.user.is_authenticated %}
               </div>
               <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>Hola {{request.user}}!</b></a>
             </div>
+            {%else%}
+          </div>
+          <a class="nav-link" href="{% url 'login' %}" style="color:white"><b>Hola {{request.user}}!</b></a>
+        </div>
+            {%endif%}
           </nav>
         
          <div class = ''> 
