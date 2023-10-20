@@ -90,6 +90,8 @@
 <script>
     const botonEditar = document.getElementById("botonEditar");
     const botonGuardar = document.querySelector('button[type="submit"]');
+    const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value; // Obtén el valor del token CSRF
+    
     
     botonEditar.addEventListener("click", function() {
         const campos = document.querySelectorAll('input');
@@ -99,13 +101,16 @@
         });
 
         if (campos[0].disabled) {
-            botonEditar.textContent = "Guardar";
-            botonEditar.className = "btn btn-primary";
-            botonGuardar.style.display = "none"; // Oculta el botón "Guardar"
+            console.log('entro a disabled true')
+            botonEditar.style.display = "none";
+            botonEditar.disabled = true; // Deshabilita el botón "Editar"
+            botonGuardar.style.display = "inline-block"; // Oculta el botón "Guardar"
         } else {
+            console.log('entro a disabled False')
             botonEditar.textContent = "editar";
             botonEditar.className = "btn btn-warning";
-            botonGuardar.style.display = "inline-block"; // Muestra el botón "Guardar"
+            botonEditar.disabled = false; // Deshabilita el botón "Editar"
+            botonGuardar.style.display = "none"; // Muestra el botón "Guardar"
         }
     });
 </script>
