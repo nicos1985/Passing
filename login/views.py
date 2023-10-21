@@ -79,11 +79,13 @@ def profile_view(request, username):
 
         user = CustomUser.objects.get(username=username)
         if request.method == 'POST':
+            print('pasando por post')
             profile_form = ProfileForm(request.POST, request.FILES, instance=user)
             if profile_form.is_valid():
                 profile_form.save()
             else:
                 print('Formulario no válido')
+            
         else:
             profile_form = ProfileForm(instance=user)
 

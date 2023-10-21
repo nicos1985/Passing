@@ -41,43 +41,47 @@
         </div>
         <div class="row">
             <div class="col-md-4 mx-auto">
-                <form id="Profileform" method='POST' enctype="multipart/form-data">
+                <form id="Profileform" method='POST' enctype="multipart/form-data" action='{% url 'profile' request.user.username %}'>
                     {% csrf_token %}
                     {{ profile_form.errors }}
                     {{ profile_form.non_field_errors }}
                     <h2>Perfil de {{ user_profile.username }}</h2>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="first_name" class="form-label">Nombre: </label>
-                        <input name="first_name" id="first_name" class="form-control" value="{{ user_profile.first_name }}" disabled>
+                        <input name="first_name" id="first_name" class="form-control" value="{{ user_profile.first_name }}" >
                     </div>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="last_name" class="form-label">Apellido: </label>
-                        <input name="last_name" id="last_name" class="form-control" value="{{ user_profile.last_name }}" disabled>
+                        <input name="last_name" id="last_name" class="form-control" value="{{ user_profile.last_name }}" >
                     </div>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="email" class="form-label">Correo electrónico:</label>
-                        <input name="email" id="email" class="form-control" value="{{ user_profile.email }}" disabled>
+                        <input name="email" id="email" class="form-control" value="{{ user_profile.email }}" >
                     </div>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="position" class="form-label">Puesto:</label>
-                        <input name="position" id="position" class="form-control" value="{{ user_profile.position }}" disabled>
+                        <input name="position" id="position" class="form-control" value="{{ user_profile.position }}" >
                     </div>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="avatar" class="form-label">Avatar:</label>
-                        <input type="file" name="avatar" id="avatar" class="form-control" value="{{ user_profile.avatar }}" disabled>
+                        <input type="file" name="avatar" id="avatar" class="form-control" value="{{ user_profile.avatar }}" >
                     </div>
-                       
                     
-                    <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
-                        <button id="botonEditar" class="btn btn-warning" type="button">Editar <i class="fas fa-pencil-alt"></i></button>
-                       
                     </div>
                     <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
-                     <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>Guardar
-                        </button> 
+                    <button id="botonEditar" class="btn btn-warning" type="button">Editar <i class="fas fa-pencil-alt"></i></button>
                     </div>
+                    <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
+                        <button id='buttonsubmit' type="submit" class="btn btn-primary">
+                               <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>Guardar
+                           </button> 
+                      
+                
+
                 </form>
+               
+                   
+                
                 
                 
             </div>  
@@ -91,30 +95,25 @@
 
 <script>
     const botonEditar = document.getElementById("botonEditar");
-    const botonGuardar = document.querySelector('button[type="submit"]');
-    const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value; // Obtén el valor del token CSRF
-    
-    
-    botonEditar.addEventListener("click", function() {
-        const campos = document.querySelectorAll('input');
-        
-        campos.forEach(function(input) {
-            input.disabled = !input.disabled;
-        });
+const botonGuardar = document.getElementById('buttonsubmit');
+const campos = document.querySelectorAll('input');
 
-        if (campos[0].disabled) {
-            console.log('entro a disabled true');
-            
-            botonEditar.disabled = true; // Deshabilita el botón "Editar"
-             // Oculta el botón "Guardar"
-        } else {
-            console.log('entro a disabled False')
-            
-            
-            botonEditar.disabled = false; // Deshabilita el botón "Editar"
-            
-        }
+// Inicialmente, deshabilita los campos y oculta el botón "Guardar"
+campos.forEach(function(input) {
+    input.disabled = true;
+});
+botonGuardar.disabled = true;
+
+
+botonEditar.addEventListener("click", function() {
+    campos.forEach(function(input) {
+        input.disabled = false; // Habilita los campos
     });
+
+    botonEditar.disabled = true; // Deshabilita el botón "Editar"
+    botonGuardar.disabled = false;
+}); 
+
 </script>
 
 
