@@ -70,11 +70,13 @@
                     
                     <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
                         <button id="botonEditar" class="btn btn-warning" type="button">Editar <i class="fas fa-pencil-alt"></i></button>
-                        <button type="submit" class="btn btn-primary" style="display: none">
+                       
+                    </div>
+                    <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
+                     <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>Guardar
                         </button> 
                     </div>
-
                 </form>
                 
                 
@@ -82,7 +84,7 @@
         </div>
     </div>
 {% endif %}
-
+</body>
 {% endblock %}
 
 {% block javascript %}
@@ -101,16 +103,16 @@
         });
 
         if (campos[0].disabled) {
-            console.log('entro a disabled true')
-            botonEditar.style.display = "none";
+            console.log('entro a disabled true');
+            
             botonEditar.disabled = true; // Deshabilita el botón "Editar"
-            botonGuardar.style.display = "inline-block"; // Oculta el botón "Guardar"
+             // Oculta el botón "Guardar"
         } else {
             console.log('entro a disabled False')
-            botonEditar.textContent = "editar";
-            botonEditar.className = "btn btn-warning";
+            
+            
             botonEditar.disabled = false; // Deshabilita el botón "Editar"
-            botonGuardar.style.display = "none"; // Muestra el botón "Guardar"
+            
         }
     });
 </script>
