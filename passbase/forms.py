@@ -98,7 +98,9 @@ class ContrasenaUForm(ModelForm):
                 }),
             'contraseña': TextInput(
                 attrs={
-                    'placeholder' : 'Ingrese la contraseña'
+                    'placeholder' : 'Ingrese la contraseña',
+                    'type' : 'password',
+                    'id' : 'password'
                 }),
             'Actualizacion': TextInput(
                 attrs={
