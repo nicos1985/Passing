@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .forms import UserRegisterForm, ProfileForm
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
 from django.forms import forms
 from django.contrib.auth import get_user_model
 from .models import CustomUser
@@ -99,3 +99,8 @@ def profile_view(request, username):
 
 
 
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'password_reset.html'
+    email_template_name = 'password_reset_email.html'
+
+    

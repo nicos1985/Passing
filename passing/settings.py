@@ -179,3 +179,9 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
+
+EMAIL_HOST = 'smtp.previ.com.ar'
+EMAIL_HOST_PORT = 25
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nicolas.ferratto@previ.com.ar'
+EMAIL_HOST_PASSWORD = 'Believeinme2'
