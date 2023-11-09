@@ -153,6 +153,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # }
 
 # login redirect
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LOGIN_REDIRECT_URL = '/pass/listpass'
 
@@ -180,8 +181,12 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
-EMAIL_HOST = 'smtp.previ.com.ar'
-EMAIL_HOST_PORT = 25
+
+#EMAIL CONFIG
+EMAIL_HOST = 'dhmcontr.ferozo.com'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nicolas.ferratto@previ.com.ar'
 EMAIL_HOST_PASSWORD = 'Believeinme2'
+
+

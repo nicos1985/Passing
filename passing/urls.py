@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from .views import test_send_email
 
 urlpatterns = [
     path('',include('login.urls') ),
@@ -24,6 +25,7 @@ urlpatterns = [
     path('pass/',include('passbase.urls') ),
     path('perm/',include('permission.urls') ),
     path("__debug__/", include("debug_toolbar.urls")),
+    path('test_send_email/', test_send_email, name='test_send_email'),
     
 ]
 
