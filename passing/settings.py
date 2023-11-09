@@ -183,6 +183,8 @@ DEBUG_TOOLBAR_PANELS = [
 
 
 #EMAIL CONFIG
+SERVER_EMAIL = 'django@my-domain.example'
+DEFAULT_FROM_EMAIL = 'nicolas.ferratto@previ.com.ar'
 EMAIL_HOST = 'dhmcontr.ferozo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True

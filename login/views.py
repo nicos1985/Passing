@@ -10,7 +10,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
 from django.forms import forms
 from django.contrib.auth import get_user_model
 from .models import CustomUser
-
+from django.contrib.messages.views import SuccessMessageMixin
 
 
 
@@ -99,8 +99,7 @@ def profile_view(request, username):
 
 
 
-class CustomPasswordResetView(PasswordResetView):
+class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'password_reset.html'
-    email_template_name = 'password_reset_email.html'
-
+    success_message = "Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña."
 
