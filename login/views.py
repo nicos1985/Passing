@@ -3,10 +3,12 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth import login
 from .forms import UserRegisterForm, ProfileForm
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetCompleteView
 from django.forms import forms
 from django.contrib.auth import get_user_model
 from .models import CustomUser
@@ -102,4 +104,9 @@ def profile_view(request, username):
 class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'password_reset.html'
     success_message = "Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña."
+    
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
+    form_class = UserRegisterForm  # Especifica el formulario que deseas utilizar
 
+   
