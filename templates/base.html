@@ -54,15 +54,16 @@
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'register' %}"><i class="fa-solid fa-address-card" style="color:white">&nbsp;</i>Registrarse</a>
+                  </li>
                   
                   {%endif%}
 
                   <li class="nav-item">
                     <a class="nav-link" href="#"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Wiki</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}"><i class="fa-solid fa-address-card" style="color:white">&nbsp;</i>Registrarse</a>
-                  </li>
+                 
                   {% if request.user.is_superuser %}
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'permissionform1' %}"><i class="fa-solid fa-key" style="color:white">&nbsp;</i>Permisos</a>

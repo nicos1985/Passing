@@ -8,7 +8,7 @@ from django.contrib.auth import login
 from .forms import UserRegisterForm, ProfileForm
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetCompleteView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
 from django.forms import forms
 from django.contrib.auth import get_user_model
 from .models import CustomUser
@@ -105,8 +105,8 @@ class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'password_reset.html'
     success_message = "Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña."
     
-class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
-    form_class = UserRegisterForm  # Especifica el formulario que deseas utilizar
+    form_class = SetPasswordForm  # Especifica el formulario que deseas utilizar
 
-   
+    
