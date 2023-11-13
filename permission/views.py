@@ -27,8 +27,9 @@ class PermissionListView(ListView):
         return context
     
     def get_queryset(self):
-        
-        return ContraPermission.objects.all()
+        permisos =  ContraPermission.objects.all().order_by('-user_id', '-contra_id__seccion')
+       
+        return permisos
     
 
 

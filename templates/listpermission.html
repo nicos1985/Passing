@@ -7,18 +7,35 @@
 
 {% block head %}
 
-<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+
+
+<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/css/dataTables.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\css\buttons.dataTables.min.css'%}">
+<link rel="stylesheet" href="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\css\buttons.bootstrap5.min.css'%}">
+<link rel="stylesheet" href="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}">
+
+<!--DataTables-->  
 <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
 <script src="{% static 'lib/datatables-1.13.1/js/jquery.dataTables.js' %}"></script>
 <script src="{% static 'lib/datatables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'lib/datatables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
 
+<!--botones de DataTables--> 
+<script src="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\js\dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\JSZip-3.10.1\jszip.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\pdfmake-0.2.7\pdfmake.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\pdfmake-0.2.7\vfs_fonts.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/Buttons-2.4.2/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\js\buttons.print.min.js' %}"></script>
+
+
+
+
 {% endblock %}
 
 {% block content %}
-
+<body>
 <div class="container" style="height: 60px;">
     <h2>{{title}}</h2>
 </div>
@@ -31,38 +48,42 @@
             <table class="table" id="data">
                 <thead class="table-dark">
                     <tr >
+                        
                         <th scope="col">Usuario</th>
+                        <th scope="col">Sección</th>
                         <th scope="col">Contraseña</th>
                         <th scope="col">Permiso</th>
-                        <th scope="col">Acción</th>
-                        
-            
+
                     </tr>
                     
                 </thead>
 
                 <tbody>
                     {% for perm in object_list %}
+                    
+                        
                     <tr>
-
                         <td>{{ perm.user_id }}</td>
-                        <td>{{ perm.contra_id }}</td>
-                        <td>{{ perm.permission }}</td>
-                        <td> <a href=" # "<i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None;color: rgb(68, 94, 243);"></i></a>
-                            <a href=" # "<i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color: rgb(216, 48, 48);"></i></a>
-                            </td>
+                        <td>{{ perm.contra_id.seccion}}</td>
+                        <td>{{ perm.contra_id.nombre_contra }}</td>
+                        {% if perm.permission == 'True' %}
+                        <td> <i class="fas fa-check" style = 'color:green;' value='Si'></i> </td>
+                        {% else %}
+                        <td> <i class="fa-solid fa-xmark" style = 'color:rgb(216, 48, 48);'value='No'></i> </td>
+                        {% endif %}
+                       
                         
                     </tr>
                             
-
-                </tbody>
                     {% endfor %}
+                </tbody>
+                    
 
             </table>
 
             <div>
                 <button class="btn">
-                    <a class="btn btn-primary btn-flat" href = "#">
+                    <a class="btn btn-primary btn-flat" href = {% url "permissionform1" %}>
                     <i class="fas fa-plus"></i> Nuevo Permiso </a>
                 </button>
             </div>
@@ -76,26 +97,49 @@
 {% block javascript %}
 
 <script type="application/javascript">
-    $(function () {
-        
+    $(document).ready(function() {
         $('#data').DataTable({
             responsive: true,
             autoWidth: false,
             "language": {
-                url : "{% static 'lib/datatables-1.13.1/spanish.txt' %}"
-            }
-        });
-    
-              /*.fail(function(jqXHR, textStatus, thrownError ) {
-                alert(textStatus +' : ' + thrownError );
-              })
-              .always(function(data) {
-                
-              });*/
-
-        });
-    
-</script>
+                url: "{% static 'lib/datatables-1.13.1/spanish.txt' %}"
+            },
+            order: [[0, 'asc']],  // Ordena la tabla por 'user_id'
+            rowGroup: {
+                dataSrc: 1,  // Usa la columna 'user_id' para agrupar las filas 
+            },
+            dom: 'Bfrtip',
+            buttons: [
+            {extend:'copy',
+            text: '<i class= "fas fa-copy"></i>',
+            titleAttr:'Copiar',
+            classname: 'btn btn-secondary'
+            },
+            {extend:'csv',
+            titleAttr:'Exportar a csv',
+            text: '<i class= "fas fa-file-csv"></i>',
+            classname: 'btn btn-success'
+            },
+            {extend:'excel',
+            titleAttr:'Exportar a excel',
+            text: '<i class= "fas fa-file-excel"></i>',
+            classname: 'btn btn-success'
+            },
+            {extend:'pdf',
+            titleAttr:'Exportar a pdf',
+            text: '<i class= "fas fa-file-pdf"></i>',
+            classname: 'btn btn-danger'
+            },
+            {extend:'print',
+            titleAttr:'Imprimir',
+            text: '<i class= "fas fa-print"></i>',
+            classname: 'btn btn-primary'
+            },
             
+            ]
+        });
+    });
+</script>
+
 {% endblock %}
-</html>
+</body>
