@@ -110,30 +110,43 @@
             },
             dom: 'Bfrtip',
             buttons: [
-            {extend:'copy',
-            text: '<i class= "fas fa-copy"></i>',
-            titleAttr:'Copiar',
-            classname: 'btn btn-secondary'
-            },
+        {
+            extend: 'copy',
+            text: '<i class="fas fa-copy"></i>',
+            titleAttr: 'Copiar',
+            buttons: {
+                copy: {
+                    className: 'btn btn-secondary'
+                }
+            }
+        },
             {extend:'csv',
             titleAttr:'Exportar a csv',
             text: '<i class= "fas fa-file-csv"></i>',
-            classname: 'btn btn-success'
+            buttons: {
+                classes: ['btn btn-success']
+            }
             },
             {extend:'excel',
             titleAttr:'Exportar a excel',
             text: '<i class= "fas fa-file-excel"></i>',
-            classname: 'btn btn-success'
+            buttons: {
+                classes: ['btn btn-success']
+            }
             },
             {extend:'pdf',
             titleAttr:'Exportar a pdf',
             text: '<i class= "fas fa-file-pdf"></i>',
-            classname: 'btn btn-danger'
+            buttons: {
+                classes: ['btn btn-danger']
+            }
             },
             {extend:'print',
             titleAttr:'Imprimir',
             text: '<i class= "fas fa-print"></i>',
-            classname: 'btn btn-primary'
+            buttons: {
+                classes: ['btn btn-primary']
+            }
             },
             
             ]
