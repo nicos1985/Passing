@@ -18,7 +18,7 @@
             </div>
             <div class="card-body"style="background-color: #F7F7F7 ;">
                 
-                <form method="POST">
+                <form method="POST" id="permiso-form">
                     {% csrf_token %}
                     <table class="table table-striped table-hover">
 
@@ -71,7 +71,9 @@
                     </tbody>
                     
                     </table>
-                    <button type="submit" class="btn btn-primary btn-flat" style='margin-top:20px; margin-left:100px;'>
+                    <button type="button" id="select-all-btn" class="btn btn-primary" style='margin-top: 10px;'>Seleccionar Todos</button>
+                    <button type="button" id="deselect-all-btn" class="btn btn-secondary" style='margin-top: 10px; margin-left: 10px;'>Deseleccionar Todos</button>
+                    <button type="submit" class="btn btn-primary btn-flat" style='margin-top:10px; margin-left:10px;'>
                         <i class="fas fa-save"></i> Guardar Permisos
                     </button>
                 </form>
@@ -82,5 +84,33 @@
     </div>
 
 </div>
+
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('permiso-form');
+        const selectAllBtn = document.getElementById('select-all-btn');
+        const deselectAllBtn = document.getElementById('deselect-all-btn');
+
+        selectAllBtn.addEventListener('click', function () {
+            setCheckboxState(true);
+        });
+
+        deselectAllBtn.addEventListener('click', function () {
+            setCheckboxState(false);
+        });
+
+        function setCheckboxState(state) {
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = state;
+            });
+        }
+    });
+</script>
+
 
 {% endblock %}
