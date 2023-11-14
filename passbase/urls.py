@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import path
 from passbase.views import ContrasListView, ContrasCreateView, ContrasUpdateView, ContrasDeleteView, SectionCreateView, SectionListView, SectionUpdateView, SectionDeleteView, SectionActiveView, ContrasDetailView
-
+from passing.views import config
 urlpatterns = [
     
     path('listpass',ContrasListView.as_view(), name='listpass'),
+    path('config/', config, name='config'),
     path('detailpass/<int:pk>',ContrasDetailView.as_view(), name='detailpass'),
     path('createpass',ContrasCreateView.as_view(), name='createpass'),
     path('editpass/<int:pk>', ContrasUpdateView.as_view(), name='updatepass'),

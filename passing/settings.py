@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 
+try:
+    from .config import EMAIL_SETTINGS
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -183,12 +188,11 @@ DEBUG_TOOLBAR_PANELS = [
 
 
 #EMAIL CONFIG
-SERVER_EMAIL = 'django@my-domain.example'
-DEFAULT_FROM_EMAIL = 'nicolas.ferratto@previ.com.ar'
-EMAIL_HOST = 'dhmcontr.ferozo.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'nicolas.ferratto@previ.com.ar'
-EMAIL_HOST_PASSWORD = 'Believeinme2'
 
-
+SERVER_EMAIL = EMAIL_SETTINGS['SERVER_EMAIL']
+DEFAULT_FROM_EMAIL = EMAIL_SETTINGS['DEFAULT_FROM_EMAIL']
+EMAIL_HOST = EMAIL_SETTINGS['EMAIL_HOST']
+EMAIL_PORT = EMAIL_SETTINGS['EMAIL_PORT']
+EMAIL_USE_TLS = EMAIL_SETTINGS['EMAIL_USE_TLS']
+EMAIL_HOST_USER = EMAIL_SETTINGS['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = EMAIL_SETTINGS['EMAIL_HOST_PASSWORD']

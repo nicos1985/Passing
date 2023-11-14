@@ -28,7 +28,11 @@
 <script src="{% static 'lib\DataTables-1.13.1\pdfmake-0.2.7\vfs_fonts.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/Buttons-2.4.2/js/buttons.html5.min.js' %}"></script>
 <script src="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\js\buttons.print.min.js' %}"></script>
-
+<style>
+    .ocultar-columna {
+      display: none;
+    }
+</style>
 
 
 
@@ -53,6 +57,7 @@
                         <th scope="col">Sección</th>
                         <th scope="col">Contraseña</th>
                         <th scope="col">Permiso</th>
+                        <th class="ocultar-columna"  scope="col">Permisos</th>
 
                     </tr>
                     
@@ -71,7 +76,7 @@
                         {% else %}
                         <td> <i class="fa-solid fa-xmark" style = 'color:rgb(216, 48, 48);'value='No'></i> </td>
                         {% endif %}
-                       
+                        <td class="ocultar-columna" >{{ perm.permission }}</td>
                         
                     </tr>
                             

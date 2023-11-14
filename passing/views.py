@@ -1,9 +1,16 @@
 from django.shortcuts import render
 from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.views import View
+from .config import EMAIL_SETTINGS
+from .forms import EmailConfigForm
 
 
 def home(request):
     return render(request, 'home.html')
+
+def config(request):
+    return render(request, 'admin.html')
 
 def test_send_email(request):
     subject = 'Prueba de envío de correo'
@@ -15,3 +22,33 @@ def test_send_email(request):
 
     print('Correo electrónico enviado')
     return render(request, 'test_send_email.html')
+
+
+
+
+class UpdateEmailConfigView(View):
+
+    def get(self, request):
+        form = EmailConfigForm()
+        return render(request, 'email_config.html', {'form': form})
+    
+    def post(self, request):
+        form = EmailConfigForm(request.POST)
+    
+        if form.is_valid():
+            
+            # Modifica las configuraciones según tus necesidades
+            EMAIL_SETTINGS['SERVER_EMAIL'] = 'django@my-domain.example'
+            EMAIL_SETTINGS['DEFAULT_FROM_EMAIL'] = form.cleaned_data['email_host_user']
+            EMAIL_SETTINGS['EMAIL_HOST'] = form.cleaned_data['email_host']
+            EMAIL_SETTINGS['EMAIL_PORT'] = form.cleaned_data['email_port']
+            EMAIL_SETTINGS['EMAIL_USE_TLS'] = form.cleaned_data['email_use_tls']
+            EMAIL_SETTINGS['EMAIL_HOST_USER'] = form.cleaned_data['email_host_user']
+            EMAIL_SETTINGS['EMAIL_HOST_PASSWORD'] = form.cleaned_data['email_host_password']
+
+            for key, value in EMAIL_SETTINGS.items():
+                print(f'{key}:{value}')
+
+            return render(request, 'email_config.html', {'message':'El formulario se envió correctamente', 'form':form, })
+        else:
+            return render(request, 'email_config.html', {'message':'El formulario no se envió correctamente'})

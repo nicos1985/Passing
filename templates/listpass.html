@@ -89,14 +89,15 @@
                 <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para navegar. 
                     <br>Si no tienes cuenta puedes registrarte.</h5>
                 <div class="row justify-content-center mt-4">
-                    <div class='card center'>
-                    <div class="col-sm-6 d-flex justify-content-center">
-                        <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+                    
+                    <div class="col-sm-12 d-flex justify-content-center">
+                        <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
                     </div>
-                    <div class="col-sm-6 d-flex justify-content-center mt-2 mt-sm-0">
-                        <a class="btn btn-primary" href="{% url 'register' %}">Registrarse</a>
+                    <span></span>
+                    <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
+                        <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
                     </div>
-                </div>
+                
                 </div>
             </div>
             {% endif %}

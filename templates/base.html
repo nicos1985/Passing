@@ -61,7 +61,7 @@
                   {%endif%}
 
                   <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Wiki</a>
+                    <a class="nav-link" href="{% url 'config' %}"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin</a>
                   </li>
                  
                   {% if request.user.is_superuser %}

@@ -17,15 +17,17 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import test_send_email
+from .views import test_send_email, home, config, UpdateEmailConfigView
 
 urlpatterns = [
-    path('',include('login.urls') ),
+    path('', home, name='home'),
+    path('login/', include('login.urls') ),
     path('admin/', admin.site.urls),
     path('pass/',include('passbase.urls') ),
     path('perm/',include('permission.urls') ),
     path("__debug__/", include("debug_toolbar.urls")),
     path('test_send_email/', test_send_email, name='test_send_email'),
+    path('update_email_config/', UpdateEmailConfigView.as_view(), name='update_email_config'),
     
 ]
 
