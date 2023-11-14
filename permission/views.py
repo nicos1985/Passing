@@ -76,7 +76,7 @@ def gestion_permisos(request, usuario_id):
             messages.success(request,  'los permisos han sido asignados correctamente.')
             return redirect('listpass')
     else:
-        print(f'permiso_form: {permiso_form}')
+        
         return render(request, 'create-perm-p2.html', {
             'permiso_form': permiso_form,
             'usuario' : usuario,

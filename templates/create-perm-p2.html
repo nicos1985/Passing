@@ -21,22 +21,33 @@
                 <form method="POST">
                     {% csrf_token %}
                 
-                    <div class="form">
+                    <div class="form" style='margin-left:100px'>
+                    
                         {% for field in permiso_form %}
                             <div class="form-check form-switch">
                                 {% if field.value == "True" %}
-                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input" checked>
+                                    {% with widget=field.field.widget %}
+                                        <label class="form-check-label" for="{{ field.id_for_label }}" style='margin-top:6px; margin-left:10px;'>{{ field.label }} - {{ widget.attrs.seccion }}</label>
+                                    {% endwith %}
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input" style='margin-top:10px' checked>
                                 {% elif field.value == "False"  %}
-                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input">
+                                    {% with widget=field.field.widget %}
+                                        <label class="form-check-label" for="{{ field.id_for_label }}" style='margin-top:6px; margin-left:10px;'>{{ field.label }} - {{ widget.attrs.seccion }}</label>
+                                    {% endwith %}
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" style='margin-top:10px' class="form-check-input">
+                                {% else %}
+                                    {% with widget=field.field.widget %}
+                                        <label class="form-check-label" for="{{ field.id_for_label }}" style='margin-top:6px; margin-left:10px;'>{{ field.label }} - {{ widget.attrs.seccion }}</label>
+                                    {% endwith %}
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" style='margin-top:10px' class="form-check-input">
                                 {% endif %}
                                 
                             </div>
                         {% endfor %}
+                    
                     </div>
                 
-                    <button type="submit" class="btn btn-primary btn-flat">
+                    <button type="submit" class="btn btn-primary btn-flat" style='margin-top:20px; margin-left:100px;'>
                         <i class="fas fa-save"></i> Guardar Permisos
                     </button>
                 </form>

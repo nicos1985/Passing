@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django import forms
 from login.models import CustomUser
 from .models import ContraPermission
@@ -13,7 +14,7 @@ class PermissionUserForm(forms.Form):
 
 class PermisoForm(forms.Form):
     def __init__(self, usuario, *args, **kwargs):
-        print(f'usuario (PermisoForms): {usuario} ')
+        
         super().__init__(*args, **kwargs)
         contraseñas = Contrasena.objects.all()
         
@@ -25,25 +26,35 @@ class PermisoForm(forms.Form):
             if permission_exists:
                 permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
                 initial_value = permission_instance.permission
-                print(f'inicial_value: {initial_value}')
+                
 
+                self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
+                    label=contraseña.nombre_contra,
+                    initial=initial_value,
+                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion}),
+                    required=False
+                    )
+               
             else:
                 self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
                 label=contraseña.nombre_contra,
-                initial='False',
-                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+                initial=False,
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion}),
                 required=False
                 )
                 
+
+   # Obtén los campos originales
+        fields = list(self.fields.items())
+      
+
+        # Ordena los campos según el atributo 'seccion' del widget
+        fields.sort(key=lambda x: str(x[1].widget.attrs.get('seccion', '')))
+
+        # Asigna los campos ordenados de nuevo al formulario
+        self.fields = OrderedDict(fields)
+        
             
-            self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
-                label=contraseña.nombre_contra,
-                initial=initial_value,
-                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-                required=False
-                )
-            
-            print(self.fields[f'permiso_{contraseña.nombre_contra}'].initial)
             
         
 # class PermissionForm(forms.Form):
