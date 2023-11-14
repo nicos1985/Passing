@@ -2,11 +2,13 @@
 
 
 {% block content %}
+<body>
 <div class="container pt-5" >
-
-    <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 105px; padding-top: 20px;">
+    <div class="row">
+        <div class="col-md-5 mx-auto"> 
+    
+            <div class="card-title" >
+                <div class="container" style="height: 105px; padding-top: 20px;"style="background-color: #F7F7F7 ;">
                     <h2><i class="fas fa-plus" ></i> {{title}}</h2>
                     <button class="btn">
                         <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
@@ -14,7 +16,7 @@
                 </div>
             </div>
 
-            <div class="card-body"style="background-color: #F7F7F7 ;">
+            <div class="card-body">
                     <form method="POST" action="{% url 'createpass' %}">
                         {% csrf_token %}
 
@@ -23,49 +25,49 @@
 
                         <div class="form-group">
 
-                            <label for="nombre_contra">Nombre de Contraseña: </label>
-                            <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" required>
+                            <label for="nombre_contra" style="margin-top:20px;">Nombre de Contraseña: </label>
+                            <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" style="margin-top:5px;" required>
                             
 
-                            <label for="seccion">Sección:</label>
+                            <label for="seccion" style="margin-top:20px;">Sección:</label>
 
                             <div class="input-group">
                             
-                                <select name="seccion" placeholder="Elija la seccion" class="form-control" autocomplete="off" required="" id="id_seccion">
+                                <select name="seccion" placeholder="Elija la seccion" class="form-control" autocomplete="off" style="margin-top:5px;" required="" id="id_seccion">
                                   {% for section in sections %}
                                   <option value = {{section.id}}> {{section.nombre_seccion}} </option>
                                   {% endfor %}
                                      
                                 </select>
-                                <a class="btn btn-primary center" href={% url 'createsection' %}><i class="fas fa-plus"></i></a> 
+                                <a class="btn btn-primary center" href={% url 'createsection' %}><i class="fas fa-plus" style="margin-top:5px;"></i></a> 
 
                             </div>
 
-                            <label for="link">Link: </label>
-                            <input id="link" type="text" class='form-control' name="link" maxlength="100" required>
+                            <label for="link" style="margin-top:20px;">Link: </label>
+                            <input id="link" type="text" class='form-control' name="link" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="usuario">Usuario: </label>
-                            <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" required>
+                            <label for="usuario" style="margin-top:20px;">Usuario: </label>
+                            <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="contraseña">Contraseña: </label>
-                            <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" required>
+                            <label for="contraseña" style="margin-top:20px;">Contraseña: </label>
+                            <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="actualizacion">Actualizacion: </label>
-                            <input id="actualizacion" type="number" class='form-control' name="actualizacion" maxlength="100" required>
+                            <label for="actualizacion" style="margin-top:20px;">Actualizacion: </label>
+                            <input id="actualizacion" type="number" class='form-control' name="actualizacion" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="info">Info: </label>
-                            <input id="info" type="textarea" class='form-control' name="info" maxlength="100" required>
+                            <label for="info"style="margin-top:20px;">Info: </label>
+                            <input id="info" type="textarea" class='form-control' name="info" maxlength="100"style="margin-top:5px;" required>
 
                         </div>
 
-                            <button type="submit" class="btn btn-primary btn-flat">
+                            <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
                                 <i class="fas fa-save"></i> Guardar registro
                             </button>
 
                         </div> 
                     </form>
             </div>
-            
+            </div>
         </div>
     </div>
 
@@ -74,5 +76,5 @@
         
         
 </div>
-
+</body>
 {% endblock %}

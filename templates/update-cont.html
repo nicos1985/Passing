@@ -2,9 +2,9 @@
 
 
 {% block content %}
-<div class="container pt-5" >
+<div class="container" >
 
-    <div class="card center">
+   
             <div class="card-title">
                 <div class="container" style="height: 105px; padding-top: 20px;">
                     <h2><i class="fas fa-pen" ></i> {{title}}</h2>
@@ -13,7 +13,8 @@
                     </button>
                 </div>
             </div>
-
+            <div class="row">
+                <div class="col-md-5 mx-auto"> 
             <div class="card-body"style="background-color: #F7F7F7 ;">
                     <form method="POST">
                         {% csrf_token %}
@@ -24,6 +25,7 @@
                         {% for field in form.visible_fields %}
                         
                             <div class="form-group">
+
                                 {%if field.field.widget.attrs.id == "password"%}
                                 <div class= 'input group'>
 
@@ -55,6 +57,8 @@
                     </form>
             </div>
         </div>
+    </div>
+       
     </div>
 
 </div>

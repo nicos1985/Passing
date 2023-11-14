@@ -36,8 +36,21 @@ class UpdateEmailConfigView(View):
         form = EmailConfigForm(request.POST)
     
         if form.is_valid():
-            
+
+            additional_settings = {
+            'SERVER_EMAIL': 'django@my-domain.example',
+            'DEFAULT_FROM_EMAIL': form.cleaned_data['email_host_user'],
+                }
+            form_settings_uppercase = {key.upper(): value for key, value in form.cleaned_data.items()}
+
+            EMAIL_SETTINGS.update(form_settings_uppercase)
+            EMAIL_SETTINGS.update(additional_settings)
+
+
+            with open('passing/config.py', 'w') as config_file:
+                config_file.write(f"EMAIL_SETTINGS = {EMAIL_SETTINGS}\n")
             # Modifica las configuraciones según tus necesidades
+            """
             EMAIL_SETTINGS['SERVER_EMAIL'] = 'django@my-domain.example'
             EMAIL_SETTINGS['DEFAULT_FROM_EMAIL'] = form.cleaned_data['email_host_user']
             EMAIL_SETTINGS['EMAIL_HOST'] = form.cleaned_data['email_host']
@@ -45,6 +58,9 @@ class UpdateEmailConfigView(View):
             EMAIL_SETTINGS['EMAIL_USE_TLS'] = form.cleaned_data['email_use_tls']
             EMAIL_SETTINGS['EMAIL_HOST_USER'] = form.cleaned_data['email_host_user']
             EMAIL_SETTINGS['EMAIL_HOST_PASSWORD'] = form.cleaned_data['email_host_password']
+            """
+            # Actualizar el diccionario en tiempo de ejecución
+            
 
             for key, value in EMAIL_SETTINGS.items():
                 print(f'{key}:{value}')
