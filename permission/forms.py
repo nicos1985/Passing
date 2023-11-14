@@ -26,16 +26,23 @@ class PermisoForm(forms.Form):
                 permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
                 initial_value = permission_instance.permission
                 print(f'inicial_value: {initial_value}')
-            
+
+            else:
+                self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
+                label=contraseña.nombre_contra,
+                initial='False',
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+                required=False
+                )
                 
-            #choices = [('True', 'Sí'), ('False', 'No')]
+            
             self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
                 label=contraseña.nombre_contra,
-                #choices=choices,
                 initial=initial_value,
                 widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
                 required=False
-            )
+                )
+            
             print(self.fields[f'permiso_{contraseña.nombre_contra}'].initial)
             
         

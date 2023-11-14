@@ -28,6 +28,7 @@
                                 <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input" checked>
                                 {% elif field.value == "False"  %}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input">
                                 {% endif %}
                                 
