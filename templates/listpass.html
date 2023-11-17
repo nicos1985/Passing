@@ -65,12 +65,12 @@
                             </div>
                         </td>
                         
-                        <td>
-                            <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
-                            <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
-                            <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
-                        </td>
-                    </tr>
+                            <td>
+                                <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
+                                <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
+                                <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
+                            </td>
+                        </tr>
                     {% endfor %}
                 </tbody>
                 

@@ -1,7 +1,9 @@
+<html>
 {% extends 'base.html'%}
 
 
 {% block content %}
+<body>
 <div class="container pt-10" >
 
     <div class="card center">
@@ -20,13 +22,13 @@
                 
                 <form method="POST" id="permiso-form">
                     {% csrf_token %}
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped table-hover" id="data">
 
                         <thead>
                             <tr  class="table-dark">
-                                <th>Sección</th>
-                                <th>Contraseña</th>
-                                <th>Permiso</th>
+                                <th scope="col">Sección</th>
+                                <th scope="col">Contraseña</th>
+                                <th scope="col">Permiso</th>
                             </tr>
                         </thead>
 
@@ -44,8 +46,9 @@
                                         <td><label class="form-check-label" for="{{ field.id_for_label }}" style='margin-top:6px; margin-left:10px;'>{{ widget.attrs.seccion }}</label> </td>
                                     {% endwith %}
                                         <td><label class="form-check-label" for="{{ field.id_for_label }}" style='margin-top:6px; margin-left:10px;'>{{ field.label }}</label></td>
+                                        
                                         <td><input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-check-input" style='margin-top:10px' checked></td>
-                                
+                                           
                                 {% elif field.value == "False"  %}
                                     
                                     {% with widget=field.field.widget %}
@@ -84,10 +87,24 @@
     </div>
 
 </div>
-
+</body>
 {% endblock %}
 
 {% block javascript %}
+
+<script type="application/javascript">
+
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            
+            autoWidth: false,
+            
+        });
+    });
+
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -114,3 +131,5 @@
 
 
 {% endblock %}
+
+</html>
