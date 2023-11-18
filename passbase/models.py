@@ -48,6 +48,7 @@ class Contrasena(models.Model):
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
     contraseña = models.IntegerField()
+    password = models.CharField(max_length=50, null=True, blank=True)
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
     action = models.CharField(max_length=80, null = True)
     detail = models.CharField(max_length=255)

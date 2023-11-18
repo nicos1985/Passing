@@ -109,6 +109,7 @@ class ContrasCreateView(CreateView):
                                entidad = 'Contraseña', 
                                usuario = self.request.user , 
                                action = 'Create',
+                               password=contrasena.contraseña,
                                detail = f'''Nombre: {contrasena.nombre_contra}, 
                                                     Seccion: {contrasena.seccion}, 
                                                     Usuario: {contrasena.usuario}, 
@@ -156,7 +157,8 @@ class ContrasUpdateView(UpdateView):
                                            Link:{objeto_previo.link}, 
                                            Info:{objeto_previo.info}''', 
                                usuario=self.request.user, 
-                               contraseña=objeto_previo.id)
+                               contraseña=objeto_previo.id,
+                               password=objeto_previo.contraseña)
         
         return objeto_previo
 
@@ -176,6 +178,7 @@ class ContrasUpdateView(UpdateView):
             entidad=context['entity'],
             usuario=self.request.user,
             action=action,
+            password=contrasena.contraseña,
             detail=f'''Nombre: {contrasena.nombre_contra},
                         Seccion: {contrasena.seccion},
                         Usuario: {contrasena.usuario},
@@ -205,7 +208,8 @@ class ContrasDeleteView(DeleteView):
         LogData.objects.create(contraseña = id_contraseña, 
                                entidad = context['entity'], 
                                usuario = self.request.user, 
-                               action = context['action'], 
+                               action = context['action'],
+                               password=contrasena.contraseña, 
                                detail = f'''Nombre: {contrasena.nombre_contra}, 
                                             Seccion: {contrasena.seccion},
                                             Usuario: {contrasena.usuario}, 
