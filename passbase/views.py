@@ -237,7 +237,7 @@ class SectionCreateView(CreateView):
         context['title'] = 'Crear Seccion'
         context['entity'] = 'Seccion'
         context['list_url'] = reverse_lazy('listpass')
-        context['action'] = 'add'
+        context['action'] = 'Create'
         return context
 
     def get_queryset(self):
@@ -252,7 +252,7 @@ class SectionCreateView(CreateView):
         LogData.objects.create(contraseña = seccion.id, 
                                entidad = 'Seccion', 
                                usuario = self.request.user, 
-                               action = 'add', 
+                               action = 'Create', 
                                detail = f'Nombre: {seccion.nombre_seccion}')
         return response
 
@@ -372,7 +372,7 @@ class SectionActiveView(DetailView):
           context['title'] = 'Activar Seccion'
           context['entity'] = 'Seccion'
           context['list_url'] = reverse_lazy('listsection')
-          context['action'] = 'activar'
+          context['action'] = 'active'
             
           return context
     
