@@ -51,7 +51,7 @@ class LogData(models.Model):
     password = models.CharField(max_length=50, null=True, blank=True)
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
     action = models.CharField(max_length=80, null = True)
-    detail = models.CharField(max_length=255)
+    detail = models.CharField(max_length=1000)
     created = models.DateTimeField(auto_now=True)
     
     def Meta():
