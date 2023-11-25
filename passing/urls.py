@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 from .views import test_send_email, home, config, UpdateEmailConfigView
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', home, name='home'),
@@ -29,8 +30,7 @@ urlpatterns = [
     path('test_send_email/', test_send_email, name='test_send_email'),
     path('update_email_config/', UpdateEmailConfigView.as_view(), name='update_email_config'),
     
-]
-
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 if settings.DEBUG:
     import debug_toolbar
 
