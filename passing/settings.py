@@ -34,7 +34,7 @@ CRYPTOGRAPHY_KEY = b'C6Ep$#KHuMi~JGXHcJg[?.I&Wv(Plh29I-4e62C'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INTERNAL_IPS = [
     # ...
