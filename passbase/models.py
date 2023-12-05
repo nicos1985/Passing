@@ -28,7 +28,7 @@ class Contrasena(models.Model):
     link = models.CharField(max_length=265)
     usuario = models.CharField(max_length=60)
     contraseña = models.CharField(max_length=60)
-    actualizacion= models.IntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
+    actualizacion= models.PositiveSmallIntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
     info = models.CharField(max_length=260)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=True)
