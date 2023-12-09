@@ -80,7 +80,7 @@
                           
                         <td>{{ contra.seccion }}</td>
                         <td>
-                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener">{{ contra.link }}</a>
+                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title={{contra.link}}>{{ contra.link|truncatechars:30 }}</a>
                         </td>
                         <td>{{ contra.usuario }}</td>
                         <td>
