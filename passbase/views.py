@@ -16,6 +16,8 @@ from django.utils import timezone
 class ContrasListView(ListView):
     model = Contrasena
     template_name = 'listpass.html'
+    context_object_name = 'query_perm'
+
 
     
     @method_decorator(csrf_exempt)
@@ -33,22 +35,90 @@ class ContrasListView(ListView):
          return JsonResponse(data)
     
     def get_queryset(self):
-        try: 
-            # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
-            obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
-                                                          perm_active = True, 
-                                                          permission = True).values_list('contra_id', flat=True)
-            #convierto en lista
-            permisos = list(obj_permiso)
-            #retorno solo los objetos en los que el id se encuentran dentro de la lista
-            print(f'permisos: {permisos}')
-            return Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
-        except Exception as e:
-            return redirect(reverse_lazy('login'))
+
+        log_data ={}
+        
+        fecha_hoy = timezone.now()
+
+        
+
+    #try: 
+        # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
+        obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
+                                                    perm_active = True, 
+                                                    permission = True).values_list('contra_id', flat=True)
+        #convierto en lista
+        permisos = list(obj_permiso)
+        #retorno solo los objetos en los que el id se encuentran dentro de la lista
+        print(f'permisos: {permisos}')
+
+        query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
+
+        def ratio_calculation(created_value):
+            dias_actualizacion = Contrasena.objects.get(id=contrasena.id).actualizacion
+            dias_transcurridos = fecha_hoy - created_value
+            dias_faltantes = dias_actualizacion - int(dias_transcurridos.days)
+            try:
+                ratio = dias_faltantes / dias_actualizacion
+            except:
+                ratio = 0
+
+            if ratio <= 0:
+                log_data[contrasena.id] = 'rojo'
+               
+            elif 0.01 < ratio <= 0.09:
+                log_data[contrasena.id] = 'amarillo'
+               
+                
+            elif ratio > 0.09:
+                log_data[contrasena.id] = 'verde'
+               
+        
+        for contrasena in query_perm:
+            # Buscar registros con action='change pass'
+            
+            log_data_change_pass = LogData.objects.filter(contraseña=contrasena.id, action='change pass').order_by('-created')[:1]
+            
+
+            # Si no se encontraron registros con action='change pass', buscar con action='created'
+            if log_data_change_pass.exists():
+                log_data_objeto = log_data_change_pass.first()
+                created_value = log_data_objeto.created
+                ratio_calculation(created_value)
+
+
+            else:
+                # Si no hay registros 'change pass', intenta con 'created'
+                log_data_created = LogData.objects.filter(
+                    contraseña=contrasena.id, action='Create'
+                ).order_by('-created')[:1]
+
+                if log_data_created.exists():
+                    log_data_objeto = log_data_created.first()
+                    changed_value = log_data_objeto.created
+                    ratio_calculation(changed_value)
+                
+                else:
+                    # Manejar el caso en el que no hay registros 'change pass' ni 'created'
+                    print('No hay registros "change pass" ni "created"')
+
+
+        for contrasena in query_perm:
+            # Agrega un nuevo atributo 'flag' a cada objeto en el queryset
+            contrasena.flag = log_data.get(contrasena.id, 'sin_color')
+
+        print(query_perm)
+        return query_perm
+    
+    #except Exception as e:
+        print(f'error: {e}')
+        return redirect(reverse_lazy('login'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Lista de Contraseñas'
+
+        
         return context
 
 
@@ -79,7 +149,7 @@ class ContrasDetailView(DetailView):
             context['actualizacion'] = dias_actual_contrasena
 
         else:
-            context['log_data'] = None           
+            context['log_data'] = None
         return context
 
 class ContrasCreateView(CreateView):

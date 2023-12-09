@@ -48,10 +48,36 @@
                 </thead>
 
                 <tbody>
-                    {% for contra in object_list %}
+                    {% for contra in query_perm %}
+                    
                     <tr>
-                        <td><b>{{ contra.nombre_contra }}</b></td>
-                        <td>{{ contra.actualizacion}} días</td>
+                        <td><b>{{ contra.nombre_contra}}</b></td>
+
+                        
+
+                            {% if contra.flag == 'verde' %}
+                                <td> 
+                                    <button type="button" class="btn btn-success">{{contra.actualizacion}} días</button> 
+                                </td>
+
+                                {% elif contra.flag == 'amarillo' %}
+
+                                <td> 
+                                    <button type="button" class="btn btn-warning">{{contra.actualizacion}} días</button>
+                                </td>
+
+                                {% elif contra.flag == 'rojo' %}
+
+                                <td> 
+                                    <button type="button" class="btn btn-danger">{{contra.actualizacion}} días</button>
+                                </td>
+                                {% else %}
+                                <td> 
+                                    <button type="button" class="btn btn-secondary">{{contra.actualizacion}} días</button>
+                                </td>
+                            {% endif%}
+                       
+                          
                         <td>{{ contra.seccion }}</td>
                         <td>
                             <a href="https://{{ contra.link }}" target="_blank" rel="noopener">{{ contra.link }}</a>
