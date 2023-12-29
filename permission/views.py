@@ -9,6 +9,7 @@ from .forms import PermissionUserForm, PermisoForm
 from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 #devuelve si es administrador
 def is_administrator(user):
@@ -17,9 +18,10 @@ def is_administrator(user):
 
 
 @method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser
-class PermissionListView(ListView):
+class PermissionListView(LoginRequiredMixin, ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
+    login_url = '/login/login/'
      
 
     def get_context_data(self, **kwargs):

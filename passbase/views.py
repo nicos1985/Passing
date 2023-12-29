@@ -7,17 +7,19 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import RedirectView
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
 from django.utils import timezone
 
 
-class ContrasListView(ListView):
+class ContrasListView(LoginRequiredMixin, ListView):
     model = Contrasena
     template_name = 'listpass.html'
     context_object_name = 'query_perm'
-
+    login_url = 'login'
 
     
     @method_decorator(csrf_exempt)
@@ -39,8 +41,6 @@ class ContrasListView(ListView):
         log_data ={}
         
         fecha_hoy = timezone.now()
-
-        
 
     #try: 
         # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
@@ -122,9 +122,10 @@ class ContrasListView(ListView):
         return context
 
 
-class ContrasDetailView(DetailView):
+class ContrasDetailView(LoginRequiredMixin, DetailView):
     model=Contrasena
     template_name = 'detail-cont.html'
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -152,11 +153,12 @@ class ContrasDetailView(DetailView):
             context['log_data'] = None
         return context
 
-class ContrasCreateView(CreateView):
+class ContrasCreateView(LoginRequiredMixin, CreateView):
     model = Contrasena, SeccionContra
     form_class = ContrasenaForm
     template_name = 'create-cont.html'
     success_url = reverse_lazy('listpass')
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -191,11 +193,12 @@ class ContrasCreateView(CreateView):
                                         )
         return response
         
-class ContrasUpdateView(UpdateView):
+class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     model = Contrasena
     form_class = ContrasenaUForm
     template_name = 'update-cont.html'
     success_url = reverse_lazy('listpass')
+    login_url = 'login'
     
     
     @method_decorator(csrf_exempt)
@@ -262,10 +265,11 @@ class ContrasUpdateView(UpdateView):
         return response
        
 
-class ContrasDeleteView(DeleteView):
+class ContrasDeleteView(LoginRequiredMixin, DeleteView):
     model = Contrasena
     template_name = 'delete-cont.html'
-    success_url = reverse_lazy('listpass')  
+    success_url = reverse_lazy('listpass') 
+    login_url = 'login' 
 
     def form_valid(self, form, *args, **kwargs):
         
@@ -296,11 +300,12 @@ class ContrasDeleteView(DeleteView):
         return context
  
 
-class SectionCreateView(CreateView):
+class SectionCreateView(LoginRequiredMixin, CreateView):
     model = SeccionContra
     form_class = SectionForm
     template_name = 'create-sect.html'
     success_url = reverse_lazy('createpass')
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -327,9 +332,10 @@ class SectionCreateView(CreateView):
         return response
 
 
-class SectionListView(ListView):
+class SectionListView(LoginRequiredMixin, ListView):
     model = SeccionContra
     template_name = 'listsection.html'
+    login_url = 'login'
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -359,11 +365,12 @@ class SectionListView(ListView):
         return context
 
     
-class SectionUpdateView(UpdateView):
+class SectionUpdateView(LoginRequiredMixin, UpdateView):
     model = SeccionContra
     form_class = SectionForm
     template_name = 'update-sect.html'
     success_url = reverse_lazy('listsection')
+    login_url = 'login'
 
     
     def get_context_data(self, **kwargs):
@@ -399,10 +406,11 @@ class SectionUpdateView(UpdateView):
 
         return response
 
-class SectionDeleteView(DeleteView):
+class SectionDeleteView(LoginRequiredMixin, DeleteView):
     model = SeccionContra
     template_name = 'delete-sect.html'
     success_url = reverse_lazy('listsection')
+    login_url = 'login'
     
    
     
@@ -431,10 +439,11 @@ class SectionDeleteView(DeleteView):
         return response 
 
 
-class SectionActiveView(DetailView):
+class SectionActiveView(LoginRequiredMixin, DetailView):
     model = SeccionContra
     template_name = 'active-sect.html'
     success_url = reverse_lazy('listsection')
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
           
