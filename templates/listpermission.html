@@ -47,7 +47,12 @@
 
     <div class="container">
         
-
+        <div>
+            <button class="btn">
+                <a class="btn btn-primary btn-flat" href = {% url "permissionform1" %}>
+                <i class="fas fa-plus"></i> Nuevo Permiso </a>
+            </button>
+        </div>
 
             <table class="table" id="data">
                 <thead class="table-dark">
@@ -86,12 +91,7 @@
 
             </table>
 
-            <div>
-                <button class="btn">
-                    <a class="btn btn-primary btn-flat" href = {% url "permissionform1" %}>
-                    <i class="fas fa-plus"></i> Nuevo Permiso </a>
-                </button>
-            </div>
+          
 
             
         
@@ -103,7 +103,9 @@
 
 <script type="application/javascript">
     $(document).ready(function() {
+        console.log('ejecutando datatable')
         $('#data').DataTable({
+        
             responsive: true,
             autoWidth: false,
             "language": {
@@ -157,7 +159,7 @@
             ]
         });
     });
-</>
+</script>
 
 {% endblock %}
 </body>

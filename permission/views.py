@@ -58,11 +58,12 @@ def gestion_permisos(request, usuario_id):
     usuario = get_object_or_404(CustomUser, id=usuario_id)
     print(f'usuario (gestion permisos): {usuario} ')
     permiso_form = PermisoForm(usuario, request.POST or None)
-
+    contrasena = Contrasena.objects.all()
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
-            for contraseña in Contrasena.objects.all():
+            
+            for contraseña in contrasena:
                 
                 permiso = permiso_form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
                 permissions, _ = ContraPermission.objects.get_or_create(
@@ -76,13 +77,17 @@ def gestion_permisos(request, usuario_id):
 
             # Redirige a donde desees después de guardar los cambios
             messages.success(request,  'los permisos han sido asignados correctamente.')
+            
             return redirect('listpass')
     else:
-        
+        for contra in contrasena:
+            print(f'contraseñas: {contra.usuario}')
         return render(request, 'create-perm-p2.html', {
             'permiso_form': permiso_form,
             'usuario' : usuario,
+            'contraseñas' : contrasena,
         })
+        
 
 """
 class PermissionFormView(FormView):

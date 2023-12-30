@@ -58,5 +58,5 @@ class LogData(models.Model):
         verbose_name = "Log"
         
     def __str__(self):
-        return self.contraseña
+        return str(self.contraseña)
     

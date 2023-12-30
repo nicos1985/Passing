@@ -2,7 +2,7 @@ from collections import OrderedDict
 from django import forms
 from login.models import CustomUser
 from .models import ContraPermission
-from passbase.models import Contrasena
+from passbase.models import Contrasena, LogData
 
 class PermissionUserForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -20,32 +20,38 @@ class PermisoForm(forms.Form):
         
         for contraseña in contraseñas:
             initial_value = False
+            log_contra_user_id = LogData.objects.filter(entidad='Contraseña',contraseña=int(contraseña.id), action='Create').exists() #reviso si existe el log create de la contraseña
 
             permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contraseña).exists()
 
-            if permission_exists:
-                permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
-                initial_value = permission_instance.permission
-                
+            if log_contra_user_id:
 
-                self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
+                log_contra_user_id = LogData.objects.get(entidad='Contraseña',contraseña=int(contraseña.id), action='Create').usuario #traigo usuario creador de contraseña
+
+                if permission_exists:
+                    permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
+                    initial_value = permission_instance.permission
+                    
+                    self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
+                        label=contraseña.nombre_contra,
+                        initial=initial_value,
+                        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion, 'info': contraseña.info, 'usuario': log_contra_user_id} ),
+                        required=False
+                        )
+                
+                else:
+                    self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
                     label=contraseña.nombre_contra,
-                    initial=initial_value,
-                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion}),
+                    initial=False,
+                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion, 'info': contraseña.info, 'usuario': log_contra_user_id} ),
                     required=False
                     )
-               
             else:
-                self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
-                label=contraseña.nombre_contra,
-                initial=False,
-                widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion}),
-                required=False
-                )
-                
+                log_contra_user_id = None    
 
    # Obtén los campos originales
         fields = list(self.fields.items())
+        print(f'fields: {fields}')
       
 
         # Ordena los campos según el atributo 'seccion' del widget
