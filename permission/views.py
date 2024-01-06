@@ -64,8 +64,9 @@ def gestion_permisos(request, usuario_id):
             # Procesa el formulario de permisos y guarda los cambios
             
             for contraseña in contrasena:
-                
-                permiso = permiso_form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
+                default_value = False
+                permiso = permiso_form.cleaned_data.get(f'permiso_{contraseña.nombre_contra}', default_value)
+
                 permissions, _ = ContraPermission.objects.get_or_create(
                     user_id=usuario,
                     contra_id=contraseña
