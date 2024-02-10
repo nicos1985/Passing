@@ -7,8 +7,8 @@
 
     <div class="card center">
             <div class="card-title">
-                <div class="container" style="height: 105px; padding-top: 20px;">
-                    <h2><i class="fas fa-sign-in-alt" ></i> {{title}}</h2>
+                <div class="container" style="height: 85px; padding-top: 20px;">
+                    <h2><i class="fas fa-sign-in-alt" ></i>{{title}}</h2>
                     
                 </div>
             </div>
@@ -18,11 +18,42 @@
 
                     <form class = 'form' method="POST" action=".">
                         {% csrf_token %}
+                        <!-- <div>
+                        <label for = 'id_username'>Nombre de usuario:</label>
+                        <input type='text' class ='form-control' name="'username" id="id_username" style="margin-bottom: 25px;" requided>
+                        <label for = 'id_password'>Contraseña:</label>
+                        <input type='password' class ='form-control' name="'password" id="id_password" style="margin-bottom: 25px;" requided>
+                        </div> -->
 
-                        {{form.as_p}}
+                    <div>
+                        <label for="id_username">Username:</label>
+                        <input type="text" name="username" id="id_username" class="form-control" style="margin-bottom: 25px;">
+                        {% if form.username.errors %}
+                              <ul>
+                         {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                    </div>
+                    <div>
+                        <label for="id_password">Password:</label>
                         
+                        <input type="password" name="password" id="id_password" class="form-control" style="margin-bottom: 25px;">
+
+                        {% if form.password.errors %}
+                            <ul>
+                                {% for error in form.password.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
                         <button type="submit" class="btn btn-primary btn-flat">
                             <i class="fas fa-sign-in-alt"></i> Ingresar
+
+                            
                         </button>
                         &nbsp&nbsp
                         <a href={% url 'password_reset' %}>
