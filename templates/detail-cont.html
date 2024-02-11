@@ -58,7 +58,11 @@
                 <td>{{object.seccion}}</td>
                 <td>{{object.link}}</td>
                 <td>{{object.usuario}}</td>
+                {% if user.is_superuser %}
+                <td>oculto</td>
+                {% else %}
                 <td>{{object.contraseña}}</td>
+                {% endif %}
                 <td>{{object.info}}</td>
                 <td>{{object.created}}</td>
                 {% if last_update < actualizacion %}
@@ -108,7 +112,11 @@
                         <td>{{detail.usuario.username}}</td>
                         <td>{{detail.created}}</td>
                         <td>{{detail.action}}</td>
+                        {% if user.is_superuser %}
+                        <td>Oculto</td>
+                        {% else %}
                         <td>{{detail.password}}</td>
+                        {% endif %}
                         <td>{{detail.detail}}</td>
                       
                     </tr>   
