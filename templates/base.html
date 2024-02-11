@@ -68,9 +68,12 @@
                 {% if request.user.is_authenticated %}
               </div class= "card">
               
-                <a class="nav-link text-center" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;</i></a>
+
+              <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px">
+              <p>&nbsp;&nbsp;&nbsp;</p>
               
                 <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>{{request.user}}&nbsp;&nbsp;&nbsp;</b></a>
+                <a class="nav-link text-center" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></a>
             </div>
 
             {%else%}
