@@ -28,7 +28,12 @@
 
 {% if request.user.is_authenticated %}
     <div class="container">
-        
+        <div>
+            <button class="btn">
+                <a class="btn btn-primary btn-flat" href = "{% url 'createpass' %}">
+                <i class="fas fa-plus"></i> Nueva contraseña </a>
+            </button>
+        </div>
 
 
             <table class="table table-striped table-hover" id="data">
@@ -123,12 +128,7 @@
                     <h2>{{permisos}}</h2>
             </table>
 
-            <div>
-                <button class="btn">
-                    <a class="btn btn-primary btn-flat" href = "{% url 'createpass' %}">
-                    <i class="fas fa-plus"></i> Nueva contraseña </a>
-                </button>
-            </div>
+            
             {% else %}
             <div class="container-fluid text-center">
                 <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para navegar. 

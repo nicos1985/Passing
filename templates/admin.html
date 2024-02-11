@@ -19,33 +19,83 @@
 {% block content %}
 
 {% if not request.user.is_superuser %}
-<div class="container" style="margin-top: 100px">
-    <h5 style="color: darkgrey; margin-top: 100px;">Por favor, necesitas ingresar con un usuario administrador para navegar. 
-        <br>Si no tienes cuenta puedes registrarte.</h5>
-    <div class="row justify-content-center mt-4">
-        
-        <div class="col-sm-12 d-flex justify-content-center">
-            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
+
+
+<div class="container">
+        <div class="row">
+            <h5 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Por favor, necesitas ingresar con un usuario administrador para navegar. 
+                <br>Si no tienes cuenta puedes registrarte.</h5>
         </div>
-        <span></span>
-        <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
+        <div class="row">
+            <h1></h1>
         </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
     
+        <div class="col">
+            <a class="card-text" href="{% url 'login' %}" style = 'text-decoration:none;'>
+                <div class="card mb-2">
+                    <div class="card-body">
+                        
+                            <h4 class="card-title text-center">Login</h4>
+                                
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+            <div class="col">
+                <a class="card-text" href="{% url 'register' %}" style = 'margin-top: 20px; text-decoration:none;'>
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            
+                                <h4 class="card-title text-center">Registrarse</h4>
+                                    
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% elif request.user.is_superuser %}
 
-<div class="container-fluid text-center">
-    <h5 style="color: darkgrey; margin-top:30px;">Configurar email de notificaciones.</h5>
-    <div class="row justify-content-center mt-4">
-        
-        <div class="col-sm-12 d-flex justify-content-center">
-            <a class="btn btn-primary" href="{% url 'update_email_config' %}" style = 'margin-top: 20px;'>Configurar email</a>
+<div class="container">
+    
+    <div class="row">
+        <h5 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Hola {{user.usuername}}, tienes estas opciones para realizar</h5>
+    </div>
+    <div class="row">
+        <h1></h1>
+    </div>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
+
+    <div class="col">
+        <a class="card-text" href="{% url 'update_email_config' %}" style = 'text-decoration:none;'>
+            <div class="card mb-2">
+                <div class="card-body">
+                    
+                        <h4 class="card-title text-center"><i class="fa-solid fa-envelope"></i>&nbsp&nbspConfigurar email</h4>
+                            
+                </div>
+            </div>
+        </a>
+    </div>
+    
+        <div class="col">
+            <a class="card-text" href="{% url 'permissionlist' %}" style = 'margin-top: 20px; text-decoration:none;'>
+                <div class="card mb-2">
+                    <div class="card-body">
+                        
+                            <h4 class="card-title text-center"><i class="fa-solid fa-key"></i>&nbsp&nbspAsignar Permisos</h4>
+                                
+                    </div>
+                </div>
+            </a>
         </div>
-        
     </div>
 </div>
+</div>
+
 {%endif%}
 
 {% endblock %}

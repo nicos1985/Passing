@@ -34,7 +34,7 @@
      
            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-              <a class="navbar-brand" href={% url 'listpass' %}><img src="{% static 'Passing2.png' %}" width="140px" height="45px"></a>
+              <a class="navbar-brand" href="{% url 'listpass' %}"><img src="{% static 'Passing2.png' %}" width="160px" height="51.4px"></a>
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
@@ -42,14 +42,11 @@
                 <ul class="navbar-nav ml-auto">
                   <li class="nav-item">
                     
-                    <a class="nav-link active" href={% url 'listpass' %}><i class="fa-solid fa-house" style="color:white">&nbsp;</i>Inicio
+                    <a class="nav-link active" href="{% url 'listpass' %}"><i class="fa-solid fa-house" style="color:white">&nbsp;</i>Inicio
                       
                     </a>
                   </li>
                   {% if request.user.is_authenticated %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;</i>Logout</a>
-                  </li>
                   {% else %}
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login</a>
@@ -64,18 +61,18 @@
                     <a class="nav-link" href="{% url 'config' %}"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin</a>
                   </li>
                  
-                  {% if request.user.is_superuser %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'permissionlist' %}"><i class="fa-solid fa-key" style="color:white">&nbsp;</i>Permisos</a>
-                  </li>
-                  {%endif%}
+                  
                     </div>
                   </li>
                 </ul>
                 {% if request.user.is_authenticated %}
-              </div>
-              <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>Hola {{request.user}}!</b></a>
+              </div class= "card">
+              
+                <a class="nav-link text-center" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;</i></a>
+              
+                <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>{{request.user}}&nbsp;&nbsp;&nbsp;</b></a>
             </div>
+
             {%else%}
           </div>
           <a class="nav-link" href="{% url 'login' %}" style="color:white"><b>Hola {{request.user}}!</b></a>
