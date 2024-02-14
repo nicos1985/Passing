@@ -9,17 +9,17 @@
 
 
 
-<link rel="stylesheet" href="{% static 'lib/Datatables-1.13.1/css/dataTables.bootstrap5.min.css?n=2' %}">
+<link rel="stylesheet" href="{% static 'lib/Datatables-1.13.1/css/dataTables.bootstrap5.min.css' %}">
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/Buttons-2.4.2/css/buttons.dataTables.min.css'%}">
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/Buttons-2.4.2/css/buttons.bootstrap5.min.css'%}">
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/Responsive-2.4.0/css/responsive.bootstrap5.min.css?n=2' %}">
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/Responsive-2.4.0/css/responsive.bootstrap5.min.css' %}">
 
 <!--DataTables-->  
 <script src="{% static 'lib\jQuery\jquery.min.js' %}"></script>
-<script src="{% static 'lib\DataTables-1.13.1\js\jquery.dataTables.js?n=2' %}"></script>
-<script src="{% static 'lib\DataTables-1.13.1\js\dataTables.bootstrap5.min.js?n=2' %}"></script>
-<script src="{% static 'lib\DataTables-1.13.1\plugins\Responsive-2.4.0\js\dataTables.responsive.min.js?n=2' %}"></script>
-<script src="{% static 'lib\DataTables-1.13.1\plugins\Responsive-2.4.0\js\responsive.bootstrap5.min.js?n=2' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\js\jquery.dataTables.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\js\dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\plugins\Responsive-2.4.0\js\dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib\DataTables-1.13.1\plugins\Responsive-2.4.0\js\responsive.bootstrap5.min.js' %}"></script>
 
 <!--botones de DataTables--> 
 <script src="{% static 'lib\DataTables-1.13.1\Buttons-2.4.2\js\dataTables.buttons.min.js' %}"></script>
@@ -109,7 +109,7 @@
             responsive: true,
             autoWidth: false,
             "language": {
-                url: "{% static 'lib/datatables-1.13.1/spanish.txt' %}"
+                url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
             },
             order: [[0, 'asc']],  // Ordena la tabla por 'user_id'
             rowGroup: {
