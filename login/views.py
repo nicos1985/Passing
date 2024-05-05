@@ -51,14 +51,17 @@ class LoginFormView(LoginView):
 
     def get_context_data(self, **kwargs):
           
-          context = super().get_context_data(**kwargs)
-          context['title'] = 'Login'
-          context['entity'] = 'Ingreso'
-          context['list_url'] = reverse_lazy('listpass')
-          context['action'] = 'login'
-            
-          return context
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Login'
+        context['entity'] = 'Ingreso'
+        context['list_url'] = reverse_lazy('listpass')
+        context['action'] = 'login'
+          
 
+        
+
+        return context
+    
 
 
 class LogoutFormView(LogoutView):
