@@ -35,7 +35,7 @@
             {% if user_profile.avatar %}
                 <img class="rounded-circle" src="{% get_media_prefix %}static/{{user_profile.avatar}}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
             {% else %}
-                <img class="rounded-circle" src="{% media 'default-avatar.jpg' %}" alt="Default Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% get_media_prefix %}static/'default-avatar.jpg'" alt="Default Avatar" width="125" height="125">
             {% endif %}
             </div>
         </div>
