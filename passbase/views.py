@@ -132,6 +132,8 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         dias_actual_contrasena = Contrasena.objects.get(id=self.kwargs['pk']).actualizacion
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'],permission=True)
+        print(users_permissions)
         try:
             fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
             fecha_hoy = timezone.now()
@@ -148,6 +150,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
             context['log_data'] = log_data
             context['last_update'] = cant_dias
             context['actualizacion'] = dias_actual_contrasena
+            context['users_permisions'] = users_permissions
 
         else:
             context['log_data'] = None

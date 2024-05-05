@@ -14,5 +14,8 @@ class ContraPermission(models.Model):
     def Meta():
         verbose_name = "Permiso"
         verbose_name_plural= "Permisos"
+
+    def __str__(self):
+        return str(self.user_id.username)
         
     
