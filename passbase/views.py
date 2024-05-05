@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -133,13 +133,13 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         dias_actual_contrasena = Contrasena.objects.get(id=self.kwargs['pk']).actualizacion
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'],permission=True)
-        print(users_permissions)
+        
         try:
             fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
             fecha_hoy = timezone.now()
             diferencia = fecha_hoy - fecha_ult_up_pass
             cant_dias = diferencia.days 
-            print(f'cantidad de dias: {cant_dias}')
+            
         except:
             fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'Create').order_by('-created').first().created
             fecha_hoy = timezone.now()
@@ -476,3 +476,18 @@ class SectionActiveView(LoginRequiredMixin, DetailView):
         messages.success(request,  f'La {self.model.__name__} ha sido activada exitosamente.')
 
         return redirect('listsection')
+
+
+class DescargarArchivo(DetailView):
+    model = Contrasena
+    template_name = 'filedownload.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not self.object.file:
+            raise Http404("No se encontró el archivo asociado a esta contraseña.")
+
+        archivo = self.object.file
+        response = HttpResponse(archivo, content_type='application/octet-stream')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(archivo.name)
+        return response

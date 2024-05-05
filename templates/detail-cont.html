@@ -44,6 +44,7 @@
                 <th scope="col">Usuario</th>
                 <th scope="col">Contraseña</th>
                 <th scope="col">Info</th>
+                <th scope="col">Adjunto</th>
                 <th scope="col">Created</th>
                 <th scope="col">Desde ult. cambio</th>
 
@@ -64,6 +65,11 @@
                 <td>{{object.contraseña}}</td>
                 {% endif %}
                 <td>{{object.info}}</td>
+                {%if object.file%}
+                <td><a href="{% url 'downloadfile' object.id %}">{{object.file}}</a></td>
+                {% else %}
+                <td>-</td>
+                {% endif %}
                 <td>{{object.created}}</td>
                 {% if last_update < actualizacion %}
                 

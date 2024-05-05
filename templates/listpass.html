@@ -109,15 +109,21 @@
                         </td>
 
                         {% if user.is_superuser %}
-                            <td style= 'width:100px;'>
+                            <td style= 'width:120px;'>
                                 <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
                                 <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
                             </td>
                         {% else %}
-                            <td style= 'width:100px;'>
+                            <td style= 'width:120px;'>
                                 <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
                                 <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
                                 <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
+                                {% if contra.file %}
+                                <a href="{% url 'downloadfile' contra.id %}"><i class="fas fa-download" style="margin-right:10px; text-decoration-line: none; color: rgb(7, 10, 26);"></i></a>
+
+                                {% else %}
+                                <a href="#"><i class="fas fa-download" style="margin-right:10px; text-decoration-line: none; color: rgb(198, 198, 198);"></i></a>
+                                {% endif %}
                             </td>
                         {% endif %}
                         </tr>

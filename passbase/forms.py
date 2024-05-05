@@ -51,6 +51,11 @@ class ContrasenaForm(ModelForm):
                     'placeholder' : 'Ingrese informacion adicional',
                     'row':'2' 
                 }),
+            'file': FileInput(
+                attrs={
+                    'placeholder' : 'Suba un archivo',
+                     
+                }),
             'active': RadioSelect(
                 attrs={ 
                 })      

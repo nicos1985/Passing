@@ -30,6 +30,7 @@ class Contrasena(models.Model):
     contraseña = models.CharField(max_length=60)
     actualizacion= models.PositiveSmallIntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
     info = models.CharField(max_length=260)
+    file = models.FileField(blank=True, null=True, upload_to='contra_files/')
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
