@@ -33,9 +33,9 @@
     <div class='container'>
         <div class="profile-image-container">
             {% if user_profile.avatar %}
-                <img class="rounded-circle" src="{{ MEDIA_URL }}static/{{user_profile.avatar }}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% media static/{{user_profile.avatar }} %}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
             {% else %}
-                <img class="rounded-circle" src="{{ MEDIA_URL }}static/default-avatar.jpg" alt="Default Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% media static/default-avatar.jpg %}" alt="Default Avatar" width="125" height="125">
             {% endif %}
             </div>
         </div>
