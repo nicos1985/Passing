@@ -491,3 +491,12 @@ class DescargarArchivo(DetailView):
         response = HttpResponse(archivo, content_type='application/octet-stream')
         response['Content-Disposition'] = 'attachment; filename={}'.format(archivo.name)
         return response
+    
+
+def denypermission(request, pk):
+    permission = ContraPermission.objects.get(id=pk)
+    print(f'permission: {permission.id}')
+    permission.permission = False
+    permission.save()
+    messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
+    return redirect(request.META.get('HTTP_REFERER', '/'))
