@@ -68,11 +68,11 @@
                 {% if request.user.is_authenticated %}
               </div class= "card">
               
-              
+              {% if request.user.avatar %}
               <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px">
-              
+              {% else %}
               <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px">
-              
+              {% endif %}
               <p>&nbsp;&nbsp;&nbsp;</p>
               
                 <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>{{request.user}}&nbsp;&nbsp;&nbsp;</b></a>
