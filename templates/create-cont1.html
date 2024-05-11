@@ -1,0 +1,128 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<body>
+<div class="container pt-5" >
+    <div class="row">
+        <div class="col-md-5 mx-auto"> 
+    
+            <div class="card-title" >
+                <div class="container" style="height: 105px; padding-top: 20px;"style="background-color: #F7F7F7 ;">
+                    <h2><i class="fas fa-plus" ></i> {{title}}</h2>
+                    <button class="btn">
+                        <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                    <form method="POST" action="{% url 'createpass' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {{form.errors}}
+                        
+
+                        <div class="form-group">
+
+                            <label for="nombre_contra" style="margin-top:20px;">Nombre de Contraseña: </label>
+                            <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" style="margin-top:5px;" required>
+                            
+
+                            <label for="seccion" style="margin-top:20px;">Sección:</label>
+
+                            <div class="input-group">
+                            
+                                <select name="seccion" placeholder="Elija la seccion" class="form-control" autocomplete="off" style="margin-top:5px;" required="" id="id_seccion">
+                                  {% for section in sections %}
+                                  <option value = {{section.id}}> {{section.nombre_seccion}} </option>
+                                  {% endfor %}
+                                     
+                                </select>
+                                <a class="btn btn-primary center" href={% url 'createsection' %}><i class="fas fa-plus" style="margin-top:5px;"></i></a> 
+
+                            </div>
+
+                            <label for="link" style="margin-top:20px;">Link: </label>
+                            <input id="link" type="text" class='form-control' name="link" maxlength="100" style="margin-top:5px;" required>
+
+                            <label for="usuario" style="margin-top:20px;">Usuario: </label>
+                            <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" style="margin-top:5px;" required>
+
+                            <label for="contraseña" style="margin-top:20px;">Contraseña: </label>
+                            <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" style="margin-top:5px;" required>
+
+                            <label for="actualizacion" style="margin-top:20px;">Actualizacion: </label>
+                            <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="Ingrese solo números positivos" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
+
+                            <label for="info"style="margin-top:20px;">Info: </label>
+                            <input id="info" type="textarea" class='form-control' name="info" maxlength="100"style="margin-top:5px;" required>
+
+                            <label for="file"style="margin-top:20px;">Archivo: </label>
+                            <input id="file" type="file" class='form-control' name="file" maxlength="100"style="margin-top:5px;">
+                        </div>
+
+                            <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
+                                <i class="fas fa-save"></i> Guardar registro
+                            </button>
+
+                        </div> 
+                    </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+    <button id="toggleParamsBtn"><i class="fa-solid fa-circle-chevron-down"></i></button>
+<form id="parametrosForm">
+    <div id="parametrosInputs">
+        <label for="longitud">Longitud:</label>
+        <input type="number" id="longitud" name="longitud" value="12" min="6" max="32"><br>
+        <label><input type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> Incluir mayúsculas</label><br>
+        <label><input type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> Incluir minúsculas</label><br>
+        <label><input type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> Incluir números</label><br>
+        <label><input type="checkbox" id="incluirSimbolos" name="incluirSimbolos"> Incluir símbolos</label><br>
+    </div>
+</form>
+<button id="generarContrasenaBtn"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+<div id="contrasenaGenerada"></div>
+        
+        
+</div>
+</body>
+
+<script>
+    document.getElementById('toggleParamsBtn').addEventListener('click', function() {
+        var parametrosInputs = document.getElementById('parametrosInputs');
+        parametrosInputs.style.display = parametrosInputs.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.getElementById('generarContrasenaBtn').addEventListener('click', function() {
+        // Obtener los valores de los parámetros
+        const longitud = document.getElementById('longitud').value;
+        const incluirMayusculas = document.getElementById('incluirMayusculas').checked;
+        const incluirMinusculas = document.getElementById('incluirMinusculas').checked;
+        const incluirNumeros = document.getElementById('incluirNumeros').checked;
+        const incluirSimbolos = document.getElementById('incluirSimbolos').checked;
+    
+        // Generar la contraseña en el frontend
+        var caracteresPermitidos = '';
+        if (incluirMayusculas) caracteresPermitidos += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (incluirMinusculas) caracteresPermitidos += 'abcdefghijklmnopqrstuvwxyz';
+        if (incluirNumeros) caracteresPermitidos += '0123456789';
+        if (incluirSimbolos) caracteresPermitidos += '!@#$%^&*()_+={}[]|:;"<>,.?/~';
+    
+        var contrasenaGenerada = '';
+        for (var i = 0; i < longitud; i++) {
+            var randomIndex = Math.floor(Math.random() * caracteresPermitidos.length);
+            contrasenaGenerada += caracteresPermitidos.charAt(randomIndex);
+        }
+    
+        // Mostrar la contraseña generada
+        document.getElementById('contrasenaGenerada').innerText = 'Contraseña generada: ' + contrasenaGenerada;
+    });
+</script>
+
+{% endblock %}
+

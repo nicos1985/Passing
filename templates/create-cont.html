@@ -9,7 +9,7 @@
     
             <div class="card-title" >
                 <div class="container" style="height: 105px; padding-top: 20px;"style="background-color: #F7F7F7 ;">
-                    <h2><i class="fas fa-plus" ></i> {{title}}</h2>
+                    <h2><i class="fas fa-plus" ></i>{{title}}</h2>
                     <button class="btn">
                         <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
                     </button>
@@ -39,7 +39,7 @@
                                   {% endfor %}
                                      
                                 </select>
-                                <a class="btn btn-primary center" href={% url 'createsection' %}><i class="fas fa-plus" style="margin-top:5px;"></i></a> 
+                                <a class="btn btn-primary center" href="{% url 'createsection' %}"><i class="fas fa-plus" style="margin-top:5px;"></i></a> 
 
                             </div>
 
@@ -49,8 +49,45 @@
                             <label for="usuario" style="margin-top:20px;">Usuario: </label>
                             <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="contraseña" style="margin-top:20px;">Contraseña: </label>
-                            <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" style="margin-top:5px;" required>
+                           <!-- Aqui está el generador de contraseñas -->
+                            <div class="card text-bg-light" style="margin-top:10px;">
+
+                                <div class="card-header" style="display:flex; justify-content: space-between;">Genera una Contraseña
+                                    <button type="button" class="btn btn-flat" id="toggleParamsBtn" title="Opciones" ><i class="fa-solid fa-circle-chevron-down" style="color:rgb(11, 094, 215)"></i></button>
+                                </div>
+
+                                <div class="card-body">
+
+                                    
+                                        <div id="parametrosInputs" style="display:none; justify-content: flex;">
+                                            
+                                            <label for="longitud">Longitud:</label>
+                                            <input class="form-control" type="number" id="longitud" name="longitud" value="12" min="6" max="32"><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> Incluir mayúsculas</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> Incluir minúsculas</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> Incluir números</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirSimbolos" name="incluirSimbolos"> Incluir símbolos</label><br>
+                                            <button type="button" class="btn btn-primary btn-flat" style="margin-top:10px;" title="Generar contraseña" id="generarContrasenaBtn">Generar
+                                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                            </button>
+                                        </div>
+                                        
+                                    
+                                    
+                                </div>
+                            </div>
+                            <!-- Aqui termina el generador de contraseñas -->
+                            <div class= 'input group'>
+                                <label for="contraseña" style="margin-top:7px;">Contraseña: </label>
+                                
+
+                                <div class="input-group mb-3">
+                                    <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" required>
+                                    <button class="btn btn-outline-primary" type="button" id="passwordToggle">
+                                        <i class="fas fa-eye toggle-password-icon" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
 
                             <label for="actualizacion" style="margin-top:20px;">Actualizacion: </label>
                             <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="Ingrese solo números positivos" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
@@ -61,7 +98,7 @@
                             <label for="file"style="margin-top:20px;">Archivo: </label>
                             <input id="file" type="file" class='form-control' name="file" maxlength="100"style="margin-top:5px;">
                         </div>
-
+                            
                             <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
                                 <i class="fas fa-save"></i> Guardar registro
                             </button>
@@ -74,9 +111,88 @@
     </div>
 
 
-        
+
+
         
         
 </div>
 </body>
+
+<script>
+    document.getElementById('toggleParamsBtn').addEventListener('click', function() {
+        event.preventDefault(); // Prevenir el envío del formulario interno
+        var parametrosInputs = document.getElementById('parametrosInputs');
+        parametrosInputs.style.display = parametrosInputs.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.getElementById('generarContrasenaBtn').addEventListener('click', function() {
+        // Obtener los valores de los parámetros
+        const longitud = document.getElementById('longitud').value;
+        const incluirMayusculas = document.getElementById('incluirMayusculas').checked;
+        const incluirMinusculas = document.getElementById('incluirMinusculas').checked;
+        const incluirNumeros = document.getElementById('incluirNumeros').checked;
+        const incluirSimbolos = document.getElementById('incluirSimbolos').checked;
+    
+        // Generar la contraseña en el frontend
+        var caracteresPermitidos = '';
+        if (incluirMayusculas) caracteresPermitidos += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (incluirMinusculas) caracteresPermitidos += 'abcdefghijklmnopqrstuvwxyz';
+        if (incluirNumeros) caracteresPermitidos += '0123456789';
+        if (incluirSimbolos) caracteresPermitidos += '!@#$%^&_+=|:"<>?/~';
+    
+        var contrasenaGenerada = '';
+        for (var i = 0; i < longitud; i++) {
+            var randomIndex = Math.floor(Math.random() * caracteresPermitidos.length);
+            contrasenaGenerada += caracteresPermitidos.charAt(randomIndex);
+        }
+    
+        // Mostrar la contraseña generada
+        document.getElementById('contraseña').setAttribute('value', contrasenaGenerada);
+
+        // Copiar la contraseña al portapapeles
+        navigator.clipboard.writeText(contrasenaGenerada)
+        .then(() => {
+            console.log('Contraseña copiada al portapapeles.');
+            mostrarMensajeTemporal('Contraseña copiada', 2000);
+        })
+        .catch(err => {
+            console.error('Error al copiar la contraseña al portapapeles:', err);
+        });
+    });
+    function mostrarMensajeTemporal(mensaje, duracion) {
+        var mensajeDiv = document.createElement('div');
+        mensajeDiv.textContent = mensaje;
+        mensajeDiv.style.position = 'fixed';
+        mensajeDiv.style.top = '10px';
+        mensajeDiv.style.left = '50%';
+        mensajeDiv.style.transform = 'translateX(-50%)';
+        mensajeDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        mensajeDiv.style.color = 'white';
+        mensajeDiv.style.padding = '10px';
+        mensajeDiv.style.borderRadius = '5px';
+        mensajeDiv.style.zIndex = '9999';
+        document.body.appendChild(mensajeDiv);
+
+        setTimeout(function() {
+            mensajeDiv.parentNode.removeChild(mensajeDiv);
+        }, duracion);
+    }
+</script>
+<script>
+    const inputPassword = document.getElementById("contraseña");
+    const iconEye = document.getElementById("eyeIcon");
+
+    iconEye.addEventListener('click', function() {
+        if (inputPassword.type === 'password') {
+            inputPassword.type = 'text';
+            iconEye.classList.remove('fa-eye');
+            iconEye.classList.add('fa-eye-slash');
+        } else {
+            inputPassword.type = 'password';
+            iconEye.classList.remove('fa-eye-slash');
+            iconEye.classList.add('fa-eye');
+        }
+    });
+</script>
 {% endblock %}
+

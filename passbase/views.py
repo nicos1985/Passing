@@ -1,14 +1,11 @@
-from typing import Any
-
-from django.http import Http404, HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import RedirectView
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
@@ -500,3 +497,5 @@ def denypermission(request, pk):
     permission.save()
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+

@@ -18,4 +18,5 @@ urlpatterns = [
     path('downloadfile/<int:pk>', DescargarArchivo.as_view(), name='downloadfile'),
     path('denypermission/<int:pk>', denypermission, name='denypermission'),
     
+    
 ]
