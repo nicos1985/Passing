@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'login',
     'permission',
     'debug_toolbar',
+    'notifications',
     
 ]
 
