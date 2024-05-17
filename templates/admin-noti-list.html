@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 {% extends 'base.html'%}
 
@@ -14,14 +13,13 @@
 <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-<!-- colReorder -->
-<script src="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css"></script>
-<script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
 
 {% endblock %}
 
 {% block content %}
-<body>
+
+
+
 <div class="container" style="height: 60px;">
     <h2>Notificaciones</h2>
 </div>
@@ -29,194 +27,49 @@
 {% if request.user.is_authenticated %}
 
 
-            <table class="table table-striped table-hover" id="data">
-                <thead class="table-dark">
-                    <tr >
-                        <th scope="col">Notificacion</th>
-                        <th scope="col">Objeto</th>
-                        <th scope="col">Usuario</th>
-                        <th scope="col">Accion</th>
-                        <th scope="col">a usuario</th>
-                        <th scope="col">Comentario</th>
-                        
-                        
-            
-                    </tr>
-                    
-                </thead>
 
-                <tbody>
-                    {% for contra in query_perm %}
-                    
-                    <tr>
-                        <td><b>{{ contra.nombre_contra}}</b></td>
-
-                                        
-                          
-                        <td>{{ contra.seccion }}</td>
-                        <td>
-                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title={{contra.link}}>{{ contra.link|truncatechars:30 }}</a>
-                        </td>
-                        <td>{{ contra.usuario }}</td>
-                        <td>
-                            <div style="display: flex; align-items: center;">
-                                {% if user.is_superuser %}
-                                <input type='password' id="passwordField{{ contra.id }}" value="" style="flex: 1; border: none;" disabled >
-                               
-                                {% else %}
-                                <input type='password' id="passwordField{{ contra.id }}" value="{{ contra.contraseña }}" style="flex: 1; border: none;" disabled >
-                                <i class="fas fa-eye toggle-password-icon" data-password-field="passwordField{{ contra.id }}" title="Ver contraseña" style="cursor: pointer; color: rgb(68, 94, 200);"></i>
-                                <span>&nbsp&nbsp
-                                </span>
-                                <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" title="Copiar Contraseña" style="cursor: pointer;"></i> 
-                                <span>&nbsp&nbsp
-                                </span>
-                                <i class="fa-solid fa-check" id="globoDeTextopasswordField{{ contra.id }}" style="display: none; color: green;"></i>
-                                {% endif %}
-                            </div>
-                            </div>
-    
-                        </td>
-
-                        {% if request.user.is_superuser %}
-                            <td style= 'width:120px;'>
-                                <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" title="Eliminar contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
-                                <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" title="Detalle" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
-                            </td>
-                        {% else %}
-                            <td style= 'width:150px;'>
-                                <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" title="Editar Contraseña" style="margin-right:10px; text-decoration-line: none; color: #EFA400;"></i></a>
-                                <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" title="Eliminar contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(216, 48, 48);"></i></a>
-                                <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" title="Detalle" style="margin-right:10px; text-decoration-line: none; color: rgb(68, 94, 200);"></i></a>
-                                {% if contra.file %}
-                                <a href="{% url 'downloadfile' contra.id %}"><i class="fas fa-download" title="Descargar adjunto" style="margin-right:10px; text-decoration-line: none; color: rgb(7, 10, 26);"></i></a>
-                                <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(28, 49, 167);"></i></a>
-                                {% else %}
-                                <a href="#"><i class="fas fa-download" style="margin-right:10px; text-decoration-line: none; color: rgb(198, 198, 198);"></i></a>
-                                <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(28, 49, 167);"></i></a>
-                                {% endif %}
-                            </td>
-                        {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-                
-                
-                    <h2>{{permisos}}</h2>
-            </table>
-
-            
-            {% else %}
-            <div class="container-fluid text-center">
-                <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para navegar. 
-                    <br>Si no tienes cuenta puedes registrarte.</h5>
-                <div class="row justify-content-center mt-4">
-                    
-                    <div class="col-sm-12 d-flex justify-content-center">
-                        <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
-                    </div>
-                    <span></span>
-                    <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-                        <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
-                    </div>
-                
-                </div>
-            </div>
-            {% endif %}
-            
+<div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= "{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i>  Lista</a>
+    </button>
+</div>
+<div>
+    <div class="container">
+    <table class="table" id="data">
+        <thead class="table-dark">
         
+            <tr >
+
+                <th scope="col">Nombre Contraseña</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Usuario a permitir</th>
+                <th scope="col">Comentario</th>
+                <th scope="col">Accion</th>
+                
+            </tr>
+
+
+        </thead>
+
+        <tbody>
+            {% for object in notifications %}
+            <tr>
+
+                <td>{{object.id_contrasena.nombre_contra}}</td>
+                <td>{{object.id_user}}</td>
+                <td>{{object.id_user_share.username}}</td>
+                <td>{{object.comment}}</td>
+                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id %}">{{object.action}}</a></td>
+                
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
     </div>
+</div>
+     
+          
+{% endif %}
+
 
 {% endblock %}
-
-
-{% block javascript %}
-
-<script type="application/javascript">
-    $(document).ready(function () {
-        
-        $('#data').DataTable({
-            responsive: true,
-            colReorder: true,
-            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
-            
-            autoWidth: false,
-            "language": {
-                url : "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
-            }
-        });
-    
-              /*.fail(function(jqXHR, textStatus, thrownError ) {
-                alert(textStatus +' : ' + thrownError );
-              })
-              .always(function(data) {
-                
-              });*/
-
-        });
-
-
-</script>
-
-<script>
-    
-    document.querySelectorAll('.toggle-password-icon').forEach(function(icon) {
-        icon.addEventListener('click', function() {
-            const passwordFieldId = icon.getAttribute('data-password-field');
-            const passwordField = document.getElementById(passwordFieldId);
-
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                icon.classList.remove('fa-eye');
-                console.log('habilita contra');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordField.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
-    });
-</script>
-
-    <script>
-   document.querySelectorAll('.copy-icon').forEach(function(icon) {
-    icon.addEventListener('click', function() {
-        console.log('Icon clicked');
-        var copyTargetId = icon.getAttribute('data-copy-target');
-        var copyTarget = document.getElementById(copyTargetId);
-        var checkTargetId = icon.getAttribute('data-copy-target');
-        var balloon = document.getElementById('globoDeTexto'+copyTargetId); // Selección del globo de texto
-        
-        // Seleccionar el contenido del campo de entrada
-        copyTarget.disabled = false;
-        copyTarget.type = 'text';
-        copyTarget.select(); // Para dispositivos móviles
-    
-        // Intentar copiar al portapapeles dentro de la función de callback
-        document.execCommand('copy');
-        console.log('Copied');
-        
-        // Mostrar el globo de texto
-        balloon.style.display = 'inline-block';
-        setTimeout(function() {
-            balloon.style.display = 'none';
-        }, 3000); // Ocultar el globo después de 3 segundos
-        
-        // Deseleccionar el campo de entrada
-        copyTarget.type = 'password';
-        copyTarget.disabled = true;
-        copyTarget.blur();
-        console.log('Unselect');
-    });
-});
-
-    
-
-</script>
-
-
-            
-{% endblock %}
-</body>
-</html>

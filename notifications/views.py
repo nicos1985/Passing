@@ -7,6 +7,7 @@ from django.views.generic import CreateView, ListView, UpdateView, DeleteView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from passbase.models import Contrasena
+from permission.models import ContraPermission
 
 
 # Create your views here.
@@ -53,11 +54,16 @@ def share_contrasena_form(request, contrasena):
 class ListNotificationsUser():
     pass
 
-class ListNotificationsAdmin():
-    pass
+
+class ListNotificationsAdmin(LoginRequiredMixin, ListView):
+    model = AdminNotification
+    template_name = 'admin-noti-list.html'
+    context_object_name = 'notifications'
+    login_url = 'login'
 
 class UpdateNotificationsUser():
     pass
 
 class UpdateNotificationsAdmin():
     pass
+

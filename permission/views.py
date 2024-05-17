@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django import forms
 from django.urls import reverse
@@ -90,78 +91,20 @@ def gestion_permisos(request, usuario_id):
         })
         
 
-"""
-class PermissionFormView(FormView):
+def grant_permission(request, id_cont, id_user_share):
+    # Obtener o crear el objeto de permiso
+    contrasena = Contrasena.objects.get(id=id_cont)
+    user_share = CustomUser.objects.get(id=id_user_share)
+    permission_obj, created = ContraPermission.objects.get_or_create(
+        user_id=user_share, 
+        contra_id=contrasena,
+        defaults={'permission': True, 'perm_active': True}
+    )
     
-    template_name = 'create-perm-p2.html'
-    form_class = PermissionForm
-    
-    def get_initial(self):
-        # Obten el objeto request de la redirección
-        request = self.request
-        return {'request': request}  # Esto inicializa el campo 'request' en Form2
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['usuario'] = CustomUser.objects.filter(id = 1) 
-        kwargs['contraseñas'] = Contrasena.objects.filter(active=True)
-        
-        return kwargs
-    
-  
-    # def get_form(self, form_class=None):
-    #     # Recuperar el usuario seleccionado de la sesión
-    #     usuario_id = self.request.session.get('usuario_seleccionado_id')
-        
-    #     # Recuperar los valores de la base de datos correspondientes al usuario
-    #     permisos_usuario = ContraPermission.objects.filter(user_id=usuario_id)
-        
-    #     # Pasar los valores recuperados al formulario
-    #     form = super().get_form(form_class)
-    #     for contraseña in contraseñas:
-    #         self.fields[contraseña.nombre_contra] = forms.BooleanField(required=False, initial=contraseña.permission)
-        
-    #     return form
-    
-
-    def form_valid(self, form):
-
-        print('estoy pasando por form valid FORM 2')
-        contraseñas = self.get_form_kwargs().get('contraseñas', None) #recupera las contraseñas Activas de kwargs
-        if contraseñas is not None:
-             usuario_id = self.get_form_kwargs().get('usuario', None) #obtengo el usuario del formulario
-
-             for contraseña in contraseñas: #recorro cada contraseña y filtro los permisos dados. 
-                 valor = form.cleaned_data[f'permiso_{contraseña.nombre_contra}']
-                 print(f'valor: {valor}')
-                 permiso = ContraPermission.objects.filter(id=168).first()
-                 print(f'objetos permisos : {permiso}')
-
-                 if permiso is not None:
-                    
-                     print(f'update: {contraseña} = {valor}')
-                     permiso.update(permission=valor) #si existe el permiso, le doy el valor del formulario (actualiza)
-                    
-                 else:    # si no existe el permiso de esa contraseña, lo creo con los valores dados en el form. 
-                     print('crea objeto sin query')
-                     ContraPermission.objects.create(contra_id=contraseña, user_id=usuario_id, permission=valor)
-        return redirect('listpass')
-    
-    
-    
-class PermissionUserFormView(FormView):
-
-    template_name = 'create-perm-p1.html'
-    form_class = PermissionUserForm
-
-    def form_valid(self, request, form):
-        # Almacenar el usuario seleccionado en la sesión
-        usuario = form.cleaned_data['usuario']
-        print(f"usuario de sesion: {usuario}")
-        usuario_id = usuario.id
-
-        # Resto de la lógica del formulario PermissionUserForm
-        return redirect('permissionform2', usuario=usuario_id)  # Usa el nombre de la URL
-        
-    
-"""
+    # Si el objeto ya existía, actualizar el campo 'permission'
+    if not created:
+        permission_obj.permission = True
+        permission_obj.save()  # Guardar los cambios en la base de datos
+    message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
+    # Redirigir a la vista 'listpass'
+    return render(request, template_name='admin-noti-list.html', context={'message': message })
