@@ -9,7 +9,8 @@ class PermissionUserForm(forms.Form):
         
         super(PermissionUserForm, self).__init__(*args, **kwargs)
         
-        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.objects.all(), widget=forms.Select(attrs={'class': 'form-select'}))
+        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.objects.filter(is_active=True), 
+                                                        widget=forms.Select(attrs={'class': 'form-select'}))
         
 
 class PermisoForm(forms.Form):

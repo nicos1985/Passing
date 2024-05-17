@@ -57,9 +57,7 @@ def seleccionar_usuario(request):
 
 @user_passes_test(is_administrator)
 def gestion_permisos(request, usuario_id):
-    print(f'usuario_id (gestion permisos): {usuario_id} ')
     usuario = get_object_or_404(CustomUser, id=usuario_id)
-    print(f'usuario (gestion permisos): {usuario} ')
     permiso_form = PermisoForm(usuario, request.POST or None)
     contrasena = Contrasena.objects.all()
     if request.method == 'POST':
