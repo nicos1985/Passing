@@ -7,5 +7,5 @@ urlpatterns = [
     path('permissionlist',PermissionListView.as_view(), name='permissionlist'),
     path('permissionform1/',seleccionar_usuario, name='permissionform1'),
     path('permissionform2/<int:usuario_id>',gestion_permisos, name='permissionform2'),
-    path('grantperm/<int:id_cont>/<int:id_user_share>/', grant_permission, name='grantperm'),
+    path('grantperm/<int:id_cont>/<int:id_user_share>/<int:id_noti>', grant_permission, name='grantperm'),
 ]

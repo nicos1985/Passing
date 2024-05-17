@@ -56,13 +56,25 @@
             {% for object in notifications %}
             <tr>
 
-                <td>{{object.id_contrasena.nombre_contra}}</td>
+                <td>
+                    {% if object.viewed == False %}
+                    <i class="fas fa-circle-exclamation" style="color:rgba(255, 234, 43, 0.918); font-size: 12px;"></i>
+                    {{object.id_contrasena.nombre_contra}}
+                    {%else%}
+                    <i class="fas fa-circle-exclamation" style="color:rgba(255, 255, 255, 0.918); font-size: 12px;"></i>
+                    {{object.id_contrasena.nombre_contra}}
+                    {%endif%}
+                </td>
                 <td>{{object.id_user}}</td>
                 <td>{{object.id_user_share.username}}</td>
                 <td>{{object.comment}}</td>
-                <td>{{object.created|date:"d/m/y H:i"}}</td>
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200);"></i></a></td>
                 
+                <td>{{object.created|date:"d/m/y H:i"}}</td>
+                {% if object.viewed == False %}
+                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></a></td>
+                {% else %}
+                <td><a href="#" disabled><i class ="fas fa-arrows-to-eye" style="color:rgb(121, 121, 121);"></i></a></td>
+                {%endif%}
             </tr>
             {% endfor %}    
         </tbody>
