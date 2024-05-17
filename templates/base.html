@@ -26,9 +26,39 @@
            {% block head %}
 
             {% endblock %}
+            <style>
+    .icono-campana {
+      position: relative;
+      display: inline-block;
+    }
+    .icono-campana i {
+      font-size: 23px; /* Tamaño del icono de la campana */
+    }
+
+    .numero {
+      position: absolute;
+      top: -4px;
+      right: 0px;
+      background-color: rgb(173, 11, 11);
+      color: rgb(255, 255, 255);
+      border-radius: 50%;
+      width: 14px; /* Asegura que el ancho sea igual a la altura */
+      height: 14px; /* Asegura que la altura sea igual al ancho */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 3px;
+      font-size: 10px;
+      
+    }
+
+    
+  </style>
         </head>
+        
     
         <body>
+
 
     <div class="">
      
@@ -47,6 +77,7 @@
                     </a>
                   </li>
                   {% if request.user.is_authenticated %}
+
                   {% else %}
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login</a>
@@ -57,13 +88,15 @@
                   
                   {%endif%}
 
+                  {% if request.user.is_superuser %}
+
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'config' %}"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'listnotifadmin' %}"><i class="fa-solid fa-bell" style="color:white">&nbsp;</i>Notificaciones</a>
-                  </li>
-                 
+                  
+                  {% else %}
+                  
+                  {%endif%}
                   
                     </div>
                   </li>
@@ -71,6 +104,19 @@
                 {% if request.user.is_authenticated %}
               </div class= "card">
               
+              <li class="nav-item" style="margin-bottom: 20px;">
+                <a href="{% url 'listnotifadmin' %}">
+                <div class ="icono-campana">
+                  
+                <i class="fa-solid fa-bell" style="color:white">&nbsp;</i>
+                {% if contador_notis != 0 %}
+                <span class="numero">{{contador_notis}}</span>
+                {% else %}
+                {%endif%}
+                <div>
+                </a>
+              </li>
+            
               {% if request.user.avatar %}
               <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px">
               {% else %}
@@ -90,24 +136,15 @@
           </nav>
         
          <div class = ''> 
-          {% if message.tags == 'success' %}
-          {% for message in messages %}
-              <div class= "alert alert-{{ message.tags }}" role="alert">
-                  {{ message }}
-                  
-              </div>
-          {% endfor %}
-
-          {%else%}
-          {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}" role="alert">
-                  {{ message }}
-                  
-              </div>
-          {% endfor %}
-
-          {% endif %}
           
+          {% if messages %}
+          {% for message in messages %}
+              <div class= "alert {{message.tags}}" role="alert">
+                  {{ message }}
+              </div>
+          {% endfor %}
+          {% endif %}
+                  
           
           </div>
 

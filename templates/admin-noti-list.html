@@ -44,6 +44,7 @@
                 <th scope="col">Usuario</th>
                 <th scope="col">Usuario a permitir</th>
                 <th scope="col">Comentario</th>
+                <th scope="col">Fecha</th>
                 <th scope="col">Accion</th>
                 
             </tr>
@@ -59,7 +60,8 @@
                 <td>{{object.id_user}}</td>
                 <td>{{object.id_user_share.username}}</td>
                 <td>{{object.comment}}</td>
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id %}">{{object.action}}</a></td>
+                <td>{{object.created|date:"d/m/y H:i"}}</td>
+                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200);"></i></a></td>
                 
             </tr>
             {% endfor %}    

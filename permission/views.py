@@ -92,19 +92,25 @@ def gestion_permisos(request, usuario_id):
         
 
 def grant_permission(request, id_cont, id_user_share):
-    # Obtener o crear el objeto de permiso
-    contrasena = Contrasena.objects.get(id=id_cont)
-    user_share = CustomUser.objects.get(id=id_user_share)
-    permission_obj, created = ContraPermission.objects.get_or_create(
-        user_id=user_share, 
-        contra_id=contrasena,
-        defaults={'permission': True, 'perm_active': True}
-    )
-    
-    # Si el objeto ya existía, actualizar el campo 'permission'
-    if not created:
-        permission_obj.permission = True
-        permission_obj.save()  # Guardar los cambios en la base de datos
-    message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
-    # Redirigir a la vista 'listpass'
-    return render(request, template_name='admin-noti-list.html', context={'message': message })
+    try:
+        # Obtener o crear el objeto de permiso
+        contrasena = get_object_or_404(Contrasena, id=id_cont)
+        user_share = get_object_or_404(CustomUser, id=id_user_share)
+        permission_obj, created = ContraPermission.objects.get_or_create(
+            user_id=user_share, 
+            contra_id=contrasena,
+            defaults={'permission': True, 'perm_active': True}
+        )
+        
+        # Si el objeto ya existía, actualizar el campo 'permission'
+        if not created:
+            permission_obj.permission = True
+            permission_obj.save()  # Guardar los cambios en la base de datos
+
+        message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
+        messages.success(request, message)
+
+    except Exception as e:
+        messages.error(request, f'Hubo un error al otorgar permisos: {e}')
+    # Redirigir a la vista 'notificaciones'
+    return redirect('listnotifadmin')
