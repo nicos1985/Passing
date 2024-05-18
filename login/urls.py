@@ -9,8 +9,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     
+    path('', LoginFormView.as_view(), name='login'),
     path('register/', views.register , name='register'),
-    path('login/', LoginFormView.as_view(), name='login'),
     path('logout/', LogoutFormView.as_view(), name='logout'),
     path('profile/<str:username>/', views.profile_view, name='profile'),
     path('reset-password/', CustomPasswordResetView.as_view(template_name = 'password_reset.html'), name='password_reset'),
