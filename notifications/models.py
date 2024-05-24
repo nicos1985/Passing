@@ -8,8 +8,8 @@ class UserNotifications(models.Model):
 
     id_contrasena = models.ForeignKey(Contrasena, on_delete=models.CASCADE)
     id_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    type_notification = models.CharField(max_length=50)
-    comment = models.CharField(max_length=60)
+    type_notification = models.CharField(max_length=150)
+    comment = models.CharField(max_length=150)
     viewed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now=True)
 
