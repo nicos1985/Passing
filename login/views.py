@@ -56,11 +56,18 @@ class LoginFormView(LoginView):
         context['entity'] = 'Ingreso'
         context['list_url'] = reverse_lazy('listpass')
         context['action'] = 'login'
-          
-
-        
 
         return context
+    
+    def form_invalid(self, form):
+        """If the form is invalid, render the invalid form with error messages."""
+        messages.error(self.request, "Nombre de usuario o contraseña incorrectos.")
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def form_valid(self, form):
+        """If the form is valid, redirect to the success URL with a success message."""
+        messages.success(self.request, f"Inicio de sesión exitoso. Bienvenido {form.cleaned_data['username']}.")
+        return super().form_valid(form)
     
 
 

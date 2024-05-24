@@ -18,23 +18,10 @@
 
                     <form class = 'form' method="POST" action=".">
                         {% csrf_token %}
-                        <!-- <div>
-                        <label for = 'id_username'>Nombre de usuario:</label>
-                        <input type='text' class ='form-control' name="'username" id="id_username" style="margin-bottom: 25px;" requided>
-                        <label for = 'id_password'>Contraseña:</label>
-                        <input type='password' class ='form-control' name="'password" id="id_password" style="margin-bottom: 25px;" requided>
-                        </div> -->
 
                     <div>
                         <label for="id_username">Username:</label>
                         <input type="text" name="username" id="id_username" class="form-control" style="margin-bottom: 25px;">
-                        {% if messages %}
-                              <ul>
-                         {% for message in messages %}
-                        <li>{{ message }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
                     </div>
                     <div>
                         <label for="id_password">Password:</label>
