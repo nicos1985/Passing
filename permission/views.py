@@ -110,13 +110,20 @@ def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
             permission_obj.save()  # Guardar los cambios en la base de datos
         notificacion.viewed = True
         notificacion.save()
+        user_notification_share = UserNotifications.objects.create(
+                                                            id_contrasena = contrasena,
+                                                            id_user = user_share,
+                                                            type_notification = f"recibiste acceso a {contrasena.nombre_contra}",
+                                                            comment = f"Admin te dió acceso."
+        )
+
         user_notification = UserNotifications.objects.create(
                                                             id_contrasena = contrasena,
                                                             id_user = user,
                                                             type_notification = "Permiso Concedido",
                                                             comment = f"Se dió acceso a {user_share.username}."
         )
-        print(user_notification)
+        
         message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
         messages.success(request, message)
 

@@ -6,6 +6,8 @@ from django.views.generic import CreateView, ListView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+
+from notifications.models import UserNotifications
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
@@ -492,9 +494,14 @@ class DescargarArchivo(DetailView):
 
 def denypermission(request, pk):
     permission = ContraPermission.objects.get(id=pk)
-    print(f'permission: {permission.id}')
     permission.permission = False
     permission.save()
+    notificacion_user = UserNotifications.objects.create(
+                                                        id_contrasena = permission.contra_id,
+                                                        id_user = permission.user_id,
+                                                        type_notification = f'Se te denegó la contraseña {permission.contra_id.nombre_contra}',
+                                                        comment = f'{request.user.username} denegó el acceso',
+    )
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
