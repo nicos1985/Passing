@@ -32,11 +32,15 @@
       display: inline-block;
     }
     .icono-campana i {
-      font-size: 23px; /* Tamaño del icono de la campana */
+      font-size: 23px;
+      margin-top: 20px;
+      margin-right: 20px; /* Tamaño del icono de la campana */
     }
 
     .numero {
       position: absolute;
+      margin-top: 20px;
+      margin-right: 20px;
       top: -4px;
       right: 0px;
       background-color: rgb(226, 37, 37);
@@ -60,81 +64,93 @@
         <body>
 
 
-    <div class="">
-     
-           <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-              <a class="navbar-brand" href="{% url 'listpass' %}"><img src="{% static 'Passing2.png' %}" width="160px" height="51.4px"></a>
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarColor02">
-                <ul class="navbar-nav ml-auto">
-                  <li class="nav-item">
-                    
-                    <a class="nav-link active" href="{% url 'listpass' %}"><i class="fa-solid fa-house" style="color:white">&nbsp;</i>Inicio
-                      
+          <div class="">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="{% url 'listpass' %}">
+                        <img src="{% static 'Passing2.png' %}" width="160px" height="51.4px">
                     </a>
-                  </li>
-                  {% if request.user.is_authenticated %}
-
-                  {% else %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}"><i class="fa-solid fa-address-card" style="color:white">&nbsp;</i>Registrarse</a>
-                  </li>
-                  
-                  {%endif%}
-
-                  {% if request.user.is_superuser %}
-
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'config' %}"><i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin</a>
-                  </li>
-                  
-                  {% else %}
-                  
-                  {%endif%}
-                  
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarColor02">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{% url 'listpass' %}">
+                                    <i class="fa-solid fa-house" style="color:white">&nbsp;</i>Inicio
+                                </a>
+                            </li>
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.is_superuser %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'config' %}">
+                                            <i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'login' %}">
+                                        <i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'register' %}">
+                                        <i class="fa-solid fa-address-card" style="color:white">&nbsp;</i>Registrarse
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        {% if request.user.is_authenticated %}
+                            <ul class="navbar-nav ms-auto">
+                                {% if request.user.is_superuser %}
+                                    <li class="nav-item" style="margin-bottom: 20px;">
+                                        <a href="{% url 'listnotifadmin' %}">
+                                            <div class="icono-campana">
+                                                <i class="fa-solid fa-bell" style="color:white">&nbsp;</i>
+                                                {% if contador_notis != 0 %}
+                                                    <span class="numero">{{contador_notis}}</span>
+                                                {% endif %}
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="nav-item" style="margin-bottom: 20px;">
+                                        <a href="{% url 'listnotifuser' %}">
+                                            <div class="icono-campana">
+                                                <i class="fa-solid fa-bell" style="color:white">&nbsp;</i>
+                                                {% if contador_notis_user != 0 %}
+                                                    <span class="numero">{{contador_notis_user}}</span>
+                                                {% endif %}
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                <li class="nav-item">
+                                    {% if request.user.avatar %}
+                                        <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px">
+                                    {% else %}
+                                        <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px">
+                                    {% endif %}
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white">
+                                        <b>{{request.user}}&nbsp;&nbsp;&nbsp;</b>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-center" href="{% url 'logout' %}">
+                                        <i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        {% endif %}
                     </div>
-                  </li>
-                </ul>
-              {% if request.user.is_authenticated %}
-              </div class= "card">
-                {% if request.user.is_superuser %}
-                  <li class="nav-item" style="margin-bottom: 20px;">
-                    <a href="{% url 'listnotifadmin' %}">
-                      <div class ="icono-campana">
-                        <i class="fa-solid fa-bell" style="color:white">&nbsp;</i>
-                        {% if contador_notis != 0 %}
-                        <span class="numero">{{contador_notis}}</span>
-                        {% else %}
-                        {%endif%}
-                      <div>
-                    </a>
-                  </li>
-                {% else %}
-                {%endif%}
-            
-              {% if request.user.avatar %}
-                <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px">
-              {% else %}
-                <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px">
-              {% endif %}
-
-              <p>&nbsp;&nbsp;&nbsp;</p>
-                <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white"><b>{{request.user}}&nbsp;&nbsp;&nbsp;</b></a>
-                <a class="nav-link text-center" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket" style="color:white">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></a>
-            </div>
-
-            {%else%}
-          </div>
-          <a class="nav-link" href="{% url 'login' %}" style="color:white"><b>Hola {{request.user}}!</b></a>
+                </div>
+            </nav>
         </div>
-            {%endif%}
-          </nav>
+        
+        
         
          <div class = ''> 
           

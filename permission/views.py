@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 
-from notifications.models import AdminNotification
+from notifications.models import AdminNotification, UserNotifications
 from .models import ContraPermission
 from passbase.models import Contrasena
 from .forms import PermissionUserForm, PermisoForm
@@ -91,9 +91,10 @@ def gestion_permisos(request, usuario_id):
         })
         
 
-def grant_permission(request, id_cont, id_user_share, id_noti):
+def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
     try:
         # Obtener o crear el objeto de permiso
+        user = get_object_or_404(CustomUser, username = id_user)
         notificacion = get_object_or_404(AdminNotification, id=id_noti)
         contrasena = get_object_or_404(Contrasena, id=id_cont)
         user_share = get_object_or_404(CustomUser, id=id_user_share)
@@ -109,6 +110,13 @@ def grant_permission(request, id_cont, id_user_share, id_noti):
             permission_obj.save()  # Guardar los cambios en la base de datos
         notificacion.viewed = True
         notificacion.save()
+        user_notification = UserNotifications.objects.create(
+                                                            id_contrasena = contrasena,
+                                                            id_user = user,
+                                                            type_notification = "Permiso Concedido",
+                                                            comment = f"Se dió acceso a {user_share.username}."
+        )
+        print(user_notification)
         message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
         messages.success(request, message)
 

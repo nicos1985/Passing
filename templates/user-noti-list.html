@@ -41,11 +41,9 @@
             <tr >
 
                 <th scope="col">Nombre Contraseña</th>
-                <th scope="col">Usuario</th>
-                <th scope="col">Usuario a permitir</th>
                 <th scope="col">Comentario</th>
+                <th scope="col">Tipo notificacion</th>
                 <th scope="col">Fecha</th>
-                <th scope="col">Accion</th>
                 
             </tr>
 
@@ -65,16 +63,10 @@
                     {{object.id_contrasena.nombre_contra}}
                     {%endif%}
                 </td>
-                <td>{{object.id_user}}</td>
-                <td>{{object.id_user_share.username}}</td>
                 <td>{{object.comment}}</td>
-                
+                <td>{{object.type_notification}}</td>
                 <td>{{object.created|date:"d/m/y H:i"}}</td>
-                {% if object.viewed == False %}
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></a></td>
-                {% else %}
-                <td><a href="#" disabled><i class ="fas fa-arrows-to-eye" style="color:rgb(121, 121, 121);"></i></a></td>
-                {%endif%}
+                
             </tr>
             {% endfor %}    
         </tbody>
@@ -85,5 +77,37 @@
           
 {% endif %}
 
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    window.addEventListener('beforeunload', function() {
+        fetch("{% url 'marcar_notificaciones_vistas' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({})
+        });
+    });
+</script>
+
 
 {% endblock %}
+

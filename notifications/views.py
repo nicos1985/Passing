@@ -1,13 +1,17 @@
 from django.contrib import messages
 from django.db.models.query import QuerySet
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.views import View
 from login.models import CustomUser
 from notifications.forms import CreateNotificationForm
 from notifications.models import AdminNotification, UserNotifications
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from passbase.models import Contrasena
 from permission.models import ContraPermission
@@ -60,9 +64,35 @@ def share_contrasena_form(request, contrasena):
     
     return render(request, 'create-noti-admin.html', {'form': form})
 
-class ListNotificationsUser():
-    pass
+class ListNotificationsUser(LoginRequiredMixin, ListView):
+    model =UserNotifications
+    template_name = 'user-noti-list.html'
+    context_object_name = 'notifications'
+    login_url = 'login'
+    
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')  # Ajusta 'campo' según tu modelo
 
+        return queryset
+
+    
+class MarkNotificationsViewed(LoginRequiredMixin, View):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            if not request.user.is_authenticated:
+                return HttpResponseForbidden("No autorizado")
+            notifications = UserNotifications.objects.filter(id_user=request.user)
+            for noti in notifications:
+                noti.viewed = True
+                noti.save()
+            return JsonResponse({'status': 'success'})
+        return HttpResponseForbidden("No autorizado")    
 
 class ListNotificationsAdmin(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = AdminNotification
