@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from login.models import CustomUser
 from notifications.models import UserNotifications
+from passing import settings
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
@@ -196,9 +197,9 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
         auto_permission_users = [user_creator]
 
         # Lista de IDs de usuarios a los que se les otorgará permiso automáticamente.
-        user_ids = [1, 12, 11]
+        grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
 
-        for user_id in user_ids:
+        for user_id in grant_permission_user_ids:
             try:
                 user = get_object_or_404(CustomUser, id=user_id)
                 
