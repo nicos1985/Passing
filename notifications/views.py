@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 from passbase.models import Contrasena
 from permission.models import ContraPermission
@@ -24,7 +25,7 @@ def can_view_contrasena(user, request):
 def is_administrator(user):
     return user.is_superuser
 
-#@user_passes_test(can_view_contrasena)
+@login_required
 def share_contrasena_form(request, contrasena):
     if request.method == 'POST':
         form = CreateNotificationForm(request.POST)

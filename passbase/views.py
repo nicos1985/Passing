@@ -1,5 +1,5 @@
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from login.models import CustomUser
 from notifications.models import UserNotifications
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
@@ -189,10 +190,36 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                                                     Usuario: {contrasena.usuario}, 
                                                     Link:{contrasena.link}, 
                                                     Info:{contrasena.info}''')
-        ContraPermission.objects.create(user_id=self.request.user,
-                                        permission=True,
-                                        contra_id=contrasena
-                                        )
+        #por cada contraseña que se crea debemos agregar los persmisos a admin, y usuarios owners
+        user_creator = self.request.user
+        print(f'get request.user: {user_creator}')
+        auto_permission_users = [user_creator]
+
+        # Lista de IDs de usuarios a los que se les otorgará permiso automáticamente.
+        user_ids = [1, 12, 11]
+
+        for user_id in user_ids:
+            try:
+                user = get_object_or_404(CustomUser, id=user_id)
+                
+                auto_permission_users.append(user)
+            except Http404:
+                
+                continue
+        
+        
+        for user in auto_permission_users:
+            if user is not None:
+                try:
+                    ContraPermission.objects.create(user_id=user,
+                                                    permission=True,
+                                                    contra_id=contrasena
+                                                    )
+                except Exception as e:
+                    message = f'Error al crear permiso de acceso: {e}'
+                    message.error(self.request, message)
+                    print(f'Error al crear permiso de acceso: {e}')
+        
         return response
         
 class ContrasUpdateView(LoginRequiredMixin, UpdateView):
