@@ -1,8 +1,9 @@
 from collections import OrderedDict
 from django import forms
 from login.models import CustomUser
-from .models import ContraPermission
+from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena, LogData
+from django.forms.models import ModelChoiceField, ModelChoiceIterator, ModelMultipleChoiceField
 
 class PermissionUserForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -60,9 +61,33 @@ class PermisoForm(forms.Form):
 
         # Asigna los campos ordenados de nuevo al formulario
         self.fields = OrderedDict(fields)
-        
-            
-            
+
+class CustomModelChoiceIterator(ModelChoiceIterator):
+    def choice(self, obj):
+        return (self.field.prepare_value(obj),
+                self.field.label_from_instance(obj), obj)
+    
+
+class CustomModelChoiceField(ModelMultipleChoiceField):
+    def _get_choices(self):
+        if hasattr(self, '_choices'):
+            return self._choices
+        return CustomModelChoiceIterator(self)
+    choices = property(_get_choices,  
+                       forms.MultipleChoiceField._set_choices)
+class PermissionRolesForm(forms.ModelForm):
+    rol_name = forms.CharField()
+    contrasenas = CustomModelChoiceField(
+        queryset=Contrasena.objects.filter(is_personal=False),
+        widget=forms.CheckboxSelectMultiple,
+        label='Contraseñas',
+    )
+
+    class Meta:
+        model = PermissionRoles
+        fields = ['rol_name', 'contrasenas']
+
+
         
 # class PermissionForm(forms.Form):
 #     def __init__(self, *args, **kwargs):

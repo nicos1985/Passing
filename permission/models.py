@@ -18,4 +18,12 @@ class ContraPermission(models.Model):
     def __str__(self):
         return str(self.user_id.username)
         
+
+class PermissionRoles(models.Model):
+    rol_name = models.CharField(max_length=60)
+    contrasenas = models.ManyToManyField(Contrasena, related_name='roles')
+    
+
+    def __str__(self):
+        return self.nombre_rol
     

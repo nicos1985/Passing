@@ -1,14 +1,14 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django import forms
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 
 from notifications.models import AdminNotification, UserNotifications
-from .models import ContraPermission
+from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena
-from .forms import PermissionUserForm, PermisoForm
+from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm
 from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
@@ -131,3 +131,13 @@ def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
         messages.error(request, f'Hubo un error al otorgar permisos: {e}')
     # Redirigir a la vista 'notificaciones'
     return redirect('listnotifadmin')
+
+@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser
+class PermissionRolesCreateView(CreateView):
+    model = PermissionRoles
+    form_class = PermissionRolesForm
+    template_name = 'permission_roles_form.html'
+    success_url = reverse_lazy('listpass')
+
+
+    
