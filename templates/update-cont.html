@@ -60,14 +60,16 @@
                                     <label class="form-label">{{ field.label }}</label>
                                     
                                     <div class="input-group mb-3">
+                                       
                                         {{field}}
+                                       
                                     <button class="btn btn-outline-primary" type="button" id="passwordToggle">
                                         <i class="fas fa-eye toggle-password-icon" id="eyeIcon"></i>
                                     </button>
                                 </div>
                                 
                                 {% else %}
-                                <label class="form-label">{{ field.label }}</label>
+                                <label for="{{field.label}}"class="form-label">{{ field.label }}</label>
                                 {{field}}
 
                             </div>

@@ -92,11 +92,24 @@
                             <label for="actualizacion" style="margin-top:20px;">Actualizacion: </label>
                             <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="Ingrese solo números positivos" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="info"style="margin-top:20px;">Info: </label>
-                            <input id="info" type="textarea" class='form-control' name="info" maxlength="100"style="margin-top:5px;" required>
+                            <div class="form-group">
+                                <label for="info" style="margin-top: 20px;">Info</label>
+                                <input id="info" type="text" class="form-control" name="info" maxlength="100" style="margin-top: 5px;" required>
+                            </div>
+                            <div class="form-check form-check-inline" style="margin-top: 20px;">
+                                <label class="form-check-label" for="is_personal">
+                                    Contraseña Personal
+                                </label>
+                                <input class="form-check-input" type="checkbox" title="Marca esta casilla si esta cintraseña es solo de uso personal y no necesitas compartirla con nadie" id="is_personal" name="is_personal">
+                                <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie"></i>
+                                
+                            </div>
 
-                            <label for="file"style="margin-top:20px;">Archivo: </label>
-                            <input id="file" type="file" class='form-control' name="file" maxlength="100"style="margin-top:5px;">
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label for="file">Archivo</label>
+                                <input id="file" type="file" class="form-control-file" name="file">
+                            </div>
+
                         </div>
                             
                             <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">

@@ -56,9 +56,13 @@
                     {% for contra in query_perm %}
                     
                     <tr>
+                        {% if contra.is_personal == True %}
+                        <td>
+                        <i class="fa-solid fa-user" title="Es de uso personal"></i>
+                        <b>{{ contra.nombre_contra}}</b></td>
+                        {% else %}
                         <td><b>{{ contra.nombre_contra}}</b></td>
-
-                        
+                        {% endif %}
 
                             {% if contra.flag == 'verde' %}
                                 <td> 
@@ -123,7 +127,11 @@
                                 <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(28, 49, 167);"></i></a>
                                 {% else %}
                                 <a href="#"><i class="fas fa-download" style="margin-right:10px; text-decoration-line: none; color: rgb(198, 198, 198);"></i></a>
+                                {% if contra.is_personal == True %}
+                                <a href="#"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(169, 169, 169);"></i></a>
+                                {% else %}
                                 <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right:10px; text-decoration-line: none; color: rgb(28, 49, 167);"></i></a>
+                                {% endif %}
                                 {% endif %}
                             </td>
                         {% endif %}

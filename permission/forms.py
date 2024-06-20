@@ -17,7 +17,7 @@ class PermisoForm(forms.Form):
     def __init__(self, usuario, *args, **kwargs):
         
         super().__init__(*args, **kwargs)
-        contraseñas = Contrasena.objects.all()
+        contraseñas = Contrasena.objects.filter(is_personal=False)
         
         for contraseña in contraseñas:
             initial_value = False

@@ -197,18 +197,23 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
         auto_permission_users = [user_creator]
 
         # Lista de IDs de usuarios a los que se les otorgará permiso automáticamente.
-        grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
+        if not contrasena.is_personal:
+            print(f'entro si es personal es falso. contraseña is personal: {contrasena.is_personal}')
+            grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
 
-        for user_id in grant_permission_user_ids:
-            try:
-                user = get_object_or_404(CustomUser, id=user_id)
-                
-                auto_permission_users.append(user)
-            except Http404:
-                
-                continue
-        
-        
+            for user_id in grant_permission_user_ids:
+                try:
+                    user = get_object_or_404(CustomUser, id=user_id)
+                    if user in auto_permission_users:
+                        print(f'ya existe usuario en la lista {user}')
+                        pass
+                    else:
+                        auto_permission_users.append(user)
+                except Http404:
+                    
+                    continue
+            
+            
         for user in auto_permission_users:
             if user is not None:
                 try:
