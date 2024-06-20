@@ -22,8 +22,18 @@ class ContraPermission(models.Model):
 class PermissionRoles(models.Model):
     rol_name = models.CharField(max_length=60)
     contrasenas = models.ManyToManyField(Contrasena, related_name='roles')
-    
+    created = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.nombre_rol
+        return self.rol_name
     
+    def get_contrasenas(self):
+        return self.contrasenas.all()
+
+class UserRoles(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    rol = models.ForeignKey(PermissionRoles, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'User: {self.user.username}, rol: {self.rol.rol_name}'

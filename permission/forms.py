@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from django import forms
 from login.models import CustomUser
-from .models import ContraPermission, PermissionRoles
+from .models import ContraPermission, PermissionRoles, UserRoles
 from passbase.models import Contrasena, LogData
 from django.forms.models import ModelChoiceField, ModelChoiceIterator, ModelMultipleChoiceField
 
@@ -88,41 +88,20 @@ class PermissionRolesForm(forms.ModelForm):
         fields = ['rol_name', 'contrasenas']
 
 
-        
-# class PermissionForm(forms.Form):
-#     def __init__(self, *args, **kwargs):
-#         usuario_id = kwargs.pop('usuario', None)
-#         contraseñas = kwargs.pop('contraseñas', None)  # Recupera la lista de contraseñas activas
-#         super(PermissionForm, self).__init__(*args, **kwargs)
+class UserRolForm(forms.ModelForm):
+    class Meta:
+        model = UserRoles
+        fields = ['user', 'rol']
+        labels = {
+            'user': 'Usuario',
+            'rol': 'Rol'
+        }
+        widgets = {
+            'user': forms.Select(attrs={'class': 'form-select'}),
+            'rol': forms.Select(attrs={'class': 'form-select'}),
+        }
 
-#         #usuario_id = request.session.get('usuario_seleccionado_id')
-#         print(f'usuario_id: {usuario_id}')
-        
-            
-#         if usuario_id is not None:
-#             # Obtener las Contraseñas con 'active' igual a True
-#             contraseñas_activas = Contrasena.objects.filter(active=True)
-            
-           
-#             # Crear un diccionario para almacenar los valores iniciales de los campos
-#             valores_iniciales = {}
-            
-#             for contraseña in contraseñas_activas:
-#                 print(f'contraseña: {contraseña}')
-#                 field_name = f'permiso_{contraseña.nombre_contra}'  # Nombre del campo
-#                 self.fields[field_name] = forms.BooleanField(required=False)
-                
-#                 try:# Obtener el permiso correspondiente para esta contraseña
-#                     permiso = ContraPermission.objects.filter(id=168).first()
-
-#                     print(f'permiso: {permiso}')
-#                     # Si se encuentra un permiso para esta contraseña, establecer el valor inicial
-#                     valores_iniciales[field_name] = permiso.permission
-#                 except ContraPermission.DoesNotExist:
-#                     print('NO existe permiso, se pondrá en False')
-#                     valores_iniciales[field_name] = False
-   
-#             # Asignar los valores iniciales al formulario
-#             self.initial = valores_iniciales
-
-   
+    def __init__(self, *args, **kwargs):
+        super(UserRolForm, self).__init__(*args, **kwargs)
+        self.fields['user'].queryset = CustomUser.objects.filter(is_active=True)
+        self.fields['rol'].queryset = PermissionRoles.objects.all()

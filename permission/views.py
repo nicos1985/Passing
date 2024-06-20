@@ -8,7 +8,7 @@ from django.views.generic import CreateView, ListView, UpdateView, DeleteView, F
 from notifications.models import AdminNotification, UserNotifications
 from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena
-from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm
+from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm, UserRolForm
 from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
@@ -137,7 +137,46 @@ class PermissionRolesCreateView(CreateView):
     model = PermissionRoles
     form_class = PermissionRolesForm
     template_name = 'permission_roles_form.html'
-    success_url = reverse_lazy('listpass')
+    success_url = reverse_lazy('config')
+
+def give_permission(user, contrasena):
+    permission=ContraPermission.objects.get_or_create(
+                    user_id=user,
+                    contra_id=contrasena, 
+                    permission=True
+                )
+    
+
+def generate_rol_permissions(request, rol, user):
+    rol = get_object_or_404(PermissionRoles, id=rol.id)
+    usuario = get_object_or_404(CustomUser, id=user.id)
+    contrasenas = rol.get_contrasenas()
+    
+    flush_permissions = ContraPermission.objects.filter(user_id=usuario).delete()
+    for contrasena in contrasenas:
+        give_permission(usuario, contrasena)
+
+    return contrasenas
+
+
+def assign_rol_user(request):
+    if request.method == "POST":
+        user_rol_form = UserRolForm(request.POST)
+        if user_rol_form.is_valid():
+            user_rol_form.save()
+            usuario = user_rol_form.cleaned_data['user']
+            rol = user_rol_form.cleaned_data['rol']
+            generate_rol_permissions(request, rol, usuario)
+            message = f'Se ha otorgado el rol {rol} al usuario {usuario}'
+            messages.success(request, message)
+            return redirect('listpass')
+        else:
+            messages.error(request, 'Error en el formulario. Por favor, revise los datos ingresados.')
+    else:
+        user_rol_form = UserRolForm()
+
+    return render(request, 'assign_rol.html', {'form': user_rol_form})
+
 
 
     
