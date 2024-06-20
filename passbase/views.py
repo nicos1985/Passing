@@ -292,7 +292,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
                         Usuario: {contrasena.usuario},
                         Link: {contrasena.link},
                         Info: {contrasena.info},
-                        owner: {objeto_previo.owner}'''
+                        owner: {contrasena.owner}'''
         )
         
         # Llama al método form_valid original para guardar la instancia
@@ -325,7 +325,7 @@ class ContrasDeleteView(LoginRequiredMixin, DeleteView):
                                             Usuario: {contrasena.usuario}, 
                                             Link:{contrasena.link}, 
                                             Info:{contrasena.info},
-                                            owner: {objeto_previo.owner}''')
+                                            owner: {contrasena.owner}''')
         return response 
     
     def get_context_data(self, **kwargs):
