@@ -85,7 +85,7 @@ class ContrasenaUForm(ModelForm):
     class Meta:
         model = Contrasena
         fields = '__all__'
-        exclude = ['active']
+        exclude = ['active','owner']
         labels ={
             'nombre_contra' : 'Nombre',
             'active': 'Activo',
@@ -145,4 +145,4 @@ class SectionForm(ModelForm):
     class Meta:
             model = SeccionContra
             fields = '__all__'
-            exclude = ['active']
+            exclude = ['active','owner']

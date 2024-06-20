@@ -59,6 +59,7 @@
                     <tr >
                         
                         <th scope="col">Usuario</th>
+                        <th scope="col">Propietario</th>
                         <th scope="col">Sección</th>
                         <th scope="col">Contraseña</th>
                         <th scope="col">Permiso</th>
@@ -74,6 +75,7 @@
                         
                     <tr>
                         <td>{{ perm.user_id }}</td>
+                        <td>{{perm.contra_id.owner}}</td>
                         <td>{{ perm.contra_id.seccion}}</td>
                         <td>{{ perm.contra_id.nombre_contra }}</td>
                         {% if perm.permission == 'True' %}

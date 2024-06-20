@@ -35,6 +35,7 @@ class Contrasena(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     
     def Meta():
         verbose_name = "Contraseña"

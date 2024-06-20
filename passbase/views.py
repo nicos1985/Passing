@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.decorators import method_decorator
@@ -170,63 +171,61 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
         context['entity'] = 'Contraseñas'
         context['list_url'] = reverse_lazy('listpass')
         context['action'] = 'add'
-        context['sections'] =  SeccionContra.objects.filter(active=True)
+        context['sections'] = SeccionContra.objects.filter(active=True)
         return context
-    
 
-    
-    def form_valid(self,form, *args, **kwargs):
+    def form_valid(self, form, *args, **kwargs):
+        cleaned_data = form.cleaned_data
+        cleaned_data['owner'] = self.request.user
         
-        response = super().form_valid(form)
-        #obtengo el objeto contraseña a traves del form.save()
-        contrasena = form.save()
-        
-        LogData.objects.create(contraseña = contrasena.id , 
-                               entidad = 'Contraseña', 
-                               usuario = self.request.user , 
-                               action = 'Create',
-                               password=contrasena.contraseña,
-                               detail = f'''Nombre: {contrasena.nombre_contra}, 
-                                                    Seccion: {contrasena.seccion}, 
-                                                    Usuario: {contrasena.usuario}, 
-                                                    Link:{contrasena.link}, 
-                                                    Info:{contrasena.info}''')
-        #por cada contraseña que se crea debemos agregar los persmisos a admin, y usuarios owners
-        user_creator = self.request.user
-        print(f'get request.user: {user_creator}')
-        auto_permission_users = [user_creator]
-
-        # Lista de IDs de usuarios a los que se les otorgará permiso automáticamente.
-        if not contrasena.is_personal:
-            print(f'entro si es personal es falso. contraseña is personal: {contrasena.is_personal}')
-            grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
-
-            for user_id in grant_permission_user_ids:
-                try:
-                    user = get_object_or_404(CustomUser, id=user_id)
-                    if user in auto_permission_users:
-                        print(f'ya existe usuario en la lista {user}')
-                        pass
-                    else:
-                        auto_permission_users.append(user)
-                except Http404:
-                    
-                    continue
+        try:
+            # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
+            contrasena = form.save(commit=False)
+            contrasena.owner = self.request.user
+            contrasena.save()
             
-            
-        for user in auto_permission_users:
-            if user is not None:
-                try:
-                    ContraPermission.objects.create(user_id=user,
-                                                    permission=True,
-                                                    contra_id=contrasena
-                                                    )
-                except Exception as e:
-                    message = f'Error al crear permiso de acceso: {e}'
-                    message.error(self.request, message)
-                    print(f'Error al crear permiso de acceso: {e}')
+            # Creación de la entrada en LogData
+            LogData.objects.create(
+                contraseña=contrasena.id,
+                entidad='Contraseña',
+                usuario=self.request.user,
+                action='Create',
+                password=contrasena.contraseña,
+                detail=f'''Nombre: {contrasena.nombre_contra}, 
+                           Seccion: {contrasena.seccion}, 
+                           Usuario: {contrasena.usuario}, 
+                           Link: {contrasena.link}, 
+                           Info: {contrasena.info},
+                           owner: {contrasena.owner}'''
+            )
+
+            # Gestión de permisos de acceso
+            user_creator = self.request.user
+            auto_permission_users = [user_creator]
+
+            if not contrasena.is_personal:
+                grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
+
+                for user_id in grant_permission_user_ids:
+                    try:
+                        user = get_object_or_404(CustomUser, id=user_id)
+                        if user not in auto_permission_users:
+                            auto_permission_users.append(user)
+                    except Http404:
+                        continue
+
+            for user in auto_permission_users:
+                if user is not None:
+                    try:
+                        ContraPermission.objects.create(user_id=user, permission=True, contra_id=contrasena)
+                    except Exception as e:
+                        messages.error(self.request, f'Error al crear permiso de acceso: {e}')
+
+            return super().form_valid(form)
         
-        return response
+        except IntegrityError:
+            form.add_error('nombre_contra', 'El nombre de la contraseña ya existe. Por favor, elige otro.')
+            return self.form_invalid(form)
         
 class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     model = Contrasena
@@ -263,7 +262,8 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
                                            Seccion: {objeto_previo.seccion}, 
                                            Usuario: {objeto_previo.usuario}, 
                                            Link:{objeto_previo.link}, 
-                                           Info:{objeto_previo.info}''', 
+                                           Info:{objeto_previo.info},
+                                            owner: {objeto_previo.owner}''', 
                                usuario=self.request.user, 
                                contraseña=objeto_previo.id,
                                password=objeto_previo.contraseña)
@@ -291,7 +291,8 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
                         Seccion: {contrasena.seccion},
                         Usuario: {contrasena.usuario},
                         Link: {contrasena.link},
-                        Info: {contrasena.info}'''
+                        Info: {contrasena.info},
+                        owner: {objeto_previo.owner}'''
         )
         
         # Llama al método form_valid original para guardar la instancia
@@ -323,7 +324,8 @@ class ContrasDeleteView(LoginRequiredMixin, DeleteView):
                                             Seccion: {contrasena.seccion},
                                             Usuario: {contrasena.usuario}, 
                                             Link:{contrasena.link}, 
-                                            Info:{contrasena.info}''')
+                                            Info:{contrasena.info},
+                                            owner: {objeto_previo.owner}''')
         return response 
     
     def get_context_data(self, **kwargs):
