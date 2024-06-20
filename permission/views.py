@@ -59,7 +59,7 @@ def seleccionar_usuario(request):
 def gestion_permisos(request, usuario_id):
     usuario = get_object_or_404(CustomUser, id=usuario_id)
     permiso_form = PermisoForm(usuario, request.POST or None)
-    contrasena = Contrasena.objects.all()
+    contrasena = Contrasena.objects.filter(is_personal=False)
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
