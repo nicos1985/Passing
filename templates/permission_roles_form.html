@@ -1,11 +1,8 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
 
 {% load static %}
 
-
 {% block head %}
-
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
 <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -13,73 +10,75 @@
 <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-
 {% endblock %}
 
 {% block content %}
-<div class="container pt-5" >
-<div class="card center">
-    <div class="card-title">
-        <div class="container" style="height: 105px; padding-top: 20px;">
-                <h2><i class="fas fa-plus" ></i> Crear Rol</h2>
+<div class="container pt-5">
+    <div class="card center">
+        <div class="card-title">
+            <div class="container" style="height: 105px; padding-top: 20px;">
+                <h2><i class="fas fa-plus"></i> Crear Rol</h2>
                 <button class="btn">
-                    <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i> Lista</a>
+                    <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                        <i class="fa-solid fa-book"></i> Configuración
+                    </a>
                 </button>
+            </div>
+        </div>
+        <div class="card-body" style="background-color: #F7F7F7;">
+            <form class="form-control" method="post" id="rol">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="rol_name" class="h5" style="margin-top: 20px;">Nombre del Rol</label>
+                    {{ form.rol_name }}
+                </div>
+                <div class="form-group">
+                    <label for="comment" class="h5" style="margin-top: 20px;">Comentario</label>
+                    {{ form.comment }}
+                </div>
+                <div class="form-group">
+                    <label class="h5" style="margin-top: 20px;">Contraseñas</label>
+                    <table class="table table-striped table-hover" id="data">
+                        <thead>
+                        <tr class="table-dark">
+                            <th class="col">Nombre Contraseña</th>
+                            <th class="col">Sección</th>
+                            <th class="col">Propietario</th>
+                            <th class="col">Permiso</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for value, label, contrasena in form.contrasenas.field.choices %}
+                        <tr>
+                            <td>{{ contrasena.nombre_contra }}</td>
+                            <td>{{ contrasena.seccion }}</td>
+                            <td>{{ contrasena.owner }}</td>
+                            <td>
+                                <input type="checkbox" id="id_{{ contrasena.id }}" name="{{ form.contrasenas.name }}" value="{{ value }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
+                    <i class="fas fa-save"></i> Guardar registro
+                </button>
+            </form>
         </div>
     </div>
-    <div class="card-body"style="background-color: #F7F7F7 ;">
-<form class="form-control" method="post" id="rol">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="" id="rol name" class="h5" style="margin-top: 20px;">Nombre del Rol</label>
-        <input class="form-control"{{form.rol_name}}
-    </div>
-    <div class="form-group">
-        <label class="h5" style="margin-top: 20px;">Contraseñas</label>
-        
-        <table class="table table-striped table-hover" id="data">
-            <thead>
-            <tr class="table-dark">
-                <th class="col">Nombre Contraseña</th>
-                <th class="col">Seccion</th>
-                <th class="col">Propietario</th>
-                <th class="col">Permiso</th>
-            </tr>
-            </thead>
-            {% for value, label, contrasena in form.contrasenas.field.choices %}
-            <tr>
-                <td> {{contrasena.nombre_contra}}</td>
-                <td> {{contrasena.seccion}}</td>
-                <td> {{contrasena.owner}}</td>
-                <td> <input type="checkbox" id="id_{{ contrasena.id }}" name="{{ form.contrasenas.name }}" value="{{ value }}"> </td>
-            </tr>
-            
-        {% endfor %}
-    </table>
-    </div>
-        
-    <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-        <i class="fas fa-save"></i> Guardar registro
-    </button>
-</form>
-</div>
-</div>
 </div>
 {% endblock %}
+
 {% block javascript %}
-
 <script type="application/javascript">
-
     $(document).ready(function () {
-        
         $('#data').DataTable({
             responsive: true,
-            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
+            "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
             "pageLength": -1, // Establece -1 como la opción por defecto
             autoWidth: false,
-            
         });
     });
-
 </script>
 {% endblock %}

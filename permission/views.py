@@ -139,44 +139,98 @@ class PermissionRolesCreateView(CreateView):
     template_name = 'permission_roles_form.html'
     success_url = reverse_lazy('config')
 
-def give_permission(user, contrasena):
-    permission=ContraPermission.objects.get_or_create(
-                    user_id=user,
-                    contra_id=contrasena, 
-                    permission=True
-                )
+# Funciones para la asignacion de Roles a usuarios. 
+
+def give_permission(request, user, contrasena):
+    try:
+        permission=ContraPermission.objects.get_or_create(
+                        user_id=user,
+                        contra_id=contrasena, 
+                        permission=True
+                    )
+    except Exception as e:
+        message = f'Hubo un error al intentar crear un permiso {contrasena}. Error {e}'
+        messages.error(request, message)
+    return True
     
 
 def generate_rol_permissions(request, rol, user):
     rol = get_object_or_404(PermissionRoles, id=rol.id)
     usuario = get_object_or_404(CustomUser, id=user.id)
-    contrasenas = rol.get_contrasenas()
-    
-    flush_permissions = ContraPermission.objects.filter(user_id=usuario).delete()
+    contrasenas = rol.get_contrasenas() #obtengo todas las contraseñas relacionadas al Rol
+    #intento eliminar todos los permisos actuales. 
+    try:
+        flush_permissions = ContraPermission.objects.filter(user_id=usuario).delete()
+    except Exception as e:
+        message = f'Hubo un error al intentar quitar los permisos existentes. Error {e}'
+        messages.error(request, message)
+
     for contrasena in contrasenas:
-        give_permission(usuario, contrasena)
+        try:
+            give_permission(request, usuario, contrasena)
+
+        except Exception as e:
+            message = f'hubo un error al dar permiso a la contraseña {contrasena}. Error {e}'
+            messages.error(request, message)
 
     return contrasenas
 
 
-def assign_rol_user(request):
+def assign_rol_user(request, id_rol=None):
+    """ Maneja el formulario donde se asignan los roles a los usuarios.
+    Toma los datos y los pasa a la función generate_rol_permission """
+
     if request.method == "POST":
+        # Crear formulario POST
         user_rol_form = UserRolForm(request.POST)
         if user_rol_form.is_valid():
+            # Guardo el form
             user_rol_form.save()
+            # Obtengo el usuario y el rol elegidos en el form para generar los permisos
             usuario = user_rol_form.cleaned_data['user']
             rol = user_rol_form.cleaned_data['rol']
-            generate_rol_permissions(request, rol, usuario)
-            message = f'Se ha otorgado el rol {rol} al usuario {usuario}'
-            messages.success(request, message)
-            return redirect('listpass')
+            # Genero los permisos
+            try:
+                generate_rol_permissions(request, rol, usuario)
+                message = f'Se ha otorgado el rol {rol} al usuario {usuario}'
+                messages.success(request, message)
+            except Exception as e:
+                message = f'Hubo un error al ejecutar la asignación de permisos. Error: {e}'
+                messages.error(request, message)
+
+            return redirect('config')
         else:
             messages.error(request, 'Error en el formulario. Por favor, revise los datos ingresados.')
     else:
-        user_rol_form = UserRolForm()
+        # Crear Formulario GET
+        if id_rol is not None:
+            rol = get_object_or_404(PermissionRoles, id=id_rol)
+            user_rol_form = UserRolForm(initial={'rol': rol})
+        else:
+            user_rol_form = UserRolForm()
 
     return render(request, 'assign_rol.html', {'form': user_rol_form})
 
+class PermissionRolView(LoginRequiredMixin, ListView):
+    model = PermissionRoles
+    template_name = 'roles_list.html'
+    context_object_name = 'roles'
+    login_url = 'login'
 
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        for obj in queryset: 
+            obj.related_count = obj.get_contrasenas().count()
+           
+        return queryset
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
+    model = PermissionRoles
+    form_class = PermissionRolesForm
+    template_name = 'permission_roles_form.html'
+    success_url = reverse_lazy('roles')

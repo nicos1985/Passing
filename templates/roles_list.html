@@ -21,7 +21,7 @@
 
 
 <div class="container" style="height: 60px;">
-    <h2>Notificaciones</h2>
+    <h2>Roles</h2>
 </div>
 
 {% if request.user.is_authenticated %}
@@ -30,7 +30,7 @@
 
 <div class="container">
     <button class="btn">
-        <a class="btn btn-primary btn-flat" href= "{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i>  Lista</a>
+        <a class="btn btn-primary btn-flat" href= "{% url 'config' %}"> <i class="fa-solid fa-book"></i>  Configuracion</a>
     </button>
 </div>
 <div>
@@ -40,41 +40,27 @@
         
             <tr >
 
-                <th scope="col">Nombre Contraseña</th>
-                <th scope="col">Usuario</th>
-                <th scope="col">Usuario a permitir</th>
-                <th scope="col">Comentario</th>
-                <th scope="col">Fecha</th>
-                <th scope="col">Accion</th>
+                <th scope="col">Nombre Rol</th>
+                <th scope="col">Cantidad de Contraseñas</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Creado</th>
+                <th scope="col">Acciones</th>
                 
             </tr>
-
 
         </thead>
 
         <tbody>
-            {% for object in notifications %}
-            <tr>
-
-                <td>
-                    {% if object.viewed == False %}
-                    <i class="fas fa-lightbulb" style="color:rgba(255, 234, 43, 0.918); font-size: 12px;"></i>
-                    {{object.id_contrasena.nombre_contra}}
-                    {%else%}
-                    <i class="fas fa-lightbulb" style="color:rgba(255, 255, 255, 0.918); font-size: 12px;"></i>
-                    {{object.id_contrasena.nombre_contra}}
-                    {%endif%}
-                </td>
-                <td>{{object.id_user}}</td>
-                <td>{{object.id_user_share.username}}</td>
+            {% for object in roles %}
+            <tr>                   
+                <td>{{object.rol_name}}</td>
+                <td>{{object.related_count}}</td>
                 <td>{{object.comment}}</td>
+                <td>{{object.created|date:"d/m/y H:i"}}</td> 
+                <td><a href="{% url 'assignroluser_with_role' object.id %}"><i class ="fa-solid fa-user-tie" style="color:rgb(68, 94, 200);" title="Asignar Rol"></i></a>
+                    <a href="{% url 'permissionrolesupdate' object.id %}"><i class ="fa-solid fa-pen" style="color:rgb(217, 191, 23);" title="Editar Rol"></i></a>
+                </td>
                 
-                <td>{{object.created|date:"d/m/y H:i"}}</td>
-                {% if object.viewed == False %}
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></a></td>
-                {% else %}
-                <td><a href="#" disabled><i class ="fas fa-arrows-to-eye" style="color:rgb(121, 121, 121);"></i></a></td>
-                {%endif%}
             </tr>
             {% endfor %}    
         </tbody>
@@ -95,10 +81,17 @@
     $(document).ready(function () {
         
         $('#data').DataTable({
-            responsive: true,
+            "responsive": true,
+            "columDefs":[
+                    { "width": "15%", "targets": 0 },  // Limita el ancho de la primera columna (Nombre)
+                    { "width": "10%", "targets": 1 },  // Limita el ancho de la segunda columna (Email)
+                    { "width": "40%", "targets": 2 },  // Limita el ancho de la tercera columna (Telefono)
+                    { "width": "25%", "targets": 3 },   // Limita el ancho de la cuarta columna (Direccion)
+                    { "width": "10%", "targets": 4 }   // Limita el ancho de la cuarta columna (Direccion)
+            ],
             "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
             "pageLength": -1, // Establece -1 como la opción por defecto
-            autoWidth: false,
+            "autoWidth": false
             
         });
     });

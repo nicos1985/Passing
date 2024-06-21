@@ -75,17 +75,31 @@ class CustomModelChoiceField(ModelMultipleChoiceField):
         return CustomModelChoiceIterator(self)
     choices = property(_get_choices,  
                        forms.MultipleChoiceField._set_choices)
+    
+
 class PermissionRolesForm(forms.ModelForm):
-    rol_name = forms.CharField()
+    rol_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     contrasenas = CustomModelChoiceField(
         queryset=Contrasena.objects.filter(is_personal=False),
         widget=forms.CheckboxSelectMultiple,
         label='Contraseñas',
     )
+    comment = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+
 
     class Meta:
         model = PermissionRoles
-        fields = ['rol_name', 'contrasenas']
+        fields = ['rol_name', 'contrasenas', 'comment']
+        widgets = {
+            'contrasenas': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si se instancia con una instancia existente, inicializar las contraseñas seleccionadas
+        if self.instance.pk:
+            self.fields['contrasenas'].initial = self.instance.contrasenas.all()
+        
 
 
 class UserRolForm(forms.ModelForm):

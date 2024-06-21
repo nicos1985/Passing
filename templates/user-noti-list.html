@@ -76,7 +76,7 @@
      
           
 {% endif %}
-
+{% block javascript %}
 <script>
     function getCookie(name) {
         let cookieValue = null;
@@ -108,6 +108,23 @@
     });
 </script>
 
+
+<script type="application/javascript">
+
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
+            "pageLength": -1, // Establece -1 como la opción por defecto
+            autoWidth: false,
+            
+        });
+    });
+
+</script>
+
+{% endblock %}
 
 {% endblock %}
 
