@@ -17,7 +17,7 @@
 
 
     <div class="container mt-5">
-        <h1>Agregar Rol de Permisos</h1>
+        <h1>Modificar Roles de Permiso</h1>
         <div class="card-body" style="background-color: #F7F7F7;">
         <form class="form-control" method="post">
             {% csrf_token %}
@@ -47,7 +47,8 @@
                                 <td>{{ contrasena.owner }}</td>
                                 <td>{{ contrasena.seccion }}</td>
                                 <td>
-                                    <input type="checkbox" name="contrasenas" value="{{ contrasena.pk }}">
+                                    <input type="checkbox" name="contrasenas" value="{{ contrasena.pk }}"
+                                        {% if contrasena in form.instance.contrasenas.all %} checked {% endif %}>
                                 </td>
                             </tr>
                         {% endfor %}

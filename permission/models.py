@@ -23,6 +23,7 @@ class PermissionRoles(models.Model):
     rol_name = models.CharField(max_length=60)
     contrasenas = models.ManyToManyField(Contrasena, related_name='roles')
     comment = models.CharField(max_length=200, blank=True, null=True)
+    is_active=models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -30,6 +31,11 @@ class PermissionRoles(models.Model):
     
     def get_contrasenas(self):
         return self.contrasenas.all()
+    
+    def inactive(self):
+        self.is_active = False
+        self.save()
+        return self.is_active
 
 class UserRoles(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

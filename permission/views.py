@@ -139,6 +139,11 @@ class PermissionRolesCreateView(CreateView):
     template_name = 'permission_roles_form.html'
     success_url = reverse_lazy('config')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Añade las contraseñas al contexto
+        context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        return context
 # Funciones para la asignacion de Roles a usuarios. 
 
 def give_permission(request, user, contrasena):
@@ -219,7 +224,7 @@ class PermissionRolView(LoginRequiredMixin, ListView):
 
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = PermissionRoles.objects.filter(is_active=True)
         for obj in queryset: 
             obj.related_count = obj.get_contrasenas().count()
            
@@ -232,5 +237,26 @@ class PermissionRolView(LoginRequiredMixin, ListView):
 class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
     model = PermissionRoles
     form_class = PermissionRolesForm
-    template_name = 'permission_roles_form.html'
+    template_name = 'update_role.html'
     success_url = reverse_lazy('roles')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Añade las contraseñas al contexto
+        context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        return context
+
+
+def delete_rol(request, pk):
+    
+    delete_instance_role = get_object_or_404(PermissionRoles, id=pk)
+    if delete_instance_role is not None:
+        delete_instance_role.inactive()
+        message = f'El Rol {delete_instance_role.rol_name} fué eliminado con éxito.'
+        messages.success(request, message)
+    else:
+        message = f'Hubo un error buscar el rol.'
+        messages.error(request, message)
+
+    return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
+    
