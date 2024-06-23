@@ -7,7 +7,7 @@ from django.views.generic import CreateView, ListView, UpdateView, DeleteView, F
 
 from notifications.models import AdminNotification, UserNotifications
 from .models import ContraPermission, PermissionRoles
-from passbase.models import Contrasena
+from passbase.models import Contrasena, LogData
 from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm, UserRolForm
 from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
@@ -280,4 +280,27 @@ def delete_rol(request, pk):
         messages.error(request, message)
 
     return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
+    
+
+
+def update_owner(request):
+    """Realizar la actualizacion del campo owner de cada contraseña. """
+    contrasenas = Contrasena.objects.all()
+    
+    for contrasena in contrasenas:
+        try:
+            log_mod = LogData.objects.get(contraseña=contrasena.id, action='Create', entidad='Contraseña')
+            print(f'log_mod: {log_mod}')
+
+            contrasena.owner = log_mod.usuario
+            contrasena.save()
+            print(f'contrasena_owner_ok: {contrasena.owner}')
+
+        except LogData.DoesNotExist:
+
+            contrasena.owner = None
+            contrasena.save()
+            print(f'contrasena_owner_notexist: {contrasena.owner}')
+
+    return render(request, 'listpass.html')
     
