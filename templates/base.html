@@ -81,7 +81,7 @@
                                 </a>
                             </li>
                             {% if request.user.is_authenticated %}
-                                {% if request.user.is_superuser %}
+                                {% if request.user.is_superuser or request.user.is_staff %}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{% url 'config' %}">
                                             <i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin
@@ -105,7 +105,7 @@
                             <ul class="navbar-nav ms-auto">
                                 
                                     <li class="nav-item" style="margin-bottom: 20px;">
-                                        {% if request.user.is_superuser %}
+                                        {% if request.user.is_superuser or request.user.is_staff%}
                                         <a href="{% url 'listnotifadmin' %}">
                                             {% else %}
                                             <a href="{% url 'listnotifuser' %}">

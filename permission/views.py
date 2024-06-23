@@ -16,11 +16,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 #devuelve si es administrador
 def is_administrator(user):
+    return user.is_superuser or user.is_staff
+
+def is_superadmin(user):
     return user.is_superuser
 
 
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser
+@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser o es staff
 class PermissionListView(LoginRequiredMixin, ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
@@ -39,7 +42,7 @@ class PermissionListView(LoginRequiredMixin, ListView):
     
 
 
-@user_passes_test(is_administrator)
+@user_passes_test(is_superadmin)
 def seleccionar_usuario(request):
     usuario_form = PermissionUserForm()
     print(f'usuario_form no post: {usuario_form}')
@@ -55,7 +58,7 @@ def seleccionar_usuario(request):
 
     return render(request, 'create-perm-p1.html', {'usuario_form': usuario_form})
 
-@user_passes_test(is_administrator)
+@user_passes_test(is_superadmin)
 def gestion_permisos(request, usuario_id):
     usuario = get_object_or_404(CustomUser, id=usuario_id)
     permiso_form = PermisoForm(usuario, request.POST or None)
@@ -216,6 +219,7 @@ def assign_rol_user(request, id_rol=None):
 
     return render(request, 'assign_rol.html', {'form': user_rol_form})
 
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
 class PermissionRolView(LoginRequiredMixin, ListView):
     model = PermissionRoles
     template_name = 'roles_list.html'
@@ -234,6 +238,7 @@ class PermissionRolView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         return context
 
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
 class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
     model = PermissionRoles
     form_class = PermissionRolesForm
@@ -245,6 +250,15 @@ class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
         # Añade las contraseñas al contexto
         context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
         return context
+
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
+class ConfirmDeleteView(DeleteView):
+    model = PermissionRoles
+    template_name = 'delete_role.html'
+    
+   
+    def get_success_url(self):
+        return reverse_lazy('deleterolepk', kwargs={'pk': self.object.pk})
 
 
 def delete_rol(request, pk):

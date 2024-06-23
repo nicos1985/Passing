@@ -18,7 +18,7 @@
 
 {% block content %}
 
-{% if not request.user.is_superuser %}
+{% if not request.user.is_superuser and not request.user.is_staff %}
 <div class="container-fluid text-center">
     <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario administrador para navegar. 
         <br>Si no tienes cuenta puedes registrarte.</h5>
@@ -34,7 +34,7 @@
     
     </div>
 </div>
-{% elif request.user.is_superuser %}
+{% elif request.user.is_superuser or request.user.is_staff %}
 
 <div class="container-fluid">
     <h3 style="color: darkgrey; margin-top:30px;">Configurar email</h3>

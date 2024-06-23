@@ -23,7 +23,7 @@ def can_view_contrasena(user, request):
     return user.is_staff or ContraPermission.objects.filter(user_id=user, contra_id=contrasena_obj, permission=True).exists()
 
 def is_administrator(user):
-    return user.is_superuser
+    return user.is_superuser or user.is_staff
 
 @login_required
 def share_contrasena_form(request, contrasena):

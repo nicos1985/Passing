@@ -59,7 +59,7 @@
                 <td>{{object.created|date:"d/m/y H:i"}}</td> 
                 <td><a href="{% url 'assignroluser_with_role' object.id %}"><i class ="fa-solid fa-user-tie" style="color:rgb(68, 94, 200);" title="Asignar Rol"></i></a>
                     <a href="{% url 'permissionrolesupdate' object.id %}"><i class ="fa-solid fa-pen" style="color:#EFA400; margin-left: 5px;" title="Editar Rol"></i></a>
-                    <a href="{% url 'deleterole' object.id %}"><i class ="fa-solid fa-trash" style="color: rgb(216,48,48) ; margin-left: 5px;" title="Elimina Rol"></i></a>
+                    <a href="{% url 'deleteroleconfirm' object.id %}"><i class ="fa-solid fa-trash" style="color: rgb(216,48,48) ; margin-left: 5px;" title="Elimina Rol"></i></a>
                 </td>
                 
             </tr>
