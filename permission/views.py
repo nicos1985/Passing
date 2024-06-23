@@ -168,7 +168,14 @@ def generate_rol_permissions(request, rol, user):
     contrasenas = rol.get_contrasenas() #obtengo todas las contraseñas relacionadas al Rol
     #intento eliminar todos los permisos actuales. 
     try:
-        flush_permissions = ContraPermission.objects.filter(user_id=usuario).delete()
+        # Obtén el queryset de objetos que deben ser eliminados
+        flush_permissions = ContraPermission.objects.filter(user_id=usuario)
+
+        # Excluir aquellos que tienen una contraseña con is_personal=True
+        flush_permissions = flush_permissions.exclude(contra_id__is_personal=True)
+
+        # Eliminar los objetos que cumplen con los criterios
+        flush_permissions.delete()
     except Exception as e:
         message = f'Hubo un error al intentar quitar los permisos existentes. Error {e}'
         messages.error(request, message)
