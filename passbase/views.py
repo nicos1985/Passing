@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from login.models import CustomUser
 from notifications.models import UserNotifications
+from passbase.crypto import encrypt_data
 from passing import settings
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
@@ -150,7 +151,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
                             
         if log_data.exists():
             context['log_data'] = log_data
-            context['last_update'] = cant_dias
+            context['last_update'] = encrypt_data(cant_dias)
             context['actualizacion'] = dias_actual_contrasena
             context['users_permisions'] = users_permissions
 
