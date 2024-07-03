@@ -151,7 +151,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
                             
         if log_data.exists():
             context['log_data'] = log_data
-            context['last_update'] = encrypt_data(cant_dias)
+            context['last_update'] = cant_dias
             context['actualizacion'] = dias_actual_contrasena
             context['users_permisions'] = users_permissions
 
