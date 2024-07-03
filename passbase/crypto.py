@@ -20,12 +20,12 @@ key = Fernet.generate_key()
 print(f"Clave generada: {key}")
 
 # Guardar la clave en un archivo (como bytes)
-with open("clave.key", "wb") as key_file:
-    key_file.write(key)
+#with open("clave.key", "wb") as key_file:
+#    key_file.write(key)
 
 # Cargar la clave desde el archivo (como bytes)
-with open("clave.key", "rb") as key_file:
-    key = key_file.read()
+#with open("clave.key", "rb") as key_file:
+#    key = key_file.read()
 
 # Crear el objeto Fernet con la clave
 cipher_suite = Fernet(key)
