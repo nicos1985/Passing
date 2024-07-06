@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import login
-from .forms import UserRegisterForm, ProfileForm
+from .forms import CustomLoginForm, UserRegisterForm, ProfileForm
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
@@ -46,6 +46,7 @@ def register(request):
 
 
 class LoginFormView(LoginView):
+    form_class = CustomLoginForm
     template_name = 'login.html'
     
 

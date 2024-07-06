@@ -1,14 +1,29 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-
+from django.contrib.auth.forms import AuthenticationForm
 from .models import CustomUser
 from django.contrib.auth.views import LoginView, LogoutView
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV3
+
+
+class CustomLoginForm(AuthenticationForm):
+    captcha = ReCaptchaField(
+    widget=ReCaptchaV3(
+        attrs={
+            'required_score':0.8, #aumenta el score de puntuacion para la deteccion de bots
+            
+        }
+    )
+)
+
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
     password1 = forms.CharField(label = 'Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label = 'Confirmar Contraseña', widget=forms.PasswordInput)
+    
 
     class Meta:
         model = CustomUser
