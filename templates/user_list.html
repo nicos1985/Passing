@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container" style="height: 60px;">
+    <h2>Usuarios</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+
+
+
+<div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= "{% url 'config' %}"> <i class="fa-solid fa-bars"></i>  Configuracion</a>
+    </button>
+</div>
+<div>
+    <div class="container">
+    <table class="table" id="data">
+        <thead class="table-dark">
+        
+            <tr >
+
+                <th scope="col">Id</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Nombre y apellido</th>
+                <th scope="col">eMail</th>
+                <th scope="col">Posicion</th>
+                <th scope="col">Domicilio</th>
+                <th scope="col">Fech. Ingreso</th>
+                <th scope="col">Fech. Egreso</th>
+                <th scope="col">Aciones</th>
+                
+                
+            </tr>
+
+
+        </thead>
+
+        <tbody>
+            {% for object in users %}
+            <tr>
+
+                <td>
+                    {% if object.is_active == True %}
+                    <i class="fas fa-circle-check" style="color:#63E6BE; font-size: 12px;"></i>
+                    {{object.id}}
+                    {%else%}
+                    <i class="fas fa-circle-check" style="color:rgba(182, 182, 182, 0.918); font-size: 12px;"></i>
+                    {{object.id}}
+                    {%endif%}
+                </td>
+                <td>{{object.username}}</td>
+                <td>{{object.first_name}}, {{object.last_name}}</td>
+                <td>{{object.email}}</td>
+                <td>{{object.position}}</td>
+                <td>{{object.address}}</td>
+                <td>{{object.admission_date|date:"d/m/y"}}</td>
+                <td>{{object.departure_date|date:"d/m/y"}}</td>
+                <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-pen" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #EFA400;"></i></a>
+                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #c00b0b;"></i></a>
+                </td>
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+    </div>
+</div>
+     
+          
+{% endif %}
+
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="application/javascript">
+
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
+            "pageLength": -1, // Establece -1 como la opción por defecto
+            autoWidth: false,
+            
+        });
+    });
+
+</script>
+
+{% endblock %}

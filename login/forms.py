@@ -6,6 +6,7 @@ from .models import CustomUser
 from django.contrib.auth.views import LoginView, LogoutView
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
+from datetime import date
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -17,6 +18,8 @@ class CustomLoginForm(AuthenticationForm):
         }
     )
 )
+    
+
 
 
 class UserRegisterForm(UserCreationForm):
@@ -51,3 +54,27 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+
+
+
+class UserForm(forms.ModelForm):
+    admission_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
+    is_superuser = forms.RadioSelect()
+    is_staff = forms.RadioSelect()
+    is_active = forms.RadioSelect()
+    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    position = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    address = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    tel_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff',  'is_active' ,'position', 'address', 'tel_number', 'admission_date']
+        labels = {
+            'first_name':'Nombres',
+            'last_name': 'Apellido',
+        }
+   
