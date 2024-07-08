@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, deactivate_user
+from .views import LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, deactivate_user, activate_user
 from . import views 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
@@ -20,6 +20,7 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='userlist' ),
     path('update-user/<int:pk>', UserUpdateView.as_view(), name='updateuser' ),
     path('deactivate-user/<int:pk>', deactivate_user, name='deactivateuser' ),
+    path('activate-user/<int:pk>', activate_user, name='activateuser' ),
 
 ]
 

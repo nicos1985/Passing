@@ -1,12 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from .models import CustomUser
-from django.contrib.auth.views import LoginView, LogoutView
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
-from datetime import date
+
+
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -47,10 +46,14 @@ class UserRegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    menu_color = forms.CharField(
+        max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
+        widget=forms.TextInput(attrs={'type': 'color'})
+    )
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position']
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color']
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
@@ -59,9 +62,11 @@ class ProfileForm(forms.ModelForm):
 
 class UserForm(forms.ModelForm):
     admission_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
+    birth_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     is_superuser = forms.RadioSelect()
     is_staff = forms.RadioSelect()
     is_active = forms.RadioSelect()
+    documento = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -72,9 +77,6 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff',  'is_active' ,'position', 'address', 'tel_number', 'admission_date']
-        labels = {
-            'first_name':'Nombres',
-            'last_name': 'Apellido',
-        }
+        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
+        
    

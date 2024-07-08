@@ -35,12 +35,18 @@
     </div>
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
-<div class="container">
+<div class="container pt-5" >
+        <div class="col-md-5 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
 <div class="container-fluid">
-    <h3 style="color: rgb(32, 32, 32); margin-top:30px;">Editar Usuario</h3>
-    
-        <div class="row">
-            <div class="col-md-4 mx-auto">   
+    <div class="row">
+        <h3 style="color: rgb(32, 32, 32); margin-top:30px;">Editar Usuario</h3>
+    </div>
+    <div class="row">
+        <button class="btn">
+            <a class="btn btn-primary btn-flat" href= "{% url 'userlist' %}"> <i class="fa-solid fa-bars"></i>  Lista de Usuarios</a>
+        </button>
+    </div>
+         
         <form method="POST">
             {% csrf_token %}
             {{form.errors}}
@@ -55,8 +61,10 @@
         </form>
             </div>
         </div> 
-    
-</div>
+
+    <div class="row">
+    </div>
+
 </div>
 {%endif%}
 

@@ -43,6 +43,7 @@
                 <th scope="col">Id</th>
                 <th scope="col">Usuario</th>
                 <th scope="col">Nombre y apellido</th>
+                <th scope="col">Documento</th>
                 <th scope="col">eMail</th>
                 <th scope="col">Posicion</th>
                 <th scope="col">Domicilio</th>
@@ -62,23 +63,40 @@
 
                 <td>
                     {% if object.is_active == True %}
-                    <i class="fas fa-circle-check" style="color:#63E6BE; font-size: 12px;"></i>
+                    <i class="fas fa-circle-check" title = 'Usuario Activo' style="color:#63E6BE; font-size: 12px;"></i>
                     {{object.id}}
                     {%else%}
-                    <i class="fas fa-circle-check" style="color:rgba(182, 182, 182, 0.918); font-size: 12px;"></i>
+                    <i class="fas fa-circle-check" title = 'Usuario Inactivo' style="color:rgba(182, 182, 182, 0.918); font-size: 12px;"></i>
                     {{object.id}}
                     {%endif%}
                 </td>
-                <td>{{object.username}}</td>
+                <td>
+                    {% if object.is_superuser %}
+                    <i class="fas fa-crown" title = 'Super user' style="color:#EFA400; font-size: 12px;"></i>
+                    {{object.username}}
+
+                    {% elif object.is_staff %}
+                    <i class="fas fa-user-tie" title = 'Staff'  style="color:#253199; font-size: 12px;"></i>
+                    {{object.username}}
+                    {%else%}
+                    {{object.username}}
+                    {% endif %}
+                </td>
                 <td>{{object.first_name}}, {{object.last_name}}</td>
+                <td>{{object.documento}}</td>
                 <td>{{object.email}}</td>
                 <td>{{object.position}}</td>
                 <td>{{object.address}}</td>
                 <td>{{object.admission_date|date:"d/m/y"}}</td>
                 <td>{{object.departure_date|date:"d/m/y"}}</td>
-                <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-pen" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #EFA400;"></i></a>
-                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #c00b0b;"></i></a>
+                <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #EFA400;"></i></a>
+                    {% if object.is_active %}
+                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="desactivar usuario" style="margin-right: 10px; text-decoration: none; color: #c00b0b;"></i></a>
+                    {% else %}
+                    <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="margin-right: 10px; text-decoration: none; color: #63E6BE;"></i></a>
+                    {% endif %}
                 </td>
+
             </tr>
             {% endfor %}    
         </tbody>
@@ -103,6 +121,9 @@
             "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
             "pageLength": -1, // Establece -1 como la opción por defecto
             autoWidth: false,
+            "language": {
+                url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
+            }
             
         });
     });

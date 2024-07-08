@@ -142,31 +142,52 @@ class UserUpdateView(UpdateView):
 
    
     def get_initial(self):
-        """Define fecha inicial de 'fecha de ingreso' si esta completo en la BD trae esa, si no esta completa, pone fecha de hoy"""
-        initial = super().get_initial()
-        
-        # Verifica si el objeto ya existe y si admission_date no está definido
-        if self.object and not self.object.admission_date:
-            initial['admission_date'] = date.today().strftime('%Y-%m-%d')
-        elif self.object and self.object.admission_date:
-            initial['admission_date'] = self.object.admission_date.strftime('%Y-%m-%d')
-
-        return initial
+            initial = super().get_initial()
+            initial['birth_date'] = self.object.formatted_birth_date()
+            initial['admission_date'] = self.object.formatted_admission_date()
+            initial['departure_date'] = self.object.formatted_departure_date()
+            return initial
     
 
 def deactivate_user(request, pk):
-
     try:
         user = get_object_or_404(CustomUser, id=pk)
-        user.is_active = False
-        user.save()
-        message = f"El usuario {user.username} fue desactivado con éxito."
-        messages.success(request, message)
+        superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
+        
+        print(f'count superuser: {superusers}')
+
+        if user.is_superuser:
+            if superusers > 1:
+                message = user.inactivate()
+                messages.success(request, message)
+            else:
+                message = f'No se puede eliminar el usuario <strong>{user.username}</strong> ya que es el único superusuario en el listado de usuarios'
+                messages.error(request, message)
+        else:
+            message = user.inactivate()
+            messages.success(request, message)
+        
     except CustomUser.DoesNotExist:
-        message = f"El usuario con ID {pk} no existe."
+        message = f"El usuario con ID <strong>{pk}</strong> no existe."
         messages.error(request, message)
     except Exception as e:
         message = f"Error al desactivar el usuario: {str(e)}"
+        messages.error(request, message)
+
+    return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
+
+def activate_user(request, pk):
+    try:
+        user = get_object_or_404(CustomUser, id=pk)
+
+        message = user.activate()
+        messages.success(request, message)
+        
+    except CustomUser.DoesNotExist:
+        message = f"El usuario con ID <strong>{pk}</strong> no existe."
+        messages.error(request, message)
+    except Exception as e:
+        message = f"Error al activar el usuario: {str(e)}"
         messages.error(request, message)
 
     return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
