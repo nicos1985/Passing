@@ -24,37 +24,15 @@ class ContrasListView(LoginRequiredMixin, ListView):
     context_object_name = 'query_perm'
     login_url = 'login'
 
-    
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
- 
-    def post(self, request, *args, **kwargs):
-         data = {}
-         try:
-             data= Contrasena.objects.get(pk=request.POST['id']).toJSON()
- 
-         except Exception as e:
-             data['error'] = str(e)
-    
-         return JsonResponse(data)
-    
     def get_queryset(self):
-
         log_data ={}
-        
         fecha_hoy = timezone.now()
-
-    #try: 
         # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
         obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
                                                     perm_active = True, 
                                                     permission = True).values_list('contra_id', flat=True)
         #convierto en lista
         permisos = list(obj_permiso)
-        #retorno solo los objetos en los que el id se encuentran dentro de la lista
-        print(f'permisos: {permisos}')
-
         query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
 
         def ratio_calculation(created_value):
@@ -65,30 +43,23 @@ class ContrasListView(LoginRequiredMixin, ListView):
                 ratio = dias_faltantes / dias_actualizacion
             except:
                 ratio = 0
-
             if ratio <= 0:
-                log_data[contrasena.id] = 'rojo'
-               
+                log_data[contrasena.id] = 'danger'
             elif 0.01 < ratio <= 0.09:
-                log_data[contrasena.id] = 'amarillo'
-               
-                
+                log_data[contrasena.id] = 'warning'
             elif ratio > 0.09:
-                log_data[contrasena.id] = 'verde'
+                log_data[contrasena.id] = 'success'
                
         
         for contrasena in query_perm:
             # Buscar registros con action='change pass'
-            
             log_data_change_pass = LogData.objects.filter(contraseña=contrasena.id, action='change pass').order_by('-created')[:1]
             
-
             # Si no se encontraron registros con action='change pass', buscar con action='created'
             if log_data_change_pass.exists():
                 log_data_objeto = log_data_change_pass.first()
                 created_value = log_data_objeto.created
                 ratio_calculation(created_value)
-
 
             else:
                 # Si no hay registros 'change pass', intenta con 'created'
@@ -105,17 +76,11 @@ class ContrasListView(LoginRequiredMixin, ListView):
                     # Manejar el caso en el que no hay registros 'change pass' ni 'created'
                     print('No hay registros "change pass" ni "created"')
 
-
         for contrasena in query_perm:
             # Agrega un nuevo atributo 'flag' a cada objeto en el queryset
             contrasena.flag = log_data.get(contrasena.id, 'sin_color')
 
-        print(query_perm)
         return query_perm
-    
-    #except Exception as e:
-        print(f'error: {e}')
-        return redirect(reverse_lazy('login'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

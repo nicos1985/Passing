@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
@@ -47,6 +48,36 @@ class Contrasena(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         return item
+    
+
+    
+
+
+    
+    def ratio_calculation(self, created_value):
+            fecha_hoy = timezone.now()
+            dias_actualizacion = Contrasena.objects.get(id=self.id).actualizacion
+            dias_transcurridos = fecha_hoy - created_value
+            dias_faltantes = dias_actualizacion - int(dias_transcurridos.days)
+            try:
+                ratio = dias_faltantes / dias_actualizacion
+            except:
+                ratio = 0
+            if ratio <= 0:
+                return 'danger'
+            elif 0.01 < ratio <= 0.09:
+                return 'warning'
+            elif ratio > 0.09:
+                return 'success'
+            
+
+    def last_pass_change(self):
+            log_data_change_pass = LogData.objects.filter(contraseña=self.id, action='change pass').order_by('-created')[:1]
+            # Si no se encontraron registros con action='change pass', buscar con action='created'
+            if log_data_change_pass.exists():
+                log_data_objeto = log_data_change_pass.first()
+                created_value = log_data_objeto.created
+                ratio_calculation(created_value)
         
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
