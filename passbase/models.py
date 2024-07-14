@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
+import re
 
 from login.models import CustomUser
 
@@ -103,6 +104,40 @@ class Contrasena(models.Model):
         fecha_hoy = timezone.now()
         dias_transcurridos = (fecha_hoy - created_value).days
         return dias_transcurridos
+    
+    @property
+    def password_strength(self):
+        password = self.contraseña
+        length = len(password)
+
+        # Check for presence of different character types
+        has_upper = re.search(r'[A-Z]', password) is not None
+        has_lower = re.search(r'[a-z]', password) is not None
+        has_digit = re.search(r'\d', password) is not None
+        has_special = re.search(r'[!@#$%^&*(),.?":{}|<>]', password) is not None
+
+        # Evaluate strength based on the criteria
+        strength = 0
+
+        if length >= 8:
+            strength += 1
+        if length >= 12:
+            strength += 1
+        if has_upper:
+            strength += 1
+        if has_lower:
+            strength += 1
+        if has_digit:
+            strength += 1
+        if has_special:
+            strength += 1
+
+        if strength <= 2:
+            return 'weak'
+        elif 3 <= strength <= 4:
+            return 'moderate'
+        elif strength >= 5:
+            return 'strong'
         
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
