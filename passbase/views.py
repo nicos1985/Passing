@@ -35,7 +35,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
         permisos = list(obj_permiso)
         query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
 
-        def ratio_calculation(created_value):
+        """def ratio_calculation(created_value):
             dias_actualizacion = Contrasena.objects.get(id=contrasena.id).actualizacion
             dias_transcurridos = fecha_hoy - created_value
             dias_faltantes = dias_actualizacion - int(dias_transcurridos.days)
@@ -78,7 +78,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
 
         for contrasena in query_perm:
             # Agrega un nuevo atributo 'flag' a cada objeto en el queryset
-            contrasena.flag = log_data.get(contrasena.id, 'sin_color')
+            contrasena.flag = log_data.get(contrasena.id, 'sin_color')"""
 
         return query_perm
 

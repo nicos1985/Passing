@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils import timezone
 from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
@@ -48,10 +48,6 @@ class Contrasena(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         return item
-    
-
-    
-
 
     
     def ratio_calculation(self, created_value):
@@ -77,7 +73,29 @@ class Contrasena(models.Model):
             if log_data_change_pass.exists():
                 log_data_objeto = log_data_change_pass.first()
                 created_value = log_data_objeto.created
-                ratio_calculation(created_value)
+                return self.ratio_calculation(created_value)
+
+            else:
+                # Si no hay registros 'change pass', intenta con 'created'
+                log_data_created = LogData.objects.filter(
+                contraseña=self.id, action='Create'
+                ).order_by('-created')[:1]
+
+                if log_data_created.exists():
+                    log_data_objeto = log_data_created.first()
+                    changed_value = log_data_objeto.created
+                    return self.ratio_calculation(changed_value)
+                
+                else:
+                    # Manejar el caso en el que no hay registros 'change pass' ni 'created'
+                    return None
+    @property
+    def flag(self):
+        flag = self.last_pass_change()
+        if flag == None:
+            return 'Sin data'
+        return flag
+
         
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
