@@ -35,51 +35,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
         permisos = list(obj_permiso)
         query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
 
-        """def ratio_calculation(created_value):
-            dias_actualizacion = Contrasena.objects.get(id=contrasena.id).actualizacion
-            dias_transcurridos = fecha_hoy - created_value
-            dias_faltantes = dias_actualizacion - int(dias_transcurridos.days)
-            try:
-                ratio = dias_faltantes / dias_actualizacion
-            except:
-                ratio = 0
-            if ratio <= 0:
-                log_data[contrasena.id] = 'danger'
-            elif 0.01 < ratio <= 0.09:
-                log_data[contrasena.id] = 'warning'
-            elif ratio > 0.09:
-                log_data[contrasena.id] = 'success'
-               
-        
-        for contrasena in query_perm:
-            # Buscar registros con action='change pass'
-            log_data_change_pass = LogData.objects.filter(contraseña=contrasena.id, action='change pass').order_by('-created')[:1]
-            
-            # Si no se encontraron registros con action='change pass', buscar con action='created'
-            if log_data_change_pass.exists():
-                log_data_objeto = log_data_change_pass.first()
-                created_value = log_data_objeto.created
-                ratio_calculation(created_value)
-
-            else:
-                # Si no hay registros 'change pass', intenta con 'created'
-                log_data_created = LogData.objects.filter(
-                    contraseña=contrasena.id, action='Create'
-                ).order_by('-created')[:1]
-
-                if log_data_created.exists():
-                    log_data_objeto = log_data_created.first()
-                    changed_value = log_data_objeto.created
-                    ratio_calculation(changed_value)
-                
-                else:
-                    # Manejar el caso en el que no hay registros 'change pass' ni 'created'
-                    print('No hay registros "change pass" ni "created"')
-
-        for contrasena in query_perm:
-            # Agrega un nuevo atributo 'flag' a cada objeto en el queryset
-            contrasena.flag = log_data.get(contrasena.id, 'sin_color')"""
-
+       
         return query_perm
 
     def get_context_data(self, **kwargs):
@@ -99,25 +55,11 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
     
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
-        dias_actual_contrasena = Contrasena.objects.get(id=self.kwargs['pk']).actualizacion
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'],permission=True)
         
-        try:
-            fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'change pass').order_by('-created').first().created
-            fecha_hoy = timezone.now()
-            diferencia = fecha_hoy - fecha_ult_up_pass
-            cant_dias = diferencia.days 
-            
-        except:
-            fecha_ult_up_pass= LogData.objects.filter(contraseña=self.kwargs['pk'], action = 'Create').order_by('-created').first().created
-            fecha_hoy = timezone.now()
-            diferencia = fecha_hoy - fecha_ult_up_pass
-            cant_dias = diferencia.days 
-                            
+       
         if log_data.exists():
             context['log_data'] = log_data
-            context['last_update'] = cant_dias
-            context['actualizacion'] = dias_actual_contrasena
             context['users_permisions'] = users_permissions
 
         else:

@@ -73,12 +73,14 @@
                 <td>-</td>
                 {% endif %}
                 <td>{{object.created}}</td>
-                {% if last_update < actualizacion %}
+
+                {% if object.flag == 'success' %}
                 
-                <td> <button type="button" class="btn btn-success">{{last_update}} días</button> </td>
+                <td> <button type="button" class="btn btn-{{object.flag}}">Hace {{object.last_change}} días</button> </td>
+
                 {% else %}
                 <td> 
-                    <button type="button" class="btn btn-danger">{{last_update}} días</button>
+                    <button type="button" class="btn btn-danger">Hace {{object.last_change}} días</button>
                     
                         <a href="{% url 'updatepass' object.id %}">
                             <button type="button" class="btn btn-primary">

@@ -1,4 +1,5 @@
 from django.utils import timezone
+from datetime import datetime
 from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
@@ -51,51 +52,57 @@ class Contrasena(models.Model):
 
     
     def ratio_calculation(self, created_value):
-            fecha_hoy = timezone.now()
-            dias_actualizacion = Contrasena.objects.get(id=self.id).actualizacion
-            dias_transcurridos = fecha_hoy - created_value
-            dias_faltantes = dias_actualizacion - int(dias_transcurridos.days)
-            try:
-                ratio = dias_faltantes / dias_actualizacion
-            except:
-                ratio = 0
-            if ratio <= 0:
-                return 'danger'
-            elif 0.01 < ratio <= 0.09:
-                return 'warning'
-            elif ratio > 0.09:
-                return 'success'
-            
+        fecha_hoy = timezone.now()
+        dias_actualizacion = self.actualizacion
+        dias_transcurridos = (fecha_hoy - created_value).days
+        dias_faltantes = dias_actualizacion - dias_transcurridos
+        
+        try:
+            ratio = dias_faltantes / dias_actualizacion
+        except ZeroDivisionError:
+            ratio = 0
+        
+        if ratio <= 0:
+            return 'danger'
+        elif 0.01 < ratio <= 0.09:
+            return 'warning'
+        else:
+            return 'success'
 
     def last_pass_change(self):
-            log_data_change_pass = LogData.objects.filter(contraseña=self.id, action='change pass').order_by('-created')[:1]
-            # Si no se encontraron registros con action='change pass', buscar con action='created'
-            if log_data_change_pass.exists():
-                log_data_objeto = log_data_change_pass.first()
+        log_data_change_pass = LogData.objects.filter(contraseña=self.id, action='change pass').order_by('-created')[:1]
+        
+        if log_data_change_pass.exists():
+            log_data_objeto = log_data_change_pass.first()
+            created_value = log_data_objeto.created
+            return created_value
+        else:
+            log_data_created = LogData.objects.filter(contraseña=self.id, action='Create').order_by('-created')[:1]
+            
+            if log_data_created.exists():
+                log_data_objeto = log_data_created.first()
                 created_value = log_data_objeto.created
-                return self.ratio_calculation(created_value)
-
+                return created_value
             else:
-                # Si no hay registros 'change pass', intenta con 'created'
-                log_data_created = LogData.objects.filter(
-                contraseña=self.id, action='Create'
-                ).order_by('-created')[:1]
+                return None
 
-                if log_data_created.exists():
-                    log_data_objeto = log_data_created.first()
-                    changed_value = log_data_objeto.created
-                    return self.ratio_calculation(changed_value)
-                
-                else:
-                    # Manejar el caso en el que no hay registros 'change pass' ni 'created'
-                    return None
     @property
     def flag(self):
-        flag = self.last_pass_change()
-        if flag == None:
+        created_value = self.last_pass_change()
+        if created_value is None:
             return 'Sin data'
-        return flag
+        return self.ratio_calculation(created_value)
 
+    @property
+    def last_change(self):
+        created_value = self.last_pass_change()
+        if created_value is None:
+            return 'Sin data'
+        if isinstance(created_value, str):
+            created_value = datetime.fromisoformat(created_value)
+        fecha_hoy = timezone.now()
+        dias_transcurridos = (fecha_hoy - created_value).days
+        return dias_transcurridos
         
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
