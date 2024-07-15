@@ -11,11 +11,11 @@ def counter_admin_notifications(request):
     return {'contador_notis': contador_notis}
 
 def menu_color(request):
-    if not request.user.is_anonymous:
-        
-        color = request.user.menu_color
-    else:
+    if request.user.is_anonymous:
         color = '#212629'
+
+    else:
+        color = request.user.menu_color
     
     return {'color': color}
 
