@@ -64,11 +64,11 @@ class Contrasena(models.Model):
             ratio = 0
         
         if ratio <= 0:
-            return 'danger'
+            return '#FF7367' #Contraseña Vencida
         elif 0.01 < ratio <= 0.09:
-            return 'warning'
+            return '#FFE682' #Contraseña por vencer
         else:
-            return 'success'
+            return '#7CFF6D' #Contraseña en plazo
 
     def last_pass_change(self):
         log_data_change_pass = LogData.objects.filter(contraseña=self.id, action='change pass').order_by('-created')[:1]

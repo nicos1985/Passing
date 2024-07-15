@@ -6,6 +6,9 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
 <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
@@ -51,12 +54,13 @@
                             {% endif %}
                             <b>{{ contra.nombre_contra }}</b>
                         </td>
+                        
                         <td>
-                            <button type="button" class="btn btn-{{ contra.flag }}">{{ contra.actualizacion }} días</button>
+                            <i class="fas fa-circle" style="color: {{contra.flag}}; font-size: 10px;"></i>   {{ contra.actualizacion }} días
                         </td>
                         <td>{{ contra.seccion }}</td>
                         <td>
-                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title="{{ contra.link }}">{{ contra.link|truncatechars:30 }}</a>
+                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title="https://{{ contra.link }}">{{ contra.link|truncatechars:30 }}</a>
                         </td>
                         <td>{{ contra.usuario }}</td>
                         <td>
@@ -81,20 +85,23 @@
                             </div>
                         </td>
                         <td style="width: 150px;">
-                            <a href="{% url 'updatepass' contra.id %}"><i class="fas fa-pen" title="Editar Contraseña" style="margin-right: 10px; text-decoration: none; color: #EFA400;"></i></a>
-                            <a href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash" title="Eliminar contraseña" style="margin-right: 10px; text-decoration: none; color: rgb(216, 48, 48);"></i></a>
-                            <a href="{% url 'detailpass' contra.id %}"><i class="fas fa-circle-info" title="Detalle" style="margin-right: 10px; text-decoration: none; color: rgb(68, 94, 200);"></i></a>
-                            {% if contra.file %}
-                            <a href="{% url 'downloadfile' contra.id %}"><i class="fas fa-download" title="Descargar adjunto" style="margin-right: 10px; text-decoration: none; color: rgb(7, 10, 26);"></i></a>
-                            <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right: 10px; text-decoration: none; color: rgb(28, 49, 167);"></i></a>
-                            {% else %}
-                            <a href="#"><i class="fas fa-download" style="margin-right: 10px; text-decoration: none; color: rgb(198, 198, 198);"></i></a>
-                            {% if contra.is_personal %}
-                            <a href="#"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right: 10px; text-decoration: none; color: rgb(169, 169, 169);"></i></a>
-                            {% else %}
-                            <a href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes" title="Compartir contraseña" style="margin-right: 10px; text-decoration: none; color: rgb(28, 49, 167);"></i></a>
-                            {% endif %}
-                            {% endif %}
+                            <select class="selectpicker" onchange="handleActionChange(this)" data-width="100%">
+                                <option value="">Acciones</option>
+                                <option value="{% url 'updatepass' contra.id %}" data-content="<i class='fas fa-pen' title='Editar Contraseña' style='color: #FFE682;'></i> Editar">Editar</option>
+                                <option value="{% url 'deletepass' contra.id %}" data-content="<i class='fas fa-trash' title='Eliminar contraseña' style='color: #FF7367;'></i> Eliminar">Eliminar</option>
+                                <option value="{% url 'detailpass' contra.id %}" data-content="<i class='fas fa-circle-info' title='Detalle' style='color: #8894FF;'></i> Detalle">Detalle</option>
+                                {% if contra.file %}
+                                <option value="{% url 'downloadfile' contra.id %}" data-content="<i class='fas fa-download' title='Descargar adjunto' style='color: #555765;'></i> Descargar adjunto">Descargar adjunto</option>
+                                <option value="{% url 'createnotiadmin' contrasena=contra.id %}" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña' style='color: rgb(68, 94, 200);'></i> Compartir">Compartir</option>
+                                {% else %}
+                                <option value="#" disabled style="color: #CCC;" data-content="<i class='fas fa-download' title='Descargar adjunto'></i> Descargar adjunto">Descargar adjunto</option>
+                                {% if contra.is_personal %}
+                                <option value="#" disabled style="color: #CCC;" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña'></i> Compartir">Compartir</option>
+                                {% else %}
+                                <option value="{% url 'createnotiadmin' contrasena=contra.id %}" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña' style='color: rgb(68, 94, 200);'></i> Compartir">Compartir</option>
+                                {% endif %}
+                                {% endif %}
+                            </select>
                         </td>
                     </tr>
                     {% endfor %}
@@ -173,6 +180,19 @@
             copyTarget.disabled = true;
             copyTarget.blur();
         });
+    });
+</script>
+<script>
+    function handleActionChange(selectElement) {
+        const value = selectElement.value;
+        if (value) {
+            window.location.href = value;
+        }
+    }
+
+    // Inicializa Bootstrap Select
+    $(document).ready(function() {
+        $('.selectpicker').selectpicker();
     });
 </script>
 {% endblock %}
