@@ -17,25 +17,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="container pt-5" >
-<div class="card center">
-    <div class="card-title">
-        <div class="container" style="height: 105px; padding-top: 20px;">
-                <h2><i class="fa-solid fa-user-tie" ></i> Asignar un Rol</h2>
-                <button class="btn">
-                    <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-book"></i> Configurar</a>
-                </button>
+<div class="container pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6 col-sm-8">
+            <div class="card center">
+                <div class="card-title">
+                    <div class="container" style="height: 105px; padding-top: 20px;">
+                        <h2><i class="fa-solid fa-user-tie"></i> Asignar un Rol</h2>
+                        <button class="btn">
+                            <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                                <i class="fa-solid fa-book"></i> Configurar
+                            </a>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="background-color: #F7F7F7;">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
+                            <i class="fas fa-save"></i> Asignar Rol
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="card-body"style="background-color: #F7F7F7 ;">
-<form method="post">
-    {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-            <i class="fas fa-save"></i> Asignar Rol
-        </button>
-</form>
 </div>
+
 {% endblock %}

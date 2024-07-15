@@ -25,9 +25,9 @@
 </div>
 
 {% if request.user.is_authenticated %}
-    <div class="container">
+    <div class="container" >
         <div>
-            <a class="btn btn-primary btn-flat" href="{% url 'createpass' %}">
+            <a class="btn btn-primary btn-flat" style="margin-bottom: 20px;" href="{% url 'createpass' %}">
                 <i class="fas fa-plus"></i> Nueva contraseña
             </a>
         </div>
@@ -56,7 +56,7 @@
                         </td>
                         
                         <td>
-                            <i class="fas fa-circle" style="color: {{contra.flag}}; font-size: 10px;"></i>   {{ contra.actualizacion }} días
+                            <i class="fas fa-circle" style="color: {{contra.flag}}; font-size:10px;"></i>   {{ contra.actualizacion }} días
                         </td>
                         <td>{{ contra.seccion }}</td>
                         <td>
@@ -84,7 +84,7 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td style="width: 150px;">
+                        <td>
                             <select class="selectpicker" onchange="handleActionChange(this)" data-width="100%">
                                 <option value="">Acciones</option>
                                 <option value="{% url 'updatepass' contra.id %}" data-content="<i class='fas fa-pen' title='Editar Contraseña' style='color: #FFE682;'></i> Editar">Editar</option>

@@ -2,48 +2,40 @@
 
 
 {% block content %}
-<div class="container pt-5" >
-
-    <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 105px; padding-top: 20px;">
-                    <h2><i class="fas fa-plus" ></i> Crear Permiso</h2>
-                    <button class="btn">
-                        <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i> Lista</a>
-                    </button>
+<div class="container pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6 col-sm-8">
+            <div class="card center">
+                <div class="card-title">
+                    <div class="container" style="height: 105px; padding-top: 20px;">
+                        <h2><i class="fas fa-plus"></i> Crear Permiso</h2>
+                        <button class="btn">
+                            <a class="btn btn-primary btn-flat" href="{% url 'listpass' %}">
+                                <i class="fa-solid fa-bars"></i> Lista
+                            </a>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body"style="background-color: #F7F7F7 ;">
-                <h5>Elige el usuario a dar permisos</h5>
-            </div>    
-            <div class="card-body"style="background-color: #F7F7F7 ;">
-                    <form method="POST" >
+                <div class="card-body" style="background-color: #F7F7F7;">
+                    <h5>Elige el usuario a dar permisos</h5>
+                </div>
+                <div class="card-body" style="background-color: #F7F7F7;">
+                    <form method="POST">
                         {% csrf_token %}
-
                         <div class="form-group">
                             <div class="card-body">
-                            {{usuario_form}}
+                                {{ usuario_form }}
                             </div>
                         </div>
-                        
-           
-                            <button type="submit" class="btn btn-primary btn-flat">
-                                Siguiente <i class="fas fa-arrow-right"></i> 
-                            </button>
-                       
-                            
-
-                        </div> 
+                        <button type="submit" class="btn btn-primary btn-flat">
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
                     </form>
+                </div>
             </div>
-            
         </div>
     </div>
-
-
-        
-        
-        
 </div>
+
 
 {% endblock %}
