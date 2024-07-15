@@ -85,23 +85,44 @@
                             </div>
                         </td>
                         <td>
-                            <select class="selectpicker" onchange="handleActionChange(this)" data-width="100%">
-                                <option value="">Acciones</option>
-                                <option value="{% url 'updatepass' contra.id %}" data-content="<i class='fas fa-pen' title='Editar Contraseña' style='color: #FFE682;'></i> Editar">Editar</option>
-                                <option value="{% url 'deletepass' contra.id %}" data-content="<i class='fas fa-trash' title='Eliminar contraseña' style='color: #FF7367;'></i> Eliminar">Eliminar</option>
-                                <option value="{% url 'detailpass' contra.id %}" data-content="<i class='fas fa-circle-info' title='Detalle' style='color: #8894FF;'></i> Detalle">Detalle</option>
-                                {% if contra.file %}
-                                <option value="{% url 'downloadfile' contra.id %}" data-content="<i class='fas fa-download' title='Descargar adjunto' style='color: #555765;'></i> Descargar adjunto">Descargar adjunto</option>
-                                <option value="{% url 'createnotiadmin' contrasena=contra.id %}" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña' style='color: rgb(68, 94, 200);'></i> Compartir">Compartir</option>
-                                {% else %}
-                                <option value="#" disabled style="color: #CCC;" data-content="<i class='fas fa-download' title='Descargar adjunto'></i> Descargar adjunto">Descargar adjunto</option>
-                                {% if contra.is_personal %}
-                                <option value="#" disabled style="color: #CCC;" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña'></i> Compartir">Compartir</option>
-                                {% else %}
-                                <option value="{% url 'createnotiadmin' contrasena=contra.id %}" data-content="<i class='fas fa-share-nodes' title='Compartir contraseña' style='color: rgb(68, 94, 200);'></i> Compartir">Compartir</option>
-                                {% endif %}
-                                {% endif %}
-                            </select>
+                            
+                                <div class="dropdown">
+                                    <button class="btn btn-transparent dropdown-toggle"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="{% url 'updatepass' contra.id %}">
+                                            <i class='fas fa-pen' title='Editar Contraseña' style='color: #EFA400;'></i> Editar
+                                        </a>
+                                        <a class="dropdown-item" href="{% url 'deletepass' contra.id %}">
+                                            <i class='fas fa-trash' title='Eliminar contraseña' style='color: #D4320F;'></i> Eliminar
+                                        </a>
+                                        <a class="dropdown-item" href="{% url 'detailpass' contra.id %}">
+                                            <i class='fas fa-circle-info' title='Detalle' style='color: #1C31A7;'></i> Detalle
+                                        </a>
+                                        {% if contra.file %}
+                                        <a class="dropdown-item" href="{% url 'downloadfile' contra.id %}">
+                                            <i class='fas fa-download' title='Descargar adjunto' style='color: #070A1A;'></i> Descargar adjunto
+                                        </a>
+                                        <a class="dropdown-item" href="{% url 'createnotiadmin' contrasena=contra.id %}">
+                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #1C31A7;'></i> Compartir
+                                        </a>
+                                        {% else %}
+                                        <a class="dropdown-item disabled" href="#">
+                                            <i class='fas fa-download' title='Descargar adjunto' style='color: #CCC;'></i> Descargar adjunto
+                                        </a>
+                                        {% if contra.is_personal %}
+                                        <a class="dropdown-item disabled" href="#">
+                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #A9A9A9;'></i> Compartir
+                                        </a>
+                                        {% else %}
+                                        <a class="dropdown-item" href="{% url 'createnotiadmin' contrasena=contra.id %}">
+                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #1C31A7;'></i> Compartir
+                                        </a>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+                                
                         </td>
                     </tr>
                     {% endfor %}
@@ -182,17 +203,5 @@
         });
     });
 </script>
-<script>
-    function handleActionChange(selectElement) {
-        const value = selectElement.value;
-        if (value) {
-            window.location.href = value;
-        }
-    }
 
-    // Inicializa Bootstrap Select
-    $(document).ready(function() {
-        $('.selectpicker').selectpicker();
-    });
-</script>
 {% endblock %}
