@@ -155,6 +155,7 @@ def deactivate_user(request, pk):
         if user == request.user:
             message = f"No podes eliminar el mismo usuario con el que estás logueado."
             messages.error(request, message)
+            print(messages.error(request, message))
             return redirect('userlist')
         superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
         
