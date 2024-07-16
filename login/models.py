@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     tel_number=models.CharField(max_length=13, blank=True, null=True, verbose_name='Nro Telefono')
     admission_date = models.DateField(blank=True, null=True, verbose_name='Fecha Ingreso')
     departure_date = models.DateField(blank=True, null=True, verbose_name='Fecha Egreso')
-    departure_motive = models.CharField(max_length=1000,null=True, verbose_name='Motivo de baja')
+    departure_motive = models.CharField(max_length=1000,blank=True, null=True, verbose_name='Motivo de baja')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
 
 
