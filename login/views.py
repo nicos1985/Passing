@@ -152,6 +152,10 @@ class UserUpdateView(UpdateView):
 def deactivate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, id=pk)
+        if user == request.user:
+            message = f"No podes eliminar el mismo usuario con el que estás logueado."
+            messages.error(request, message)
+            return redirect('user_list')
         superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
         
         print(f'count superuser: {superusers}')
