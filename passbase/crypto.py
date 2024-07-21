@@ -1,20 +1,23 @@
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from passing import settings
 
 
 def encrypt_data(data):
     key = settings.CRYPTOGRAPHY_KEY
     cipher_suite = Fernet(key)
-    encrypted_data = cipher_suite.encrypt(data)
+    encrypted_data = cipher_suite.encrypt(data.encode())
     return encrypted_data
 
 def decrypt_data(encrypted_data):
     key = settings.CRYPTOGRAPHY_KEY
     cipher_suite = Fernet(key)
-    decrypted_data = cipher_suite.decrypt(encrypted_data)
+    
+    if isinstance(encrypted_data, str):
+        encrypted_data = encrypted_data.encode()  # Convertir a bytes si es una cadena
+
+    decrypted_data = cipher_suite.decrypt(encrypted_data).decode()
     return decrypted_data
-
-
+"""
 # Generar una clave
 key = Fernet.generate_key()
 print(f"Clave generada: {key}")
@@ -47,3 +50,4 @@ def get_fernet():
     print(f"Longitud de la clave: {len(key)}")
     return Fernet(key)
 
+"""

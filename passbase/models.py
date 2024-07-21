@@ -4,8 +4,11 @@ from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
 import re
+from cryptography.fernet import Fernet
 
 from login.models import CustomUser
+from passbase.crypto import decrypt_data, encrypt_data
+from passing import settings
 
 # Create your models here.
 class SeccionContra(models.Model):
@@ -26,11 +29,11 @@ class SeccionContra(models.Model):
 class Contrasena(models.Model):
   
 
-    nombre_contra = models.CharField(max_length=50, unique=True)
+    nombre_contra = models.CharField(max_length=255, unique=True)
     seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE)
     link = models.CharField(max_length=265)
-    usuario = models.CharField(max_length=60)
-    contraseña = models.CharField(max_length=60)
+    usuario = models.CharField(max_length=255)
+    contraseña = models.CharField(max_length=500)
     actualizacion= models.PositiveSmallIntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
     info = models.CharField(max_length=260)
     file = models.FileField(blank=True, null=True, upload_to='contra_files/')
@@ -50,7 +53,17 @@ class Contrasena(models.Model):
     def toJSON(self):
         item = model_to_dict(self)
         return item
+    
+    """def save(self, *args, **kwargs):
+        if isinstance(self.contraseña, str):
+            self.contraseña = encrypt_data(self.contraseña)
+        super().save(*args, **kwargs)"""
 
+
+    def get_decrypted_password(self):
+        if not isinstance(self.contraseña, (bytes, str)):
+            raise TypeError(f"Expected bytes or str, but got {type(self.contraseña).__name__}")
+        return decrypt_data(self.contraseña)
     
     def ratio_calculation(self, created_value):
         fecha_hoy = timezone.now()
@@ -142,10 +155,10 @@ class Contrasena(models.Model):
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
     contraseña = models.IntegerField()
-    password = models.CharField(max_length=50, null=True, blank=True)
+    password = models.CharField(max_length=255, null=True, blank=True)
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
     action = models.CharField(max_length=80, null = True)
-    detail = models.CharField(max_length=1000)
+    detail = models.CharField(max_length=2000)
     created = models.DateTimeField(auto_now=True)
     
     def Meta():

@@ -35,7 +35,11 @@ class ContrasListView(LoginRequiredMixin, ListView):
         permisos = list(obj_permiso)
         query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
 
-       
+        # Desencriptar las contraseñas y añadirlas al queryset
+        for item in query_perm:
+            
+            item.decrypted_password = item.get_decrypted_password()
+
         return query_perm
 
     def get_context_data(self, **kwargs):
@@ -84,13 +88,18 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form, *args, **kwargs):
         cleaned_data = form.cleaned_data
+        print(f'cleaned_Data: {cleaned_data}')
         cleaned_data['owner'] = self.request.user
         
         try:
             # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
             contrasena = form.save(commit=False)
             contrasena.owner = self.request.user
-            contrasena.save()
+            contraseña = cleaned_data.get('contraseña')
+
+            if contraseña:
+                contrasena.contraseña = encrypt_data(contraseña)
+                contrasena.save()
             
             # Creación de la entrada en LogData
             LogData.objects.create(
