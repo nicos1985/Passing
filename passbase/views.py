@@ -39,6 +39,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
         for item in query_perm:
             
             item.decrypted_password = item.get_decrypted_password()
+            item.decrypted_user = item.get_decrypted_user()
 
         return query_perm
 
@@ -60,7 +61,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     
         log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'],permission=True)
-        
+              
        
         if log_data.exists():
             context['log_data'] = log_data

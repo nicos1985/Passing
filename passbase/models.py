@@ -54,16 +54,23 @@ class Contrasena(models.Model):
         item = model_to_dict(self)
         return item
     
-    """def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
+        # Encriptar la contraseña antes de guardarla
         if isinstance(self.contraseña, str):
             self.contraseña = encrypt_data(self.contraseña)
-        super().save(*args, **kwargs)"""
-
+        if isinstance(self.usuario, str):
+            self.usuario = encrypt_data(self.usuario)
+        super().save(*args, **kwargs)
 
     def get_decrypted_password(self):
         if not isinstance(self.contraseña, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.contraseña).__name__}")
         return decrypt_data(self.contraseña)
+    
+    def get_decrypted_user(self):
+        if not isinstance(self.usuario, (bytes, str)):
+            raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
+        return decrypt_data(self.usuario)
     
     def ratio_calculation(self, created_value):
         fecha_hoy = timezone.now()

@@ -62,7 +62,7 @@
                         <td>
                             <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title="https://{{ contra.link }}">{{ contra.link|truncatechars:30 }}</a>
                         </td>
-                        <td>{{ contra.usuario }}</td>
+                        <td>{{ contra.decrypted_user }}</td>
                         <td>
                             <div style="display: flex; align-items: center;">
                                 {% if user.is_superuser %}
