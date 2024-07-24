@@ -1,6 +1,7 @@
 from django.db import IntegrityError
+from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
@@ -58,18 +59,22 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-    
-        log_data =  LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'],permission=True)
-              
-       
-        if log_data.exists():
-            context['log_data'] = log_data
-            context['users_permisions'] = users_permissions
+        
+        # Obtén el objeto Contrasena y descifra los valores
+        contraseña = self.get_object()
+        contraseña.decrypted_password = contraseña.get_decrypted_password()
+        contraseña.decrypted_user = contraseña.get_decrypted_user()
 
-        else:
-            context['log_data'] = None
+        log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+
+        context['contraseña'] = contraseña
+        context['log_data'] = log_data if log_data.exists() else None
+        context['users_permissions'] = users_permissions
+
         return context
+    
+        
 
 class ContrasCreateView(LoginRequiredMixin, CreateView):
     model = Contrasena, SeccionContra
@@ -459,3 +464,12 @@ def denypermission(request, pk):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+def encrypt_all(request):
+    contraseñas = Contrasena.objects.all()
+
+    for contraseña in contraseñas:
+        
+        contraseña.save()
+        print(f'contraseña encriptada : {contraseña.contraseña}')
+        
+    return render(request, 'listpass.html')

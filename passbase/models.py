@@ -71,7 +71,17 @@ class Contrasena(models.Model):
         if not isinstance(self.usuario, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
         return decrypt_data(self.usuario)
+    """
+    def encrypt_password(self):
+        if not isinstance(self.contraseña, (str)):
+            raise TypeError(f"Expected str, but got {type(self.contraseña).__name__}")
+        return encrypt_data(self.contraseña)
     
+    def encrypt_user(self):
+        if not isinstance(self.usuario, (str)):
+            raise TypeError(f"Expected str, but got {type(self.usuario).__name__}")
+        return encrypt_data(self.usuario)
+    """
     def ratio_calculation(self, created_value):
         fecha_hoy = timezone.now()
         dias_actualizacion = self.actualizacion

@@ -24,7 +24,8 @@ def decrypt_data(encrypted_data):
         raise e
 
 """
-
+key = Fernet.generate_key()
+print(key)
 
 # PARA HACER PRUEBAS DE ENCRIPTACION
 

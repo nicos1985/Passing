@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from passbase.views import ContrasListView, ContrasCreateView, ContrasUpdateView, ContrasDeleteView, DescargarArchivo, SectionCreateView, SectionListView, SectionUpdateView, SectionDeleteView, SectionActiveView, ContrasDetailView, denypermission
+from passbase.views import ContrasListView, ContrasCreateView, ContrasUpdateView, ContrasDeleteView, DescargarArchivo, SectionCreateView, SectionListView, SectionUpdateView, SectionDeleteView, SectionActiveView, ContrasDetailView, denypermission, encrypt_all
 from passing.views import config
 urlpatterns = [
     
@@ -17,6 +17,7 @@ urlpatterns = [
     path('deletesection/<int:pk>', SectionDeleteView.as_view(), name='deletesection'),
     path('downloadfile/<int:pk>', DescargarArchivo.as_view(), name='downloadfile'),
     path('denypermission/<int:pk>', denypermission, name='denypermission'),
+    path('encrypt_all', encrypt_all, name='encryptall'),
     
     
 ]
