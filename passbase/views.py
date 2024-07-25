@@ -172,9 +172,22 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
          context['action'] = 'edit new'
          context['user_id'] = user.id
          context['username'] = user.username
+
+         # Obtener el objeto y desencriptar los datos
+         objeto = self.get_object()
+         context['decrypted_user'] = objeto.get_decrypted_user()
+         context['decrypted_password'] = objeto.get_decrypted_password()
          
          return context
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        objeto = self.get_object()
+        kwargs.update({
+            'decrypted_user': objeto.get_decrypted_user(),
+            'decrypted_password': objeto.get_decrypted_password(),
+        })
+        return kwargs
 
     def get_object(self, queryset=None):
         # Obtener el objeto del modelo que se va 
@@ -183,13 +196,13 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
                                action= 'edit old', 
                                detail= f'''Nombre: {objeto_previo.nombre_contra}, 
                                            Seccion: {objeto_previo.seccion}, 
-                                           Usuario: {objeto_previo.usuario}, 
+                                           Usuario: {objeto_previo.get_decrypted_user()}, 
                                            Link:{objeto_previo.link}, 
                                            Info:{objeto_previo.info},
                                             owner: {objeto_previo.owner}''', 
                                usuario=self.request.user, 
                                contraseña=objeto_previo.id,
-                               password=objeto_previo.contraseña)
+                               password=objeto_previo.get_decrypted_password())
         
         return objeto_previo
 

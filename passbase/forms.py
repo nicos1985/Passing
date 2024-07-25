@@ -71,16 +71,27 @@ class ContrasenaUForm(ModelForm):
     se realizó mas abajo en la clase meta."""
     
     def __init__(self, *args, **kwargs):
+        decrypted_user = kwargs.pop('decrypted_user', None)
+        decrypted_password = kwargs.pop('decrypted_password', None)
         super().__init__(*args, **kwargs)
+        
         for form in self.visible_fields():
-            
             try:
-                if form.field.widget.attrs['id'] == 'is_personal':
-                    
-                    form.field.widget.attrs['class']= 'form-check-input'
+                if form.field.widget.attrs.get('id') == 'is_personal':
+                    form.field.widget.attrs['class'] = 'form-check-input'
+                else:
+                    form.field.widget.attrs['class'] = 'form-control'
+                    form.field.widget.attrs['autocomplete'] = 'off'
             except:
-                    form.field.widget.attrs['class']= 'form-control'
-                    form.field.widget.attrs['autocomplete']= 'off'
+                form.field.widget.attrs['class'] = 'form-control'
+                form.field.widget.attrs['autocomplete'] = 'off'
+
+        if decrypted_user:
+            self.fields['usuario'].initial = decrypted_user
+        if decrypted_password:
+            self.fields['contraseña'].initial = decrypted_password
+
+    
 
     class Meta:
         model = Contrasena
@@ -108,7 +119,8 @@ class ContrasenaUForm(ModelForm):
                 }),
             'usuario': TextInput(
                 attrs={
-                    'placeholder' : 'Ingrese el usuario de ingreso'
+                    'placeholder' : 'Ingrese el usuario de ingreso',
+                    'id' : 'id_usuario'
                 }),
             'contraseña': TextInput(
                 attrs={
