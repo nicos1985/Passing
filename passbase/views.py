@@ -68,6 +68,20 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
 
+        for log in log_data:
+            log.password = log.get_decrypted_password()
+            encrypted_user = log.get_encrypted_user()
+            print(f'encrypted user: {encrypted_user}')
+            if encrypted_user == None:
+                print(f'none case: {log.get_decrypted_user(encrypted_user)}')
+                log.detail = log.detail.replace(encrypted_user, log.get_decrypted_user(encrypted_user))
+                
+            else:
+                print(f'none case: {log.get_decrypted_user(encrypted_user)}')
+                log.detail = log.detail.replace(encrypted_user, log.get_decrypted_user(encrypted_user))
+               
+
+
         context['contraseña'] = contraseña
         context['log_data'] = log_data if log_data.exists() else None
         context['users_permissions'] = users_permissions
@@ -196,13 +210,13 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
                                action= 'edit old', 
                                detail= f'''Nombre: {objeto_previo.nombre_contra}, 
                                            Seccion: {objeto_previo.seccion}, 
-                                           Usuario: {objeto_previo.get_decrypted_user()}, 
+                                           Usuario: {objeto_previo.usuario}, 
                                            Link:{objeto_previo.link}, 
                                            Info:{objeto_previo.info},
                                             owner: {objeto_previo.owner}''', 
                                usuario=self.request.user, 
                                contraseña=objeto_previo.id,
-                               password=objeto_previo.get_decrypted_password())
+                               password=objeto_previo.contraseña)
         
         return objeto_previo
 
@@ -210,9 +224,9 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         contrasena = form.save(commit=False)
         objeto_previo = Contrasena.objects.get(id=self.kwargs['pk'])
         context = self.get_context_data()
-        print(f'old_contra: {objeto_previo.contraseña} == new_contra: {contrasena.contraseña}')
+        print(f'old contraseña: {objeto_previo.contraseña} | new contraseña: {contrasena.encrypt_password()}')
     # Verifica si la contraseña ha cambiado
-        if objeto_previo.contraseña != contrasena.contraseña:
+        if objeto_previo.contraseña != contrasena.encrypt_password():
             action = 'change pass'
         else:
             action = 'edit new'
@@ -222,10 +236,10 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
             entidad=context['entity'],
             usuario=self.request.user,
             action=action,
-            password=contrasena.contraseña,
+            password=contrasena.encrypt_password(),
             detail=f'''Nombre: {contrasena.nombre_contra},
                         Seccion: {contrasena.seccion},
-                        Usuario: {contrasena.usuario},
+                        Usuario: {contrasena.encrypt_user()},
                         Link: {contrasena.link},
                         Info: {contrasena.info},
                         owner: {contrasena.owner}'''

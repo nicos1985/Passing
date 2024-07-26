@@ -71,17 +71,17 @@ class Contrasena(models.Model):
         if not isinstance(self.usuario, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
         return decrypt_data(self.usuario)
-    """
+   
     def encrypt_password(self):
         if not isinstance(self.contraseña, (str)):
-            raise TypeError(f"Expected str, but got {type(self.contraseña).__name__}")
+            raise TypeError(f"Expected bytes or str, but got {type(self.contraseña).__name__}")
         return encrypt_data(self.contraseña)
     
     def encrypt_user(self):
         if not isinstance(self.usuario, (str)):
-            raise TypeError(f"Expected str, but got {type(self.usuario).__name__}")
+            raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
         return encrypt_data(self.usuario)
-    """
+
     def ratio_calculation(self, created_value):
         fecha_hoy = timezone.now()
         dias_actualizacion = self.actualizacion
@@ -184,3 +184,21 @@ class LogData(models.Model):
     def __str__(self):
         return str(self.contraseña)
     
+    def get_decrypted_password(self):
+        if not isinstance(self.password, (bytes, str)):
+            raise TypeError(f"Expected bytes or str, but got {type(self.password).__name__}")
+        return decrypt_data(self.password)
+    
+    def get_encrypted_user(self):
+        usuario_encrypted_match = re.search(r'Usuario: (.+?),', self.detail)
+        if usuario_encrypted_match:
+            usuario_encrypted = usuario_encrypted_match.group(1).strip()
+        else:
+            usuario_encrypted = None
+        return usuario_encrypted
+
+    def get_decrypted_user(self, usuario_encrypted):
+            if usuario_encrypted is None:
+                return None
+            else:
+                return decrypt_data(usuario_encrypted)

@@ -19,9 +19,8 @@ def decrypt_data(encrypted_data):
         decrypted_bytes = cipher_suite.decrypt(encrypted_data)
         decrypted_data = decrypted_bytes.decode()
         return decrypted_data
-    except Exception as e:
-        print(f"Decryption failed: {e}")
-        raise e
+    except:
+        return encrypted_data
 
 """
 key = Fernet.generate_key()
