@@ -60,17 +60,19 @@
                 <td>{{object.nombre_contra}}</td>
                 <td>{{object.seccion}}</td>
                 <td>{{object.link}}</td>
-                <td>{{contraseña.decrypted_user}}</td>
                 {% if user.is_superuser %}
-                <td>oculto</td>
+                    <td>oculto</td>
+                    <td>oculto</td>
                 {% else %}
-                <td>{{contraseña.decrypted_password}}</td>
+                    <td>{{contraseña.decrypted_user}}</td>
+                    <td>{{contraseña.decrypted_password}}</td>
                 {% endif %}
                 <td>{{object.info}}</td>
+
                 {%if object.file%}
-                <td><a href="{% url 'downloadfile' object.id %}">{{object.file}}</a></td>
+                    <td><a href="{% url 'downloadfile' object.id %}">{{object.file}}</a></td>
                 {% else %}
-                <td>-</td>
+                    <td>-</td>
                 {% endif %}
                 <td>{{object.created}}</td>
 
@@ -157,7 +159,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in users_permisions %}
+                {% for row in users_permissions %}
                 <tr>
                     
                     <td>{{row.user_id}}</td>

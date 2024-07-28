@@ -64,10 +64,12 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         # Obtén el objeto Contrasena y descifra los valores
         contraseña = self.get_object()
         contraseña.decrypted_password = contraseña.get_decrypted_password()
+        
         contraseña.decrypted_user = contraseña.get_decrypted_user()
 
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        print(f'user permissions: {users_permissions}')
 
         for log in log_data:
             try:
@@ -79,12 +81,6 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
                     log.detail = log.detail.replace(encrypted_user, decrypted_user)
             except Exception as e:
                 print(f"Error processing log {log.id}: {e}")
-        
-        context['log_data'] = log_data
-        context['users_permissions'] = users_permissions
-
-        return context
-
 
         context['contraseña'] = contraseña
         context['log_data'] = log_data if log_data.exists() else None
