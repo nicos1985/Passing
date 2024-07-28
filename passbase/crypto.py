@@ -4,10 +4,13 @@ from passing import settings
 
 
 def encrypt_data(data):
-    key = settings.CRYPTOGRAPHY_KEY
-    cipher_suite = Fernet(key)
-    encrypted_data = cipher_suite.encrypt(data.encode())
-    return encrypted_data
+    if data.startswith("b'") and data.endswith("'"):
+        return data
+    else:
+        key = settings.CRYPTOGRAPHY_KEY
+        cipher_suite = Fernet(key)
+        encrypted_data = cipher_suite.encrypt(data.encode())
+        return encrypted_data
 
 def decrypt_data(encrypted_data):
     key = settings.CRYPTOGRAPHY_KEY
