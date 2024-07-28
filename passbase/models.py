@@ -190,12 +190,16 @@ class LogData(models.Model):
         return decrypt_data(self.password)
     
     def get_encrypted_user(self):
-        usuario_encrypted_match = re.search(r'Usuario: (.+?),', self.detail)
-        if usuario_encrypted_match:
-            usuario_encrypted = usuario_encrypted_match.group(1).strip()
-        else:
-            usuario_encrypted = None
-        return usuario_encrypted
+        try:
+            usuario_encrypted_match = re.search(r'Usuario: (.+?),', self.detail)
+            if usuario_encrypted_match:
+                usuario_encrypted = usuario_encrypted_match.group(1).strip()
+            else:
+                usuario_encrypted = None
+            return usuario_encrypted
+        except Exception as e:
+            print(f"Error extracting encrypted user: {e}")
+            return None
 
     def get_decrypted_user(self, usuario_encrypted):
             if usuario_encrypted is None:
