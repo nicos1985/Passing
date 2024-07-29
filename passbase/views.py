@@ -498,7 +498,7 @@ def denypermission(request, pk):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
-def encrypt_all(request):
+def encrypt_all():
     contraseñas = Contrasena.objects.all()
     encrypted_data = []
 
@@ -521,12 +521,12 @@ def encrypt_log_data():
 
     for entry in log_entries:
         try:
-            contraseña_obj = Contrasena.objects.get(id=entry.contraseña)
+            
             
             # Encriptar la contraseña si no está encriptada
             if not entry.password.startswith("b'gAAAA"):
                 original_password = entry.password
-                entry.password = contraseña_obj.encrypt_password()
+                entry.password = entry.encrypt_password()
                 entry.save()
                 encrypted_log_data.append((entry.id, original_password, entry.get_encrypted_user()))
 
@@ -539,6 +539,7 @@ def encrypt_log_data():
                 # Reemplazar el usuario desencriptado con el encriptado
                 entry.detail = entry.detail.replace(decrypted_user, encrypted_user)
                 entry.save()
+
         except ObjectDoesNotExist:
             print(f'No se encontró la contraseña para el log con id {entry.id}')
         except Exception as e:
@@ -547,7 +548,7 @@ def encrypt_log_data():
     return encrypted_log_data
 
 def encrypt_all_data(request):
-    encrypted_contras = encrypt_all(request)
+    encrypted_contras = encrypt_all()
     encrypted_logs = encrypt_log_data()
     
     # Save the log for rollback purposes
@@ -561,7 +562,7 @@ def encrypt_all_data(request):
     return render(request, 'listpass.html', {'message': 'Todos los datos han sido encriptados.'})
 
 # Function to rollback the encryption process
-def rollback_encryption():
+def rollback_encryption(request):
     key = settings.CRYPTOGRAPHY_KEY
     cipher_suite = Fernet(key)
     
@@ -603,3 +604,4 @@ def rollback_encryption():
                     print(f'LogData con id {log_id} no encontrada para rollback.')
                 except Exception as e:
                     print(f'Error processing rollback for log {log.id}: {e}')
+    return render(request, 'listpass.html', {'messages': 'Se desencriptaron todas las contraseñas'})

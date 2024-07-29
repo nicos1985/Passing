@@ -172,7 +172,7 @@ class Contrasena(models.Model):
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
     contraseña = models.IntegerField()
-    password = models.CharField(max_length=255, null=True, blank=True)
+    password = models.CharField(max_length=500, null=True, blank=True)
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
     action = models.CharField(max_length=80, null = True)
     detail = models.CharField(max_length=2000)
@@ -183,6 +183,11 @@ class LogData(models.Model):
         
     def __str__(self):
         return str(self.contraseña)
+    
+    def encrypt_password(self):
+        if not isinstance(self.password, (str)):
+            raise TypeError(f"Expected bytes or str, but got {type(self.password).__name__}")
+        return encrypt_data(self.password)
     
     def get_decrypted_password(self):
         if not isinstance(self.password, (bytes, str)):
