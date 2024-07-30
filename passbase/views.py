@@ -516,13 +516,12 @@ def encrypt_all():
     return encrypted_data
 
 def encrypt_log_data():
-    log_entries = LogData.objects.all()
+    log_entries = LogData.objects.filter(entidad='Contraseña')
     encrypted_log_data = []
 
     for entry in log_entries:
         try:
-            
-            
+ 
             # Encriptar la contraseña si no está encriptada
             if not entry.password.startswith("b'gAAAA"):
                 original_password = entry.password
@@ -532,9 +531,12 @@ def encrypt_log_data():
 
             # Encriptar el usuario dentro del campo detail si no está encriptado
             encrypted_user = entry.get_encrypted_user()
+            print(f'usuario encrypted: {encrypted_user}')
             if encrypted_user and not encrypted_user.startswith("b'gAAAA"):
-                decrypted_user = decrypt_data(encrypted_user)
+                decrypted_user = entry.get_decrypted_user(encrypted_user)
+                print(f'usuario decrypted: {decrypted_user}')
                 encrypted_user = encrypt_data(decrypted_user).decode()
+                print(f'usuario encrypted2: {encrypted_user}')
 
                 # Reemplazar el usuario desencriptado con el encriptado
                 entry.detail = entry.detail.replace(decrypted_user, encrypted_user)

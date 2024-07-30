@@ -199,6 +199,7 @@ class LogData(models.Model):
             usuario_encrypted_match = re.search(r'Usuario: (.+?),', self.detail)
             if usuario_encrypted_match:
                 usuario_encrypted = usuario_encrypted_match.group(1).strip()
+                
             else:
                 usuario_encrypted = None
             return usuario_encrypted
