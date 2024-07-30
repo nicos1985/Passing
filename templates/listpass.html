@@ -52,7 +52,7 @@
                             {% if contra.is_personal %}
                             <i class="fa-solid fa-user" title="Es de uso personal"></i>
                             {% endif %}
-                            <b>{{ contra.nombre_contra }}</b>
+                            <a href="{% url 'detailpass' contra.id %}" style="text-decoration: none;" title="Detalle"><b>{{ contra.nombre_contra }}</b></a>
                         </td>
                         
                         <td>
@@ -60,7 +60,7 @@
                         </td>
                         <td>{{ contra.seccion }}</td>
                         <td>
-                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title="https://{{ contra.link }}">{{ contra.link|truncatechars:30 }}</a>
+                            <a href="https://{{ contra.link }}" target="_blank" rel="noopener" title="https://{{ contra.link }}" style="text-decoration: none;"><i class="fas fa-arrow-up-right-from-square"></i><span>&nbsp&nbsp</span>{{ contra.link|truncatechars:30 }}</a>
                         </td>
                         <td>{{ contra.decrypted_user }}</td>
                         <td>
