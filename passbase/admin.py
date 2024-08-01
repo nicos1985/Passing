@@ -6,7 +6,7 @@ from .models import Contrasena, LogData, SeccionContra
 # Register your models here.
 
 class ContrasenaAdmin(admin.ModelAdmin):
-    list_display = ('nombre_contra' , 'seccion', 'info' ,'usuario')
+    list_display = ('id','nombre_contra' , 'seccion', 'info' ,'usuario')
     readonly_fields=('created', 'updated')
 
 class LogDataAdmin(admin.ModelAdmin):

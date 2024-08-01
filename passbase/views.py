@@ -615,17 +615,22 @@ def remake_pass(request):
     except_counter = 0
     for contrasena in contrasenas:
         log_data_obj = LogData.objects.filter(contraseña=contrasena.id).order_by('-created').first()
-        log_data_obj_pass = log_data_obj.password
-        with open ('log_pass.txt', 'a') as f:
-            f.write(f'log_data_obj_pass:{contrasena.nombre_contra} | {decrypt_data(log_data_obj_pass)}\n' )
-            try:
-                contrasena.contraseña = log_data_obj_pass
-                contrasena.save()
-                counter += 1
-            except Exception as e:
-                f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | {e}\n')
-                except_counter += 1
-    
+        if log_data_obj is not None:
+            log_data_obj_pass = log_data_obj.password
+            with open ('log_pass.txt', 'a') as f:
+                f.write(f'log_data_obj_pass:{contrasena.nombre_contra} | {decrypt_data(log_data_obj_pass)}\n' )
+                try:
+                    contrasena.contraseña = log_data_obj_pass
+                    contrasena.save()
+                    counter += 1
+                except Exception as e:
+                    f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | {e}\n')
+                    except_counter += 1
+        else:
+            except_counter +=1
+            with open ('log_pass.txt', 'a') as f:
+                f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | no existe log\n')
+
     messages.success(request,f'Se copiaron las contraseñas. Exitosas: {counter} | erroneas: {except_counter}' )
         
     return render(request, 'listpass.html')
