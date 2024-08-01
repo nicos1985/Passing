@@ -607,3 +607,25 @@ def rollback_encryption(request):
                 except Exception as e:
                     print(f'Error processing rollback for log {log.id}: {e}')
     return render(request, 'listpass.html', {'messages': 'Se desencriptaron todas las contraseñas'})
+
+def remake_pass(request):
+
+    contrasenas = Contrasena.objects.all()
+    counter = 0
+    except_counter = 0
+    for contrasena in contrasenas:
+        log_data_obj = LogData.objects.filter(contraseña=contrasena.id).order_by('-created').first()
+        log_data_obj_pass = log_data_obj.password
+        with open ('log_pass.txt', 'a') as f:
+            f.write(f'log_data_obj_pass:{contrasena.nombre_contra} | {decrypt_data(log_data_obj_pass)}\n' )
+            try:
+                contrasena.contraseña = log_data_obj_pass
+                contrasena.save()
+                counter += 1
+            except Exception as e:
+                f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | {e}\n')
+                except_counter += 1
+    
+    messages.success(request,f'Se copiaron las contraseñas. Exitosas: {counter} | erroneas: {except_counter}' )
+        
+    return render(request, 'listpass.html')

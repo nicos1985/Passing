@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from passbase.views import ContrasListView, ContrasCreateView, ContrasUpdateView, ContrasDeleteView, DescargarArchivo, SectionCreateView, SectionListView, SectionUpdateView, SectionDeleteView, SectionActiveView, ContrasDetailView, denypermission, encrypt_all, encrypt_all_data, rollback_encryption
+from passbase.views import ContrasListView, ContrasCreateView, ContrasUpdateView, ContrasDeleteView, DescargarArchivo, SectionCreateView, SectionListView, SectionUpdateView, SectionDeleteView, SectionActiveView, ContrasDetailView, denypermission, encrypt_all, encrypt_all_data, remake_pass, rollback_encryption
 from passing.views import config
 urlpatterns = [
     
@@ -19,6 +19,7 @@ urlpatterns = [
     path('denypermission/<int:pk>', denypermission, name='denypermission'),
     path('encrypt-all-data', encrypt_all_data, name='encryptall'),
     path('rollback-encryption', rollback_encryption, name='rollbackencryption'),
+    path('remake-pass', remake_pass, name='remakepass'),
     
     
 ]

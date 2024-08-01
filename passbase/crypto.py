@@ -16,7 +16,7 @@ def decrypt_data(encrypted_data):
     key = settings.CRYPTOGRAPHY_KEY
     cipher_suite = Fernet(key)
     
-    if isinstance(encrypted_data,(bytes, str) ):
+    if isinstance(encrypted_data,(str) ):
         if encrypted_data.startswith("b'") and encrypted_data.endswith("'"):
             
             # Removing the extra characters introduced by string representation
@@ -38,6 +38,7 @@ def decrypt_data(encrypted_data):
 """
 key = Fernet.generate_key()
 print(key)
+
 
 # PARA HACER PRUEBAS DE ENCRIPTACION
 
@@ -97,4 +98,10 @@ try:
 except Exception as e:
     print(f"An error occurred during test encryption/decryption: {e}")
 
-    """
+    
+contra = b'gAAAAABmqkXCYK53Zp97I0sIytNXE8cPID9n6ySLNYrCcS0g5x5Zg3vjylWCeJubCgIJqWHxLFrTjOZQbZSHDKPFAopXfZDtJbiNk3twgS3JC5WpEaGtWPvh1f2kJcXEhWisBJ3LRXf5'
+contra = contra.decode()
+print(decrypt_data(contra))
+"""
+data = b'gAAAAABmq3Zu8BqErLq_5K3g2AdgFDngZDfY_n3XWWR9Bz56RgNUw5Eq6zt8ARk6GYnxGyQ_Rz-Y4xSwmD8aIpOVuci1g8KmRA=='
+print(f"decrypt_test: {decrypt_data(data)}")
