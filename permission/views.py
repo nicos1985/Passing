@@ -28,16 +28,10 @@ class PermissionListView(LoginRequiredMixin, ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
     login_url = '/login/login/'
-     
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Lista de Permisos'
-        return context
-    
     def get_queryset(self):
-        permisos =  ContraPermission.objects.all().order_by('-user_id', '-contra_id__seccion')
-       
+        permisos = ContraPermission.objects.all().select_related('user_id', 'contra_id__seccion').order_by('-user_id', '-contra_id__seccion')
+    
         return permisos
     
 
