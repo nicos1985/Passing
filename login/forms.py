@@ -81,8 +81,12 @@ class UserForm(forms.ModelForm):
         
 
 class UserDepartureForm(forms.ModelForm):
+     departure_date = forms.DateField(label= 'Fecha de baja',widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+     departure_motive = forms.CharField(label= 'Motivo de baja',widget=forms.Textarea(attrs={'class': 'form-control'}))
      class Meta:
         model = CustomUser
         fields = ['departure_date', 'departure_motive', 'is_active']
+
+        
 
    
