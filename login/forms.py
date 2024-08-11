@@ -79,4 +79,10 @@ class UserForm(forms.ModelForm):
         model = CustomUser
         fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
         
+
+class UserDepartureForm(forms.ModelForm):
+     class Meta:
+        model = CustomUser
+        fields = ['departure_date', 'departure_motive', 'is_active']
+
    

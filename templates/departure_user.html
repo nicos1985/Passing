@@ -1,0 +1,48 @@
+{% extends 'base.html'%}
+
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+<div class="container pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6 col-sm-8">
+            <div class="card center">
+                <div class="card-title">
+                    <div class="container" style="height: 105px; padding-top: 20px;">
+                        <h2><i class="fa-solid fa-user-tie"></i> Baja de Usuario</h2>
+                        <button class="btn">
+                            <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                                <i class="fa-solid fa-book"></i> Configurar
+                            </a>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="background-color: #F7F7F7;">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
+                            <i class="fas fa-save"></i> Confirmar baja
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
