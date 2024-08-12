@@ -67,8 +67,8 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         
         contraseña.decrypted_user = contraseña.get_decrypted_user()
 
-        log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).select_related('usuario').order_by('-created')[:10]
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True).select_related('user_id', 'contra_id')
         print(f'user permissions: {users_permissions}')
 
         for log in log_data:
