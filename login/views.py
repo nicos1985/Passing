@@ -211,7 +211,7 @@ def deactivate_user(request, pk):
 
     return message
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch') 
+@user_passes_test(is_administrator)
 def activate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, id=pk)
