@@ -18,9 +18,6 @@ class CustomLoginForm(AuthenticationForm):
     )
 )
     
-
-
-
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
     password1 = forms.CharField(label = 'Contraseña', widget=forms.PasswordInput)
@@ -80,3 +77,14 @@ class UserForm(forms.ModelForm):
         fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
         
    
+
+
+class AdminLoginForm(AuthenticationForm):
+    captcha = ReCaptchaField(
+    widget=ReCaptchaV3(
+        attrs={
+            'required_score':0.8, #aumenta el score de puntuacion para la deteccion de bots
+            
+        }
+    )
+)

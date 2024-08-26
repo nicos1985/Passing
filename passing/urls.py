@@ -23,7 +23,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', home, name='home'),
     path('login/', include('login.urls') ),
-    path('admin/', admin.site.urls),
     path('pass/',include('passbase.urls') ),
     path('notifications/',include('notifications.urls') ),
     path('perm/',include('permission.urls') ),
@@ -36,4 +35,8 @@ if settings.DEBUG:
     import debug_toolbar
 
     urlpatterns += path("__debug__/", include("debug_toolbar.urls")),
-                   
+
+if settings.ADMIN_ENABLED:
+    urlpatterns += [
+        path('admin/', admin.site.urls),
+    ]

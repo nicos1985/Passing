@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -18,6 +18,14 @@ from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
 from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
+
+
+def is_administrator(user):
+    return user.is_superuser or user.is_staff
+
+def is_superadmin(user):
+    return user.is_superuser
 
 
 class ContrasListView(LoginRequiredMixin, ListView):
@@ -58,6 +66,19 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     template_name = 'detail-cont.html'
     login_url = 'login'
 
+    def get(self, request, *args, **kwargs):
+        # Verificar permisos antes de continuar
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        print(f'users_permissions: {users_permissions}')
+        lista_permision_user = [permision.user_id for permision in users_permissions]
+
+        if request.user not in lista_permision_user:
+            # Redirigir si no tiene permisos
+            messages.error(request, 'No tienes permisos para ingresar a este detalle.')
+            return redirect(reverse('listpass'))
+
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -69,8 +90,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
 
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
-        print(f'user permissions: {users_permissions}')
-
+        
         for log in log_data:
             try:
                 log.password = log.get_decrypted_password()
@@ -175,6 +195,19 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         super().__init__(**kwargs)
         self._objeto_previo = None
 
+    def get(self, request, *args, **kwargs):
+        # Verificar permisos antes de continuar
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        print(f'users_permissions: {users_permissions}')
+        lista_permision_user = [permision.user_id for permision in users_permissions]
+
+        if request.user not in lista_permision_user:
+            # Redirigir si no tiene permisos
+            messages.error(request, 'No tienes permisos para ingresar a editar esta contraseña.')
+            return redirect(reverse('listpass'))
+
+        return super().get(request, *args, **kwargs)
+    
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -469,7 +502,7 @@ class SectionActiveView(LoginRequiredMixin, DetailView):
         return redirect('listsection')
 
 
-class DescargarArchivo(DetailView):
+class DescargarArchivo(LoginRequiredMixin, DetailView):
     model = Contrasena
     template_name = 'filedownload.html'
 
@@ -483,7 +516,7 @@ class DescargarArchivo(DetailView):
         response['Content-Disposition'] = 'attachment; filename={}'.format(archivo.name)
         return response
     
-
+@user_passes_test(is_administrator)
 def denypermission(request, pk):
     permission = ContraPermission.objects.get(id=pk)
     permission.permission = False
@@ -497,7 +530,7 @@ def denypermission(request, pk):
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-
+@user_passes_test(is_administrator)
 def encrypt_all():
     contraseñas = Contrasena.objects.all()
     encrypted_data = []
@@ -515,6 +548,8 @@ def encrypt_all():
     
     return encrypted_data
 
+
+@user_passes_test(is_administrator)
 def encrypt_log_data():
     log_entries = LogData.objects.filter(entidad='Contraseña')
     encrypted_log_data = []
@@ -549,6 +584,8 @@ def encrypt_log_data():
     
     return encrypted_log_data
 
+
+@user_passes_test(is_administrator)
 def encrypt_all_data(request):
     encrypted_contras = encrypt_all()
     encrypted_logs = encrypt_log_data()
@@ -564,6 +601,7 @@ def encrypt_all_data(request):
     return render(request, 'listpass.html', {'message': 'Todos los datos han sido encriptados.'})
 
 # Function to rollback the encryption process
+@user_passes_test(is_administrator)
 def rollback_encryption(request):
     key = settings.CRYPTOGRAPHY_KEY
     cipher_suite = Fernet(key)
@@ -608,6 +646,8 @@ def rollback_encryption(request):
                     print(f'Error processing rollback for log {log.id}: {e}')
     return render(request, 'listpass.html', {'messages': 'Se desencriptaron todas las contraseñas'})
 
+
+@user_passes_test(is_administrator)
 def remake_pass(request):
 
     contrasenas = Contrasena.objects.all()

@@ -93,7 +93,7 @@ def gestion_permisos(request, usuario_id):
             'contraseñas' : contrasena,
         })
         
-
+@user_passes_test(is_administrator)
 def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
     try:
         # Obtener o crear el objeto de permiso
@@ -190,7 +190,7 @@ def generate_rol_permissions(request, rol, user):
 
     return contrasenas
 
-
+@user_passes_test(is_administrator)
 def assign_rol_user(request, id_rol=None):
     """ Maneja el formulario donde se asignan los roles a los usuarios.
     Toma los datos y los pasa a la función generate_rol_permission """
@@ -267,7 +267,7 @@ class ConfirmDeleteView(DeleteView):
     def get_success_url(self):
         return reverse_lazy('deleterolepk', kwargs={'pk': self.object.pk})
 
-
+@user_passes_test(is_administrator)
 def delete_rol(request, pk):
     
     delete_instance_role = get_object_or_404(PermissionRoles, id=pk)
@@ -282,7 +282,7 @@ def delete_rol(request, pk):
     return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
     
 
-
+@user_passes_test(is_administrator)
 def update_owner(request):
     """Realizar la actualizacion del campo owner de cada contraseña. """
     contrasenas = Contrasena.objects.all()
