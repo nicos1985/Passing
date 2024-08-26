@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, deactivate_user, activate_user
+from .views import DepartureUser, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_user, deactivate_user
 from . import views 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
@@ -19,7 +19,7 @@ urlpatterns = [
     path('reset-password/complete/', PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     path('users/', UserListView.as_view(), name='userlist' ),
     path('update-user/<int:pk>', UserUpdateView.as_view(), name='updateuser' ),
-    path('deactivate-user/<int:pk>', deactivate_user, name='deactivateuser' ),
+    path('deactivate-user/<int:pk>', DepartureUser.as_view(), name='deactivateuser' ),
     path('activate-user/<int:pk>', activate_user, name='activateuser' ),
 
 ]

@@ -28,16 +28,10 @@ class PermissionListView(LoginRequiredMixin, ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
     login_url = '/login/login/'
-     
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Lista de Permisos'
-        return context
-    
     def get_queryset(self):
-        permisos =  ContraPermission.objects.all().order_by('-user_id', '-contra_id__seccion')
-       
+        permisos = ContraPermission.objects.all().select_related('user_id', 'contra_id__seccion', 'contra_id__owner').order_by('-user_id', '-contra_id__seccion')
+    
         return permisos
     
 
@@ -176,6 +170,7 @@ def generate_rol_permissions(request, rol, user):
 
         # Eliminar los objetos que cumplen con los criterios
         flush_permissions.delete()
+        
     except Exception as e:
         message = f'Hubo un error al intentar quitar los permisos existentes. Error {e}'
         messages.error(request, message)
@@ -184,9 +179,14 @@ def generate_rol_permissions(request, rol, user):
         try:
             give_permission(request, usuario, contrasena)
 
+        
+
         except Exception as e:
             message = f'hubo un error al dar permiso a la contraseña {contrasena}. Error {e}'
             messages.error(request, message)
+
+    usuario.assigned_role = rol.rol_name
+    usuario.save()    
 
     return contrasenas
 

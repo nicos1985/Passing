@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db import transaction
 
 class CustomUser(AbstractUser):
     avatar = models.ImageField(blank=True, null=True, upload_to='static/')
@@ -13,6 +14,7 @@ class CustomUser(AbstractUser):
     departure_date = models.DateField(blank=True, null=True, verbose_name='Fecha Egreso')
     departure_motive = models.CharField(max_length=1000,blank=True, null=True, verbose_name='Motivo de baja')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
+    assigned_role = models.CharField(max_length=200, null=True, blank=True, verbose_name='Rol asignado')
 
 
     def formatted_birth_date(self):
@@ -26,9 +28,10 @@ class CustomUser(AbstractUser):
     
     def inactivate(self):
         try:
-            self.is_active = False
-            self.save()
-            message = f'Se inactivó el usuario <strong>{self.username}</strong> con éxito.'
+            with transaction.atomic():
+                self.is_active = False
+                self.save(update_fields=['is_active'])
+            message = f'Se inactivó el usuario <strong>{self.username}</strong> con éxito. Estado: {self.is_active}'
         except Exception as e:
             message = f'No se pudo inactivar el usuario <strong>{self.username}</strong>. Error: {str(e)}'
         return message

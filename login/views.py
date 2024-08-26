@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import login
-from .forms import CustomLoginForm, UserRegisterForm, ProfileForm, UserForm
+from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
@@ -94,7 +94,7 @@ def profile_view(request, username):
 
         user = CustomUser.objects.get(username=username)
         if request.method == 'POST':
-            print('pasando por post')
+            
             profile_form = ProfileForm(request.POST, request.FILES, instance=user)
             if profile_form.is_valid():
                 profile_form.save()
@@ -148,38 +148,52 @@ class UserUpdateView(UpdateView):
             initial['departure_date'] = self.object.formatted_departure_date()
             return initial
     
+class DepartureUser(UpdateView):
+    model = CustomUser
+    form_class = UserDepartureForm
+    template_name = 'departure_user.html'
+    success_url = reverse_lazy('userlist')  # Asegúrate de que 'userlist' sea el nombre correcto en urls.py
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.get_object()  # Agregamos el usuario al contexto
+        return context
+
+    def form_valid(self, form):
+        try:
+            user = self.get_object()
+            print(f'estoy en form valid: user = {user}')  # Obtener el usuario actual basado en la pk de la URL
+            deactivate = deactivate_user(self.request, user.id)
+            print(f'deactivate return: {deactivate}')
+            messages.success(self.request, f"Se dió de baja exitosamente al usuario {user.username}.")
+        except Exception as e:
+            print(f'exception departure_user: {e}')
+            messages.error(self.request, f"Error al dar de baja al usuario: {str(e)}")
+        return super().form_valid(form)
 
 def deactivate_user(request, pk):
     try:
-        user = get_object_or_404(CustomUser, id=pk)
+        user = get_object_or_404(CustomUser, pk=pk)
+        print(f'user_deactivate = {user}')
         if user == request.user:
-            message = f"No podes eliminar el mismo usuario con el que estás logueado."
-            messages.error(request, message)
-            print(messages.error(request, message))
+            messages.error(request, "No puedes eliminar el mismo usuario con el que estás logueado.")
             return redirect('userlist')
-        superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
         
-        print(f'count superuser: {superusers}')
-
-        if user.is_superuser:
-            if superusers > 1:
-                message = user.inactivate()
-                messages.success(request, message)
-            else:
-                message = f'No se puede eliminar el usuario <strong>{user.username}</strong> ya que es el único superusuario en el listado de usuarios'
-                messages.error(request, message)
+        superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
+        if user.is_superuser and superusers <= 1:
+            messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único superusuario.')
         else:
             message = user.inactivate()
+            
             messages.success(request, message)
         
     except CustomUser.DoesNotExist:
-        message = f"El usuario con ID <strong>{pk}</strong> no existe."
-        messages.error(request, message)
+        messages.error(request, f"El usuario con ID {pk} no existe.")
     except Exception as e:
-        message = f"Error al desactivar el usuario: {str(e)}"
-        messages.error(request, message)
+        messages.error(request, f"Error al desactivar el usuario: {str(e)}")
 
-    return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
+    return message
+
 
 def activate_user(request, pk):
     try:

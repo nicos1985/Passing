@@ -47,6 +47,7 @@
                 <th scope="col">eMail</th>
                 <th scope="col">Posicion</th>
                 <th scope="col">Domicilio</th>
+                <th scope="col">Rol</th>
                 <th scope="col">Fech. Ingreso</th>
                 <th scope="col">Fech. Egreso</th>
                 <th scope="col">Aciones</th>
@@ -87,6 +88,7 @@
                 <td>{{object.email}}</td>
                 <td>{{object.position}}</td>
                 <td>{{object.address}}</td>
+                <td>{{object.assigned_role}}</td>
                 <td>{{object.admission_date|date:"d/m/y"}}</td>
                 <td>{{object.departure_date|date:"d/m/y"}}</td>
                 <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #FFE682;"></i></a>
