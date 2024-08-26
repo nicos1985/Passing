@@ -26,6 +26,7 @@ class CustomUser(AbstractUser):
     def formatted_departure_date(self):
         return self.departure_date.strftime('%Y-%m-%d') if self.departure_date else ''
     
+
     def inactivate(self):
         try:
             with transaction.atomic():
@@ -35,6 +36,7 @@ class CustomUser(AbstractUser):
         except Exception as e:
             message = f'No se pudo inactivar el usuario <strong>{self.username}</strong>. Error: {str(e)}'
         return message
+    
     
     def activate(self):
         try:

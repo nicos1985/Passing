@@ -8,14 +8,24 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import login
 from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
 from django.forms import forms
 from django.contrib.auth import get_user_model
 from .models import CustomUser
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
+
+# Funcion para user_passes_test 
+def is_administrator(user):
+    return user.is_superuser or user.is_staff
+
+def is_superadmin(user):
+    return user.is_superuser
+#####################################
 
 
 
@@ -91,25 +101,28 @@ class LogoutFormView(LogoutView):
 @login_required
 def profile_view(request, username):
     if username is not None:
-
-        user = CustomUser.objects.get(username=username)
-        if request.method == 'POST':
-            
-            profile_form = ProfileForm(request.POST, request.FILES, instance=user)
-            if profile_form.is_valid():
-                profile_form.save()
+        if username == request.user.username:
+            user = CustomUser.objects.get(username=username)
+            if request.method == 'POST':
+                
+                profile_form = ProfileForm(request.POST, request.FILES, instance=user)
+                if profile_form.is_valid():
+                    profile_form.save()
+                else:
+                    print('Formulario no válido')
+                
             else:
-                print('Formulario no válido')
-            
+                profile_form = ProfileForm(instance=user)
+
+            context = {
+                'user_profile': user,
+                'profile_form': profile_form,
+            }
+
+            return render(request, 'profile.html', context)
         else:
-            profile_form = ProfileForm(instance=user)
-
-        context = {
-            'user_profile': user,
-            'profile_form': profile_form,
-        }
-
-        return render(request, 'profile.html', context)
+            messages.error(request, "No tenes permisos para ingresar a este perfil")
+            return redirect(reverse('listpass'))
     return render(request, 'login.html')
 
 
@@ -117,11 +130,13 @@ def profile_view(request, username):
 class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'password_reset.html'
     success_message = "Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña."
-    
+
+
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
     form_class = SetPasswordForm  # Especifica el formulario que deseas utilizar
 
+@method_decorator(user_passes_test(is_administrator), name='dispatch') 
 class UserListView(ListView):   
     model = CustomUser
     template_name = 'user_list.html'
@@ -129,10 +144,10 @@ class UserListView(ListView):
 
     def get_queryset(self):
         obj = CustomUser.objects.all().order_by('is_active')
-        print(f'obj_user: {obj}')
+        
         return obj
     
-
+@method_decorator(user_passes_test(is_administrator), name='dispatch') 
 class UserUpdateView(UpdateView):
     model = CustomUser
     form_class = UserForm
@@ -147,7 +162,8 @@ class UserUpdateView(UpdateView):
             initial['admission_date'] = self.object.formatted_admission_date()
             initial['departure_date'] = self.object.formatted_departure_date()
             return initial
-    
+
+@method_decorator(user_passes_test(is_administrator), name='dispatch')     
 class DepartureUser(UpdateView):
     model = CustomUser
     form_class = UserDepartureForm
@@ -170,6 +186,7 @@ class DepartureUser(UpdateView):
             print(f'exception departure_user: {e}')
             messages.error(self.request, f"Error al dar de baja al usuario: {str(e)}")
         return super().form_valid(form)
+
 
 def deactivate_user(request, pk):
     try:
@@ -194,7 +211,7 @@ def deactivate_user(request, pk):
 
     return message
 
-
+@method_decorator(user_passes_test(is_administrator), name='dispatch') 
 def activate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, id=pk)

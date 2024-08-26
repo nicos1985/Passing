@@ -4,7 +4,16 @@ from django.http import HttpResponse
 from django.views import View
 from .config import EMAIL_SETTINGS
 from .forms import EmailConfigForm
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
+# Funcion para user_passes_test 
+def is_administrator(user):
+    return user.is_superuser or user.is_staff
+
+def is_superadmin(user):
+    return user.is_superuser
+#######################################
 
 def home(request):
     return render(request, 'home.html')
@@ -12,6 +21,7 @@ def home(request):
 def config(request):
     return render(request, 'admin.html')
 
+@user_passes_test(is_superadmin)
 def test_send_email(request):
     subject = 'Prueba de envío de correo'
     message = 'Este es un correo electrónico de prueba'
@@ -25,7 +35,7 @@ def test_send_email(request):
 
 
 
-
+@method_decorator(user_passes_test(is_superadmin), name='dispatch')
 class UpdateEmailConfigView(View):
 
     def get(self, request):

@@ -20,12 +20,13 @@ from permission.models import ContraPermission
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
 
-
+# Funcion para user_passes_test 
 def is_administrator(user):
     return user.is_superuser or user.is_staff
 
 def is_superadmin(user):
     return user.is_superuser
+#####################################
 
 
 class ContrasListView(LoginRequiredMixin, ListView):
