@@ -1,17 +1,12 @@
-from datetime import date, timedelta
+
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.forms import SetPasswordForm
-from django.contrib.auth import login
 from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
-from django.forms import forms
-from django.contrib.auth import get_user_model
 from .models import CustomUser
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView

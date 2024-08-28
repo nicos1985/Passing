@@ -21,11 +21,11 @@ def home(request):
 def config(request):
     return render(request, 'admin.html')
 
-@user_passes_test(is_superadmin)
+#@user_passes_test(is_superadmin)
 def test_send_email(request):
     subject = 'Prueba de envío de correo'
     message = 'Este es un correo electrónico de prueba'
-    from_email = 'nicolas.ferratto@previ.com.ar'
+    from_email = 'info@previ.com.ar'
     recipient_list = ['nicolasferratto@hotmail.com']
 
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
@@ -35,7 +35,7 @@ def test_send_email(request):
 
 
 
-@method_decorator(user_passes_test(is_superadmin), name='dispatch')
+
 class UpdateEmailConfigView(View):
 
     def get(self, request):
