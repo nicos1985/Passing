@@ -34,5 +34,5 @@ class AdminNotification(models.Model):
     viewed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now=True)
 
-    class Meta():
+    class Meta:
         verbose_name = "Notificaciones a admin"

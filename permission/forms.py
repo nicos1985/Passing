@@ -18,34 +18,34 @@ class PermisoForm(forms.Form):
     def __init__(self, usuario, *args, **kwargs):
         
         super().__init__(*args, **kwargs)
-        contraseñas = Contrasena.objects.filter(is_personal=False)
+        contrasenas = Contrasena.objects.filter(is_personal=False)
         
-        for contraseña in contraseñas:
+        for contrasena in contrasenas:
             initial_value = False
-            log_contra_user_id = LogData.objects.filter(entidad='Contraseña',contraseña=int(contraseña.id), action='Create').exists() #reviso si existe el log create de la contraseña
+            log_contra_user_id = LogData.objects.filter(entidad='Contraseña',contraseña=int(contrasena.id), action='Create').exists() #reviso si existe el log create de la contraseña
 
-            permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contraseña).exists()
+            permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contrasena).exists()
 
             if log_contra_user_id:
 
-                log_contra_user_id = LogData.objects.get(entidad='Contraseña',contraseña=int(contraseña.id), action='Create').usuario #traigo usuario creador de contraseña
+                log_contra_user_id = LogData.objects.get(entidad='Contraseña',contraseña=int(contrasena.id), action='Create').usuario #traigo usuario creador de contraseña
 
                 if permission_exists:
-                    permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contraseña)
+                    permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contrasena)
                     initial_value = permission_instance.permission
                     
-                    self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
-                        label=contraseña.nombre_contra,
+                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
+                        label=contrasena.nombre_contra,
                         initial=initial_value,
-                        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion, 'info': contraseña.info, 'usuario': log_contra_user_id} ),
+                        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
                         required=False
                         )
                 
                 else:
-                    self.fields[f'permiso_{contraseña.nombre_contra}'] = forms.BooleanField(
-                    label=contraseña.nombre_contra,
+                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
+                    label=contrasena.nombre_contra,
                     initial=False,
-                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contraseña.seccion, 'info': contraseña.info, 'usuario': log_contra_user_id} ),
+                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
                     required=False
                     )
             else:

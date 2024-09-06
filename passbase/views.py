@@ -28,16 +28,17 @@ def is_superadmin(user):
     return user.is_superuser
 #####################################
 
-
+TEMPLATE_NAME = 'listpass.html'
+ENTITY_CONTRASENA = 'Contraseña'
+ACCION_TYPE = 'edit new'
 class ContrasListView(LoginRequiredMixin, ListView):
     model = Contrasena
-    template_name = 'listpass.html'
+    template_name = TEMPLATE_NAME
     context_object_name = 'query_perm'
     login_url = 'login'
 
     def get_queryset(self):
-        log_data ={}
-        fecha_hoy = timezone.now()
+        
         # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
         obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
                                                     perm_active = True, 
@@ -84,12 +85,12 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         
         # Obtén el objeto Contrasena y descifra los valores
-        contraseña = self.get_object()
-        contraseña.decrypted_password = contraseña.get_decrypted_password()
+        contrasena = self.get_object()
+        contrasena.decrypted_password = contrasena.get_decrypted_password()
         
-        contraseña.decrypted_user = contraseña.get_decrypted_user()
+        contrasena.decrypted_user = contrasena.get_decrypted_user()
 
-        log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
+        log_data = LogData.objects.filter(contrasena=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
         print(f'user permissions: {users_permissions}')
 
@@ -104,7 +105,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
             except Exception as e:
                 print(f"Error processing log {log.id}: {e}")
 
-        context['contraseña'] = contraseña
+        context['contraseña'] = contrasena
         context['log_data'] = log_data if log_data.exists() else None
         context['users_permissions'] = users_permissions
 
@@ -137,16 +138,16 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
             contrasena = form.save(commit=False)
             contrasena.owner = self.request.user
-            contraseña = cleaned_data.get('contraseña')
+            contrasena = cleaned_data.get('contraseña')
 
-            if contraseña:
-                contrasena.contraseña = encrypt_data(contraseña)
+            if contrasena:
+                contrasena.contraseña = encrypt_data(contrasena)
                 contrasena.save()
             
             # Creación de la entrada en LogData
             LogData.objects.create(
                 contraseña=contrasena.id,
-                entidad='Contraseña',
+                entidad= ENTITY_CONTRASENA,
                 usuario=self.request.user,
                 action='Create',
                 password=contrasena.contraseña,
@@ -218,9 +219,9 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context['title'] = 'Editar Contraseña'
-        context['entity'] = 'Contraseña'
+        context['entity'] = ENTITY_CONTRASENA
         context['list_url'] = reverse_lazy('listpass')
-        context['action'] = 'edit new'
+        context['action'] = ACCION_TYPE
         context['user_id'] = user.id
         context['username'] = user.username
 
@@ -245,7 +246,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         if not self._objeto_previo:
             self._objeto_previo = super().get_object(queryset=queryset)
             LogData.objects.create(
-                entidad='Contraseña', 
+                entidad= ENTITY_CONTRASENA, 
                 action='edit old', 
                 detail=f'''Nombre: {self._objeto_previo.nombre_contra}, 
                            Seccion: {self._objeto_previo.seccion}, 
@@ -272,7 +273,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         if old_password != new_password:
             action = 'change pass'
         else:
-            action = 'edit new'
+            action = ACCION_TYPE
         
         LogData.objects.create(
             contraseña=contrasena.pk,
@@ -302,12 +303,12 @@ class ContrasDeleteView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form, *args, **kwargs):
         
         response = super().form_valid(form)
-        id_contraseña = self.kwargs['pk']
+        id_contrasena = self.kwargs['pk']
         context = ContrasDeleteView.get_context_data(self)
         contrasena = self.object
         contrasena.active = False
         contrasena.save()
-        LogData.objects.create(contraseña = id_contraseña, 
+        LogData.objects.create(contraseña = id_contrasena, 
                                entidad = context['entity'], 
                                usuario = self.request.user, 
                                action = context['action'],
@@ -407,7 +408,7 @@ class SectionUpdateView(LoginRequiredMixin, UpdateView):
          context['title'] = 'Editar Seccion'
          context['entity'] = 'Seccion'
          context['list_url'] = reverse_lazy('listsection')
-         context['action'] = 'edit new'
+         context['action'] = ACCION_TYPE
          return context
     
     
@@ -487,7 +488,6 @@ class SectionActiveView(LoginRequiredMixin, DetailView):
     def post(self, request, pk,*args, **kwargs):
         
         seccion = self.get_object()
-        #context = SectionActiveView.get_context_data(self)
         if seccion.active == True:
             seccion.active = False
         else:
@@ -529,31 +529,32 @@ def denypermission(request, pk):
                                                         type_notification = f'Se te denegó la contraseña {permission.contra_id.nombre_contra}',
                                                         comment = f'{request.user.username} denegó el acceso',
     )
+    print(f'notificacion creada: {notificacion_user}')
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 @user_passes_test(is_administrator)
 def encrypt_all():
-    contraseñas = Contrasena.objects.all()
+    contrasenas = Contrasena.objects.all()
     encrypted_data = []
 
-    for contraseña in contraseñas:
-        if not contraseña.usuario.startswith("b'gAAAA"):
-            print(f'contraseña id: {contraseña.id}')
-            original_user = contraseña.usuario
-            original_password = contraseña.contraseña
-            contraseña.usuario = contraseña.encrypt_user()
-            contraseña.contraseña = contraseña.encrypt_password()
-            contraseña.save()
-            encrypted_data.append((contraseña.id, original_user, original_password))
-            print(f'contraseña encriptada : {contraseña.contraseña}')
+    for contrasena in contrasenas:
+        if not contrasena.usuario.startswith("b'gAAAA"):
+            print(f'contraseña id: {contrasena.id}')
+            original_user = contrasena.usuario
+            original_password = contrasena.contraseña
+            contrasena.usuario = contrasena.encrypt_user()
+            contrasena.contraseña = contrasena.encrypt_password()
+            contrasena.save()
+            encrypted_data.append((contrasena.id, original_user, original_password))
+            print(f'contraseña encriptada : {contrasena.contraseña}')
     
     return encrypted_data
 
 
 @user_passes_test(is_administrator)
 def encrypt_log_data():
-    log_entries = LogData.objects.filter(entidad='Contraseña')
+    log_entries = LogData.objects.filter(entidad= ENTITY_CONTRASENA)
     encrypted_log_data = []
 
     for entry in log_entries:
@@ -600,14 +601,12 @@ def encrypt_all_data(request):
             f.write(f'LogData: {log[0]}, Original Password: {log[1]}, Original User: {log[2]}\n')
     
     # Asegurarse de que se retorna un objeto HttpResponse o un render apropiado
-    return render(request, 'listpass.html', {'message': 'Todos los datos han sido encriptados.'})
+    return render(request, TEMPLATE_NAME, {'message': 'Todos los datos han sido encriptados.'})
 
 # Function to rollback the encryption process
 @user_passes_test(is_administrator)
 def rollback_encryption(request):
-    key = settings.CRYPTOGRAPHY_KEY
-    cipher_suite = Fernet(key)
-    
+        
     with open('encrypted_data.log', 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -638,7 +637,7 @@ def rollback_encryption(request):
                     # Restaurar el usuario original en el campo detail
                     encrypted_user = log.get_encrypted_user()
                     if encrypted_user:
-                        decrypted_user = decrypt_data(encrypted_user)
+                        
                         log.detail = log.detail.replace(encrypted_user, original_user)
                     
                     log.save()
@@ -646,7 +645,7 @@ def rollback_encryption(request):
                     print(f'LogData con id {log_id} no encontrada para rollback.')
                 except Exception as e:
                     print(f'Error processing rollback for log {log.id}: {e}')
-    return render(request, 'listpass.html', {'messages': 'Se desencriptaron todas las contraseñas'})
+    return render(request, TEMPLATE_NAME, {'messages': 'Se desencriptaron todas las contraseñas'})
 
 
 @user_passes_test(is_administrator)
@@ -675,4 +674,4 @@ def remake_pass(request):
 
     messages.success(request,f'Se copiaron las contraseñas. Exitosas: {counter} | erroneas: {except_counter}' )
         
-    return render(request, 'listpass.html')
+    return render(request, TEMPLATE_NAME)

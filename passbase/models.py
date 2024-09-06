@@ -18,7 +18,7 @@ class SeccionContra(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     
-    def Meta():
+    class Meta:
         verbose_name = "Seccion"
         verbose_name_plural= "Secciones"
         
@@ -43,7 +43,7 @@ class Contrasena(models.Model):
     updated = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     
-    def Meta():
+    class Meta:
         verbose_name = "Contraseña"
         verbose_name_plural= "Contraseñas"
         
@@ -172,13 +172,13 @@ class Contrasena(models.Model):
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
     contraseña = models.IntegerField()
-    password = models.CharField(max_length=500, null=True, blank=True)
+    password = models.CharField(max_length=500, blank=True)
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
-    action = models.CharField(max_length=80, null = True)
+    action = models.CharField(max_length=80, blank=True)
     detail = models.CharField(max_length=2000)
     created = models.DateTimeField(auto_now=True)
     
-    def Meta():
+    class Meta:
         verbose_name = "Log"
         
     def __str__(self):

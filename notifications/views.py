@@ -35,7 +35,7 @@ def share_contrasena_form(request, contrasena):
 
             obj_permission = ContraPermission.objects.filter(user_id=share, contra_id=contrasena, permission=True).first()
             if not obj_permission:
-                notificacion, created = AdminNotification.objects.get_or_create(
+                _, created = AdminNotification.objects.get_or_create(
                     id_contrasena=contrasena_obj,
                     id_user_share=share,
                     defaults={
@@ -46,6 +46,7 @@ def share_contrasena_form(request, contrasena):
                         'viewed': False,
                     }
                 )
+               
                 if created:
                     message = f'Se ha solicitado compartir la contraseña "{contrasena_obj.nombre_contra}" con el usuario {share}.'
                     messages.success(request, message)
@@ -72,7 +73,7 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
     
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        
         queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')  # Ajusta 'campo' según tu modelo
 
         return queryset

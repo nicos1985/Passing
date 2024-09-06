@@ -15,6 +15,8 @@ def is_superadmin(user):
     return user.is_superuser
 #######################################
 
+TEMPLATE = 'email_config.html'
+
 def home(request):
     return render(request, 'home.html')
 
@@ -40,7 +42,7 @@ class UpdateEmailConfigView(View):
 
     def get(self, request):
         form = EmailConfigForm()
-        return render(request, 'email_config.html', {'form': form})
+        return render(request, TEMPLATE, {'form': form})
     
     def post(self, request):
         form = EmailConfigForm(request.POST)
@@ -75,6 +77,6 @@ class UpdateEmailConfigView(View):
             for key, value in EMAIL_SETTINGS.items():
                 print(f'{key}:{value}')
 
-            return render(request, 'email_config.html', {'message':'El formulario se envió correctamente', 'form':form, })
+            return render(request, TEMPLATE, {'message':'El formulario se envió correctamente', 'form':form, })
         else:
-            return render(request, 'email_config.html', {'message':'El formulario no se envió correctamente'})
+            return render(request, TEMPLATE, {'message':'El formulario no se envió correctamente'})

@@ -1,4 +1,4 @@
-from django.forms import *
+from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
 from .models import Contrasena, SeccionContra
 
 class ContrasenaForm(ModelForm):
@@ -82,7 +82,8 @@ class ContrasenaUForm(ModelForm):
                 else:
                     form.field.widget.attrs['class'] = 'form-control'
                     form.field.widget.attrs['autocomplete'] = 'off'
-            except:
+            except Exception as e:
+                print(f'no se pudo hacer esto: {e}')
                 form.field.widget.attrs['class'] = 'form-control'
                 form.field.widget.attrs['autocomplete'] = 'off'
 

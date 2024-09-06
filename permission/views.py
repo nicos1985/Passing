@@ -44,7 +44,7 @@ def seleccionar_usuario(request):
         usuario_form = PermissionUserForm(request.POST)
         print(f'usuario_form post: {usuario_form}')
         if usuario_form.is_valid():
-            print(f'formulario userform es valido')
+            print('formulario userform es valido')
             usuario = usuario_form.cleaned_data['usuario']
             print(f'usuario = {usuario}')
             # Redirige a la vista de permisos y pasa el usuario
@@ -61,13 +61,13 @@ def gestion_permisos(request, usuario_id):
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
             
-            for contraseña in contrasena:
+            for contrasena in contrasena:
                 default_value = False
-                permiso = permiso_form.cleaned_data.get(f'permiso_{contraseña.nombre_contra}', default_value)
+                permiso = permiso_form.cleaned_data.get(f'permiso_{contrasena.nombre_contra}', default_value)
 
                 permissions, _ = ContraPermission.objects.get_or_create(
                     user_id=usuario,
-                    contra_id=contraseña
+                    contra_id=contrasena
                 )
                 print(f'permissions: {permissions}')
                 permissions.permission = permiso
@@ -111,16 +111,16 @@ def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
                                                             id_contrasena = contrasena,
                                                             id_user = user_share,
                                                             type_notification = f"recibiste acceso a {contrasena.nombre_contra}",
-                                                            comment = f"Admin te dió acceso."
+                                                            comment = "Admin te dió acceso."
         )
-
+        print(f'user_notificarions_share: {user_notification_share}')
         user_notification = UserNotifications.objects.create(
                                                             id_contrasena = contrasena,
                                                             id_user = user,
                                                             type_notification = "Permiso Concedido",
                                                             comment = f"Se dió acceso a {user_share.username}."
         )
-        
+        print(f'user_notification: {user_notification}')
         message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
         messages.success(request, message)
 
@@ -150,6 +150,7 @@ def give_permission(request, user, contrasena):
                         contra_id=contrasena, 
                         permission=True
                     )
+        print(f'permissions: {permission}')
     except Exception as e:
         message = f'Hubo un error al intentar crear un permiso {contrasena}. Error {e}'
         messages.error(request, message)
@@ -276,7 +277,7 @@ def delete_rol(request, pk):
         message = f'El Rol {delete_instance_role.rol_name} fué eliminado con éxito.'
         messages.success(request, message)
     else:
-        message = f'Hubo un error buscar el rol.'
+        message = 'Hubo un error buscar el rol.'
         messages.error(request, message)
 
     return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
