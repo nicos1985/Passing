@@ -1,3 +1,4 @@
+import hashlib
 from django.utils import timezone
 from datetime import datetime
 from django.db import models
@@ -42,7 +43,8 @@ class Contrasena(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
-    
+    hash = models.CharField(max_length=64, blank=True, null=True)
+
     class Meta:
         verbose_name = "Contraseña"
         verbose_name_plural= "Contraseñas"
@@ -55,6 +57,9 @@ class Contrasena(models.Model):
         return item
     
     def save(self, *args, **kwargs):
+        #hashea usuario y contraseña
+        if not self.hash:
+            self.hash = hashlib.sha256((self.usuario + self.contraseña).encode('utf-8')).hexdigest()
         # Encriptar la contraseña antes de guardarla
         if isinstance(self.contraseña, str):
             self.contraseña = encrypt_data(self.contraseña)
