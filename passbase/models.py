@@ -57,9 +57,12 @@ class Contrasena(models.Model):
         return item
     
     def save(self, *args, **kwargs):
-        #hashea usuario y contraseña
-        if not self.hash:
-            self.hash = hashlib.sha256((self.usuario + self.contraseña).encode('utf-8')).hexdigest()
+        # Aseguramos que usuario y contraseña sean strings
+        usuario = self.usuario if isinstance(self.usuario, str) else self.usuario.decode('utf-8')
+        contraseña = self.contraseña if isinstance(self.contraseña, str) else self.contraseña.decode('utf-8')
+
+        # Concatenamos las cadenas de texto y generamos el hash
+        self.hash = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
         # Encriptar la contraseña antes de guardarla
         if isinstance(self.contraseña, str):
             self.contraseña = encrypt_data(self.contraseña)
