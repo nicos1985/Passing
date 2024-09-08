@@ -1,3 +1,4 @@
+import hashlib
 from django.db import IntegrityError
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse, JsonResponse
@@ -139,9 +140,20 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             contrasena = form.save(commit=False)
             contrasena.owner = self.request.user
             contraseña = cleaned_data.get('contraseña')
+            usuario = cleaned_data.get('usuario')
+
+            # Genera el hash de la combinación de usuario y contraseña
+            hash_combination = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
+            
+            # Verifica si el hash ya existe en la base de datos
+            if Contrasena.objects.filter(hash=hash_combination).exists():
+                form.add_error(None, 'La combinación de usuario y contraseña ya existe.')
+                return self.form_invalid(form)
 
             if contrasena:
                 contrasena.contraseña = encrypt_data(contraseña)
+                contrasena.usuario = encrypt_data(usuario)
+                contrasena.hash = hash_combination  # Guarda el hash
                 contrasena.save()
             
             # Creación de la entrada en LogData
