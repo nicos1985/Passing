@@ -138,10 +138,10 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
             contrasena = form.save(commit=False)
             contrasena.owner = self.request.user
-            contrasena = cleaned_data.get('contraseña')
+            contraseña = cleaned_data.get('contraseña')
 
             if contrasena:
-                contrasena.contraseña = encrypt_data(contrasena)
+                contrasena.contraseña = encrypt_data(contraseña)
                 contrasena.save()
             
             # Creación de la entrada en LogData
