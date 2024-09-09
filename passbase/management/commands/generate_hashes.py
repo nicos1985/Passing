@@ -16,9 +16,8 @@ class Command(BaseCommand):
             # Desencripta el usuario y la contraseña si están encriptados
             try:
                 usuario_decrypted = decrypt_data(usuario)
-                self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {usuario_decrypted}'))
                 password_decrypted = decrypt_data(password)
-                self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {password_decrypted}'))
+                self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {password_decrypted} y {usuario_decrypted} '))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error desencriptando para id {contrasena.id}: {e}'))
                 continue
@@ -28,4 +27,5 @@ class Command(BaseCommand):
             
             contrasena.hash = hash_combination
             contrasena.save()
-            self.stdout.write(self.style.SUCCESS(f'Hash generado para Contrasena ID {contrasena.id}'))
+            self.stdout.write(self.style.SUCCESS(f'Contrasena ID: {contrasena.id}'))
+            self.stdout.write(self.style.SUCCESS(f'Hash: {contrasena.hash}'))
