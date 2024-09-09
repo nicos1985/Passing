@@ -151,7 +151,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
             if objeto_repetido:
                 print(f'has existe?: {objeto_repetido}')
-                form.add_error(None, f"La combinación de usuario y contraseña ya existe. \n Propietario: {objeto_repetido.owner}")
+                form.add_error(None, f"La combinación de usuario y contraseña ya existe. \n Propietario: {objeto_repetido.owner} | Nombre: {objeto_repetido.nombre_contra}")
                 return self.form_invalid(form)
 
             if contrasena:
