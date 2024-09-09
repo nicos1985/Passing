@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = 'Genera hashes para todas las contraseñas existentes'
 
     def handle(self, *args, **kwargs):
-        contrasenas = Contrasena.objects.all()
+        contrasenas = Contrasena.objects.all().order_by('id')
         for contrasena in contrasenas:
         # Sólo procesa si el hash está vacío
             usuario = contrasena.usuario
