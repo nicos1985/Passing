@@ -16,7 +16,9 @@ class Command(BaseCommand):
                 # Desencripta el usuario y la contraseña si están encriptados
                 try:
                     usuario_decrypted = decrypt_data(usuario)
+                    self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {usuario_decrypted}'))
                     password_decrypted = decrypt_data(password)
+                    self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {password_decrypted}'))
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f'Error desencriptando para id {contrasena.id}: {e}'))
                     continue

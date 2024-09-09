@@ -9,6 +9,12 @@ class ContrasenaAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_contra' , 'seccion', 'info' ,'usuario')
     readonly_fields=('created', 'updated')
 
+    # Agregar búsqueda por campos (nombre, usuario, etc.)
+    search_fields = ('nombre_contra', 'usuario__username', 'seccion__nombre_seccion', 'hash' )
+    
+    # Agregar filtro por fechas y otros campos
+    list_filter = ('created', 'seccion', 'usuario', 'hash')
+
 class LogDataAdmin(admin.ModelAdmin):
     list_display = ('contraseña', 'entidad', 'usuario', 'action', 'created')
     readonly_fields=('created',)
