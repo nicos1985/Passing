@@ -17,7 +17,7 @@ class Command(BaseCommand):
             try:
                 usuario_decrypted = decrypt_data(usuario)
                 password_decrypted = decrypt_data(password)
-                self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {password_decrypted} y {usuario_decrypted} '))
+                self.stdout.write(self.style.SUCCESS(f'usuario desencriptado: {password_decrypted}{usuario_decrypted} '))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error desencriptando para id {contrasena.id}: {e}'))
                 continue
