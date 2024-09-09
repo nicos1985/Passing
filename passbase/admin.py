@@ -10,7 +10,7 @@ class ContrasenaAdmin(admin.ModelAdmin):
     readonly_fields=('created', 'updated')
 
     # Agregar búsqueda por campos (nombre, usuario, etc.)
-    search_fields = ('nombre_contra', 'usuario__username', 'seccion__nombre_seccion', 'hash' )
+    search_fields = ('nombre_contra', 'usuario', 'seccion', 'hash' )
     
     # Agregar filtro por fechas y otros campos
     list_filter = ('created', 'seccion', 'usuario', 'hash')
