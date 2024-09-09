@@ -144,16 +144,21 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
             # Genera el hash de la combinación de usuario y contraseña
             hash_combination = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
-            
+            print(f'usuario + contraseña: {usuario + contraseña}')
+
+            print(f'hash combination: {hash_combination}')
             # Verifica si el hash ya existe en la base de datos
-            if Contrasena.objects.filter(hash=hash_combination).exists():
-                form.add_error(None, 'La combinación de usuario y contraseña ya existe.')
+            objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
+            if objeto_repetido:
+                print(f'has existe?: {objeto_repetido}')
+                form.add_error(None, f"La combinación de usuario y contraseña ya existe. \n Propietario: {objeto_repetido.owner}")
                 return self.form_invalid(form)
 
             if contrasena:
                 contrasena.contraseña = encrypt_data(contraseña)
                 contrasena.usuario = encrypt_data(usuario)
-                contrasena.hash = hash_combination  # Guarda el hash
+                contrasena.hash = hash_combination
+                print(f'contraseña.hash: {contrasena.hash}') # Guarda el hash
                 contrasena.save()
             
             # Creación de la entrada en LogData
