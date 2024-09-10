@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db import transaction
 
+
 class CustomUser(AbstractUser):
     avatar = models.ImageField(blank=True, null=True, upload_to='static/')
     position = models.CharField(max_length=80,null=True, verbose_name='Puesto')
@@ -14,7 +15,7 @@ class CustomUser(AbstractUser):
     departure_date = models.DateField(blank=True, null=True, verbose_name='Fecha Egreso')
     departure_motive = models.CharField(max_length=1000,blank=True, null=True, verbose_name='Motivo de baja')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
-    assigned_role = models.CharField(max_length=200, null=True, blank=True, verbose_name='Rol asignado')
+    assigned_role = models.ForeignKey('permission.PermissionRoles', on_delete=models.CASCADE, verbose_name='Rol asignado', default=1)
 
 
     def formatted_birth_date(self):

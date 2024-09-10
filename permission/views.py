@@ -186,7 +186,7 @@ def generate_rol_permissions(request, rol, user):
             message = f'hubo un error al dar permiso a la contraseña {contrasena}. Error {e}'
             messages.error(request, message)
 
-    usuario.assigned_role = rol.rol_name
+    usuario.assigned_role = rol
     usuario.save()    
 
     return contrasenas
