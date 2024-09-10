@@ -30,7 +30,7 @@ class PermissionListView(LoginRequiredMixin, ListView):
     login_url = '/login/login/'
 
     def get_queryset(self):
-        permisos = ContraPermission.objects.all().select_related('user_id', 'contra_id__seccion', 'contra_id__owner').order_by('-user_id', '-contra_id__seccion')
+        permisos = ContraPermission.objects.filter(contra_id__is_personal=False).select_related('user_id', 'contra_id__seccion', 'contra_id__owner').order_by('-user_id', '-contra_id__seccion')
     
         return permisos
     
