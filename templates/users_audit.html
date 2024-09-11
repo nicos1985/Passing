@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+<body>
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+
+
+
+<div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
+    </button>
+    <h3>Auditoria</h3>
+</div>
+<div>
+<div class="container">
+
+    {% for user in data.users %}
+<h4>Usuario: {{ user.user_name }} (ID: {{ user.user_id }})</h4> 
+
+ <table class="table" id="data">
+    <thead class="table-dark">
+       
+            <tr >
+                <th scope="col">Id</th>
+                <th scope="col">Nombre Contraseña</th>
+                <th scope="col">Seccion</th>
+                <th scope="col">Propietario</th>
+            </tr>    
+    </thead>  
+    {% for contra in user.contrasenas %}      
+    <tbody>
+        
+        <tr>
+            
+            <td>{{contra.id}}</td>
+            <td>{{contra.nombre_contra}}</td>
+            <td>{{contra.section}}</td>
+            <td>{{contra.owner}}</td>
+            
+                             
+        </tr>   
+        {%endfor%} 
+    </tbody>
+</table>                  
+{%endfor%} 
+</body>
+        </div>    
+        
+
+
+
+        
+          
+{% endif %}
+
+
+{% endblock %}

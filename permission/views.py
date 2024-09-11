@@ -305,3 +305,40 @@ def update_owner(request):
 
     return render(request, 'listpass.html')
     
+
+def users_audit(request):
+    users = CustomUser.objects.filter(is_active=True)
+    data = {'users': []}
+    for user in users:
+        user_role_assigned = user.assigned_role
+        rol = PermissionRoles.objects.get(id=user_role_assigned.id)
+    
+
+        user_contrasenas_list = []
+        contrasenas_of_role = rol.get_contrasenas()
+        print(f'contrasenas_of_role: {contrasenas_of_role}')
+        contrasenas_of_permission = ContraPermission.objects.filter(user_id=user)
+        # Obtener la queryset del modelo Contrasena a partir de las relaciones en ContraPermission
+        contrasenas_queryset = Contrasena.objects.filter(id__in=contrasenas_of_permission.values_list('contra_id', flat=True))
+        print(f'contrasenas_queryset: {contrasenas_queryset}')
+        contrasenas_diff = contrasenas_of_role.exclude(id__in=contrasenas_queryset.values_list('id', flat=True))
+        print(f'contrasenas_diff {user}: {contrasenas_diff}')
+        contrasenas_different = contrasenas_queryset.exclude(id__in=contrasenas_of_role.values_list('id', flat=True))
+        print(f'contrasenas_different {user}: {contrasenas_different}')
+        for contra in contrasenas_diff:
+            user_contrasenas_list.append({
+                'id': contra.id,
+                'nombre_contra': contra.nombre_contra,
+                'section': contra.seccion,
+                'owner': contra.owner
+            })
+
+        data['users'].append({
+            'user_id': user.id,
+            'user_name': user.username,  # O cualquier otro campo que quieras mostrar del usuario
+            'contrasenas': user_contrasenas_list
+        })
+
+    #print(f'context: {data}')
+
+    return render(request, 'users_audit.html', context={'data': data})

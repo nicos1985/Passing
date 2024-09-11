@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from permission.views import ConfirmDeleteView, PermissionListView, PermissionRolUpdate, PermissionRolView, PermissionRolesCreateView, assign_rol_user, gestion_permisos, grant_permission, seleccionar_usuario, delete_rol, update_owner 
+from permission.views import ConfirmDeleteView, PermissionListView, PermissionRolUpdate, PermissionRolView, PermissionRolesCreateView, assign_rol_user, gestion_permisos, grant_permission, seleccionar_usuario, delete_rol, update_owner, users_audit 
 
 urlpatterns = [
     
@@ -15,6 +15,7 @@ urlpatterns = [
     path('roles', PermissionRolView.as_view(), name='roles'),
     path('delete-role/<int:pk>/confirmar', ConfirmDeleteView.as_view(), name='deleteroleconfirm'),
     path('delete-role/<int:pk>', delete_rol, name='deleterolepk'),
-    path('actualowner', update_owner, name='updateowner')
+    path('actualowner', update_owner, name='updateowner'),
+    path('users-audit', users_audit, name='usersaudit')
 
 ]
