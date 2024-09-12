@@ -32,6 +32,9 @@ class PermissionRoles(models.Model):
     def get_contrasenas(self):
         return self.contrasenas.all()
     
+    def get_contrasenas_not_personal(self):
+        return self.contrasenas.filter(is_personal=False)
+    
     def inactive(self):
         self.is_active = False
         self.save()
