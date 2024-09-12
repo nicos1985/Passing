@@ -310,7 +310,7 @@ def update_owner(request):
 def users_audit(request):
     users_active_all = CustomUser.objects.filter(is_active=True)
     exclude_users = GRAN_PERMISSION_ID_USERS
-    users = users_active_all.exclude(id__in = exclude_users)
+    users = users_active_all.exclude(id__in = exclude_users).order_by('id')
     print(f'users: {users}')
     data = {'users': []}
     for user in users:
