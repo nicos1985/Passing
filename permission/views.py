@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 
 from notifications.models import AdminNotification, UserNotifications
+from passing.settings import GRAN_PERMISSION_ID_USERS
 from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena, LogData
 from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm, UserRolForm
@@ -307,7 +308,10 @@ def update_owner(request):
     
 @user_passes_test(is_administrator)
 def users_audit(request):
-    users = CustomUser.objects.filter(is_active=True)
+    users_active_all = CustomUser.objects.filter(is_active=True)
+    exclude_users = GRAN_PERMISSION_ID_USERS
+    users = users_active_all.exclude(id__in = exclude_users)
+    print(f'users: {users}')
     data = {'users': []}
     for user in users:
         user_role_assigned = user.assigned_role
