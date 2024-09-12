@@ -346,7 +346,10 @@ def users_audit(request):
                 'owner': contra.owner,
                 'existe': 'No Existe en Rol'
             })
+        user_contrasenas_list = sorted(user_contrasenas_list, key=lambda x: x['id'])
+
         count_differences = len(user_contrasenas_list)
+
         data['users'].append({
             'user_id': user.id,
             'user_name': user.username,
