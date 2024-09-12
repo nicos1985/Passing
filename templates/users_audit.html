@@ -38,13 +38,22 @@
 <div class="container">
 
     {% for user in data.users %}
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h4>{{ user.user_id }} Usuario:{{ user.user_name }}</h4> 
-        <button class="btn btn-secondary" style="background-color: #7CFF6D; border-color: #7CFF6D ; color: black;">
+    <div class="" style="background-color: #b6ffae; padding: 15px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4>
+                <a href="{% url 'updateuser' user.user_id  %}" target="blank" style="text-decoration: none; color: black;">
+                    {{ user.user_id }} | Usuario: {{ user.user_name }}
+                </a>
+            </h4> 
+            <a href="{% url 'permissionrolesupdate' user.user_role_assigned_id %}" target="_blank">
+                <button class="btn btn-secondary" style="background-color: #b6ffae; border-color: #e9ffe6; color: black;">
+                  <i class="fas fa-arrow-up-right-from-square"></i> Rol asignado: <strong>{{user.user_role_assigned}}</strong>
+                </button>
+            </a>
             <h6>Cantidad de diferencias: {{ user.count_differences }}</h6>
-        </button>
+        </div>
     </div>
- <table class="table" id="data">
+ <table class="table" id="data" style="margin-bottom: 35px ;">
     <thead class="table-dark">
        
             <tr >

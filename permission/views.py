@@ -311,12 +311,12 @@ def users_audit(request):
     users_active_all = CustomUser.objects.filter(is_active=True)
     exclude_users = GRAN_PERMISSION_ID_USERS
     users = users_active_all.exclude(id__in = exclude_users).order_by('id')
-    print(f'users: {users}')
+    
     data = {'users': []}
     for user in users:
         user_role_assigned = user.assigned_role
         rol = PermissionRoles.objects.get(id=user_role_assigned.id)
-    
+        print(f'role_id: {user_role_assigned.id}')
 
         user_contrasenas_list = []
         contrasenas_of_role = rol.get_contrasenas()
@@ -350,6 +350,8 @@ def users_audit(request):
         data['users'].append({
             'user_id': user.id,
             'user_name': user.username,
+            'user_role_assigned_id': user_role_assigned.id,
+            'user_role_assigned': user_role_assigned,
             'count_differences': count_differences,  # O cualquier otro campo que quieras mostrar del usuario
             'contrasenas': user_contrasenas_list
         })
