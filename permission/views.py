@@ -305,7 +305,7 @@ def update_owner(request):
 
     return render(request, 'listpass.html')
     
-
+@user_passes_test(is_administrator)
 def users_audit(request):
     users = CustomUser.objects.filter(is_active=True)
     data = {'users': []}
