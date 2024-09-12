@@ -32,14 +32,18 @@
     <button class="btn">
         <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
     </button>
-    <h3>Auditoria</h3>
+    <h3>Auditoria de Permisos y Roles</h3>
 </div>
 <div>
 <div class="container">
 
     {% for user in data.users %}
-<h4>Usuario: {{ user.user_name }} (ID: {{ user.user_id }})</h4> 
-
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4>{{ user.user_id }} Usuario:{{ user.user_name }}</h4> 
+        <button class="btn btn-secondary" style="background-color: #7CFF6D; border-color: #7CFF6D ; color: black;">
+            <h6>Cantidad de diferencias: {{ user.count_differences }}</h6>
+        </button>
+    </div>
  <table class="table" id="data">
     <thead class="table-dark">
        
@@ -48,6 +52,7 @@
                 <th scope="col">Nombre Contraseña</th>
                 <th scope="col">Seccion</th>
                 <th scope="col">Propietario</th>
+                <th scope="col">Existe</th>
             </tr>    
     </thead>  
     {% for contra in user.contrasenas %}      
@@ -59,7 +64,7 @@
             <td>{{contra.nombre_contra}}</td>
             <td>{{contra.section}}</td>
             <td>{{contra.owner}}</td>
-            
+            <td>{{contra.existe}}</td>
                              
         </tr>   
         {%endfor%} 
@@ -69,12 +74,9 @@
 </body>
         </div>    
         
-
-
-
-        
           
 {% endif %}
 
 
 {% endblock %}
+</html>

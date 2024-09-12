@@ -325,17 +325,28 @@ def users_audit(request):
         print(f'contrasenas_diff {user}: {contrasenas_diff}')
         contrasenas_different = contrasenas_queryset.exclude(id__in=contrasenas_of_role.values_list('id', flat=True))
         print(f'contrasenas_different {user}: {contrasenas_different}')
+
         for contra in contrasenas_diff:
             user_contrasenas_list.append({
                 'id': contra.id,
                 'nombre_contra': contra.nombre_contra,
                 'section': contra.seccion,
-                'owner': contra.owner
+                'owner': contra.owner,
+                'existe': 'No Existe en Permisos'
             })
-
+        for contra in contrasenas_different:
+            user_contrasenas_list.append({
+                'id': contra.id,
+                'nombre_contra': contra.nombre_contra,
+                'section': contra.seccion,
+                'owner': contra.owner,
+                'existe': 'No Existe en Rol'
+            })
+        count_differences = len(user_contrasenas_list)
         data['users'].append({
             'user_id': user.id,
-            'user_name': user.username,  # O cualquier otro campo que quieras mostrar del usuario
+            'user_name': user.username,
+            'count_differences': count_differences,  # O cualquier otro campo que quieras mostrar del usuario
             'contrasenas': user_contrasenas_list
         })
 
