@@ -317,7 +317,7 @@ def users_audit(request):
         user_contrasenas_list = []
         contrasenas_of_role = rol.get_contrasenas()
         print(f'contrasenas_of_role: {contrasenas_of_role}')
-        contrasenas_of_permission = ContraPermission.objects.filter(user_id=user)
+        contrasenas_of_permission = ContraPermission.objects.filter(user_id=user, permission=True)
         # Obtener la queryset del modelo Contrasena a partir de las relaciones en ContraPermission
         contrasenas_queryset = Contrasena.objects.filter(id__in=contrasenas_of_permission.values_list('contra_id', flat=True))
         print(f'contrasenas_queryset: {contrasenas_queryset}')
