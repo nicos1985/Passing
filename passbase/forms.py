@@ -79,6 +79,7 @@ class ContrasenaUForm(ModelForm):
             try:
                 if form.field.widget.attrs.get('id') == 'is_personal':
                     form.field.widget.attrs['class'] = 'form-check-input'
+                
                 else:
                     form.field.widget.attrs['class'] = 'form-control'
                     form.field.widget.attrs['autocomplete'] = 'off'
@@ -144,7 +145,11 @@ class ContrasenaUForm(ModelForm):
                 }),
             'active': RadioSelect(
                 attrs={              
-                })     
+                }),
+                 'hash': TextInput(
+                attrs={
+                    'id' : 'hash'
+                }),     
         }
 
 class SectionForm(ModelForm):

@@ -61,6 +61,10 @@
                             <label for="usuario" class="form-label">Usuario</label>
                             <input type="text" name="usuario" value="{{decrypted_user}}" placeholder="Ingrese el usuario de ingreso" maxlength="255" class="form-control" autocomplete="off" required id="id_usuario">
                         </div>
+                        {% elif field.field.widget.attrs.id == "hash" %}
+                        <div class="form-group"
+                            <input type="text" name="hash" class="form-control" autocomplete="off" id="id_hash" disabled>
+                        </div>
                         {% else %}
                         <label for="{{ field.label }}" class="form-label">{{ field.label }}</label>
                         {{ field }}
