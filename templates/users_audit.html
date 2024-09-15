@@ -28,15 +28,49 @@
 
 
 
-<div class="container">
+<div class="container"style="margin-bottom: 45px;">
     <button class="btn">
         <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-gear"></i>  Configuración</a>
     </button>
-    <h3>Auditoria de Permisos y Roles</h3>
+    
 </div>
 <div>
+    
+    <div class="container" >
+        <h4>Fortaleza de las contraseñas</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card" style="background-color: #b6ffae; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas fuertes: {{data.strength_pass.strong}}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="background-color: #efea60; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas moderadas: {{data.strength_pass.moderate}}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="background-color: #ef7a60; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas débiles: {{data.strength_pass.weak}}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 <div class="container">
-
+    <div class="container">
+        <div class="card" style="margin-top: 35px; border-color: white;">
+            <div class="row">
+                
+            </div>
+        </div>
+    </div>
+    <h4>Auditoria de Permisos y Roles</h4>
     {% for user in data.users %}
     <div class="" style="background-color: #b6ffae; padding: 15px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">

@@ -312,23 +312,25 @@ def users_audit(request):
     exclude_users = GRAN_PERMISSION_ID_USERS
     users = users_active_all.exclude(id__in = exclude_users).order_by('id')
     
-    data = {'users': []}
+
+    data = {'users': [],
+            'strength_pass':{}}
     for user in users:
         user_role_assigned = user.assigned_role
         rol = PermissionRoles.objects.get(id=user_role_assigned.id)
-        print(f'role_id: {user_role_assigned.id}')
+       
 
         user_contrasenas_list = []
         contrasenas_of_role = rol.get_contrasenas_not_personal()
-        print(f'contrasenas_of_role: {contrasenas_of_role}')
+        
         contrasenas_of_permission = ContraPermission.objects.filter(user_id=user, permission=True, contra_id__is_personal=False)
         # Obtener la queryset del modelo Contrasena a partir de las relaciones en ContraPermission
         contrasenas_queryset = Contrasena.objects.filter(id__in=contrasenas_of_permission.values_list('contra_id', flat=True))
-        print(f'contrasenas_queryset: {contrasenas_queryset}')
+       
         contrasenas_diff = contrasenas_of_role.exclude(id__in=contrasenas_queryset.values_list('id', flat=True))
-        print(f'contrasenas_diff {user}: {contrasenas_diff}')
+        
         contrasenas_different = contrasenas_queryset.exclude(id__in=contrasenas_of_role.values_list('id', flat=True))
-        print(f'contrasenas_different {user}: {contrasenas_different}')
+        
 
         for contra in contrasenas_diff:
             user_contrasenas_list.append({
@@ -358,6 +360,26 @@ def users_audit(request):
             'count_differences': count_differences,  # O cualquier otro campo que quieras mostrar del usuario
             'contrasenas': user_contrasenas_list
         })
+
+    contrasenas = Contrasena.objects.filter(active=True, is_personal=False)
+    strength_count = {'weak':0, 'moderate':0, 'strong':0}
+    weak = 0
+    moderate = 0
+    strong = 0
+    for contrasena in contrasenas:
+        pass_strength = contrasena.password_strength
+        
+        if pass_strength == 'weak':
+            weak += 1
+        if pass_strength == 'moderate':
+            moderate += 1
+        if pass_strength == 'strong':
+            strong += 1
+
+    strength_count['weak'] = weak
+    strength_count['moderate'] = moderate
+    strength_count['strong'] = strong
+    data['strength_pass'] = strength_count
 
     #print(f'context: {data}')
 

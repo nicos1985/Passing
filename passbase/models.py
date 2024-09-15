@@ -57,14 +57,7 @@ class Contrasena(models.Model):
         return item
     
     def save(self, *args, **kwargs):
-        # # Aseguramos que usuario y contraseña sean strings
-        # usuario = self.usuario if isinstance(self.usuario, str) else self.usuario.decode('utf-8')
-        # print(f'usuario: {usuario}')
-        # contraseña = self.contraseña if isinstance(self.contraseña, str) else self.contraseña.decode('utf-8')
-        # print(f'contraseña: {contraseña}')
-        # # Concatenamos las cadenas de texto y generamos el hash
-        # self.hash = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
-        # # Encriptar la contraseña antes de guardarla
+        
         if isinstance(self.contraseña, str):
             self.contraseña = encrypt_data(self.contraseña)
         if isinstance(self.usuario, str):
@@ -146,7 +139,7 @@ class Contrasena(models.Model):
     
     @property
     def password_strength(self):
-        password = self.contraseña
+        password = decrypt_data(self.contraseña)
         length = len(password)
 
         # Check for presence of different character types
@@ -177,6 +170,10 @@ class Contrasena(models.Model):
             return 'moderate'
         elif strength >= 5:
             return 'strong'
+    
+
+
+
         
 class LogData(models.Model):
     entidad = models.CharField(max_length=50)
