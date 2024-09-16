@@ -35,6 +35,32 @@
     
 </div>
 <div>
+    <div class="container">
+        <h3>Auditoria</h3>
+    </div>
+    
+    <div class="container">
+        <h4>Contraseñas Duplicadas</h4>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card" style="background-color: #ffffff; border-radius: 12px; border-color: rgb(77, 57, 230);">
+                    <div class="card-body">
+                        <h5>Total de contraseñas repetidas: {{data.pass_duplicate_count.resumen_total_duplicados}}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card" style="background-color: #ffffff; border-radius: 12px; border-color: rgb(77, 57, 230);">
+                    <div class="card-body">
+                        <h4>Contraseñas repetidas:</h4>
+                        {% for contra, count in data.pass_duplicate_count.detalles_por_contrasena.items %}
+                        <h5>Contraseña: {{ contra }} - Duplicados: {{ count }}</h5>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div class="container" >
         <h4>Fortaleza de las contraseñas</h4>

@@ -4,7 +4,7 @@ from django import forms
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
-
+from django.db.models import Count
 from notifications.models import AdminNotification, UserNotifications
 from passing.settings import GRAN_PERMISSION_ID_USERS
 from .models import ContraPermission, PermissionRoles
@@ -305,7 +305,43 @@ def update_owner(request):
             print(f'contrasena_owner_notexist: {contrasena.owner}')
 
     return render(request, 'listpass.html')
-    
+
+def obtener_reporte_contrasenas_repetidas():
+    # Crear un diccionario para almacenar las contraseñas desencriptadas y sus conteos
+    contrasenas_desencriptadas = {}
+
+    # Recorrer todas las contraseñas en el modelo
+    for contrasena_obj in Contrasena.objects.all():
+        try:
+            # Desencriptar la contraseña
+            decrypted_password = contrasena_obj.get_decrypted_password()
+
+            # Verificar si ya existe en el diccionario
+            if decrypted_password in contrasenas_desencriptadas:
+                contrasenas_desencriptadas[decrypted_password].append(contrasena_obj)
+            else:
+                contrasenas_desencriptadas[decrypted_password] = [contrasena_obj]
+        except Exception as e:
+            print(f"Error desencriptando la contraseña con id {contrasena_obj.id}: {e}")
+
+    # Filtrar solo las contraseñas repetidas
+    contrasenas_duplicadas = {k: v for k, v in contrasenas_desencriptadas.items() if len(v) > 1}
+
+    # Crear el resumen de contraseñas duplicadas (total de duplicados)
+    resumen_contrasenas_duplicadas = sum([len(v) - 1 for v in contrasenas_duplicadas.values()])
+
+    # Crear el detalle de duplicados por contraseña
+    detalles_contrasenas_duplicadas = {
+        k: len(v) - 1 for k, v in contrasenas_duplicadas.items()
+    }
+
+    # Retornar los datos
+    return {
+        'resumen_total_duplicados': resumen_contrasenas_duplicadas,  # Total de duplicados
+        'detalles_por_contrasena': detalles_contrasenas_duplicadas,  # Duplicados por contraseña
+    }
+
+
 @user_passes_test(is_administrator)
 def users_audit(request):
     users_active_all = CustomUser.objects.filter(is_active=True)
@@ -314,7 +350,8 @@ def users_audit(request):
     
 
     data = {'users': [],
-            'strength_pass':{}}
+            'strength_pass':{},
+            'pass_duplicate_count':{}}
     for user in users:
         user_role_assigned = user.assigned_role
         rol = PermissionRoles.objects.get(id=user_role_assigned.id)
@@ -379,8 +416,16 @@ def users_audit(request):
     strength_count['weak'] = weak
     strength_count['moderate'] = moderate
     strength_count['strong'] = strong
-    data['strength_pass'] = strength_count
 
-    #print(f'context: {data}')
+    # Llama a la función correcta para obtener el reporte de contraseñas repetidas
+    reporte_contrasenas_repetidas = obtener_reporte_contrasenas_repetidas()
+
+
+    data['strength_pass'] = strength_count
+    data['pass_duplicate_count'] = reporte_contrasenas_repetidas
+
+    print(f'context: {data}')
 
     return render(request, 'users_audit.html', context={'data': data})
+
+
