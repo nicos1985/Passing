@@ -49,6 +49,7 @@
                     </div>
                 </div>
             </div>
+            {% if request.user.is_superuser %}
             <div class="col-md-6">
                 <div class="card" style="background-color: #ffffff; border-radius: 12px; border-color: rgb(77, 57, 230);">
                     <div class="card-body">
@@ -59,6 +60,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
     
