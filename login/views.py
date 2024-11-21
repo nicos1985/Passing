@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
+from client.models import Client
+from permission.models import PermissionRoles
 from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
@@ -12,8 +14,12 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
-
-
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
 # Funcion para user_passes_test 
 def is_administrator(user):
     return user.is_superuser or user.is_staff
@@ -22,18 +28,29 @@ def is_superadmin(user):
     return user.is_superuser
 #####################################
 
-
-
-
 # Create your views here.
 
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
-
+        try:
+            create_initial_role = PermissionRoles.objects.create(rol_name='Rol Inicial',
+                                                                comment='Rol inicial',
+                                                                is_active=True
+                                                                )
+            create_initial_role.contrasenas.set([])
+        except Exception as e:
+            messages.error(request, f'Hubo un error al crear el usuario {e}')
+            return redirect('home')
         if form.is_valid():
-            form.save()
+
+            user = form.save(commit=False)
+            user.is_superuser = True
+
+            user.save()
             username = form.cleaned_data['username']
+            
+
             messages.success(request, f'El usuario {username} ha sido creado exitosamente')
             return redirect('listpass')
         else:
@@ -51,6 +68,93 @@ def register(request):
     return render(request, 'register.html', context)
 
 
+
+def create_superuser(request, schema_name):
+    """Crea un super user la 1ra vez que se crea una cuenta. 
+    Envia mail de validacion de mail. 
+    """
+    client = get_object_or_404(Client, schema_name=schema_name)
+    
+    #valida si hay rol inicial y si no, crea el rol inicial para asignarle al superuser
+    try:
+        role, created = PermissionRoles.objects.get_or_create(rol_name='Rol Inicial',
+                                                            comment='Rol inicial',
+                                                            is_active=True
+                                                            )
+        #reated.contrasenas.set([])
+    except Exception as e:
+            messages.error(request, f'Hubo un error al crear el usuario | error: {e}')
+            return redirect('home')
+    
+    #Chequea si el flag de superuser creado esta en True.
+    if client.created_superuser == 1:
+        messages.warning(request, 'El usuario admin ya fue creado para este cliente.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_superuser = True
+            user.is_active = False  # El superusuario no estará activo hasta verificar el correo
+            user.assigned_role = role
+            user.save()
+
+            # Generar token de activación
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+
+            # Construir la URL de activación
+            activation_url = f"http://{request.get_host()}/login/activate/{uid}/{token}/" #prestar atencion cuando pase a https
+
+            # Enviar correo electrónico
+            subject = 'Activa tu cuenta de usuario admin'
+            message = render_to_string('activation_email.html', {
+                'user': user,
+                'activation_url': activation_url,
+            })
+
+            try:
+                send_mail(subject, message, 'noreply@anima.bot', [user.email])
+            except Exception as e:
+                messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
+
+            client.created_superuser = 1
+            client.save()
+
+            messages.success(request, 'El usuario admin ha sido creado. Revisa tu email para activarlo.')
+            return redirect('home')
+    else:
+        form = UserRegisterForm()
+
+    context = {
+        'form': form,
+        'title': 'Crear usuario admin',
+        'Action': 'create',
+    }
+
+    return render(request, 'register.html', context)
+
+User = get_user_model()
+
+def activate_superuser(request, uidb64, token):
+
+    
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Tu cuenta ha sido activada exitosamente.')
+        return redirect('login')
+    else:
+        messages.error(request, 'El enlace de activación es inválido o ha expirado.')
+        return redirect('home')
 
 class LoginFormView(LoginView):
     form_class = CustomLoginForm

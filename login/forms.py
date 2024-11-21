@@ -48,6 +48,8 @@ class UserRegisterForm(UserCreationForm):
             form.field.widget.attrs['autocomplete']= 'off'
 
 
+
+
 class ProfileForm(forms.ModelForm):
     menu_color = forms.CharField(
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
@@ -77,10 +79,11 @@ class UserForm(forms.ModelForm):
     position = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     address = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     tel_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
+        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date','assigned_role']
         
 
 class UserDepartureForm(forms.ModelForm):

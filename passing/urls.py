@@ -17,11 +17,12 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import test_send_email, home, config, UpdateEmailConfigView
+from .views import test_send_email, home, config, UpdateEmailConfigView, client_register
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('', home, name='home'),
+    path('client-register/', client_register, name='client_register'),
     path('login/', include('login.urls') ),
     path('pass/',include('passbase.urls') ),
     path('notifications/',include('notifications.urls') ),
