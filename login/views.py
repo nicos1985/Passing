@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
 from client.models import Client
 from permission.models import PermissionRoles
-from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
+from .forms import CustomLoginForm, SuperUserRegisterForm, UserDepartureForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
@@ -32,32 +32,47 @@ def is_superadmin(user):
 
 def register(request):
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        try:
-            create_initial_role = PermissionRoles.objects.create(rol_name='Rol Inicial',
-                                                                comment='Rol inicial',
-                                                                is_active=True
-                                                                )
-            create_initial_role.contrasenas.set([])
-        except Exception as e:
-            messages.error(request, f'Hubo un error al crear el usuario {e}')
-            return redirect('home')
+        form = UserForm(request.POST)
+        
         if form.is_valid():
-
-            user = form.save(commit=False)
-            user.is_superuser = True
-
-            user.save()
-            username = form.cleaned_data['username']
+            try:
+                user = form.save(commit=False)
+                user.is_active = False
             
+                username = form.cleaned_data['username']
+                user.save()
+            except Exception as e:
+                messages.warning(request, 'La creacion de usuario ha tenido un problema save. error: {e}')
+
+            try:
+                # Generar token de activación
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+                # Construir la URL de activación
+                activation_url = f"http://{request.get_host()}/login/reset-password/confirm/{uid}/{token}/" #prestar atencion cuando pase a https
+            except Exception as e:
+                messages.warning(request, 'La creacion de usuario ha tenido un problema token. error: {e}')
+
+            # Enviar correo electrónico
+            subject = 'Activa tu cuenta de usuario'
+            message = render_to_string('activation_email.html', {
+                'user': user,
+                'activation_url': activation_url,
+            })
+
+            try:
+                send_mail(subject, message, 'noreply@anima.bot', [user.email])
+            except Exception as e:
+                messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
 
             messages.success(request, f'El usuario {username} ha sido creado exitosamente')
-            return redirect('listpass')
+            return redirect('userlist')
         else:
             messages.warning(request, 'La creacion de usuario ha tenido un problema.')
 
     else:
-        form = UserRegisterForm()
+        form = UserForm()
         
     context = { 
         'form' : form,
@@ -66,6 +81,9 @@ def register(request):
     }
 
     return render(request, 'register.html', context)
+
+def create_uid_token(request):
+    pass
 
 
 
@@ -92,7 +110,7 @@ def create_superuser(request, schema_name):
         return redirect('home')
 
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
+        form = SuperUserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_superuser = True
@@ -126,7 +144,7 @@ def create_superuser(request, schema_name):
             messages.success(request, 'El usuario admin ha sido creado. Revisa tu email para activarlo.')
             return redirect('home')
     else:
-        form = UserRegisterForm()
+        form = SuperUserRegisterForm()
 
     context = {
         'form': form,
@@ -234,6 +252,20 @@ class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
     form_class = SetPasswordForm  # Especifica el formulario que deseas utilizar
+
+    def form_valid(self, form):
+        # Guardar la nueva contraseña
+        user = form.save()
+
+        # Activar al usuario si no está activo
+        if not user.is_active:
+            
+            user.is_active = True
+            user.save()
+            messages.success(self.request, "Tu cuenta ha sido activada con éxito.")
+
+        # Llamar al comportamiento predeterminado del form_valid
+        return super().form_valid(form)
 
 @method_decorator(user_passes_test(is_administrator), name='dispatch') 
 class UserListView(ListView):   
