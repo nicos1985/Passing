@@ -71,7 +71,12 @@ class CustomModelChoiceField(ModelMultipleChoiceField):
         if hasattr(self, '_choices'):
             return self._choices
         return CustomModelChoiceIterator(self)
-    choices = property(_get_choices, forms.MultipleChoiceField._set_choices)
+
+    def _set_choices(self, value):
+        self._choices = value
+
+    choices = property(_get_choices, _set_choices)
+
 
 class PermissionRolesForm(forms.ModelForm):
     rol_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
