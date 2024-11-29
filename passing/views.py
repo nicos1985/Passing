@@ -1,9 +1,14 @@
-from django.shortcuts import render
+import re
+from urllib.parse import urlparse
+from django.forms import ValidationError
+from django.shortcuts import redirect, render
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.views import View
+from django.contrib import messages
+from client.models import Client, Domain
 from .config import EMAIL_SETTINGS
-from .forms import EmailConfigForm
+from .forms import ClientRegisterForm, EmailConfigForm
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 import logging
