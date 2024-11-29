@@ -27,7 +27,7 @@ def config(request):
 def test_send_email(request):
     subject = 'Prueba de envío de correo'
     message = 'Este es un correo electrónico de prueba'
-    from_email = 'info@previ.com.ar'
+    from_email = 'noreply@anima.bot'
     recipient_list = ['nicolasferratto@hotmail.com']
 
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
