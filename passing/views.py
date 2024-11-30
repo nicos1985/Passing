@@ -51,7 +51,7 @@ def test_send_email(request):
 
     # Mostrar los logs en la página renderizada
     context = {
-        'log_messages': log_messages
+        'context': e
     }
 
     return render(request, 'test_send_email.html', context)
