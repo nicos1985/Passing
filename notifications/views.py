@@ -15,6 +15,8 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from passbase.models import Contrasena
 from permission.models import ContraPermission
+from django.db.models import Case, When, Value, IntegerField
+
 
 def can_view_contrasena(user, request):
     contrasena_id = int(request.GET.get('contrasena'))
@@ -95,19 +97,21 @@ class MarkNotificationsViewed(LoginRequiredMixin, View):
             return JsonResponse({'status': 'success'})
         return HttpResponseForbidden("No autorizado")    
 
+
+
 class ListNotificationsAdmin(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = AdminNotification
     template_name = 'admin-noti-list.html'
     context_object_name = 'notifications'
     login_url = 'login'
-    ordering = ['viewed', '-created']
 
     def test_func(self):
         return is_administrator(self.request.user)
     
     def handle_no_permission(self):
         messages.error(self.request, "No tienes permiso para acceder a esta página.")
-        return redirect('listpass')  # Redirigir a la página de inicio u otra página adecuada
+        return redirect('listpass')
+
 
 class UpdateNotificationsUser():
     pass

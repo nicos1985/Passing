@@ -15,6 +15,7 @@ class UserNotifications(models.Model):
 
     class Meta():
         verbose_name = "Notificaciones a usuario"
+        
 
 class UserType(models.IntegerChoices):
     STAFF = 0, 'Staff'
@@ -36,3 +37,4 @@ class AdminNotification(models.Model):
 
     class Meta:
         verbose_name = "Notificaciones a admin"
+        ordering = ('viewed',)

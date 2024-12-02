@@ -82,16 +82,21 @@ class LoginFormView(LoginView):
 class LogoutFormView(LogoutView):
     template_name = 'logout.html'
 
-    def get_context_data(self, **kwargs):
-          
-          context = super().get_context_data(**kwargs)
-          context['title'] = 'Logout'
-          context['entity'] = 'Salida'
-          context['list_url'] = reverse_lazy('login')
-          context['action'] = 'logout'
-            
-          return context
+    def get(self, request, *args, **kwargs):
+        # Opcional: Renderiza el formulario de confirmación para GET
+        return self.render_to_response(self.get_context_data())
 
+    def post(self, request, *args, **kwargs):
+        # Maneja la solicitud POST para cerrar sesión
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Logout'
+        context['entity'] = 'Salida'
+        context['list_url'] = reverse_lazy('login')
+        context['action'] = 'logout'
+        return context
         
 @login_required
 def profile_view(request, username):

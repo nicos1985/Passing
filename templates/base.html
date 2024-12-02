@@ -137,11 +137,14 @@
                                         <b>&nbsp;&nbsp;&nbsp;{{request.user}}&nbsp;&nbsp;&nbsp;</b>
                                     </a>
                                 </li>
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
                                 <li class="nav-item">
-                                    <a class="nav-link text-center" href="{% url 'logout' %}">
+                                    <button type='submit' class="btn btn-transparent" href="{% url 'logout' %}">
                                         <i class="fa-solid fa-right-from-bracket" style="color:white; margin-top: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i>
-                                    </a>
+                                    </button>
                                 </li>
+                                </form>
                             </ul>
                         {% endif %}
                     </div>
