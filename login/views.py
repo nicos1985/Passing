@@ -1,5 +1,6 @@
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
@@ -20,6 +21,11 @@ from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
+import json
+from django.utils.html import escape
+from passing.config import EMAIL_SETTINGS
+
+
 # Funcion para user_passes_test 
 def is_administrator(user):
     return user.is_superuser or user.is_staff
@@ -40,6 +46,7 @@ def register(request):
                 user.is_active = False
             
                 username = form.cleaned_data['username']
+                user.client = Client.objects.get(schema_name=request.tenant.schema_name)
                 user.save()
             except Exception as e:
                 messages.warning(request, 'La creacion de usuario ha tenido un problema save. error: {e}')
@@ -116,6 +123,7 @@ def create_superuser(request, schema_name):
             user.is_superuser = True
             user.is_active = False  # El superusuario no estará activo hasta verificar el correo
             user.assigned_role = role
+            user.client = client
             user.save()
 
             # Generar token de activación
@@ -128,21 +136,28 @@ def create_superuser(request, schema_name):
 
             # Enviar correo electrónico
             subject = 'Activa tu cuenta de usuario admin'
-            message = render_to_string('activation_email.html', {
+            message_html = render_to_string('activation_email.html', {
                 'user': user,
                 'activation_url': activation_url,
             })
-
+            message = escape(json.dumps(message_html)) #lo paso a json para que no escape el html en la vista
+            mail_from= EMAIL_SETTINGS['DEFAULT_FROM_EMAIL']
+            context={'subject':subject,
+                         'message':message,
+                          'mail_from': mail_from,
+                          'email':user.email,
+                          'action':''}
             try:
-                send_mail(subject, message, 'noreply@anima.bot', [user.email])
+                send_mail(subject, message='', from_email=mail_from, recipient_list=[user.email], html_message=message_html)
+                
+                context['action'] = '¿Recibiste el mail de verificacion?'
+                messages.success(request, 'El usuario admin ha sido creado. Revisa tu email para activarlo.')
+                return render(request,'recive-mail.html',context=context)
+            
             except Exception as e:
                 messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
-
-            client.created_superuser = 1
-            client.save()
-
-            messages.success(request, 'El usuario admin ha sido creado. Revisa tu email para activarlo.')
-            return redirect('home')
+                context['action'] = 'Error en el envío de mail.'
+                return render(request,'recive-mail.html',context=context) 
     else:
         form = SuperUserRegisterForm()
 
@@ -156,23 +171,66 @@ def create_superuser(request, schema_name):
 
 User = get_user_model()
 
-def activate_superuser(request, uidb64, token):
+def resend_mail(request):
+    """Reenvia el mail en caso de que no lo haya recibido. Se dispara al presionar el boton de reenviar"""
+    if request.method=='POST':
+        subject = request.POST.get('subject')
+        message_json = request.POST.get('message')
+        mail_from = request.POST.get('mail_from')
+        email = request.POST.get('email')
+        action = request.POST.get('action')
 
+        message_html = json.loads(message_json)
+        context={'subject':subject,
+                         'message': message_json,
+                          'mail_from': mail_from,
+                          'email': email,
+                          'action': action}
+        try:
+            send_mail(subject, message='', from_email=mail_from, recipient_list=[email], html_message=message_html)
+            
+            messages.success(request, f'Se ha enviado el mail correctamente a {email}')
+            context['action'] = '¿Recibiste el mail de verificacion?'
+            return render(request,'recive-mail.html',context=context)
+        
+        except Exception as e:
+
+            messages.error(request, f'Se ha producido un error al enviar el mail {e}')
+            return render(request,'recive-mail.html',context=context) 
+        
+    return HttpResponse("Método no permitido", status=405)
+
+def recive_mail(request):
+    """Pregunta la recepcion de mail. En caso de no haberlo recibido da la opcion de reenviarlo."""
+    if request.method=='GET':
+        return render(request, 'recive-mail.html')
+
+
+def activate_superuser(request, uidb64, token):
+    """Activa el superuser cuando recibe el token correcto."""
     
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
+        user = CustomUser.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
+        
+        
+        client = Client.objects.filter(id=user.client.id).first()
+        if client:
+            client.created_superuser = 1
+            client.save()
         messages.success(request, 'Tu cuenta ha sido activada exitosamente.')
         return redirect('login')
     else:
         messages.error(request, 'El enlace de activación es inválido o ha expirado.')
         return redirect('home')
+
+
 
 class LoginFormView(LoginView):
     form_class = CustomLoginForm

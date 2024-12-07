@@ -17,7 +17,8 @@ class CustomUser(AbstractUser):
     departure_motive = models.CharField(max_length=1000,blank=True, null=True, verbose_name='Motivo de baja')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
     assigned_role = models.ForeignKey('permission.PermissionRoles', on_delete=models.CASCADE, verbose_name='Rol asignado', default=1)
-    
+    client = models.ForeignKey('client.Client', on_delete=models.CASCADE, null=True, blank=True)
+
 
     def formatted_birth_date(self):
         return self.birth_date.strftime('%Y-%m-%d') if self.birth_date else ''

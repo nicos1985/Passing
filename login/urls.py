@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import CustomPasswordResetConfirmView, DepartureUser, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user
+from .views import CustomPasswordResetConfirmView, DepartureUser, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail
 from . import views 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
@@ -12,6 +12,8 @@ urlpatterns = [
     path('', LoginFormView.as_view(), name='login'),
     path('register/', views.register , name='register'),
     path('<str:schema_name>/create-superuser/', create_superuser, name='create-superuser'),
+    path('recive-mail/', recive_mail, name='recive-mail'),
+    path('resend-mail/', resend_mail, name='resend-mail'),
     path('activate/<uidb64>/<token>/', activate_superuser, name='activate-superuser'),
     path('logout/', LogoutFormView.as_view(), name='logout'),
     path('profile/<str:username>/', views.profile_view, name='profile'),
