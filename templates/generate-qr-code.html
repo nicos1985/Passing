@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+{% if request.user.is_authenticated %}
+<html>
+<head>
+    <title>Codigo QR</title>
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+        <div class="card text-center" style="width: 25rem;">
+            <!-- Título en el encabezado de la tarjeta -->
+            <div class="card-header">
+                <h1 class="card-title">Tu Código QR</h1>
+            </div>
+
+            <!-- Imagen QR en el cuerpo de la tarjeta -->
+            <div class="card-body">
+                <img src="{% url 'generate-qr-code' %}" alt="Código QR" class="img-fluid" style="height:230px; width:230px;">
+            </div>
+
+            <!-- Botón en el pie de la tarjeta -->
+            <div class="card-footer">
+                <p>Escanea el código QR con "Google Authenticator"  <a href="https://play.google.com/store/search?q=google+authenticator&c=apps&hl=es_419" target="_blank">Descargalo aqui</a></p>
+                <a href="{% url 'profile' %}" class="btn btn-primary">Volver al Perfil</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+{%endif%}
+{%endblock%}
+</html>

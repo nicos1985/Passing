@@ -1,0 +1,37 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<div class ='justify-content-sm-center' style="margin-top: 80px;">
+<div class="d-flex justify-content-center" >
+
+    <div class="card center">
+            <div class="card-title">
+                <div class="container" style="height: 85px; padding-top: 20px; ">
+                    <h2><i class="fas fa-user-shield" ></i>  Autenticacion en 2 pasos</h2>
+                    
+                </div>
+            </div>
+
+            <div class="card-body "style="background-color: #F7F7F7; width: 26rem;">
+
+                            <div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <label class="form-label" for="otp_code">Código:</label>
+                            <input class='form-control' type="text" id="otp_code" name="otp_code" style='margin-bottom:20px;' required>
+                           
+                            <button type="submit" class="btn btn-primary btn-flat">
+                                <i class="fas fa-user-shield"></i> Verificar
+    
+                            </button>
+                        </form>
+                 
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

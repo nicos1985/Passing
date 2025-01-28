@@ -18,6 +18,8 @@ class CustomUser(AbstractUser):
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
     assigned_role = models.ForeignKey('permission.PermissionRoles', on_delete=models.CASCADE, verbose_name='Rol asignado', default=1)
     client = models.ForeignKey('client.Client', on_delete=models.CASCADE, null=True, blank=True)
+    otp_secret = models.CharField(max_length=32, blank=True, null=True)
+    is_2fa_enabled = models.BooleanField(default=False)
 
 
     def formatted_birth_date(self):
@@ -49,4 +51,28 @@ class CustomUser(AbstractUser):
         except Exception as e:
             message = f'No se pudo activar el usuario <strong>{self.username}</strong>. Error: {str(e)}'
         return message
-     
+    
+    def has_otp_secret(self):
+        if self.otp_secret:
+            return True
+        else:
+            return False
+        
+
+class MultifactorChoices(models.IntegerChoices):
+   DESACTIVADO = 0, 'Desactivado'
+   ACTIVADO = 1, 'Activado'
+   USER_CHOICE = 2, 'A eleccion del usuario'
+
+def find_admin():
+    superuser = CustomUser.objects.filter(is_superuser=True).order_by(id).first()
+    return superuser.id
+
+class GlobalSettings(models.Model):
+    multifactor_status = models.PositiveSmallIntegerField(choices=MultifactorChoices.choices, default=MultifactorChoices.DESACTIVADO)
+    is_admin_dash_active = models.BooleanField(default=False)
+    menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
+    set_admins = models.ManyToManyField(CustomUser, blank=True, null=True, default=find_admin)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)

@@ -6,11 +6,11 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
 from client.models import Client
 from permission.models import PermissionRoles
-from .forms import CustomLoginForm, SuperUserRegisterForm, UserDepartureForm, ProfileForm, UserForm
+from .forms import CustomLoginForm, GlobalSettingsForm, SuperUserRegisterForm, UserDepartureForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
-from .models import CustomUser
+from .models import CustomUser, GlobalSettings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView
 from django.contrib.auth.decorators import user_passes_test
@@ -23,6 +23,10 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 import json
 from django.utils.html import escape
+import pyotp
+import qrcode
+from io import BytesIO
+from django.contrib.auth import login
 from passing.config import EMAIL_SETTINGS
 
 
@@ -253,8 +257,19 @@ class LoginFormView(LoginView):
         return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
-        """If the form is valid, redirect to the success URL with a success message."""
-        messages.success(self.request, f"Inicio de sesión exitoso. Bienvenido {form.cleaned_data['username']}.")
+        """If the form is valid, check for 2FA and handle redirection."""
+        user = form.get_user()
+
+        if user.is_2fa_enabled:
+            # Inicia sesión pero redirige a 2FA
+            login(self.request, user)  # Establece la sesión del usuario
+            self.request.session['is_2fa_verified'] = False  # Asegurarse de que no esté verificado
+            self.request.session['2fa_user_id'] = user.id  # Guardar el ID del usuario para 2FA
+            messages.info(self.request, "Por favor, verifica tu código de autenticación.")
+            return redirect('verify_2fa')  # Redirige a la vista de verificación 2FA
+
+        # Si no tiene 2FA habilitado, proceder normalmente
+        messages.success(self.request, f"Inicio de sesión exitoso. Bienvenido {user.username}.")
         return super().form_valid(form)
     
 
@@ -274,32 +289,38 @@ class LogoutFormView(LogoutView):
 
         
 @login_required
-def profile_view(request, username):
-    if username is not None:
-        if username == request.user.username:
-            user = CustomUser.objects.get(username=username)
-            if request.method == 'POST':
-                
-                profile_form = ProfileForm(request.POST, request.FILES, instance=user)
-                if profile_form.is_valid():
-                    profile_form.save()
+def profile_view(request):
+    user = CustomUser.objects.get(id=request.user.id)
+    if request.method == 'POST': 
+        profile_form = ProfileForm(request.POST, request.FILES, instance=user)
+        if profile_form.is_valid():
+            if profile_form.is_bound:
+                is_2fa_enabled = profile_form.cleaned_data['is_2fa_enabled']
+                if profile_form.initial['is_2fa_enabled'] == True:
+                    if is_2fa_enabled == False:
+                        disable_2fa(request)
                 else:
-                    print('Formulario no válido')
-                
-            else:
-                profile_form = ProfileForm(instance=user)
-
-            context = {
-                'user_profile': user,
-                'profile_form': profile_form,
-            }
-
-            return render(request, 'profile.html', context)
+                    qr_generate = is_2fa_enabled == True and user.otp_secret is None
+                    if qr_generate:
+                        profile_form.save()
+                        return render(request, 'generate-qr-code.html')
+                    else:
+                        profile_form.save()
+                        return render(request, 'listpass.html')
         else:
-            messages.error(request, "No tenes permisos para ingresar a este perfil")
-            return redirect(reverse('listpass'))
-    return render(request, 'login.html')
-
+            print('Formulario no válido')
+        
+    else:
+        profile_form = ProfileForm(instance=user)
+        
+        context = {
+            'user_profile': user,
+            'profile_form': profile_form,
+            'has_otp_secret': user.has_otp_secret(),
+        }
+            
+        return render(request, 'profile.html', context)
+    return render(request, 'listpass.html')
 
 
 class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
@@ -416,3 +437,58 @@ def activate_user(request, pk):
         messages.error(request, message)
 
     return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
+
+
+def verify_2fa(request):
+    if request.method == "POST":
+        code = request.POST.get("otp_code")
+        if request.user.otp_secret:
+            totp = pyotp.TOTP(request.user.otp_secret)
+            if totp.verify(code):
+                # Marcar como verificado en la sesión
+                request.session["is_2fa_verified"] = True
+                return redirect("listpass")  # Redirige al área protegida
+            else:
+                messages.error(request, "Código inválido. Intenta nuevamente.")
+        else:
+            messages.error(request, "2FA no está configurado en tu cuenta.")
+    return render(request, "verify_2fa.html")
+
+
+def generate_qr_code(request):
+    """Genera el otp secret o utiliza el existente para generar el QR"""
+    user = request.user
+    if not user.otp_secret:
+        secret = user.otp_secret = pyotp.random_base32() # Genera una clave secreta aleatoria
+        user.save()
+    else:
+        secret = user.otp_secret
+    totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
+    user.email,  # Identificador del usuario (usualmente el email)
+    issuer_name="Passing"  # Nombre de tu aplicación
+    )
+    qr = qrcode.make(totp_uri)
+    buffer = BytesIO()
+    qr.save(buffer)
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type="image/png")
+
+
+def disable_2fa(request):
+    if request.method == "POST" and request.user.is_authenticated:
+        request.user.is_2fa_enabled = False
+        request.user.otp_secret = None
+        request.user.save()
+        messages.success(request, "2FA ha sido desactivado.")
+    return redirect("profile")
+
+
+class GlobalSettingsUpdateView(UpdateView):
+    model = GlobalSettings
+    template_name = 'global_settings.html'
+    form_class = GlobalSettingsForm
+    success_url = reverse_lazy('config')
+
+    def get_queryset(self):
+        
+        return super().get_queryset()

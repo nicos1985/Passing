@@ -19,25 +19,25 @@ from django.urls import path, include
 from . import views
 from .views import test_send_email, home, config, UpdateEmailConfigView, client_register
 from django.conf.urls.static import static
+   
 
+# URL patterns generales
 urlpatterns = [
     path('', home, name='home'),
+    path('admin/', admin.site.urls),
     path('client-register/', client_register, name='client_register'),
-    path('login/', include('login.urls') ),
-    path('pass/',include('passbase.urls') ),
-    path('notifications/',include('notifications.urls') ),
-    path('perm/',include('permission.urls') ),
+    path('login/', include('login.urls')),
+    path('pass/', include('passbase.urls')),
+    path('notifications/', include('notifications.urls')),
+    path('perm/', include('permission.urls')),
     path("__debug__/", include("debug_toolbar.urls")),
     path('test_send_email/', test_send_email, name='test_send_email'),
     path('update_email_config/', UpdateEmailConfigView.as_view(), name='update_email_config'),
-    
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Añadir URLs para el debug toolbar en modo DEBUG
 if settings.DEBUG:
-    import debug_toolbar
+    urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]
 
-    urlpatterns += path("__debug__/", include("debug_toolbar.urls")),
-
-if settings.ADMIN_ENABLED:
-    urlpatterns += [
-        path('admin/', admin.site.urls),
-    ]
+# Añadir la URL de admin solo si el dash está activo
+# Agrega la URL de admin dinámicamente

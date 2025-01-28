@@ -42,7 +42,7 @@
         </div>
         <div class="row">
             <div class="col-md-4 mx-auto">
-                <form id="Profileform" method='POST' enctype="multipart/form-data" action='{% url 'profile' request.user.username %}'>
+                <form class= 'd-inline' id="Profileform" method='POST' enctype="multipart/form-data" action='{% url 'profile' %}'>
                     {% csrf_token %}
                     {{ profile_form.errors }}
                     {{ profile_form.non_field_errors }}
@@ -64,24 +64,38 @@
                         <input name="position" id="position" class="form-control" value="{{ user_profile.position }}" >
                     </div>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="menu_color" class="form-label">Menu color:</label>
-                        <input type="color" name="menu_color" id="menu_color" class="form-check-box" value="{{ user_profile.menu_color }}" >
-                    </div>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="avatar" class="form-label">Avatar:</label>
                         <input type="file" name="avatar" id="avatar" class="form-control" value="{{ user_profile.avatar }}" >
                     </div>
+                    <div class="form-check-inline form-switch" style="margin-top: 20px; margin-bottom: 20px;">
+                        {{ profile_form.is_2fa_enabled }}
+                        <label for="is_2fa_enabled" class="form-label" style='margin-left:25px'>2do factor de autenticación</label>
+                        
+                        <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="Al habilitar 2do factor de autenticacion se te dará un codigo QR para que escanees con Google Authenticator de tu celular."></i>
+                    </div>
+                    
+                    {% if has_otp_secret == True %}
+                    <a href="{% url 'generate-qr-code' %}" >Ver código QR<a>
+                    {%else%}
+                    {% endif %}
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label for="menu_color" class="form-label">Menu color:</label>
+                        <input type="color" name="menu_color" id="menu_color" class="form-control form-control-color" style="height: 40px; width: 100px" value="{{ user_profile.menu_color }}" >
+                    </div>
+                    
                     
                     </div>
+                        
                         <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
                         <button id="botonEditar" class="btn btn-warning" type="button">Editar <i class="fas fa-pencil-alt"></i></button>
-                    </div>
+                        </div>
                     
                     <div class="text-center" style="margin-top: 5px; margin-bottom: 5px;">
                         <button id='buttonsubmit' type="submit" class="btn btn-primary">
                                <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>Guardar
                         </button> 
                     </div> 
+                
                 </form>
                
 
@@ -125,5 +139,5 @@ botonEditar.addEventListener("click", function() {
 
 {%endblock%}
 
-</body>
+
 </html>

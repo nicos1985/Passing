@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
-from .models import CustomUser
+from .models import CustomUser, GlobalSettings
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
 
@@ -55,11 +55,16 @@ class ProfileForm(forms.ModelForm):
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
         widget=forms.TextInput(attrs={'type': 'color'})
     )
-
+    
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color']
-
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled']
+        widgets = {
+            'is_2fa_enabled': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',  # Clase de Bootstrap
+                'role': 'switch'  # Propiedad para indicar que es un switch
+            })
+        }
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 
@@ -107,3 +112,14 @@ class AdminLoginForm(AuthenticationForm):
         }
     )
 )
+    
+
+class GlobalSettingsForm(forms.ModelForm):
+    menu_color = forms.CharField(
+        max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
+        widget=forms.TextInput(attrs={'type': 'color'})
+    )
+
+    class Meta:
+        model = GlobalSettings
+        fields = ['multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
