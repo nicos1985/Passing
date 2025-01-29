@@ -1,4 +1,5 @@
 from notifications.models import AdminNotification, UserNotifications
+from login.models import GlobalSettings
 
 def counter_admin_notifications(request):
     if request.user.is_authenticated:
@@ -15,7 +16,11 @@ def menu_color(request):
         color = '#212629'
 
     else:
-        color = request.user.menu_color
+        settings = GlobalSettings.objects.get(id=1)
+        if settings.menu_color == None:
+            color = request.user.menu_color
+        else:
+            color = settings.menu_color
     
     return {'color': color}
 

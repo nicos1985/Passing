@@ -69,10 +69,11 @@ def find_admin():
     return superuser.id
 
 class GlobalSettings(models.Model):
-    multifactor_status = models.PositiveSmallIntegerField(choices=MultifactorChoices.choices, default=MultifactorChoices.DESACTIVADO)
-    is_admin_dash_active = models.BooleanField(default=False)
+    multifactor_status = models.PositiveSmallIntegerField(choices=MultifactorChoices.choices, verbose_name='Politica 2do factor autenticacion', default=MultifactorChoices.DESACTIVADO)
+    is_admin_dash_active = models.BooleanField(default=False, verbose_name='Dashboard administrador')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')
-    set_admins = models.ManyToManyField(CustomUser, blank=True, null=True, default=find_admin)
+    set_admins = models.ManyToManyField(CustomUser, blank=True, null=True, verbose_name='Designar usuarios admin')
+    logo = models.ImageField(upload_to='logos/', null=True, blank=True, verbose_name="Logo de la empresa")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)

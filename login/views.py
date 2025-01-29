@@ -1,4 +1,3 @@
-
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -10,7 +9,8 @@ from .forms import CustomLoginForm, GlobalSettingsForm, SuperUserRegisterForm, U
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
-from .models import CustomUser, GlobalSettings
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from .models import CustomUser, GlobalSettings, MultifactorChoices
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView
 from django.contrib.auth.decorators import user_passes_test
@@ -28,6 +28,9 @@ import qrcode
 from io import BytesIO
 from django.contrib.auth import login
 from passing.config import EMAIL_SETTINGS
+from django.core.mail import EmailMessage
+from django.utils.html import format_html
+from email.mime.image import MIMEImage
 
 
 # Funcion para user_passes_test 
@@ -129,6 +132,15 @@ def create_superuser(request, schema_name):
             user.assigned_role = role
             user.client = client
             user.save()
+            
+            #Crear Settings Globales
+            try:
+                global_settings = GlobalSettings.objects.create()
+            except Exception as e:
+                messages.warning(request, f'No se ha podido crear las Configuraciones Globales')
+                context['action'] = 'Error en Configuraciones globales'
+                return render(request, 'client_register.html', context)
+            
 
             # Generar token de activación
             token = default_token_generator.make_token(user)
@@ -162,6 +174,8 @@ def create_superuser(request, schema_name):
                 messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
                 context['action'] = 'Error en el envío de mail.'
                 return render(request,'recive-mail.html',context=context) 
+            
+            
     else:
         form = SuperUserRegisterForm()
 
@@ -455,26 +469,52 @@ def verify_2fa(request):
     return render(request, "verify_2fa.html")
 
 
-def generate_qr_code(request):
-    """Genera el otp secret o utiliza el existente para generar el QR"""
+def show_qr_code_2fa(request):
+    """Muestra el código QR en la web como imagen."""
     user = request.user
+    qr_buffer = generate_qr_bytes(user)  
+
+    return HttpResponse(qr_buffer, content_type="image/png")
+
+def generate_qr_bytes(user):
+    """Genera un código QR en bytes para un usuario específico."""
     if not user.otp_secret:
-        secret = user.otp_secret = pyotp.random_base32() # Genera una clave secreta aleatoria
+        secret = user.otp_secret = pyotp.random_base32()  # Genera un secret si no lo tiene
         user.save()
     else:
         secret = user.otp_secret
-    totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
-    user.email,  # Identificador del usuario (usualmente el email)
-    issuer_name="Passing"  # Nombre de tu aplicación
-    )
-    qr = qrcode.make(totp_uri)
-    buffer = BytesIO()
-    qr.save(buffer)
-    buffer.seek(0)
-    return HttpResponse(buffer, content_type="image/png")
 
+    totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        user.username,
+        issuer_name="Passing"
+    )
+
+    qr = qrcode.make(totp_uri)  # Genera el código QR
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    buffer.seek(0) 
+
+    return buffer  # Devuelve los bytes de la imagen
+
+import base64
+
+def generate_qr_base64(user):
+    """Genera un código QR y lo devuelve como una cadena Base64."""
+    qr_buffer = generate_qr_bytes(user)  # Reutilizamos la función anterior
+
+    # Convertir la imagen a Base64
+    qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
+    image_data = base64.b64decode(qr_base64)  # Decodificar Base64
+
+    # Guardar la imagen en un archivo
+    #with open("qr_code_test.png", "wb") as f:
+        #f.write(image_data)
+    return qr_base64  # Devuelve la cadena Base64
 
 def disable_2fa(request):
+    """
+    Deshabilita el 2fa para el usuario en particular.
+    """
     if request.method == "POST" and request.user.is_authenticated:
         request.user.is_2fa_enabled = False
         request.user.otp_secret = None
@@ -482,13 +522,159 @@ def disable_2fa(request):
         messages.success(request, "2FA ha sido desactivado.")
     return redirect("profile")
 
+def disable_2fa_user(user):
+    """
+    Deshabilita el 2fa para el usuario en particular.
+    """
+    user.is_2fa_enabled = False
+    user.otp_secret = None
+    user.save()
+        
+    
 
-class GlobalSettingsUpdateView(UpdateView):
+
+def send_qr_code_email_inline(user):
+        """Envía el código QR incrustado en el cuerpo del email."""
+        
+        qr_base64 = generate_qr_base64(user)  # Obtener QR en Base64
+        
+        # Crear el cuerpo del email con la imagen incrustada
+        html_content = format_html(
+            """
+            <html>
+                <body>
+                    <p>Hola <b>{}</b>,</p>
+                    <p>Escanea este código QR para configurar la autenticación en dos pasos en la aplicación Passing:</p>
+                    <p>Escanea el código QR con "Google Authenticator"  <a href="https://play.google.com/store/search?q=google+authenticator&c=apps&hl=es_419" target="_blank">Descargalo aqui</a></p>
+                    <img src="data:image/png;base64,{}" alt="QR Code" style="width:200px; height:200px;">
+                    <p>Si tienes problemas, contáctanos.</p>
+                    <p>Atentamente, <br><b>El equipo de Passing</b></p>
+                </body>
+            </html>
+            """,
+            user.username, qr_base64
+        )
+        print(f'message_email {html_content}')
+        # Crear el email con formato HTML
+        email = EmailMessage(
+            subject="Tu Código QR para Autenticación en Passing",
+            body=html_content,
+            from_email="noreply@anima.bot",
+            to=[user.email]
+        )
+
+        email.content_subtype = "html"  # Especificar que el contenido es HTML
+
+        # Enviar el email
+        email.send()
+
+def send_qr_code_email_cid(user):
+    """Envía el código QR como imagen embebida en el correo (CID)."""
+    qr_buffer = generate_qr_bytes(user)  # Genera la imagen en bytes
+
+    # Crear el email con HTML y referenciar la imagen con CID
+    subject = "Tu Código QR para Autenticación en Passing"
+    message = """
+    <html>
+        <body>
+            <p>Hola <b>{}</b>,</p>
+            <p>Escanea este código QR para configurar la autenticación en dos pasos en la aplicación Passing:</p>
+            <p>Escanea el código QR con "Google Authenticator"  <a href="https://play.google.com/store/search?q=google+authenticator&c=apps&hl=es_419" target="_blank">Descargalo aqui</a></p>
+            <img src="cid:qrcode" alt="QR Code" style="width:200px; height:200px;">
+            <p>Si tienes problemas, contáctanos.</p>
+            <p>Atentamente, <br><b>El equipo de Passing</b></p>
+        </body>
+    </html>
+    """.format(user.username)
+
+    email = EmailMessage(subject, message, 'noreply@anima.bot', [user.email])
+    email.content_subtype = "html"  # Importante para permitir HTML en el email
+
+    # Crear la imagen como un archivo adjunto embebido
+    image = MIMEImage(qr_buffer.getvalue(), _subtype="png")
+    image.add_header('Content-ID', '<qrcode>')  # CID que se usa en el <img>
+    image.add_header('Content-Disposition', 'inline', filename="qrcode.png")
+    email.attach(image)  # Adjuntar la imagen al email
+
+    email.send()
+    
+def send_qr_email_for_user_ondemand(request, pk):
+    user = CustomUser.objects.get(id=pk)
+    try:
+        send_qr_code_email_cid(user)
+        messages.success(request, f"El código QR a {user} se ha enviado correctamente al correo {user.email}.")
+    except Exception as e:
+        messages.warning(request, f'El mail no ha podido enviarse a {user.email}. ERROR: {e}')
+
+    return redirect('userlist')
+
+
+class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    Vista para update las configuraciones globales a nivel de cuenta.
+    """
     model = GlobalSettings
     template_name = 'global_settings.html'
     form_class = GlobalSettingsForm
     success_url = reverse_lazy('config')
 
+    def test_func(self):
+        return is_administrator(self.request.user)
+    
+    def handle_no_permission(self):
+        messages.error(self.request, "No tienes permiso para acceder a Configuraciones Globales")
+        return redirect('listpass')  # Redirigir a la página de inicio u otra página adecuada
+
     def get_queryset(self):
         
         return super().get_queryset()
+    
+    
+    
+    def form_valid(self, form):
+        """Intercepta la validación antes de guardar"""
+        instance = form.save(commit=False)  # Obtiene el objeto sin guardarlo aún
+
+        if instance.multifactor_status == MultifactorChoices.ACTIVADO:
+            # Ejecuta una función si el campo `multifactor_status` está activado
+            print(f'pasa por activado')
+            self.activate_multifactor_for_all()
+        elif instance.multifactor_status == MultifactorChoices.DESACTIVADO:
+            print(f'pasa por desactivado')
+            self.deactivate_multifactor_for_all()
+
+        instance.save()  # Guarda el objeto en la base de datos
+        form.save_m2m()  # Guarda las relaciones ManyToMany si existen
+
+        return super().form_valid(form)
+    
+
+    def activate_multifactor_for_all(self):
+        """
+        Activa todos los factores multiples de autenticacion a todos los usuarios. 
+        Envia mail a cada uno con el QR para la activacion del mismo. 
+        """
+        users = CustomUser.objects.filter(is_active=True)
+        
+
+        for user in users:
+            
+            if user.is_2fa_enabled:
+                pass
+            else:
+                user.is_2fa_enabled = True
+                user.save()
+                send_qr_code_email_cid(user)
+
+
+    def deactivate_multifactor_for_all(self):
+        """desactiva todos los factores multiples de autenticacion a todos los usuarios."""
+        users = CustomUser.objects.filter(is_active=True)
+        
+        for user in users:
+            if user.has_otp_secret:
+                disable_2fa_user(user)
+
+
+
+    

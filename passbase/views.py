@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from cryptography.fernet import Fernet
-from login.models import CustomUser
+from login.models import CustomUser, GlobalSettings
 from notifications.models import UserNotifications
 from passbase.crypto import decrypt_data, encrypt_data
 from passing import settings
@@ -181,7 +181,10 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             auto_permission_users = [user_creator]
 
             if not contrasena.is_personal:
-                grant_permission_user_ids = settings.GRAN_PERMISSION_ID_USERS
+                
+                global_settings = GlobalSettings.objects.get(id=1)
+                grant_permission_user_ids = global_settings.set_admins.values_list('id', flat=True)
+                print(list(grant_permission_user_ids))
 
                 for user_id in grant_permission_user_ids:
                     try:

@@ -75,7 +75,7 @@
                     </div>
                     
                     {% if has_otp_secret == True %}
-                    <a href="{% url 'generate-qr-code' %}" >Ver código QR<a>
+                    <a href="{% url 'show-qr-code-2fa' %}" >Ver código QR<a>
                     {%else%}
                     {% endif %}
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">

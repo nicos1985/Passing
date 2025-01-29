@@ -116,10 +116,20 @@ class AdminLoginForm(AuthenticationForm):
 
 class GlobalSettingsForm(forms.ModelForm):
     menu_color = forms.CharField(
-        max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
-        widget=forms.TextInput(attrs={'type': 'color'})
+        max_length=7,
+        widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
+    )
+    logo = forms.ImageField(
+        required=False,  # Permitir que el campo sea opcional
+        widget=forms.FileInput(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = GlobalSettings
         fields = ['multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+        widgets = {
+            'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
+            'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),
+            'set_admins': forms.SelectMultiple(attrs={'class': 'form-control'})
+        }

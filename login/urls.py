@@ -11,7 +11,8 @@ urlpatterns = [
     
     path('', LoginFormView.as_view(), name='login'),
     path('verify-2fa/',views.verify_2fa, name='verify_2fa'),
-    path('generate_qr_code/', views.generate_qr_code, name='generate-qr-code'),
+    path('show-qr-code-2fa/', views.show_qr_code_2fa, name='show-qr-code-2fa'),
+    path('send-qr-email-for-user-ondemand/<int:pk>', views.send_qr_email_for_user_ondemand, name='send-qr-email-for-user-ondemand'),
     path('register/', views.register , name='register'),
     path('configuracion-global/<int:pk>', GlobalSettingsUpdateView.as_view() , name='configuracion-global'),
     path('<str:schema_name>/create-superuser/', create_superuser, name='create-superuser'),

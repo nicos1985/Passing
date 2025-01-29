@@ -53,6 +53,7 @@
                 <th scope="col">Posicion</th>
                 <th scope="col">Domicilio</th>
                 <th scope="col">Rol</th>
+                <th scope="col">2FA</th>
                 <th scope="col">Fech. Ingreso</th>
                 <th scope="col">Fech. Egreso</th>
                 <th scope="col">Aciones</th>
@@ -94,13 +95,23 @@
                 <td>{{object.position}}</td>
                 <td>{{object.address}}</td>
                 <td>{{object.assigned_role}}</td>
+                {% if object.is_2fa_enabled %}
+                <td><i class="fas fa-circle-check" title="2FA activado" style="margin-right: 10px; text-decoration: none; color: #7CFF6D;"></i></td>
+                {% else %}
+                <td><i class="fas fa-circle-xmark" title="2FA desactivado" style="margin-right: 10px; text-decoration: none; color: #FF7367;"></i></td>
+                {% endif %}
                 <td>{{object.admission_date|date:"d/m/y"}}</td>
                 <td>{{object.departure_date|date:"d/m/y"}}</td>
-                <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #FFE682;"></i></a>
-                    {% if object.is_active %}
-                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="desactivar usuario" style="margin-right: 10px; text-decoration: none; color: #FF7367;"></i></a>
+                <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="margin-right: 5px; text-decoration: none; color: #FFE682;"></i></a>
+                    {% if object.is_2fa_enabled %}
+                    <a href="{% url 'send-qr-email-for-user-ondemand' object.id %}"><i class="fas fa-qrcode" title="Enviar QR" style="margin-right: 5px; text-decoration: none; color:rgb(8, 4, 79);"></i></a>
                     {% else %}
-                    <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="margin-right: 10px; text-decoration: none; color: #7CFF6D;"></i></a>
+                    <a href="#"><i class="fas fa-qrcode" title="2FA desactivado" style="margin-right: 5px; text-decoration: none; color:rgb(177, 177, 177);" disabled></i></a>
+                    {% endif %}
+                    {% if object.is_active %}
+                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="desactivar usuario" style="margin-right: 5px; text-decoration: none; color: #FF7367;"></i></a>
+                    {% else %}
+                    <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="margin-right: 5px; text-decoration: none; color: #7CFF6D;"></i></a>
                     {% endif %}
                 </td>
 
