@@ -60,6 +60,24 @@
     body {
     padding-top: 75px; /* Ajusta esta altura según la altura de tu navbar */
 }
+.navbar-brand {
+    display: flex;
+    flex-direction: column; /* Apila el texto y la imagen verticalmente */
+    align-items: flex-start; /* Centra los elementos */
+    text-align: left; /* Asegura que el texto esté centrado */
+}
+
+.navbar-brand h3 {
+    font-size: 20px; /* Ajusta el tamaño del texto */
+    margin-bottom: 0px; /* Agrega espacio entre el texto y la imagen */
+}
+
+.navbar-brand img {
+    height: 20px; /* Ajusta la altura de la imagen */
+    width: auto; /* Mantiene la proporción */
+}
+
+
   </style>
         </head>
         
@@ -72,8 +90,15 @@
             <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style = "background-color: {{color}}; position: fixed; top: 0; width: 100%; z-index: 1000;">
                 <div class="container-fluid">
                     <a class="navbar-brand" href="{% url 'listpass' %}">
-                        <img src="{% static 'Passing3.png' %}" width="160px" height="51.4px" alt="Logo">
+                        {% if company %}
+                            <h3 class="text-white mb-1">{{ company }}</h3>
+                            <hr class="w-100 my-1 border-light">
+                            <img src="{% static 'Passing3.png' %}" style='height:22px; width:auto'; alt="Logo">
+                        {% else %}
+                            <img src="{% static 'Passing3.png' %}" alt="Logo">
+                        {% endif %}
                     </a>
+                    
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>

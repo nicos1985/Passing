@@ -12,16 +12,19 @@ def counter_admin_notifications(request):
     return {'contador_notis': contador_notis}
 
 def menu_color(request):
-    if request.user.is_anonymous:
-        color = '#212629'
+    color = '#212629'  # Color por defecto
+    company = None  # Empresa por defecto
 
-    else:
-        settings = GlobalSettings.objects.get(id=1)
-        if settings.menu_color == None:
-            color = request.user.menu_color
-        else:
-            color = settings.menu_color
-    
-    return {'color': color}
+    try:
+        # Intentar obtener la configuración global
+        settings = GlobalSettings.objects.filter(id=1).first()
+        
+        if settings:
+            color = settings.menu_color if settings.menu_color else '#212629'
+            company = settings.company_name if settings.company_name else None
 
+    except Exception as e:
+        print(f"Error en menu_color: {e}")  # Para depuración
+
+    return {'color': color, 'company': company}
 

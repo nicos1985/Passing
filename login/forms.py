@@ -119,15 +119,12 @@ class GlobalSettingsForm(forms.ModelForm):
         max_length=7,
         widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
     )
-    logo = forms.ImageField(
-        required=False,  # Permitir que el campo sea opcional
-        widget=forms.FileInput(attrs={'class': 'form-control'})
-    )
-
+    
     class Meta:
         model = GlobalSettings
-        fields = ['multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+        fields = ['company_name','multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
         widgets = {
+            'company_name': forms.TextInput(attrs={'class':'form-control'}),
             'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
             'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),

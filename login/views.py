@@ -135,7 +135,7 @@ def create_superuser(request, schema_name):
             
             #Crear Settings Globales
             try:
-                global_settings = GlobalSettings.objects.create()
+                global_settings = GlobalSettings.objects.create(company_name = client.client_name)
             except Exception as e:
                 messages.warning(request, f'No se ha podido crear las Configuraciones Globales')
                 context['action'] = 'Error en Configuraciones globales'
