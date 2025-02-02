@@ -23,10 +23,10 @@
     <div class="container">
         <div class="row">
             <h3 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Necesitas loguearte. 
-                <br>Si no tienes cuenta puedes registrarte.</h3>
+                
         </div>
         <div class="row">
-           
+            
         </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
             <div class="col">
@@ -38,19 +38,10 @@
                     </div>
                 </a>
             </div>
-            <div class="col">
-                <a class="card-text" href="{% url 'register' %}" style="margin-top: 20px; text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fa-solid fa-address-card"></i>&nbsp;&nbsp;&nbsp;Registrarse</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            
         </div>
     </div>
 {% else %}
-
 
 <body>
     <div class="container">
@@ -62,15 +53,7 @@
             <h1></h1>
         </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
-            <div class="col">
-                <a class="card-text" href="{% url 'listpass' %}" style="text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fas fa-key"></i>&nbsp;&nbsp;&nbsp;Contraseñas</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            
             <div class="col">
                 <a class="card-text" href="{% url 'profile' request.user.username %}" style="margin-top: 20px; text-decoration:none;">
                     <div class="card mb-2">

@@ -28,3 +28,6 @@ def menu_color(request):
 
     return {'color': color, 'company': company}
 
+def tenant_context(request):
+    return {"tenant_schema": getattr(request, "tenant", None).schema_name if hasattr(request, "tenant") else "public"}
+

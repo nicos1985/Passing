@@ -148,6 +148,7 @@ def create_superuser(request, schema_name):
             
 
             # Construir la URL de activación
+            subdom_url = f'http://{request.get_host()}/login'
             activation_url = f"http://{request.get_host()}/login/activate/{uid}/{token}/" #prestar atencion cuando pase a https
 
             # Enviar correo electrónico
@@ -155,6 +156,7 @@ def create_superuser(request, schema_name):
             message_html = render_to_string('activation_email.html', {
                 'user': user,
                 'activation_url': activation_url,
+                'subdom_url': subdom_url
             })
             message = escape(json.dumps(message_html)) #lo paso a json para que no escape el html en la vista
             mail_from= EMAIL_SETTINGS['DEFAULT_FROM_EMAIL']
