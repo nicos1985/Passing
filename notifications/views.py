@@ -74,8 +74,7 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         
-        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')  # Ajusta 'campo' según tu modelo
-
+        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')
         return queryset
 
     
