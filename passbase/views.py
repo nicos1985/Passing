@@ -1,6 +1,5 @@
 import hashlib
 from django.db import IntegrityError
-from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
@@ -10,16 +9,15 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from cryptography.fernet import Fernet
 from login.models import CustomUser, GlobalSettings
 from notifications.models import UserNotifications
 from passbase.crypto import decrypt_data, encrypt_data
-from passing import settings
-from .forms import ContrasenaForm, ContrasenaUForm, SectionForm
+from .forms import ContrasenaForm, ContrasenaUForm, SectionForm, CSVUploadForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
-from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
+import csv
+import io
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -161,21 +159,6 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                 print(f'contraseña.hash: {contrasena.hash}') # Guarda el hash
                 contrasena.save()
             
-            # Creación de la entrada en LogData
-            LogData.objects.create(
-                contraseña=contrasena.id,
-                entidad= ENTITY_CONTRASENA,
-                usuario=self.request.user,
-                action='Create',
-                password=contrasena.contraseña,
-                detail=f'''Nombre: {contrasena.nombre_contra}, 
-                           Seccion: {contrasena.seccion}, 
-                           Usuario: {contrasena.usuario}, 
-                           Link: {contrasena.link}, 
-                           Info: {contrasena.info},
-                           owner: {contrasena.owner}'''
-            )
-
             # Gestión de permisos de acceso
             user_creator = self.request.user
             auto_permission_users = [user_creator]
@@ -206,7 +189,101 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
         except IntegrityError:
             form.add_error('nombre_contra', 'El nombre de la contraseña ya existe. Por favor, elige otro.')
             return self.form_invalid(form)
-        
+
+@user_passes_test(is_administrator)        
+def upload_csv(request):
+    """ 
+    Permite subir un csv con la información de las contraseñas. 
+    Crea las contraseñas subidas y genera un CSV de errores para las filas que no se importaron.
+    """
+    if request.method == "POST":
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES["file"]
+            decoded_file = file.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(decoded_file)
+            
+
+            password_entries = []  # Lista para bulk_create
+            error_rows = []  # Lista para acumular las filas no importadas
+
+            for row in reader:
+                # Validar que la contraseña (campo único) no exista ya
+                if Contrasena.objects.filter(nombre_contra=row.get("nombre_contra")).exists():
+                    row["error"] = f"La contraseña '{row.get('nombre_contra')}' ya existe"
+                    error_rows.append(row)
+                    continue  # Omitir este registro
+
+                # Obtener owner, si no se encuentra se asigna uno por defecto
+                owner = CustomUser.objects.filter(username=row.get("owner")).first()
+                if owner is None:
+                    owner = CustomUser.objects.filter(id=1).first()
+
+                # Obtener o crear la sección
+                seccion, _ = SeccionContra.objects.get_or_create(
+                    nombre_seccion=row.get("seccion"), 
+                    defaults={"nombre_seccion": row.get("seccion")}
+                )
+
+                # Encriptar los datos antes de crear la instancia
+                contrasena_encriptada = encrypt_data(row.get('contrasena'))
+                usuario_encriptado = encrypt_data(row.get('usuario'))
+
+                try:
+                    password_entries.append(Contrasena(
+                        nombre_contra = row.get("nombre_contra"),
+                        seccion = seccion,
+                        link = row.get("link"),
+                        usuario = usuario_encriptado,
+                        contraseña = contrasena_encriptada,
+                        actualizacion = row.get("actualizacion"),
+                        info = row.get("info"),
+                        is_personal = row.get("is_personal"),
+                        owner = owner,
+                    ))
+                except KeyError as e:
+                    row["error"] = f"Error en la columna: {e}"
+                    error_rows.append(row)
+                    continue
+
+            # Intentar crear los registros válidos
+            if password_entries:
+                try:
+                    # Llamar al método de clase directamente desde el modelo
+                    Contrasena.bulk_create_with_logs(password_entries)
+                except Exception as e:
+                    messages.error(request, f"ERROR de importación: {e}")
+                    # Puedes también agregar todas las filas en error_rows si no se pudo procesar el lote
+                    # o redirigir con el mensaje de error.
+                    return redirect("config")
+                messages.success(request, "Contraseñas cargadas correctamente.")
+
+            # Si existen filas con error, se genera un CSV para descargarlas.
+            if error_rows:
+                # Utilizamos io.StringIO para crear el CSV en memoria.
+                output = io.StringIO()
+                # Definimos los fieldnames originales y agregamos una columna "error"
+                fieldnames = reader.fieldnames + ["error"] if reader.fieldnames else ["error"]
+                writer = csv.DictWriter(output, fieldnames=fieldnames)
+                writer.writeheader()
+                error_count = 0
+                for error_row in error_rows:
+                    writer.writerow(error_row)
+                    error_count += 1 
+                # Creamos la respuesta con el CSV generado
+                response = HttpResponse(output.getvalue(), content_type="text/csv")
+                response["Content-Disposition"] = 'attachment; filename="errores_importacion.csv"'
+                messages.success(request, f"Proceso terminado. No se pudieron importar {error_count} contraseñas. Revise el csv de errores.")
+                return redirect("config")
+
+            
+    else:
+        form = CSVUploadForm()
+
+    return render(request, "upload_csv.html", {"form": form})
+
+
+
 class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     model = Contrasena
     form_class = ContrasenaUForm
@@ -287,7 +364,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         
         old_password = objeto_previo.contraseña
         new_password = contrasena.encrypt_password()
-        print(f'old contraseña: {old_password} | new contraseña: {new_password}')
+        #print(f'old contraseña: {old_password} | new contraseña: {new_password}')
         
         # Verifica si la contraseña ha cambiado
         if old_password != new_password:

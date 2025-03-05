@@ -57,12 +57,61 @@ class Contrasena(models.Model):
         return item
     
     def save(self, *args, **kwargs):
-        
+        """ Sobrescribe el método save para encriptar y generar un log. """
+
+        # Encriptar datos si es necesario
         if isinstance(self.contraseña, str):
             self.contraseña = encrypt_data(self.contraseña)
         if isinstance(self.usuario, str):
             self.usuario = encrypt_data(self.usuario)
+        
+        # Verificar si la contraseña es nueva
+        is_new = self._state.adding  # True si el objeto se está creando
+
         super().save(*args, **kwargs)
+
+        # Si es una nueva contraseña, crear un log
+        print(f'is_new: {is_new}')
+        if is_new:
+            print('entra a crear objeto log desde el modelo')
+            LogData.objects.create(
+                entidad="Contrasena",
+                password= self.contraseña,
+                contraseña=self.id,  # Guardamos el ID de la contraseña creada
+                usuario=self.owner if self.owner else None,  # Usuario que creó la contraseña
+                action="Create",
+                detail=f'''Nombre: {self.nombre_contra}, 
+                                Seccion: {self.seccion}, 
+                                Usuario: {self.usuario}, 
+                                Link: {self.link}, 
+                                Info: {self.info},
+                                owner: {self.owner}''',
+                
+            )
+        
+
+    @classmethod
+    def bulk_create_with_logs(cls, entries):
+        objects = cls.objects.bulk_create(entries)
+
+        logs = [
+            LogData(
+                entidad="Contrasena",
+                password=obj.contraseña,
+                contraseña=obj.id,
+                usuario=obj.owner,
+                action="Create",
+                detail=f'''Nombre: {obj.nombre_contra}, 
+                        Seccion: {obj.seccion}, 
+                        Usuario: {obj.usuario}, 
+                        Link: {obj.link}, 
+                        Info: {obj.info},
+                        owner: {obj.owner}'''
+            ) 
+            for obj in objects
+        ]
+        LogData.objects.bulk_create(logs)
+
 
     def get_decrypted_password(self):
         if not isinstance(self.contraseña, (bytes, str)):

@@ -1,5 +1,7 @@
 from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
 from .models import Contrasena, SeccionContra
+from django import forms
+
 
 class ContrasenaForm(ModelForm):
     
@@ -164,3 +166,11 @@ class SectionForm(ModelForm):
             model = SeccionContra
             fields = '__all__'
             exclude = ['active','owner']
+
+
+class CSVUploadForm(forms.Form):
+    
+    file = forms.FileField(
+        label="Subir archivo CSV",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control"})
+    )
