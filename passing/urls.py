@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('client-register/', client_register, name='client_register'),
     path('login/', include('login.urls')),
+    path('resources/', include('resources.urls')),
     path('pass/', include('passbase.urls')),
     path('notifications/', include('notifications.urls')),
     path('perm/', include('permission.urls')),
@@ -39,6 +40,7 @@ urlpatterns = [
 # Añadir URLs para el debug toolbar en modo DEBUG
 if settings.DEBUG:
     urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Añadir la URL de admin solo si el dash está activo
 # Agrega la URL de admin dinámicamente

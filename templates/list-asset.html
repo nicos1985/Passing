@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>Activos de la informacion</h2>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+            <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                <i class="fa-solid fa-gear"></i> Configuración
+            </a>
+            <a class="btn btn-primary btn-flat" href="{% url 'asset-create' %}">
+                <i class="fa-solid fa-toolbox"></i> Alta de activo
+            </a>
+        </div>
+
+        <div class="container">
+            <table class="table" id="data">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Descripcion</th>
+                        <th scope="col">Valor</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Localizacion</th>
+                        <th scope="col">Categoría</th>
+                        <th scope="col">Nro Serie</th>
+                        <th scope="col">Clasif. informacion</th>
+                        <th scope="col">Dueño</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for object in objects %}
+                        <tr>
+                            <td>{{ object.id }}</td>
+                            <td>{{ object.name }}</td>
+                            <td>{{ object.description|truncatechars:50 }}</td>
+                            <td>${{ object.value|floatformat:2 }}</td>
+                            <td>{{ object.get_status_display }}</td>
+                            <td>{{ object.location }}</td>
+                            <td>{{ object.get_category_display }}</td>
+                            <td>{{ object.serial_number }}</td>
+                            <td>{{ object.get_information_classification_display }}</td>
+                            <td>{{ object.owner }}</td>
+                            
+                            <td>
+                                <a href="{% url 'asset-update' object.id %}"><i class="fas fa-pen" title="Editar activo" style="color: #FFE682; margin-right:5px;"></i></a>
+                                <a href="{% url 'asset-detail' object.id %}"><i class="fas fa-eye" title="Detalle activo" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
+                                <a href="{% url 'asset-delete' object.id %}"><i class="fas fa-trash" title="Eliminar activo" style="color: #FF7367;"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            $('#data').DataTable({
+                responsive: true,
+                "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
+                "pageLength": 10,
+                autoWidth: false,
+                order: false,
+                "language": {
+                    url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
+                }
+            });
+        });
+    </script>
+{% endblock %}

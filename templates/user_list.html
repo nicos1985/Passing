@@ -82,6 +82,7 @@
                             <td>{{ object.departure_date|date:"d/m/y" }}</td>
                             <td>
                                 <a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="color: #FFE682;"></i></a>
+                                
                                 {% if object.is_2fa_enabled %}
                                     <a href="{% url 'send-qr-email-for-user-ondemand' object.id %}"><i class="fas fa-qrcode" title="Enviar QR" style="color:rgb(8, 4, 79);"></i></a>
                                 {% else %}
@@ -92,6 +93,7 @@
                                 {% else %}
                                     <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="color: #7CFF6D;"></i></a>
                                 {% endif %}
+                                <a href="{% url 'detail-user' object.id %}"><i class="fas fa-eye" title="Detalle usuario" style="color:rgb(8, 4, 79);"></i></a>
                             </td>
                         </tr>
                     {% endfor %}

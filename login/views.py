@@ -12,7 +12,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import CustomUser, GlobalSettings, MultifactorChoices
 from django.contrib.messages.views import SuccessMessageMixin
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, DetailView
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.tokens import default_token_generator
@@ -412,6 +412,12 @@ class DepartureUser(UpdateView):
             print(f'exception departure_user: {e}')
             messages.error(self.request, f"Error al dar de baja al usuario: {str(e)}")
         return super().form_valid(form)
+
+@method_decorator(user_passes_test(is_administrator), name='dispatch')     
+class UserDetailView(DetailView):
+    model = CustomUser
+    template_name = 'detail-user.html'
+    success_url = reverse_lazy('userlist')
 
 
 def deactivate_user(request, pk):

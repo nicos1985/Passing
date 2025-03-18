@@ -6,7 +6,7 @@ from django.db import connection
 
 
 class CustomUser(AbstractUser):
-    avatar = models.ImageField(blank=True, null=True, upload_to='static/')
+    avatar = models.ImageField(blank=True, null=True, upload_to='avatars/')
     position = models.CharField(max_length=80,null=True, verbose_name='Puesto')
     email = models.EmailField(unique=True)
     documento = models.CharField(max_length=8, blank=True, null=True, verbose_name='documento')
