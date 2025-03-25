@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}" />
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}" />
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Detalle de {{ verbose_model_name }}</h2>
+        <a class="btn btn-primary" href="{{ back_url|default:'#' }}">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">{{ object.nombre|default:object.name|default:"(Sin nombre)" }}</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <tbody>
+                    {% for field in fields %}
+                      <tr>
+                        <th scope="row">{{ field.verbose_name }}:</th>
+                        <td>
+
+                        {% if field.value %}
+                        {{ field.value }}
+                        {% else %}
+                        -
+                        {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if request.user.is_authenticated %}
+    <div class="mt-3">
+        {% if edit_url %}
+            <a href="{{ edit_url }}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> Editar</a>
+        {% endif %}
+        {% if delete_url %}
+            <a href="{{ delete_url }}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Eliminar</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

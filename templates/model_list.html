@@ -15,22 +15,24 @@
 
 {% block content %}
     <div class="container mt-3">
-        <h2>Activos de la informacion</h2>
+        <h2>{{verbose_name_plural}}</h2>
     </div>
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
-            <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
-                <i class="fa-solid fa-gear"></i> Configuración
-            </a>
+{% comment %}
+                <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                    <i class="fa-solid fa-gear"></i> Configuración
+                </a>
+{% endcomment %}
             <a class="btn btn-primary btn-flat" href="{% url create_view %}">
-                <i class="fa-solid fa-toolbox"></i> Alta de {{verbose_name_plural}}
+                <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
             </a>
         </div>
 
         <div class="container">
             <table id="data" class="table">
-                <thead class="table-dark">
+                <thead class="table" style='background-color: {{color}}; color: white; '>
                   <tr>
                     {% for field in fields %}
                     

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -30,7 +30,6 @@ class DynamicModelListView(ListView):
 
 class AssetListView(LoginRequiredMixin, DynamicModelListView):
     model = InformationAssets
-    #template_name = 'list-asset.html'
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
@@ -46,7 +45,7 @@ class AssetCreateView(LoginRequiredMixin, CreateView):
     model = InformationAssets
     form_class = InformationAssetsForm
     template_name = 'CU-resource.html'
-    success_url = reverse_lazy('asset-list')
+    success_url = reverse_lazy('informationassets-list')
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
@@ -62,7 +61,7 @@ class AssetUpdateView(LoginRequiredMixin, UpdateView):
     model = InformationAssets
     form_class = InformationAssetsForm
     template_name = 'CU-resource.html'
-    success_url = reverse_lazy('asset-list')
+    success_url = reverse_lazy('informationassets-list')
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
@@ -76,28 +75,76 @@ class AssetUpdateView(LoginRequiredMixin, UpdateView):
 
 class AssetDetailView(LoginRequiredMixin, DetailView):
     model=InformationAssets
-    template_name = 'detail-asset.html'
+    template_name = 'detail-resource.html'
     login_url = 'login'
+
+class GenericResourceDetailView(DetailView):
+    template_name = 'detail-resource.html'
+    model = None  # importante: por compatibilidad, aunque se setea dinámicamente
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        if 'model' not in initkwargs:
+            raise ValueError("Debes pasar el modelo con 'model=...' al usar GenericResourceDetailView")
+        return super().as_view(**initkwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        meta = obj.__class__._meta
+
+        context['verbose_model_name'] = meta.verbose_name.title()
+
+        # Campos visibles (excluyendo ID, campos sensibles o FK pesados si querés)
+        visible_fields = []
+        for field in meta.get_fields():
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'password']:
+                if field.choices:
+                    display_method = f"get_{field.name}_display"
+                    value = getattr(obj, display_method)()
+                else:
+                    value = getattr(obj, field.name, None)
+
+                visible_fields.append({
+                    'name': field.name,
+                    'verbose_name': field.verbose_name.title(),
+                    'value': value
+                })
+
+        context['fields'] = visible_fields
+        # URLs auxiliares
+        model_name = meta.model_name
+        try:
+            context['edit_url'] = reverse(f'{model_name}-update', args=[obj.pk])
+            context['delete_url'] = reverse(f'{model_name}-delete', args=[obj.pk])
+            context['back_url'] = reverse(f'{model_name}-list')
+        except:
+            context['edit_url'] = None
+            context['delete_url'] = None
+            context['back_url'] = '#'
+
+        return context
+
 
 
 class AssetDeleteView(LoginRequiredMixin, DeleteView):
     model = InformationAssets
     template_name = 'delete-asset.html'
-    success_url = reverse_lazy('asset-list') 
+    success_url = reverse_lazy('informationassets-list') 
     login_url = 'login'
 
 
 
-class VendorListView(LoginRequiredMixin, ListView):
+class VendorListView(LoginRequiredMixin, DynamicModelListView):
     model = Vendor
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['create_view'] = f'{self.model}-create'
-        context['update_view'] = f'{self.model}-update'
-        context['delete_view'] = f'{self.model}-delete'
-        context['detail_view'] = f'{self.model}-detail'
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
 
 class VendorCreateView(LoginRequiredMixin, CreateView):
