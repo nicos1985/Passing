@@ -11,7 +11,7 @@ from django.utils.text import capfirst
 # Create your views here.
 
 class DynamicModelListView(ListView):
-    template_name = 'model_list.html'  # Plantilla genérica
+    template_name = 'list_resource.html'  # Plantilla genérica
     EXCLUDED_FIELDS = ['created', 'updated','id']
 
     def get_context_data(self, **kwargs):
