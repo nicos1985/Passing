@@ -43,6 +43,10 @@ class ProjectAssetsForm(ModelForm):
         model = Project
         fields = '__all__'
         exclude = ['created', 'updated']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'finish_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 
 class ClientAssetsForm(ModelForm):
@@ -57,3 +61,7 @@ class ClientAssetsForm(ModelForm):
         model = ClientCompany
         fields = '__all__'
         exclude = ['created', 'updated']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'finish_date': forms.DateInput(attrs={'type': 'date'}),
+        }
