@@ -130,7 +130,7 @@ class Vendor(RiskEvaluableObject):
         verbose_name_plural = 'Proveedores'
 
 
-class ProyectType(models.IntegerChoices):
+class ProjectType(models.IntegerChoices):
     OPERATIONS = 0, 'Proyectos de Operaciones / Producción'
     TECNOLOGY = 1, 'Proyectos de Tecnología / IT'
     MARKETING = 2, 'Proyectos de Marketing / Comercial'
@@ -141,9 +141,9 @@ class ProyectType(models.IntegerChoices):
     OTHERS = 7, 'Otros'
 
 
-class Proyect(RiskEvaluableObject):
+class Project(RiskEvaluableObject):
 
-    proyect_type = models.IntegerField(choices=ProyectType, verbose_name='Tipo de proyecto')
+    proyect_type = models.IntegerField(choices=ProjectType, verbose_name='Tipo de proyecto')
     start_date = models.DateField(verbose_name='Fecha de inicio')
     finish_date = models.DateField(blank=True, null=True, verbose_name='Fecha de finalizacion')
     budget = models.FloatField(blank=True, null=True, verbose_name='Presupuesto')
@@ -152,3 +152,21 @@ class Proyect(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Proyecto'
         verbose_name_plural = 'Proyectos'
+
+
+
+class ClientCompany(RiskEvaluableObject):
+
+    
+    cuit = models.CharField(max_length=255, verbose_name="CUIT")
+    address = models.CharField(max_length=255, verbose_name="Direccion")
+    phone = models.CharField(max_length=255, verbose_name="Telefono")
+    email = models.EmailField(max_length=255, verbose_name="Email")
+    service_standard = models.TextField(blank=True, null=True, verbose_name="Estandar de Servicio")
+    start_date = models.DateField(verbose_name='Fecha de inicio')
+    finish_date = models.DateField(blank=True, null=True, verbose_name='Fecha de finalizacion')
+
+
+    class Meta():
+        verbose_name = 'Cliente'
+        verbose_name_plural = 'Clientes'

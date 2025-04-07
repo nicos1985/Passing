@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
-from .models import InformationAssets, Vendor, Proyect
-from .forms import InformationAssetsForm, VendorForm
+from .models import InformationAssets, Vendor, Project, ClientCompany
+from .forms import InformationAssetsForm, ProjectAssetsForm, VendorForm, ClientAssetsForm
 from django.utils.text import capfirst
 # Create your views here.
 
@@ -188,4 +188,105 @@ class VendorDeleteView(LoginRequiredMixin, DeleteView):
     model = Vendor
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('vendor-list') 
+    login_url = 'login'
+
+
+class ProjectListView(LoginRequiredMixin, DynamicModelListView):
+    model = Project
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+    
+class ProjectCreateView(LoginRequiredMixin, CreateView):
+    model = Project
+    form_class = ProjectAssetsForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('project-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Crear'
+        return context
+
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+    model = Project
+    form_class = ProjectAssetsForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('project-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Editar'
+        return context
+    
+class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+    model = Project
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('project-list') 
+    login_url = 'login'
+
+class ClientListView(LoginRequiredMixin, DynamicModelListView):
+    model = ClientCompany
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+    
+class ClientCreateView(LoginRequiredMixin, CreateView):
+    model = ClientCompany
+    form_class = ClientAssetsForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('clientcompany-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Crear'
+        return context
+
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
+    model = ClientCompany
+    form_class = ClientAssetsForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('clientcompany-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Editar'
+        return context
+    
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
+    model = ClientCompany
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('clientcompany-list') 
     login_url = 'login'

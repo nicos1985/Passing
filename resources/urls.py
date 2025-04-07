@@ -1,5 +1,7 @@
 from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView
-from .models import InformationAssets, Vendor
+from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
+from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
+from .models import ClientCompany, InformationAssets, Vendor, Project
 from django.urls import path
 
 urlpatterns = [
@@ -13,4 +15,14 @@ urlpatterns = [
     path('vendor-update/<int:pk>', VendorUpdateView.as_view(), name='vendor-update'),
     path('vendor-detail/<int:pk>', GenericResourceDetailView.as_view(model=Vendor), name='vendor-detail'),
     path('vendor-delete/<int:pk>', VendorDeleteView.as_view(), name='vendor-delete'),
+    path('project-list/', ProjectListView.as_view(), name='project-list'),
+    path('project-create/', ProjectCreateView.as_view(), name='project-create'),
+    path('project-update/<int:pk>', ProjectUpdateView.as_view(), name='project-update'),
+    path('project-detail/<int:pk>', GenericResourceDetailView.as_view(model=Project), name='project-detail'),
+    path('project-delete/<int:pk>', ProjectDeleteView.as_view(), name='project-delete'),
+    path('client-list/', ClientListView.as_view(), name='clientcompany-list'),
+    path('client-create/', ClientCreateView.as_view(), name='clientcompany-create'),
+    path('client-update/<int:pk>', ClientUpdateView.as_view(), name='clientcompany-update'),
+    path('client-detail/<int:pk>', GenericResourceDetailView.as_view(model=ClientCompany), name='clientcompany-detail'),
+    path('client-delete/<int:pk>', ClientDeleteView.as_view(), name='clientcompany-delete'),
 ]
