@@ -73,6 +73,9 @@ class InformationAssets(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Activo de la informacion'
         verbose_name_plural = 'Activos de la informacion'
+
+    def __str__(self):
+        return self.name
         
 
 class VendorType(models.IntegerChoices):
@@ -133,6 +136,9 @@ class Vendor(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Proveedor'
         verbose_name_plural = 'Proveedores'
+    
+    def __str__(self):
+        return self.name
 
 
 class ProjectType(models.IntegerChoices):
@@ -157,6 +163,9 @@ class Project(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Proyecto'
         verbose_name_plural = 'Proyectos'
+    
+    def __str__(self):
+        return self.name
 
 
 
@@ -175,6 +184,9 @@ class ClientCompany(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
+
+    def __str__(self):
+        return self.name
 
 
 class TypeThreat(models.IntegerChoices):
@@ -207,6 +219,9 @@ class Threat(models.Model):
     class Meta:
         verbose_name = 'Amenaza'
         verbose_name_plural = 'Amenazas'
+    
+    def __str__(self):
+        return self.name
 
 class TypeVulnerability(models.IntegerChoices):
     HARDWARE = 0, 'Hardware'
@@ -225,6 +240,13 @@ class Vulnerability(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Vulnerabilidad'
+        verbose_name_plural = 'Vulnerabilidades'
+
+    def __str__(self):
+        return self.name
 
 class LevelOfImpact(models.IntegerChoices):
     INCIDENTAL = 0, 'Incidental'
@@ -261,9 +283,9 @@ class RiskEvaluation(models.Model):
     integrity_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en integridad')
     availability_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en disponibilidad')
     impact_value = models.FloatField(blank=True, null=True, verbose_name='Valor de impacto')
-    probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.INCIDENTAL, verbose_name='Probabilidad')
+    probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name='Probabilidad')
     risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
-    risk_level = models.IntegerField(choices=LevelOfRisk.choices, default=LevelOfRisk.INCIDENTAL, verbose_name='Nivel de riesgo')
+    risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name='Nivel de riesgo')
 
 
     class Meta:

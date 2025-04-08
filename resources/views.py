@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib import messages
@@ -6,8 +6,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
 from .models import InformationAssets, Vendor, Project, ClientCompany
-from .forms import InformationAssetsForm, ProjectAssetsForm, VendorForm, ClientAssetsForm
+from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, VendorForm, ClientAssetsForm
 from django.utils.text import capfirst
+from django.contrib.contenttypes.models import ContentType
 # Create your views here.
 
 class DynamicModelListView(ListView):
@@ -290,3 +291,47 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('clientcompany-list') 
     login_url = 'login'
+
+
+
+
+def get_objects_by_type(request):
+    content_type_id = request.GET.get('type_id')
+    ct = ContentType.objects.get(id=content_type_id)
+    model_class = ct.model_class()
+
+    data = []
+    for obj in model_class.objects.all():
+        data.append({'id': obj.id, 'name': str(obj)})
+
+    return JsonResponse({'objects': data})
+
+
+def crear_evaluacion(request):
+    print("Método recibido:", request.method)
+    print("POST data:", request.POST)
+    model_types = ContentType.objects.filter(model__in=[
+        'informationassets', 'vendor', 'project', 'clientcompany'
+    ])
+    model_choices = []
+
+    for ct in model_types:
+        model_choices.append({
+            'id': ct.id,
+            'name': ct.model_class()._meta.verbose_name.title()
+        })
+
+    if request.method == 'POST':
+        form = RiskEvaluationForm(request.POST)
+        if form.is_valid():
+            print(form.cleaned_data)
+            form.save()
+            return redirect('listapass')
+    else:
+        form = RiskEvaluationForm()
+        print(form.errors)
+
+    return render(request, 'evaluacion_form.html', {
+        'form': form,
+        'model_types': model_types,
+    })

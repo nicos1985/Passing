@@ -1,4 +1,4 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Vendor, Project
@@ -25,4 +25,6 @@ urlpatterns = [
     path('client-update/<int:pk>', ClientUpdateView.as_view(), name='clientcompany-update'),
     path('client-detail/<int:pk>', GenericResourceDetailView.as_view(model=ClientCompany), name='clientcompany-detail'),
     path('client-delete/<int:pk>', ClientDeleteView.as_view(), name='clientcompany-delete'),
+    path('evaluation-create/', crear_evaluacion, name='evaluation-create'),
+    path('ajax/get-objects/', get_objects_by_type, name='ajax-get-objects'),
 ]

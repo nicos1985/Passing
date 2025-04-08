@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+    
+{% if not request.user.is_superuser and not request.user.is_staff %}
+<div class="container-fluid text-center">
+    <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario administrador para navegar. 
+        <br>Si no tienes cuenta puedes registrarte.</h5>
+    <div class="row justify-content-center mt-4">
+        
+        <div class="col-sm-12 d-flex justify-content-center">
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
+        </div>
+        <span></span>
+        <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
+            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
+        </div>
+    
+    </div>
+</div>
+{%endif%}
+
+<body>
+
+<form method="post" id="risk-form">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="model_type">Tipo de objeto</label>
+      <select id="model_type" name="model_type" data-url="{% url 'ajax-get-objects' %}"  class="form-control">
+        <option value="">Seleccionar tipo...</option>
+        {% for ct in model_types %}
+          <option value="{{ ct.id }}">{{ ct.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  
+    <div class="mb-3">
+      <label for="object_id">Objeto</label>
+      <select id="object_id" name="object_id" class="form-control">
+        <option value="">Seleccionar objeto...</option>
+      </select>
+      {{ form.non_field_errors }}
+        {{ form.field_name.errors }}
+    </div>
+  
+    {{ form.threat.label_tag }}
+    {{ form.threat }}
+      
+     {{ form.vulnerability.label_tag }}
+     {{ form.vulnerability }}
+      
+     {{ form.description.label_tag }}
+     {{ form.description }}
+      
+     {{ form.confidenciality_impact.label_tag }}
+     {{ form.confidenciality_impact }}
+      
+     {{ form.integrity_impact.label_tag }}
+     {{ form.integrity_impact }}
+  
+    {{ form.availability_impact.label_tag }}
+    {{ form.availability_impact }}
+  
+    {{ form.probability.label_tag }}
+    {{ form.probability }}
+  
+    <button type="submit" class="btn btn-primary">Guardar Evaluación</button>
+  </form>
+</body>
+
+
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modelSelect = document.getElementById('model_type');
+        const fetchUrl = modelSelect.dataset.url;
+        const objectSelect = document.getElementById('object_id');
+    
+        modelSelect.addEventListener('change', function () {
+            const typeId = this.value;
+            objectSelect.innerHTML = '<option value="">Cargando...</option>';
+    
+            if (typeId) {
+                fetch(`${fetchUrl}?type_id=${typeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+                        data.objects.forEach(function (obj) {
+                            const option = document.createElement('option');
+                            option.value = obj.id;
+                            option.text = obj.name;
+                            objectSelect.appendChild(option);
+                        });
+                    });
+            } else {
+                objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+            }
+        });
+    });
+    </script>
+    {%endblock%}
