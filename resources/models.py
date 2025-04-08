@@ -1,5 +1,7 @@
 from django.db import models
 from login.models import CustomUser
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 class AssetStatus(models.IntegerChoices):
@@ -25,6 +27,9 @@ class RiskEvaluableObject(models.Model):
 
     class Meta:
         abstract = True
+
+
+
 
     
 class AssetType(models.IntegerChoices):
@@ -170,3 +175,92 @@ class ClientCompany(RiskEvaluableObject):
     class Meta():
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
+
+
+class TypeThreat(models.IntegerChoices):
+    
+    PHYSICAL_DAMAGE = 0, 'Dano fisico'
+    NATUAL_EVENT = 1, 'Evento natural'
+    SERVICES_LOST = 2, 'Perdida de servicios'
+    RADIATION = 3, 'Radiacion'
+    INFORMATION_COMPROMISED = 4, 'Informacion comprometida'
+    UNAUTHORIZED_ACCESS = 5, 'Acceso no autorizado'
+    TECNICAL_FAILURE = 6, 'Fallo tecnico'
+    FUNCTIONAL_FAILURE = 7, 'Fallo funcional'
+    COMERCIAL = 8, 'Comercial'
+    PIRATERY = 9, 'Pirateria'
+    SOCIAL_ENGINEERING = 10, 'Ingenieria social'
+    HUMAN_ERROR = 11, 'Error humano'
+    THEFT = 12, 'Robo'
+    SPYING = 13, 'Espionaje'
+    INTRUSION = 14, 'Intrusion'
+    TERRORISM = 15, 'Terrorismo'
+    OTHERS = 16, 'Otros'
+
+class Threat(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Nombre")
+    type_threat = models.IntegerField(choices=TypeThreat.choices, default=TypeThreat.OTHERS, verbose_name='Tipo de amenaza')
+    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Amenaza'
+        verbose_name_plural = 'Amenazas'
+
+class TypeVulnerability(models.IntegerChoices):
+    HARDWARE = 0, 'Hardware'
+    SOFTWARE = 1, 'Software'
+    RED = 2, 'Red'
+    PERSONAL = 3, 'Personal'
+    PLACE = 4, 'Lugar'
+    ORGANIZACION = 5, 'Organizacion'
+    PROCESS = 6, 'Procesos'
+    COMERCIAL = 7, 'Comercial'
+    OTHERS = 8, 'Otros'
+
+class Vulnerability(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Nombre")
+    type_vulnerability = models.IntegerField(choices=TypeVulnerability.choices, default=TypeThreat.OTHERS, verbose_name='Tipo de vulnerabilidad')
+    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
+
+class LevelOfImpact(models.IntegerChoices):
+    INCIDENTAL = 0, 'Incidental'
+    MINOR = 1, 'Menor'
+    MODERATE = 2, 'Moderado'
+    IMPORTANT = 3, 'Importante'
+    EXTREME = 4, 'Extremo'
+
+class LevelOfProbability(models.IntegerChoices):
+    UNLIKELY = 0, 'Poco probable'
+    POSSIBLE = 1, 'Posible'
+    MODERATE = 2, 'Moderado'
+    LIKELY = 3, 'Probable'
+    VERY_LIKELY = 4, 'Muy probable'
+
+class LevelOfRisk(models.IntegerChoices):
+    VERY_LOW = 0, 'Muy bajo'
+    LOW = 1, 'Bajo'
+    MODERATE = 2, 'Moderado'
+    HIGH = 3, 'Alto'
+    VERY_HIGH = 4, 'Muy alto'
+
+
+
+class RiskEvaluation(models.Model):
+    evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    evaluated_id = models.PositiveIntegerField()
+    evaluated_object = GenericForeignKey('evaluated_type', 'evaluated_id')
+    #Aca los campos de evaluacion de riesgo
+    threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name='Amenaza')
+    vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name='Vulnerabilidad')
+    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    confidenciality_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en confidencialidad')
+    integrity_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en integridad')
+    availability_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en disponibilidad')
+    impact_value = models.FloatField(blank=True, null=True, verbose_name='Valor de impacto')
+    probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.INCIDENTAL, verbose_name='Probabilidad')
+    risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
+    risk_level = models.IntegerField(choices=LevelOfRisk.choices, default=LevelOfRisk.INCIDENTAL, verbose_name='Nivel de riesgo')
