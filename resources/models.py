@@ -249,18 +249,18 @@ class Vulnerability(models.Model):
         return self.name
 
 class LevelOfImpact(models.IntegerChoices):
-    INCIDENTAL = 0, 'Incidental'
-    MINOR = 1, 'Menor'
-    MODERATE = 2, 'Moderado'
-    IMPORTANT = 3, 'Importante'
-    EXTREME = 4, 'Extremo'
+    INCIDENTAL = 1, 'Incidental'
+    MINOR = 2, 'Menor'
+    MODERATE = 3, 'Moderado'
+    IMPORTANT = 4, 'Importante'
+    EXTREME = 5, 'Extremo'
 
 class LevelOfProbability(models.IntegerChoices):
-    UNLIKELY = 0, 'Poco probable'
-    POSSIBLE = 1, 'Posible'
-    MODERATE = 2, 'Moderado'
-    LIKELY = 3, 'Probable'
-    VERY_LIKELY = 4, 'Muy probable'
+    UNLIKELY = 1, 'Poco probable'
+    POSSIBLE = 2, 'Posible'
+    MODERATE = 3, 'Moderado'
+    LIKELY = 4, 'Probable'
+    VERY_LIKELY = 5, 'Muy probable'
 
 class LevelOfRisk(models.IntegerChoices):
     VERY_LOW = 0, 'Muy bajo'
@@ -292,4 +292,28 @@ class RiskEvaluation(models.Model):
         verbose_name = 'Evaluacion de riesgo'
         verbose_name_plural = 'Evaluaciones de riesgo'
     
+    def save(self, *args, **kwargs):
+        # Calcular impact_value si no está seteado
+        self.impact_value = (
+            self.confidenciality_impact +
+            self.integrity_impact +
+            self.availability_impact
+        ) / 3
+
+        # Calcular risk_value
+        self.risk_value = self.impact_value * self.probability
+
+        # Evaluar nivel de riesgo según thresholds
+        if self.risk_value <= 4:
+            self.risk_level = LevelOfRisk.VERY_LOW
+        elif self.risk_value <= 9:
+            self.risk_level = LevelOfRisk.LOW
+        elif self.risk_value <= 14:
+            self.risk_level = LevelOfRisk.MEDIUM
+        elif self.risk_value <= 19:
+            self.risk_level = LevelOfRisk.HIGH
+        else:
+            self.risk_level = LevelOfRisk.VERY_HIGH
+
+        super().save(*args, **kwargs)
     

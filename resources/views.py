@@ -308,8 +308,7 @@ def get_objects_by_type(request):
 
 
 def crear_evaluacion(request):
-    print("Método recibido:", request.method)
-    print("POST data:", request.POST)
+    
     model_types = ContentType.objects.filter(model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
     ])
@@ -326,7 +325,7 @@ def crear_evaluacion(request):
         if form.is_valid():
             print(form.cleaned_data)
             form.save()
-            return redirect('listapass')
+            return redirect('listpass')
     else:
         form = RiskEvaluationForm()
         print(form.errors)
