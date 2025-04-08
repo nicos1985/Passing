@@ -264,3 +264,10 @@ class RiskEvaluation(models.Model):
     probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.INCIDENTAL, verbose_name='Probabilidad')
     risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
     risk_level = models.IntegerField(choices=LevelOfRisk.choices, default=LevelOfRisk.INCIDENTAL, verbose_name='Nivel de riesgo')
+
+
+    class Meta:
+        verbose_name = 'Evaluacion de riesgo'
+        verbose_name_plural = 'Evaluaciones de riesgo'
+    
+    
