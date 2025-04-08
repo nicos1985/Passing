@@ -29,6 +29,10 @@ class VendorForm(ModelForm):
         model = Vendor
         fields = '__all__'
         exclude = ['created', 'updated']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'finish_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 
 class ProjectAssetsForm(ModelForm):

@@ -36,7 +36,7 @@
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
 <div class="container pt-5" >
-        <div class="col-md-5 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
+        <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
 <div class="container-fluid">
     <div class="row">
         <h3 style="color: rgb(32, 32, 32); margin-top:30px;">{{action_type}} {{ verbose_name }}</h3>
@@ -52,8 +52,20 @@
             {{form.errors}}
             <h5 style="color: darkred; margin-top:30px;">{{message}}</h5>
 
-            <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                {{form.as_p}}
+            <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+                {% for field in form.visible_fields %}
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">
+                                    {{ field.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
             <button type="submit" class="btn btn-primary btn-flat">
                 <i class="fas fa-save"></i> Guardar cambios
