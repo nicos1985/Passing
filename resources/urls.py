@@ -1,4 +1,4 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type, RiskEvaluationDeleteView
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Vendor, Project
@@ -28,4 +28,6 @@ urlpatterns = [
     path('evaluation-create/', crear_evaluacion, name='evaluation-create'),
     path('ajax/get-objects/', get_objects_by_type, name='ajax-get-objects'),
     path('evaluation/<int:pk>/', RiskEvaluationDetailView.as_view(), name='evaluation-detail'),
+    path('evaluation-list/', RiskEvaluationListView.as_view(), name='evaluation-list'),
+    path('evaluation-delete/<int:pk>/', RiskEvaluationDeleteView.as_view(), name='evaluation-delete'),
 ]

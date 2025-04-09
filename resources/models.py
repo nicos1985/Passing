@@ -272,10 +272,11 @@ class LevelOfRisk(models.IntegerChoices):
 
 
 class RiskEvaluation(models.Model):
-    evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    
     evaluated_id = models.PositiveIntegerField()
     evaluated_object = GenericForeignKey('evaluated_type', 'evaluated_id')
     #Aca los campos de evaluacion de riesgo
+    evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name='Amenaza')
     vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name='Vulnerabilidad')
     description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
@@ -318,6 +319,7 @@ class RiskEvaluation(models.Model):
         super().save(*args, **kwargs)
     
     def get_risk_level_badge(self):
+        # Obtener el nivel de riesgo y su etiqueta traducida
         level = self.risk_level
         label = self.get_risk_level_display()  # Traducción del nombre
         color_class = {
@@ -332,6 +334,7 @@ class RiskEvaluation(models.Model):
     
 
     def get_impact_badge(self, field_name):
+        # Obtener el impacto y su etiqueta traducida
         value = getattr(self, field_name)
         label = dict(LevelOfImpact.choices).get(value, 'Desconocido')
 
@@ -353,3 +356,5 @@ class RiskEvaluation(models.Model):
 
     def badge_availability(self):
         return self.get_impact_badge('availability_impact')
+    
+

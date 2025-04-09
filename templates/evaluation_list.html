@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% load custom_tags %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+<style>
+    table.dataTable {
+        width: 100% !important;
+      }
+      
+      .dataTables_wrapper .dataTables_scroll {
+        overflow-x: auto;
+      }
+
+      th:last-child, td:last-child {
+        text-align: center;
+        white-space: nowrap;
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>{{verbose_name_plural}}</h2>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+
+            <a class="btn btn-primary btn-flat" href="{% url create_view %}">
+                <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
+            </a>
+        </div>
+
+        <div class="container">
+            
+            <table id="data" class="table table-sm align-middle" style="min-width: 1000px;">
+                <thead class="table" style='background-color: {{color}}; color: white; '>
+                  <tr>
+                    {% for field in fields %}
+                    
+                    <th>{{ field.verbose }}</th>
+                                        
+                    {% endfor %}
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    <tr>
+                      {% for field in fields %}
+                        <td>
+                          {% if field.name == 'evaluated_id' %}
+                            <a href="{% evaluated_object_url obj %}">
+                              <i class="fas fa-link" title="Ver objeto evaluado"></i>
+                              {{ obj.evaluated_object }}
+                            </a>
+                          {% else %}
+                            {{ obj|get_attr:field.name }}
+                          {% endif %}
+                        </td>
+                      {% endfor %}
+                      
+                      <td>
+                        
+                        <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="Detalle {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
+                        <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="Eliminar {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
+                    </td>
+                    </tr>
+                    
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+            
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            $('#data').DataTable({
+                responsive: false,
+                scrollX: true,
+                  
+                "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
+                "pageLength": 10,
+                autoWidth: false,
+                order: false,
+                "language": {
+                    url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
+                }
+                
+            });
+        });
+    </script>
+{% endblock %}

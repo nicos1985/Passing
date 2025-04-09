@@ -134,6 +134,13 @@ class AssetDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('informationassets-list') 
     login_url = 'login'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'informationassets-list'
+        return context
+
 
 
 class VendorListView(LoginRequiredMixin, DynamicModelListView):
@@ -191,6 +198,13 @@ class VendorDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('vendor-list') 
     login_url = 'login'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'vendor-list'
+        return context
+
 
 class ProjectListView(LoginRequiredMixin, DynamicModelListView):
     model = Project
@@ -242,6 +256,13 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('project-list') 
     login_url = 'login'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'project-list'
+        return context
+
 class ClientListView(LoginRequiredMixin, DynamicModelListView):
     model = ClientCompany
     login_url = 'login'
@@ -292,10 +313,17 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('clientcompany-list') 
     login_url = 'login'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'clientcompany-list'
+        return context
 
 
 
 def get_objects_by_type(request):
+    # Check if the request is an AJAX request
     content_type_id = request.GET.get('type_id')
     ct = ContentType.objects.get(id=content_type_id)
     model_class = ct.model_class()
@@ -359,4 +387,40 @@ class RiskEvaluationDetailView(DetailView):
                 })
 
         context['evaluated_fields'] = base_fields
+        return context
+    
+class RiskEvaluationListView(LoginRequiredMixin, ListView):
+    model = RiskEvaluation
+    template_name = 'evaluation_list.html'
+    context_object_name = 'evaluations'
+    fields = model._meta.fields  
+    login_url = 'login'
+    EXCLUDED_FIELDS = ['created', 'updated','id']
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['fields'] = [
+            {'name': field.name, 'verbose': field.verbose_name.title()}
+            for field in self.fields if field.name not in self.EXCLUDED_FIELDS
+        ]
+        context['verbose_name_plural'] = self.model._meta.verbose_name_plural.title()
+        context['create_view'] = 'evaluation-create'
+        context['detail_view'] = 'evaluation-detail'
+        context['delete_view'] = 'evaluation-delete'
+        return context
+    
+
+class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
+    model = RiskEvaluation
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('evaluation-list') 
+    login_url = 'login'
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'evaluation-list'
         return context

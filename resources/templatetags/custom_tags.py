@@ -1,5 +1,5 @@
 from django import template
-
+from django.urls import reverse
 register = template.Library()
 
 @register.filter
@@ -17,3 +17,14 @@ def get_attr(obj, attr_name):
         return str(value)
     
     return value
+
+@register.simple_tag
+def evaluated_object_url(evaluation):
+    ct = evaluation.evaluated_type
+    model_name = ct.model
+    obj_id = evaluation.evaluated_id
+
+    try:
+        return reverse(f'{model_name}-detail', args=[obj_id])
+    except:
+        return '#'
