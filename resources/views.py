@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
-from .models import InformationAssets, Vendor, Project, ClientCompany
+from .models import InformationAssets, RiskEvaluation, Vendor, Project, ClientCompany
 from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, VendorForm, ClientAssetsForm
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
@@ -323,9 +323,8 @@ def crear_evaluacion(request):
     if request.method == 'POST':
         form = RiskEvaluationForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
-            form.save()
-            return redirect('listpass')
+            evaluacion = form.save()
+            return redirect('evaluation-detail', pk=evaluacion.pk)
     else:
         form = RiskEvaluationForm()
         print(form.errors)
@@ -334,3 +333,30 @@ def crear_evaluacion(request):
         'form': form,
         'model_types': model_types,
     })
+
+class RiskEvaluationDetailView(DetailView):
+    model = RiskEvaluation
+    template_name = 'evaluation_detail.html'
+    context_object_name = 'evaluation'  
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        evaluated = self.object.evaluated_object
+
+        # Obtener campos comunes del objeto evaluado (heredado de RiskEvaluableObject)
+        base_fields = []
+        for field in evaluated._meta.get_fields():
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'created', 'updated']:
+                value = getattr(evaluated, field.name, None)
+
+                if field.choices:
+                    display_method = f"get_{field.name}_display"
+                    value = getattr(evaluated, display_method, lambda: value)()
+
+                base_fields.append({
+                    'verbose_name': field.verbose_name.title(),
+                    'value': value
+                })
+
+        context['evaluated_fields'] = base_fields
+        return context

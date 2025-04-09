@@ -20,9 +20,17 @@
     <script src="{% static 'lib/bootstrap-5.2.2-dist/js/bootstrap.min.js' %}" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/5045960a08.js" crossorigin="anonymous"></script>
 
-    {% block head %}{% endblock %}
+    {% block head %}
+    <style>
+    .bg-orange {
+        background-color: #fd7e14 !important;
+      }
+    </style>
+    {% endblock %}
 </head>
+
 <body>
+    
     {% block navbar %}
         {% if tenant_schema == "public" %}
             {% include "public_navbar.html" %}

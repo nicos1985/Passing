@@ -317,3 +317,39 @@ class RiskEvaluation(models.Model):
 
         super().save(*args, **kwargs)
     
+    def get_risk_level_badge(self):
+        level = self.risk_level
+        label = self.get_risk_level_display()  # Traducción del nombre
+        color_class = {
+            0: 'bg-success',   # Muy Bajo
+            1: 'bg-success',   # Bajo
+            2: 'bg-warning',   # Medio
+            3: 'bg-orange',    # Alto (usamos naranja custom)
+            4: 'bg-danger',    # Muy Alto
+        }.get(level, 'bg-secondary')
+
+        return f'<span class="badge {color_class} text-white">{label}</span>'
+    
+
+    def get_impact_badge(self, field_name):
+        value = getattr(self, field_name)
+        label = dict(LevelOfImpact.choices).get(value, 'Desconocido')
+
+        color_class = {
+            1: 'bg-success',   # Incidental
+            2: 'bg-success',   # Menor
+            3: 'bg-warning',   # Moderado
+            4: 'bg-orange',    # Importante
+            5: 'bg-danger',    # Extremo
+        }.get(value, 'bg-secondary')
+
+        return f'<span class="badge {color_class} text-white">{label}</span>'
+    
+    def badge_confidenciality(self):
+        return self.get_impact_badge('confidenciality_impact')
+
+    def badge_integrity(self):
+        return self.get_impact_badge('integrity_impact')
+
+    def badge_availability(self):
+        return self.get_impact_badge('availability_impact')
