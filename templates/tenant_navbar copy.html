@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es" xml:lang="es">
+{% load static %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Passing{% endblock %}</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'lib/bootstrap-5.2.2-dist/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}">
+  <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body {
+        margin: 0;
+      }
+      
+      #sidebar {
+        background-color: #343a40;
+        color: white;
+        padding: 20px;
+        z-index: 1045;
+      }
+      
+      #sidebar a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 10px 0;
+      }
+      
+      #sidebar a:hover {
+        text-decoration: underline;
+      }
+      
+      .topbar-fixed {
+        height: 60px;
+        background-color: #f8f9fa;
+        position: fixed;
+        top: 0;
+        left: 250px;
+        right: 0;
+        z-index: 1030;
+      }
+      
+      .main-content {
+        padding-top: 60px;
+        overflow-x: auto;
+      }
+      
+      @media (min-width: 768px) {
+        #sidebar {
+          width: 250px;
+          min-height: 100vh;
+          position: fixed;
+          top: 0;
+          left: 0;
+        }
+      
+        .main-content {
+          margin-left: 150px;
+        }
+      }
+      
+      @media (max-width: 767.98px) {
+        #sidebar.offcanvas-md {
+          display: none;
+        }
+      
+        .offcanvas.show {
+          display: block !important;
+        }
+      
+        .main-content {
+          margin-left: 0;
+        }
+      }
+      
+      .avatar {
+        height: 40px;
+        width: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .btn-toggle {
+        background: none;
+        border: none;
+        font-weight: bold;
+        color: white;
+        width: 100%;
+        text-align: left;
+      }
+      
+      .btn-toggle:focus {
+        outline: none;
+        box-shadow: none;
+      }
+      
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+
+
+<!-- TOGGLE para mobile -->
+<nav class="navbar bg-dark d-md-none">
+  <div class="container-fluid">
+    <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+      <i class="fa fa-bars"></i>
+    </button>
+  </div>    
+</nav>
+
+<!-- NAVBAR SUPERIOR (escritorio) -->
+<nav class="navbar navbar-expand-lg d-none d-md-flex justify-content-end align-items-center px-4 py-2 topbar-fixed">
+  <div class="d-flex align-items-center gap-4">
+    <!-- Notificaciones -->
+    <a href="{% url 'listnotifadmin' %}" class="text-dark position-relative">
+      <i class="fa-solid fa-bell fa-lg"></i>
+    </a>
+
+    <!-- Avatar y nombre -->
+    <div class="d-flex align-items-center">
+      <a href="{% url 'profile' %}">
+        <img src="{% get_media_prefix %}{{user.avatar}}" class="avatar" alt="Avatar">
+      </a>
+      <a href="{% url 'profile' %}" class="ms-2 text-dark text-decoration-none">{{ request.user.username }}</a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar" class="offcanvas-md offcanvas-start d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" tabindex="-1">
+    <a href="{% url 'listpass' %}" class="d-flex align-items-center mb-3 mb-md-0 text-white text-decoration-none">
+      <span class="fs-5">{{ company|default:"Passing" }}</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li>
+          <a href="{% url 'listpass' %}" class="nav-link text-white">
+            <i class="fa fa-house me-2"></i>Inicio
+          </a>
+        </li>
+      
+        {% if request.user.is_authenticated %}
+          {% if request.user.is_superuser or request.user.is_staff %}
+      
+          <!-- Botón de menú desplegable -->
+          <li>
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#adminSubmenu" aria-expanded="false">
+              <i class="fa fa-server me-2"></i> Recursos
+            </button>
+            <div class="collapse ps-3" id="adminSubmenu">
+              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                
+                
+                <li><a href="{% url 'informationassets-list' %}" class="nav-link text-white"><i class="fa fa-microchip me-2"></i>Activos</a></li>
+                <li><a href="{% url 'vendor-list' %}" class="nav-link text-white"><i class="fa fa-handshake me-2"></i>Proveedores</a></li>
+                <li><a href="{% url 'project-list' %}" class="nav-link text-white"><i class="fa fa-bars-progress me-2"></i>Proyectos</a></li>
+                <li><a href="{% url 'clientcompany-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-user me-2"></i>Clientes</a></li>
+              </ul>
+            </div>
+          </li>
+          <li><a href="{% url 'evaluation-list' %}" class="nav-link text-white"><i class="fa fa-triangle-exclamation me-2"></i>Evaluaciones</a></li>
+          <li><a href="{% url 'config' %}" class="nav-link text-white"><i class="fa fa-gear me-2"></i>Configuracion</a></li>
+          {% endif %}
+          <li class="mt-3">
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+              <button class="btn btn-outline-light w-100"><i class="fa fa-right-from-bracket me-2"></i>Salir</button>
+            </form>
+          </li>
+        {% else %}
+          <li>
+            <a href="{% url 'login' %}" class="nav-link text-white">
+              <i class="fa fa-sign-in-alt me-2"></i>Login
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+      
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-content flex-grow-1">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+
+  <!-- JS -->
+  <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+  <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+  <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  {% block javascript %}{% endblock %}
+</body>
+</html>

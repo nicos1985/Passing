@@ -130,7 +130,7 @@ class GenericResourceDetailView(DetailView):
 
 class AssetDeleteView(LoginRequiredMixin, DeleteView):
     model = InformationAssets
-    template_name = 'delete-asset.html'
+    template_name = 'delete-resource.html'
     success_url = reverse_lazy('informationassets-list') 
     login_url = 'login'
 
