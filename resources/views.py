@@ -5,11 +5,14 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
-from .models import InformationAssets, RiskEvaluation, Vendor, Project, ClientCompany
-from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, VendorForm, ClientAssetsForm
+from .models import InformationAssets, RiskEvaluation, Treatment, Vendor, Project, ClientCompany
+from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, TreatmentForm, VendorForm, ClientAssetsForm
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
 # Create your views here.
+
+
+################################### Asset Views ###########################
 
 class DynamicModelListView(ListView):
     template_name = 'list_resource.html'  # Plantilla genérica
@@ -141,7 +144,7 @@ class AssetDeleteView(LoginRequiredMixin, DeleteView):
         context['list_view'] = 'informationassets-list'
         return context
 
-
+####################################### Vendor Views ###########################
 
 class VendorListView(LoginRequiredMixin, DynamicModelListView):
     model = Vendor
@@ -154,6 +157,7 @@ class VendorListView(LoginRequiredMixin, DynamicModelListView):
         context['delete_view'] = f'{self.model._meta.model_name}-delete'
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
+
 
 class VendorCreateView(LoginRequiredMixin, CreateView):
     model = Vendor
@@ -204,7 +208,9 @@ class VendorDeleteView(LoginRequiredMixin, DeleteView):
         context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
         context['list_view'] = 'vendor-list'
         return context
+    
 
+############################# Project Views ###########################
 
 class ProjectListView(LoginRequiredMixin, DynamicModelListView):
     model = Project
@@ -263,6 +269,8 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
         context['list_view'] = 'project-list'
         return context
 
+############################# Client Views ###########################
+
 class ClientListView(LoginRequiredMixin, DynamicModelListView):
     model = ClientCompany
     login_url = 'login'
@@ -320,7 +328,7 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
         context['list_view'] = 'clientcompany-list'
         return context
 
-
+############################ Evaluation Views ###########################
 
 def get_objects_by_type(request):
     # Check if the request is an AJAX request
@@ -423,4 +431,67 @@ class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
         context['verbose_name'] = capfirst(self.model._meta.verbose_name)
         context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
         context['list_view'] = 'evaluation-list'
+        return context
+
+
+############################ Treatment Views ###########################
+
+class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
+    model = Treatment
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+
+
+class TreatmentCreateView(LoginRequiredMixin, CreateView):
+    model = Treatment
+    form_class = TreatmentForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('evaluation-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Crear'
+        return context
+    
+
+class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
+    model = Treatment
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('treatment-list') 
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'treatment-list'
+        return context
+    
+
+class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
+    model = Treatment
+    form_class = TreatmentForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('treatment-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Editar'
         return context

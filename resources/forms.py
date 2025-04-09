@@ -1,5 +1,5 @@
 from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
-from .models import ClientCompany, InformationAssets, Project, RiskEvaluation, Threat, Vendor, Vulnerability
+from .models import ClientCompany, InformationAssets, Project, RiskEvaluation, Threat, Treatment, Vendor, Vulnerability
 from django.contrib.contenttypes.models import ContentType
 from django import forms
 
@@ -104,3 +104,31 @@ class ClientAssetsForm(ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'finish_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class TreatmentForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name, field in self.fields.items():
+            widget = field.widget
+
+            # Si es RadioSelect, aplicar clases Bootstrap específicas
+            if isinstance(widget, forms.RadioSelect):
+                widget.attrs.update({'class': 'form-check-input'})
+            else:
+                widget.attrs.update({
+                    'class': 'form-control',
+                    'autocomplete': 'off'
+                })
+
+    class Meta:
+        model = Treatment
+        exclude = ['created', 'updated']
+        widgets = {
+            'is_efective_control': forms.RadioSelect(),
+            'require_contingency_plan': forms.RadioSelect(),
+        }
+       
+    
+

@@ -2,8 +2,9 @@ from django.db import models
 from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
 
-
+################################# MODELOS DE RECURSOS ###############################
 class AssetStatus(models.IntegerChoices):
     ACTIVE = 0, 'Activo'
     INACTIVE = 1, 'Inactivo'
@@ -188,6 +189,7 @@ class ClientCompany(RiskEvaluableObject):
     def __str__(self):
         return self.name
 
+############################ EVALUACION DE RIESGO #############################
 
 class TypeThreat(models.IntegerChoices):
     
@@ -293,6 +295,9 @@ class RiskEvaluation(models.Model):
         verbose_name = 'Evaluacion de riesgo'
         verbose_name_plural = 'Evaluaciones de riesgo'
     
+    def __str__(self):
+        return f'{self.evaluated_object} - {self.threat}'
+    
     def save(self, *args, **kwargs):
         # Calcular impact_value si no está seteado
         self.impact_value = (
@@ -358,3 +363,87 @@ class RiskEvaluation(models.Model):
         return self.get_impact_badge('availability_impact')
     
 
+ ###################### TRATAMIENTO DE RIESGO ###########################  
+ 
+class ResourceRelation(models.Model):
+    """Model to define the relation between Treatment and Resources"""
+    treatment = models.ForeignKey('Treatment', on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
+class TypeTreatment(models.IntegerChoices):
+    """Model to define the type of treatment"""
+    REDUCE = 0, 'Reducir'
+    ASUME = 1, 'Asumir'
+    TRANSFER = 2, 'Transferir'
+    AVOID = 3, 'Evitar'
+    
+class Controls(models.IntegerChoices):
+    """Model to define the type of controls segun ISO 27001"""
+    A5_INFORMATION_SECURITY_POLICIES = 0, 'A.5 Políticas de seguridad de la información'
+    A6_ORGANIZATION_OF_INFORMATION_SECURITY = 1, 'A.6 Organización de la seguridad de la información'
+    A7_HUMAN_RESOURCE_SECURITY = 2, 'A.7 Seguridad en los recursos humanos'
+    A8_ASSET_MANAGEMENT = 3, 'A.8 Gestión de activos'
+    A9_ACCESS_CONTROL = 4, 'A.9 Control de acceso'
+    A10_CRYPTOGRAPHY = 5, 'A.10 Criptografía'
+    A11_PHYSICAL_AND_ENVIRONMENTAL_SECURITY = 6, 'A.11 Seguridad física y ambiental'
+    A12_OPERATIONS_SECURITY = 7, 'A.12 Seguridad en las operaciones'
+    A13_COMMUNICATION_SECURITY = 8, 'A.13 Seguridad en las comunicaciones'
+    A14_SYSTEM_ACQUISITION_DEVELOPMENT_AND_MAINTENANCE = 9, 'A.14 Adquisición, desarrollo y mantenimiento de sistemas'
+    A15_SUPPLIER_RELATIONSHIPS = 10, 'A.15 Relaciones con los proveedores'
+    A16_INFORMATION_SECURITY_INCIDENT_MANAGEMENT = 11, 'A.16 Gestión de incidentes de seguridad de la información'
+    A17_INFORMATION_SECURITY_ASPECTS_OF_BUSINESS_CONTINUITY = 12, 'A.17 Aspectos de seguridad de la información en la continuidad del negocio'
+    A18_COMPLIANCE = 13, 'A.18 Cumplimiento'
+
+class TreatmentOportunity(models.IntegerChoices):
+    """Model to define the type of treatment opportunity"""
+    PREVENTIVE = 0, 'Preventivo'
+    DETECTIVE = 1, 'Detectivo'
+    CORRECTIVE = 2, 'Correctivo'
+
+class ApplicationPeriodicity(models.IntegerChoices):
+    """Model to define the type of application periodicity"""
+    PERMANENT = 0, 'Permanente'
+    TEMPORAL = 1, 'Temporal'
+    OCASIONAL = 2, 'Ocasional'
+
+class ControlAutomation(models.IntegerChoices):
+    """Model to define the type of control automation"""
+    MANUAL = 0, 'Manual'
+    AUTOMATIC = 1, 'Automatico'
+    SEMIAUTOMATIC = 2, 'Semi-automatico'
+
+class Priority(models.IntegerChoices):
+    """Model to define the type of priority"""
+    URGENT = 0, 'Urgente'
+    PRIORITY = 1, 'Prioritario'
+    NO_PRIORITY = 2, 'No prioritario'
+
+class Treatment(models.Model):
+    """Model to define the Treatment of the Risk"""
+    name = models.CharField(max_length=255, verbose_name="Nombre")
+    evaluation = models.ForeignKey(RiskEvaluation, on_delete=models.CASCADE, verbose_name="Evaluacion de riesgo")
+    treatment_type = models.IntegerField(choices=TypeTreatment.choices, default=TypeTreatment.REDUCE, verbose_name='Tipo de tratamiento')
+    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    controls = models.IntegerField(choices=Controls.choices, default=Controls.A5_INFORMATION_SECURITY_POLICIES, verbose_name='Controles Normalizados')
+    resources = GenericRelation('ResourceRelation', verbose_name='Recursos')
+    deadline = models.DateField(verbose_name='Fecha de cumplimiento')
+    treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Responsable de tratamiento')
+    treatment_oportunity = models.IntegerField(choices=TreatmentOportunity.choices, default=TreatmentOportunity.PREVENTIVE, verbose_name='Oportunidad de tratamiento')
+    application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name='Periodicidad de aplicacion')
+    control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name='Automatizacion de control')
+    priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name='Prioridad')
+    is_efective_control = models.BooleanField(default=False, verbose_name='Control efectivo')
+    require_contingency_plan = models.BooleanField(default=False, verbose_name='Requiere plan de contingencia')
+    contingency_plan = models.CharField(blank=True, null=True, verbose_name="Plan de contingencia")
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Tratamiento'
+        verbose_name_plural = 'Tratamientos'
+    
+    def __str__(self):
+        return self.name
