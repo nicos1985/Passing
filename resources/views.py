@@ -495,3 +495,7 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
         return context
+    
+
+def test_colreorder(request):
+    return render(request, 'test_table.html')

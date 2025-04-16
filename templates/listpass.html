@@ -1,22 +1,11 @@
-<!DOCTYPE html>
 {% extends 'base.html'%}
 
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-<!-- colReorder -->
-<script src="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css"></script>
-<script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+    
+
 {% endblock %}
 
 {% block content %}
@@ -86,8 +75,8 @@
                         </td>
                         <td>
                             
-                                <div class="dropdown">
-                                    <button class="btn btn-transparent dropdown-toggle"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -148,60 +137,48 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="application/javascript">
-    $(document).ready(function () {
-        $('#data').DataTable({
-            responsive: true,
-            colReorder: true,
-            "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
-            autoWidth: false,
-            "language": {
-                url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
-            }
-        });
+<script>
+  $(document).ready(function () {
+    $('#data').DataTable({
+      responsive: true,
+      colReorder: true,
+      dom: 'Rlfrtip',
+      autoWidth: false,
+      lengthMenu: [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
+      language: {
+        url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
+      }
     });
+  });
 </script>
 
 <script>
-    document.querySelectorAll('.toggle-password-icon').forEach(function(icon) {
-        icon.addEventListener('click', function() {
-            const passwordFieldId = icon.getAttribute('data-password-field');
-            const passwordField = document.getElementById(passwordFieldId);
-
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordField.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
+  // Mostrar/ocultar contraseña
+  document.querySelectorAll('.toggle-password-icon').forEach(function(icon) {
+    icon.addEventListener('click', function() {
+      const field = document.getElementById(icon.dataset.passwordField);
+      field.type = (field.type === 'password') ? 'text' : 'password';
+      icon.classList.toggle('fa-eye');
+      icon.classList.toggle('fa-eye-slash');
     });
+  });
 
-    document.querySelectorAll('.copy-icon').forEach(function(icon) {
-        icon.addEventListener('click', function() {
-            var copyTargetId = icon.getAttribute('data-copy-target');
-            var copyTarget = document.getElementById(copyTargetId);
-            var balloon = document.getElementById('globoDeTexto'+copyTargetId);
+  // Copiar contraseña
+  document.querySelectorAll('.copy-icon').forEach(function(icon) {
+    icon.addEventListener('click', function() {
+      const input = document.getElementById(icon.dataset.copyTarget);
+      const balloon = document.getElementById('globoDeTexto' + icon.dataset.copyTarget);
 
-            copyTarget.disabled = false;
-            copyTarget.type = 'text';
-            copyTarget.select();
-
-            document.execCommand('copy');
-            
-            balloon.style.display = 'inline-block';
-            setTimeout(function() {
-                balloon.style.display = 'none';
-            }, 3000);
-            
-            copyTarget.type = 'password';
-            copyTarget.disabled = true;
-            copyTarget.blur();
-        });
+      input.disabled = false;
+      input.type = 'text';
+      input.select();
+      document.execCommand('copy');
+      balloon.style.display = 'inline-block';
+      setTimeout(() => balloon.style.display = 'none', 3000);
+      input.type = 'password';
+      input.disabled = true;
+      input.blur();
     });
+  });
 </script>
-
 {% endblock %}

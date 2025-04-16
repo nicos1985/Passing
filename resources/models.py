@@ -435,9 +435,6 @@ class Treatment(models.Model):
     application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name='Periodicidad de aplicacion')
     control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name='Automatizacion de control')
     priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name='Prioridad')
-    is_efective_control = models.BooleanField(default=False, verbose_name='Control efectivo')
-    require_contingency_plan = models.BooleanField(default=False, verbose_name='Requiere plan de contingencia')
-    contingency_plan = models.CharField(blank=True, null=True, verbose_name="Plan de contingencia")
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
@@ -447,3 +444,4 @@ class Treatment(models.Model):
     
     def __str__(self):
         return self.name
+    

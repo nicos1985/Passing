@@ -107,28 +107,28 @@ class ClientAssetsForm(ModelForm):
 
 
 class TreatmentForm(ModelForm):
+
+    selected_resources = forms.ModelMultipleChoiceField(
+        queryset=Treatment.objects.all(),  # o combiná con union de los modelos concretos
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for field_name, field in self.fields.items():
-            widget = field.widget
-
-            # Si es RadioSelect, aplicar clases Bootstrap específicas
-            if isinstance(widget, forms.RadioSelect):
-                widget.attrs.update({'class': 'form-check-input'})
+            if isinstance(field.widget, (CheckboxInput, RadioSelect)):
+                field.widget.attrs['class'] = 'form-check-input'
+            
             else:
-                widget.attrs.update({
-                    'class': 'form-control',
-                    'autocomplete': 'off'
-                })
+                field.widget.attrs['class'] = 'form-control'
+                field.widget.attrs['autocomplete'] = 'off'
 
     class Meta:
         model = Treatment
-        exclude = ['created', 'updated']
+        exclude = ['resources', 'created', 'updated']
         widgets = {
-            'is_efective_control': forms.RadioSelect(),
-            'require_contingency_plan': forms.RadioSelect(),
+            'deadline': forms.DateInput(attrs={'type': 'date'}),
         }
-       
     
 

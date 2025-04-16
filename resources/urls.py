@@ -1,4 +1,4 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, TreatmentCreateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type, RiskEvaluationDeleteView
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, TreatmentCreateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Treatment, Vendor, Project
@@ -41,4 +41,5 @@ urlpatterns = [
     path('treatment-detail/<int:pk>', GenericResourceDetailView.as_view(model=Treatment), name='treatment-detail'),
     path('treatment-delete/<int:pk>', TreatmentDeleteView.as_view(), name='treatment-delete'),
     path('treatment-update/<int:pk>', TreatmentUpdateView.as_view(), name='treatment-update'),
+    path('test-colreorder/', test_colreorder, name='test_colreorder'),
 ]
