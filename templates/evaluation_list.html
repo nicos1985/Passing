@@ -44,7 +44,7 @@
         <div class="container">
             
             <table id="data" class="table table-sm align-middle" style="min-width: 1000px;">
-                <thead class="table" style='background-color: {{color}}; color: white; '>
+                <thead class="table-dark" >
                   <tr>
                     {% for field in fields %}
                     
@@ -87,21 +87,5 @@
 {% endblock %}
 
 {% block javascript %}
-    <script>
-        $(document).ready(function () {
-            $('#data').DataTable({
-                responsive: true,
-                scrollX: true,
-                  
-                "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
-                "pageLength": 10,
-                autoWidth: false,
-                order: false,
-                "language": {
-                    url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
-                }
-                
-            });
-        });
-    </script>
+<script src="{% static 'js/init-datatable.js' %}"></script>
 {% endblock %}
