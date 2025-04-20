@@ -8,6 +8,7 @@
 
 {% endblock %}
 
+
 {% block content %}
 <div class="container" style="height: 40px; margin-top: 20px;">
     <h2>{{title}}</h2>
@@ -137,20 +138,8 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-  $(document).ready(function () {
-    $('#data').DataTable({
-      responsive: true,
-      colReorder: true,
-      dom: 'Rlfrtip',
-      autoWidth: false,
-      lengthMenu: [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
-      language: {
-        url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
-      }
-    });
-  });
-</script>
+
+<script src="{% static 'js/init-datatable.js' %}"></script>
 
 <script>
   // Mostrar/ocultar contraseña

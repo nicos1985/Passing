@@ -80,26 +80,6 @@
 
 {% block javascript %}
 
-<script type="application/javascript">
-
-    $(document).ready(function () {
-        
-        $('#data').DataTable({
-            "responsive": true,
-            "columDefs":[
-                    { "width": "15%", "targets": 0 },  // Limita el ancho de la primera columna (Nombre)
-                    { "width": "10%", "targets": 1 },  // Limita el ancho de la segunda columna (Email)
-                    { "width": "40%", "targets": 2 },  // Limita el ancho de la tercera columna (Telefono)
-                    { "width": "25%", "targets": 3 },   // Limita el ancho de la cuarta columna (Direccion)
-                    { "width": "10%", "targets": 4 }   // Limita el ancho de la cuarta columna (Direccion)
-            ],
-            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
-            "pageLength": -1, // Establece -1 como la opción por defecto
-            "autoWidth": false
-            
-        });
-    });
-
-</script>
+<script src="{% static 'js/init-datatable.js' %}"></script>
 
 {% endblock %}
