@@ -2,7 +2,7 @@ from django.db import models
 from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.fields import GenericRelation
+
 
 ################################# MODELOS DE RECURSOS ###############################
 class AssetStatus(models.IntegerChoices):
@@ -277,8 +277,8 @@ class RiskEvaluation(models.Model):
     
     evaluated_id = models.PositiveIntegerField()
     evaluated_object = GenericForeignKey('evaluated_type', 'evaluated_id')
-    #Aca los campos de evaluacion de riesgo
     evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    #Aca los campos de evaluacion de riesgo
     threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name='Amenaza')
     vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name='Vulnerabilidad')
     description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
@@ -365,13 +365,6 @@ class RiskEvaluation(models.Model):
 
  ###################### TRATAMIENTO DE RIESGO ###########################  
  
-class ResourceRelation(models.Model):
-    """Model to define the relation between Treatment and Resources"""
-    treatment = models.ForeignKey('Treatment', on_delete=models.CASCADE)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
 
 class TypeTreatment(models.IntegerChoices):
     """Model to define the type of treatment"""
@@ -428,7 +421,9 @@ class Treatment(models.Model):
     treatment_type = models.IntegerField(choices=TypeTreatment.choices, default=TypeTreatment.REDUCE, verbose_name='Tipo de tratamiento')
     description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
     controls = models.IntegerField(choices=Controls.choices, default=Controls.A5_INFORMATION_SECURITY_POLICIES, verbose_name='Controles Normalizados')
-    resources = GenericRelation('ResourceRelation', verbose_name='Recursos')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
     deadline = models.DateField(verbose_name='Fecha de cumplimiento')
     treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Responsable de tratamiento')
     treatment_oportunity = models.IntegerField(choices=TreatmentOportunity.choices, default=TreatmentOportunity.PREVENTIVE, verbose_name='Oportunidad de tratamiento')

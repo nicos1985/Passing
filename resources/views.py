@@ -448,22 +448,42 @@ class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
 
+def crear_tratamiento(request):
+    model_types = ContentType.objects.filter(model__in=[
+        'informationassets', 'vendor', 'project', 'clientcompany'
+    ])
+    
+    if request.method == 'POST':
+        
+        form = TreatmentForm(data=request.POST)
 
-class TreatmentCreateView(LoginRequiredMixin, CreateView):
-    model = Treatment
-    form_class = TreatmentForm
-    template_name = 'CU-resource.html'
-    success_url = reverse_lazy('evaluation-list')
-    login_url = 'login'
+        if form.is_valid():
+            
+            model_type = form.cleaned_data.get('model_type')
+            object_id = form.cleaned_data.get('object_id')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
-        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
-        model_name = self.model._meta.model_name
-        context['list_url_name'] = f'{model_name}-list'
-        context['action_type'] = 'Crear'
-        return context
+            treatment = form.save(commit=False)
+
+            if model_type and object_id:
+                treatment.content_type = model_type
+                treatment.object_id = int(object_id)
+
+            treatment.save()
+            
+            return redirect('treatment-detail', pk=treatment.pk)
+        else:
+            print("❌ Formulario inválido.")
+            # Mostramos los choices que están cargados para el select
+    else:
+        form = TreatmentForm()
+        
+
+    return render(request, 'treatment-create.html', {
+        'form': form,
+        'model_types': model_types,
+    })
+
+
     
 
 class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
@@ -483,7 +503,7 @@ class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
 class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
     model = Treatment
     form_class = TreatmentForm
-    template_name = 'CU-resource.html'
+    template_name = 'treatment-create.html'
     success_url = reverse_lazy('treatment-list')
     login_url = 'login'
 
@@ -496,6 +516,19 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
         context['action_type'] = 'Editar'
         return context
     
+    def form_valid(self, form):
+        model_type = form.cleaned_data.get('model_type')
+        object_id = form.cleaned_data.get('object_id')
+
+        if model_type and object_id:
+            form.instance.content_type = model_type
+            form.instance.object_id = int(object_id)
+
+        messages.success(self.request, "Tratamiento actualizado con éxito.")
+        return super().form_valid(form)
+    
 
 def test_colreorder(request):
     return render(request, 'test_table.html')
+
+

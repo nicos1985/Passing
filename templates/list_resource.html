@@ -46,9 +46,16 @@
                   {% for obj in object_list %}
                   
                     <tr>
+
                       {% for field in fields %}
-                        <td>{{ obj|get_attr:field.name }}</td>
-                        
+                      <td>
+                        {% if field.name == "object_id" %}
+                          {{ obj.content_object }}
+                        {% else %}
+                          {{ obj|get_attr:field.name }}
+                        {% endif %}
+                      </td>
+                                                
                       {% endfor %}
                       <td>
                         <a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="Editar {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>

@@ -1,4 +1,4 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, TreatmentCreateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Treatment, Vendor, Project
@@ -36,7 +36,7 @@ urlpatterns = [
     path('evaluation-list/', RiskEvaluationListView.as_view(), name='evaluation-list'),
     path('evaluation-delete/<int:pk>/', RiskEvaluationDeleteView.as_view(), name='evaluation-delete'),
     #TReatment URLs
-    path('treatment-create/', TreatmentCreateView.as_view(), name='treatment-create'),
+    path('treatment-create/', crear_tratamiento, name='treatment-create'),
     path('treatment-list/', TreatmentListView.as_view(), name='treatment-list'),
     path('treatment-detail/<int:pk>', GenericResourceDetailView.as_view(model=Treatment), name='treatment-detail'),
     path('treatment-delete/<int:pk>', TreatmentDeleteView.as_view(), name='treatment-delete'),

@@ -37,7 +37,7 @@
     </div>
     <div class="row">
         <button class="btn">
-            <a class="btn btn-primary btn-flat" href= "{% url list_url_name %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
+            <a class="btn btn-primary btn-flat" href= "{% url 'treatment-list' %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
         </button>
     </div>
          
@@ -64,6 +64,7 @@
             <button type="submit" class="btn btn-primary btn-flat">
                 <i class="fas fa-save"></i> Guardar cambios
             </button>
+            <input type="hidden" id="object_id_preselected" value="{{ form.fields.object_id.initial }}">
         </form>
             </div>
         </div> 
@@ -78,22 +79,26 @@
 {% block javascript %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+$(document).ready(function () {
+    const $modelType = $('#id_model_type');
+    const $objectSelect = $('#id_object_id');
+    const preselected = $('#object_id_preselected').val();
   
-
-    $('#id_model_type').on('change', function () {
+    // Ejecutar AJAX sólo si cambia el tipo de recurso (o si NO estamos editando)
+    $modelType.on('change', function () {
       const modelId = $(this).val();
-      console.log("Model ID selected:", modelId);
-
+      console.log("Model Type changed:", modelId);
+  
       $.ajax({
         url: "{% url 'ajax-get-objects' %}",
         data: { type_id: modelId },
         success: function (data) {
-          console.log("AJAX success:", data.objects);
-          const objectSelect = $('#id_object_id');
-          objectSelect.empty();
-          objectSelect.append(`<option value="">Seleccione un recurso</option>`);
+          $objectSelect.empty();
+          $objectSelect.append(`<option value="">Seleccione un recurso</option>`);
+  
           data.objects.forEach(function (obj) {
-            objectSelect.append(`<option value="${obj.id}">${obj.name}</option>`);
+            const selected = (obj.id.toString() === preselected) ? 'selected' : '';
+            $objectSelect.append(`<option value="${obj.id}" ${selected}>${obj.name}</option>`);
           });
         },
         error: function (xhr) {
@@ -102,7 +107,13 @@
       });
     });
   
+    // Solo forzar la carga por AJAX si no hay valor ya seleccionado
+    if (!preselected) {
+      $modelType.trigger('change');
+    }
+  });
 </script>
+  
 
 
 {% endblock%}
