@@ -12,11 +12,20 @@ class CustomLoginForm(AuthenticationForm):
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
-            'required_score':0.8, #aumenta el score de puntuacion para la deteccion de bots
+            'required_score':0.5, #aumenta el score de puntuacion para la deteccion de bots
             
         }
     )
 )
+    def clean(self):
+        try:
+            return super().clean()
+        except ValidationError as e:
+            # Log completo del error
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error al validar el formulario de login: {e}')
+            raise
     
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
