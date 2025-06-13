@@ -9,14 +9,14 @@ from django_recaptcha.widgets import ReCaptchaV3
 
 
 class CustomLoginForm(AuthenticationForm):
-    """captcha = ReCaptchaField(
+    captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
             'required_score':0.8, #aumenta el score de puntuacion para la deteccion de bots
             
         }
     )
-)"""
+)
     
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
