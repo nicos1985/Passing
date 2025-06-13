@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+
+
+    <div class="container mt-5">
+        <h1>Modificar Roles de Permiso</h1>
+        <button class="btn">
+            <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-book"></i> Configurar</a>
+        </button>
+        <div class="card-body" style="background-color: #F7F7F7;">
+        <form class="form-control" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="h5" for="{{ form.rol_name.id_for_label }}">Nombre del Rol</label>
+                {{ form.rol_name }}
+            </div>
+            <div class="form-group">
+                <label class="h5" for="{{ form.comment.id_for_label }}">Comentario</label>
+                {{ form.comment }}
+            </div>
+            <div class="form-group">
+                <label class="h5" style="margin-top: 20px;" for="contrasenas">Contraseñas</label>
+                <table class="table table-striped table-hover" id="contrasenas-table">
+                    <thead>
+                        <tr class="table-dark">
+                            <th class="col">Nombre</th>
+                            <th class="col">Propietario</th>
+                            <th class="col">Sección</th>
+                            <th class="col">Permiso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrasena in contrasenas %}
+                            <tr>
+                                <td>{{ contrasena.nombre_contra }}</td>
+                                <td>{{ contrasena.owner }}</td>
+                                <td>{{ contrasena.seccion }}</td>
+                                <td>
+                                    <input type="checkbox" name="contrasenas" value="{{ contrasena.pk }}"
+                                        {% if contrasena in form.instance.contrasenas.all %} checked {% endif %}>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+           
+            <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
+                <i class="fas fa-save"></i> Guardar registro
+            </button>
+        </form>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+<script type="application/javascript">
+    $(document).ready(function () {
+        $('#contrasenas-table').DataTable({
+            responsive: true,
+            "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
+            "pageLength": -1, // Establece -1 como la opción por defecto
+            autoWidth: false,
+        });
+    });
+</script>
+{% endblock %}
+
+</html>

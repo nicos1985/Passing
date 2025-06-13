@@ -1,0 +1,37 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<div class ='justify-content-sm-center' style="margin-top: 80px;">
+<div class="d-flex justify-content-center" >
+
+    <div class="card center">
+            <div class="card-title">
+                <div class="container" style="height: 105px; padding-top: 20px;">
+                    <h2><i class="fas fa-address-card" ></i> {{title}}</h2>
+                    
+                </div>
+            </div>
+
+            <div class="card-body "style="background-color: #F7F7F7; width: 26rem;">
+
+
+                    <form class = 'form' method="POST">
+                        {% csrf_token %}
+                        
+                        {{form.as_p}}
+                        
+                        <button type="submit" class="btn btn-primary btn-flat">
+                            <i class="fas fa-address-card"></i> Registrarse
+                        </button>
+                            
+                     
+                        
+                        </div> 
+                    </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

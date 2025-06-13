@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container" style="height: 60px;">
+    <h2>Roles</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+
+
+
+<div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= "{% url 'config' %}"> <i class="fa-solid fa-gear"></i>  Configuracion</a>
+    </button>
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= "{% url 'permissionrolescreate' %}"> <i class="fa-solid fa-plus"></i>   Agregar Rol</a>
+    </button>
+</div>
+<div>
+    <div class="container">
+    <table class="table" id="data">
+        <thead class="table-dark">
+        
+            <tr >
+
+                <th scope="col">Nombre Rol</th>
+                <th scope="col">Cantidad de Contraseñas</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Creado</th>
+                <th scope="col">Acciones</th>
+                
+            </tr>
+
+        </thead>
+
+        <tbody>
+            {% for object in roles %}
+            <tr>                   
+                <td>{{object.rol_name}}</td>
+                <td>{{object.related_count}}</td>
+                <td>{{object.comment}}</td>
+                <td>{{object.created|date:"d/m/y H:i"}}</td> 
+                <td><a href="{% url 'assignroluser_with_role' object.id %}"><i class ="fa-solid fa-user-tie" style="color:rgb(68, 94, 200);" title="Asignar Rol"></i></a>
+                    <a href="{% url 'permissionrolesupdate' object.id %}"><i class ="fa-solid fa-pen" style="color:#FFE682; margin-left: 5px;" title="Editar Rol"></i></a>
+                    <a href="{% url 'deleteroleconfirm' object.id %}"><i class ="fa-solid fa-trash" style="color: #FF7367 ; margin-left: 5px;" title="Elimina Rol"></i></a>
+                </td>
+                
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+    </div>
+</div>
+     
+          
+{% endif %}
+
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="application/javascript">
+
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            "responsive": true,
+            "columDefs":[
+                    { "width": "15%", "targets": 0 },  // Limita el ancho de la primera columna (Nombre)
+                    { "width": "10%", "targets": 1 },  // Limita el ancho de la segunda columna (Email)
+                    { "width": "40%", "targets": 2 },  // Limita el ancho de la tercera columna (Telefono)
+                    { "width": "25%", "targets": 3 },   // Limita el ancho de la cuarta columna (Direccion)
+                    { "width": "10%", "targets": 4 }   // Limita el ancho de la cuarta columna (Direccion)
+            ],
+            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
+            "pageLength": -1, // Establece -1 como la opción por defecto
+            "autoWidth": false
+            
+        });
+    });
+
+</script>
+
+{% endblock %}

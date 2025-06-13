@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+<body>
+<div class="container" style="height: 60px;">
+    <h2>{{title}}</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+
+
+
+<div class="container"style="margin-bottom: 45px;">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-gear"></i>  Configuración</a>
+    </button>
+    
+</div>
+<div>
+    <div class="container">
+        <h3>Auditoria</h3>
+    </div>
+    
+    <div class="container">
+        <h4>Contraseñas Duplicadas</h4>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card" style="background-color: #ffffff; border-radius: 12px; border-color: rgb(77, 57, 230);">
+                    <div class="card-body">
+                        <h5>Total de contraseñas repetidas: {{data.pass_duplicate_count.resumen_total_duplicados}}</h5>
+                    </div>
+                </div>
+            </div>
+            {% if request.user.is_superuser %}
+            <div class="col-md-6">
+                <div class="card" style="background-color: #ffffff; border-radius: 12px; border-color: rgb(77, 57, 230);">
+                    <div class="card-body">
+                        <h4>Contraseñas repetidas:</h4>
+                        {% for contra, count in data.pass_duplicate_count.detalles_por_contrasena.items %}
+                        <h5>Contraseña: {{ contra }} - Duplicados: {{ count }}</h5>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="container" >
+        <h4>Fortaleza de las contraseñas</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card" style="background-color: #b6ffae; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas fuertes: {{data.strength_pass.strong}}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="background-color: #efea60; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas moderadas: {{data.strength_pass.moderate}}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="background-color: #ef7a60; border-radius: 12px; border-color: white;">
+                    <div class="card-body" >
+                        <h5>Contraseñas débiles: {{data.strength_pass.weak}}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="container">
+    <div class="container">
+        <div class="card" style="margin-top: 35px; border-color: white;">
+            <div class="row">
+                
+            </div>
+        </div>
+    </div>
+    <h4>Auditoria de Permisos y Roles</h4>
+    {% for user in data.users %}
+    <div class="" style="background-color: #b6ffae; padding: 15px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4>
+                <a href="{% url 'updateuser' user.user_id  %}" target="blank" style="text-decoration: none; color: black;">
+                    {{ user.user_id }} | Usuario: {{ user.user_name }}
+                </a>
+            </h4> 
+            <a href="{% url 'permissionrolesupdate' user.user_role_assigned_id %}" target="_blank">
+                <button class="btn btn-secondary" style="background-color: #b6ffae; border-color: #e9ffe6; color: black;">
+                  <i class="fas fa-arrow-up-right-from-square"></i> Rol asignado: <strong>{{user.user_role_assigned}}</strong>
+                </button>
+            </a>
+            <h6>Cantidad de diferencias: {{ user.count_differences }}</h6>
+        </div>
+    </div>
+ <table class="table" id="data" style="margin-bottom: 35px ;">
+    <thead class="table-dark">
+       
+            <tr >
+                <th scope="col">Id</th>
+                <th scope="col">Nombre Contraseña</th>
+                <th scope="col">Seccion</th>
+                <th scope="col">Propietario</th>
+                <th scope="col">Existe</th>
+            </tr>    
+    </thead>  
+    {% for contra in user.contrasenas %}      
+    <tbody>
+        
+        <tr>
+            
+            <td>{{contra.id}}</td>
+            <td>{{contra.nombre_contra}}</td>
+            <td>{{contra.section}}</td>
+            <td>{{contra.owner}}</td>
+            <td>{{contra.existe}}</td>
+                             
+        </tr>   
+        {%endfor%} 
+    </tbody>
+</table>                  
+{%endfor%} 
+</body>
+        </div>    
+        
+          
+{% endif %}
+
+
+{% endblock %}
+</html>

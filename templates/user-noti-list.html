@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+{% extends 'base.html'%}
+
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container" style="height: 60px;">
+    <h2>Notificaciones</h2>
+</div>
+
+{% if request.user.is_authenticated %}
+
+
+
+<div class="container">
+    <button class="btn">
+        <a class="btn btn-primary btn-flat" href= "{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i>  Lista</a>
+    </button>
+</div>
+<div>
+    <div class="container">
+    <table class="table" id="data">
+        <thead class="table-dark">
+        
+            <tr >
+
+                <th scope="col">Nombre Contraseña</th>
+                <th scope="col">Comentario</th>
+                <th scope="col">Tipo notificacion</th>
+                <th scope="col">Fecha</th>
+                
+            </tr>
+
+
+        </thead>
+
+        <tbody>
+            {% for object in notifications %}
+            <tr>
+
+                <td>
+                    {% if object.viewed == False %}
+                    <i class="fas fa-lightbulb" style="color:rgba(255, 234, 43, 0.918); font-size: 12px;"></i>
+                    {{object.id_contrasena.nombre_contra}}
+                    {%else%}
+                    <i class="fas fa-lightbulb" style="color:rgba(255, 255, 255, 0.918); font-size: 12px;"></i>
+                    {{object.id_contrasena.nombre_contra}}
+                    {%endif%}
+                </td>
+                <td>{{object.comment}}</td>
+                <td>{{object.type_notification}}</td>
+                <td>{{object.created|date:"d/m/y H:i"}}</td>
+                
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+    </div>
+</div>
+     
+          
+{% endif %}
+{% block javascript %}
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (const cookie of cookies) {
+                const trimmedCookie = cookie.trim();
+                if (trimmedCookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(trimmedCookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    window.addEventListener('beforeunload', function() {
+        fetch("{% url 'marcar_notificaciones_vistas' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({})
+        });
+    });
+</script>
+
+
+<script type="application/javascript">
+
+    $(document).ready(function () {
+        
+        $('#data').DataTable({
+            responsive: true,
+            "lengthMenu": [ [10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"] ],
+            "pageLength": -1, // Establece -1 como la opción por defecto
+            autoWidth: false,
+            
+        });
+    });
+
+</script>
+
+{% endblock %}
+
+{% endblock %}
+
