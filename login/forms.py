@@ -18,7 +18,7 @@ class CustomLoginForm(AuthenticationForm):
     )
 )
     
-class SuperUserRegisterForm(UserCreationForm):
+class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
     password1 = forms.CharField(label = 'Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label = 'Confirmar Contraseña', widget=forms.PasswordInput)
@@ -48,23 +48,16 @@ class SuperUserRegisterForm(UserCreationForm):
             form.field.widget.attrs['autocomplete']= 'off'
 
 
-
-
 class ProfileForm(forms.ModelForm):
     menu_color = forms.CharField(
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
         widget=forms.TextInput(attrs={'type': 'color'})
     )
-    
+
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled']
-        widgets = {
-            'is_2fa_enabled': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',  # Clase de Bootstrap
-                'role': 'switch'  # Propiedad para indicar que es un switch
-            })
-        }
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color']
+
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 
@@ -84,11 +77,10 @@ class UserForm(forms.ModelForm):
     position = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     address = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     tel_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date','assigned_role']
+        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
         
 
 class UserDepartureForm(forms.ModelForm):
@@ -111,8 +103,7 @@ class AdminLoginForm(AuthenticationForm):
             
         }
     )
-)
-    
+)    
 
 class GlobalSettingsForm(forms.ModelForm):
     menu_color = forms.CharField(

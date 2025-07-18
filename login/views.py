@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
 from client.models import Client
 from permission.models import PermissionRoles
-from .forms import CustomLoginForm, GlobalSettingsForm, SuperUserRegisterForm, UserDepartureForm, ProfileForm, UserForm
+from .forms import CustomLoginForm, GlobalSettingsForm, UserRegisterForm, UserDepartureForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
