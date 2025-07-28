@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
-from .models import InformationAssets, RiskEvaluation, Treatment, Vendor, Project, ClientCompany
-from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, TreatmentForm, VendorForm, ClientAssetsForm
+from .models import InformationAssets, RiskEvaluation, Threat, Treatment, Vendor, Project, ClientCompany, Vulnerability
+from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, ThreatForm, TreatmentForm, VendorForm, ClientAssetsForm, VulnerabilityForm
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
 # Create your views here.
@@ -532,3 +532,214 @@ def test_colreorder(request):
     return render(request, 'test_table.html')
 
 
+class ClientListView(LoginRequiredMixin, DynamicModelListView):
+    model = ClientCompany
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+    
+class ThreatCreateView(LoginRequiredMixin, CreateView):
+    model = Threat
+    form_class = ThreatForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('threat-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Crear'
+        return context
+
+
+class ThreatListView(LoginRequiredMixin, DynamicModelListView):
+    model = Threat
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+    
+class ThreatUpdateView(LoginRequiredMixin, UpdateView):
+    model = Threat
+    form_class = ThreatForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('threat-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Editar'
+        return context
+    
+class ThreatDetailView(LoginRequiredMixin, DetailView):
+    model = Threat
+    template_name = 'detail-resource.html'
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        meta = obj.__class__._meta
+
+        context['verbose_model_name'] = meta.verbose_name.title()
+
+        # Campos visibles (excluyendo ID, campos sensibles o FK pesados si querés)
+        visible_fields = []
+        for field in meta.get_fields():
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'password']:
+                if field.choices:
+                    display_method = f"get_{field.name}_display"
+                    value = getattr(obj, display_method)()
+                else:
+                    value = getattr(obj, field.name, None)
+
+                visible_fields.append({
+                    'name': field.name,
+                    'verbose_name': field.verbose_name.title(),
+                    'value': value
+                })
+
+        context['fields'] = visible_fields
+        # URLs auxiliares
+        model_name = meta.model_name
+        try:
+            context['edit_url'] = reverse(f'{model_name}-update', args=[obj.pk])
+            context['delete_url'] = reverse(f'{model_name}-delete', args=[obj.pk])
+            context['back_url'] = reverse(f'{model_name}-list')
+        except:
+            context['edit_url'] = None
+            context['delete_url'] = None
+            context['back_url'] = '#'
+
+        return context
+    
+class ThreatDeleteView(LoginRequiredMixin, DeleteView):
+    model = Threat
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('threat-list') 
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'threat-list'
+        return context
+
+
+class VulnerabilityListView(LoginRequiredMixin, DynamicModelListView):
+    model = Vulnerability
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['create_view'] = f'{self.model._meta.model_name}-create'
+        context['update_view'] = f'{self.model._meta.model_name}-update'
+        context['delete_view'] = f'{self.model._meta.model_name}-delete'
+        context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        return context
+    
+class VulnerabilityCreateView(LoginRequiredMixin, CreateView):
+    model = Vulnerability
+    form_class = VulnerabilityForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('vulnerability-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Crear'
+        return context
+    
+class VulnerabilityUpdateView(LoginRequiredMixin, UpdateView):
+    model = Vulnerability
+    form_class = VulnerabilityForm
+    template_name = 'CU-resource.html'
+    success_url = reverse_lazy('vulnerability-list')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        model_name = self.model._meta.model_name
+        context['list_url_name'] = f'{model_name}-list'
+        context['action_type'] = 'Editar'
+        return context
+
+class VulnerabilityDetailView(LoginRequiredMixin, DetailView):
+    model = Vulnerability
+    template_name = 'detail-resource.html'
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        meta = obj.__class__._meta
+
+        context['verbose_model_name'] = meta.verbose_name.title()
+
+        # Campos visibles (excluyendo ID, campos sensibles o FK pesados si querés)
+        visible_fields = []
+        for field in meta.get_fields():
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'password']:
+                if field.choices:
+                    display_method = f"get_{field.name}_display"
+                    value = getattr(obj, display_method)()
+                else:
+                    value = getattr(obj, field.name, None)
+
+                visible_fields.append({
+                    'name': field.name,
+                    'verbose_name': field.verbose_name.title(),
+                    'value': value
+                })
+
+        context['fields'] = visible_fields
+        # URLs auxiliares
+        model_name = meta.model_name
+        try:
+            context['edit_url'] = reverse(f'{model_name}-update', args=[obj.pk])
+            context['delete_url'] = reverse(f'{model_name}-delete', args=[obj.pk])
+            context['back_url'] = reverse(f'{model_name}-list')
+        except:
+            context['edit_url'] = None
+            context['delete_url'] = None
+            context['back_url'] = '#'
+
+        return context
+
+class VulnerabilityDeleteView(LoginRequiredMixin, DeleteView):
+    model = Vulnerability
+    template_name = 'delete-resource.html'
+    success_url = reverse_lazy('vulnerability-list') 
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['verbose_name'] = capfirst(self.model._meta.verbose_name)
+        context['verbose_name_plural'] = capfirst(self.model._meta.verbose_name_plural)
+        context['list_view'] = 'vulnerability-list'
+        return context

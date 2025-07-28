@@ -124,7 +124,7 @@ def create_superuser(request, schema_name):
         return redirect('home')
 
     if request.method == 'POST':
-        form = SuperUserRegisterForm(request.POST)
+        form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_superuser = True
@@ -179,7 +179,7 @@ def create_superuser(request, schema_name):
             
             
     else:
-        form = SuperUserRegisterForm()
+        form = UserRegisterForm()
 
     context = {
         'form': form,

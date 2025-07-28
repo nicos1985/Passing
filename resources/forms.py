@@ -11,24 +11,29 @@ class RiskEvaluationForm(forms.ModelForm):
         ]),
         label="Objeto evaluable"
     )
-    
-        
     object_id = forms.IntegerField(label="ID del objeto")
     threat = forms.ModelChoiceField(queryset=Threat.objects.all())
     vulnerability = forms.ModelChoiceField(queryset=Vulnerability.objects.all())
 
     class Meta:
         model = RiskEvaluation
-        fields = ['model_type', 'object_id', 'threat', 'vulnerability', 'description', 'confidenciality_impact', 'integrity_impact', 'availability_impact', 'probability']
+        fields = ['model_type', 'object_id', 'threat', 'vulnerability', 'description',
+                  'confidenciality_impact', 'integrity_impact', 'availability_impact', 'probability']
         widgets = {
-            'threat': Select(attrs={'class': 'form-control'}),
-            'vulnerability': Select(attrs={'class': 'form-control'}),   
             'description': Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
             'confidenciality_impact': Select(attrs={'class': 'form-control'}),
             'integrity_impact': Select(attrs={'class': 'form-control'}),
             'availability_impact': Select(attrs={'class': 'form-control'}),
             'probability': Select(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agregar clase Bootstrap manualmente a campos redefinidos
+        self.fields['model_type'].widget.attrs.update({'class': 'form-control'})
+        self.fields['object_id'].widget.attrs.update({'class': 'form-control'})
+        self.fields['threat'].widget.attrs.update({'class': 'form-control'})
+        self.fields['vulnerability'].widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -179,3 +184,35 @@ class TreatmentForm(ModelForm):
         }
     
 
+class ThreatForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class']= 'form-control'
+            form.field.widget.attrs['autocomplete']= 'off'
+            
+    class Meta:
+        model = Threat
+        fields = '__all__'
+        exclude = ['created', 'updated']
+        widgets = {
+            'description': Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
+        }
+
+
+class VulnerabilityForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class']= 'form-control'
+            form.field.widget.attrs['autocomplete']= 'off'
+            
+    class Meta:
+        model = Vulnerability
+        fields = '__all__'
+        exclude = ['created', 'updated']
+        widgets = {
+            'description': Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
+        }

@@ -56,8 +56,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color']
-
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled']
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 

@@ -1,7 +1,7 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
-from .models import ClientCompany, InformationAssets, Treatment, Vendor, Project
+from .models import ClientCompany, InformationAssets, Threat, Treatment, Vendor, Project, Vulnerability
 from django.urls import path
 
 urlpatterns = [
@@ -42,4 +42,16 @@ urlpatterns = [
     path('treatment-delete/<int:pk>', TreatmentDeleteView.as_view(), name='treatment-delete'),
     path('treatment-update/<int:pk>', TreatmentUpdateView.as_view(), name='treatment-update'),
     path('test-colreorder/', test_colreorder, name='test_colreorder'),
+    # Threat URLs
+    path('threat-create/', ThreatCreateView.as_view(), name='threat-create'),
+    path('threat-list/', ThreatListView.as_view(), name='threat-list'),
+    path('threat-detail/<int:pk>', GenericResourceDetailView.as_view(model=Threat), name='threat-detail'),
+    path('threat-update/<int:pk>', ThreatUpdateView.as_view(), name='threat-update'),
+    path('threat-delete/<int:pk>', ThreatDeleteView.as_view(), name='threat-delete'),
+    # Vulnerability URLs
+    path('vulnerability-create/', VulnerabilityCreateView.as_view(), name='vulnerability-create'),
+    path('vulnerability-list/', VulnerabilityListView.as_view(), name='vulnerability-list'),
+    path('vulnerability-detail/<int:pk>', GenericResourceDetailView.as_view(model=Vulnerability), name='vulnerability-detail'),
+    path('vulnerability-update/<int:pk>', VulnerabilityUpdateView.as_view(), name='vulnerability-update'),
+    path('vulnerability-delete/<int:pk>', VulnerabilityDeleteView.as_view(), name='vulnerability-delete'),
 ]

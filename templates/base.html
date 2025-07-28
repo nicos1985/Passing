@@ -44,7 +44,7 @@
 
     <div class="main-content flex-grow-1 p-4">
         <!-- Mensajes -->
-        <div class="container fluid">
+        <div class="container fluid" style="padding-top: 35px;">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert {{ message.tags }}" role="alert">
@@ -52,6 +52,7 @@
                     </div>
                 {% endfor %}
             {% endif %}
+            
         </div>
 
         <div style="padding-top: 20px;">
