@@ -15,23 +15,30 @@ from django.contrib.contenttypes.models import ContentType
 ################################### Asset Views ###########################
 
 class DynamicModelListView(ListView):
-    template_name = 'list_resource.html'  # Plantilla genérica
-    EXCLUDED_FIELDS = ['created', 'updated','id']
+    template_name = 'list_resource.html'
+    EXCLUDED_FIELDS = ['created', 'updated', 'id']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         model = self.model
         fields = model._meta.fields
 
-        
-        # Creamos una lista de dicts con nombre interno y verbose
+        # Lista de campos para renderizar columnas
         context['fields'] = [
             {'name': field.name, 'verbose': field.verbose_name.title()}
             for field in fields if field.name not in self.EXCLUDED_FIELDS
         ]
+
+        # Diccionario con los campos choices y sus valores
+        context['choices_fields'] = {
+            field.name: [{'value': val, 'label': label} for val, label in field.choices]
+            for field in fields if field.choices and field.name not in self.EXCLUDED_FIELDS
+        }
+
         context['verbose_name_plural'] = model._meta.verbose_name_plural.title()
         return context
-
+    
+    
 class AssetListView(LoginRequiredMixin, DynamicModelListView):
     model = InformationAssets
     login_url = 'login'

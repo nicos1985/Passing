@@ -414,6 +414,12 @@ class Priority(models.IntegerChoices):
     PRIORITY = 1, 'Prioritario'
     NO_PRIORITY = 2, 'No prioritario'
 
+class ImplementationStatus(models.IntegerChoices):
+    """Model to define the type of implementation status"""
+    PENDING = 0, 'Pendiente'
+    IN_PROGRESS = 1, 'En progreso'
+    COMPLETED = 2, 'Completado'
+
 class Treatment(models.Model):
     """Model to define the Treatment of the Risk"""
     name = models.CharField(max_length=255, verbose_name="Nombre")
@@ -430,6 +436,7 @@ class Treatment(models.Model):
     application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name='Periodicidad de aplicacion')
     control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name='Automatizacion de control')
     priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name='Prioridad')
+    implementation_status = models.IntegerField(choices=ImplementationStatus.choices, default=ImplementationStatus.PENDING, verbose_name='Estado de implementacion')
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 

@@ -30,13 +30,44 @@
             </a>
         </div>
 
+        
+        
         <div class="container">
+
+<!-- Botón de toggle -->
+<div class="mb-2">
+  <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse">
+    Filtros
+  </button>
+</div>
+
+<!-- Contenedor colapsable de filtros -->
+<div class="collapse" id="filtrosCollapse">
+  <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
+    <div class="row g-3">
+      {% for field in fields %}
+        {% if field.name in choices_fields %}
+          <div class="col-md-4">
+            <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
+            <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
+              <option value="">Todos</option>
+              {% for choice in choices_fields|dict_get:field.name %}
+                <option value="{{ choice.label }}">{{ choice.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
             <table id="data" class="table">
                 <thead class="table-dark">
                   <tr>
                     {% for field in fields %}
                     
-                    <th>{{ field.verbose }}</th>
+                    <th data-colname="{{ field.name }}">{{ field.verbose }}</th>
                                         
                     {% endfor %}
                     <th>Acciones</th>

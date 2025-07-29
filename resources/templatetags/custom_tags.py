@@ -28,3 +28,8 @@ def evaluated_object_url(evaluation):
         return reverse(f'{model_name}-detail', args=[obj_id])
     except:
         return '#'
+    
+
+@register.filter
+def dict_get(dict_data, key):
+    return dict_data.get(key, [])
