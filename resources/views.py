@@ -1,3 +1,4 @@
+from warnings import filters
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
@@ -9,6 +10,7 @@ from .models import InformationAssets, RiskEvaluation, Threat, Treatment, Vendor
 from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, ThreatForm, TreatmentForm, VendorForm, ClientAssetsForm, VulnerabilityForm
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 # Create your views here.
 
 
@@ -23,22 +25,45 @@ class DynamicModelListView(ListView):
         model = self.model
         fields = model._meta.fields
 
-        # Lista de campos para renderizar columnas
+        # Campos mostrados
         context['fields'] = [
             {'name': field.name, 'verbose': field.verbose_name.title()}
             for field in fields if field.name not in self.EXCLUDED_FIELDS
         ]
 
-        # Diccionario con los campos choices y sus valores
-        context['choices_fields'] = {
-            field.name: [{'value': val, 'label': label} for val, label in field.choices]
-            for field in fields if field.choices and field.name not in self.EXCLUDED_FIELDS
-        }
+        # Filtros: choices, booleanos, foreign keys
+        filters = {}
 
+        for field in fields:
+            if field.name in self.EXCLUDED_FIELDS:
+                continue
+
+            # Campos con choices
+            if field.choices:
+                filters[field.name] = [{'value': c[1], 'label': c[1]} for c in field.choices]
+
+            # BooleanField
+            elif isinstance(field, models.BooleanField):
+                filters[field.name] = [
+                    {'value': 'True', 'label': 'Sí'},
+                    {'value': 'False', 'label': 'No'},
+                ]
+
+            # ForeignKey
+            elif isinstance(field, models.ForeignKey):
+                related = field.related_model.objects.all()
+                filters[field.name] = [{'value': str(obj.pk), 'label': str(obj)} for obj in related]
+            
+            # si es datetime o date, solo marcamos el tipo
+            elif isinstance(field, models.DateField) or isinstance(field, models.DateTimeField):
+                filters[field.name] = {'type': 'date'}  # Sólo marcamos que es tipo fecha
+
+        context['dynamic_filters'] = filters
         context['verbose_name_plural'] = model._meta.verbose_name_plural.title()
         return context
+
     
-    
+
 class AssetListView(LoginRequiredMixin, DynamicModelListView):
     model = InformationAssets
     login_url = 'login'

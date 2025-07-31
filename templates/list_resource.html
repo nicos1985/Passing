@@ -46,21 +46,39 @@
   <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
     <div class="row g-3">
       {% for field in fields %}
-        {% if field.name in choices_fields %}
-          <div class="col-md-4">
-            <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
-            <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
-              <option value="">Todos</option>
-              {% for choice in choices_fields|dict_get:field.name %}
-                <option value="{{ choice.label }}">{{ choice.label }}</option>
-              {% endfor %}
-            </select>
-          </div>
+        {% if field.name in dynamic_filters %}
+          {% with dynamic_filters|dict_get:field.name as filtro %}
+            {% if filtro.type == 'date' %}
+              <div class="col-md-4">
+                  <label class="form-label">{{ field.verbose }}</label>
+                  <div class="row">
+                    <div class="col-12 col-sm-6 mb-2 mb-sm-0">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="min">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="max">
+                    </div>
+                  </div>
+                </div>
+
+            {% else %}
+              <div class="col-md-4">
+                <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
+                <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
+                  <option value="">Todos</option>
+                  {% for choice in filtro %}
+                    <option value="{{ choice.value }}">{{ choice.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+          {% endwith %}
         {% endif %}
       {% endfor %}
     </div>
   </div>
 </div>
+
 
             <table id="data" class="table">
                 <thead class="table-dark">
