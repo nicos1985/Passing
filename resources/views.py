@@ -430,6 +430,7 @@ class RiskEvaluationDetailView(DetailView):
         return context
     
 class RiskEvaluationListView(LoginRequiredMixin, ListView):
+    """List view for Risk Evaluations"""
     model = RiskEvaluation
     template_name = 'evaluation_list.html'
     context_object_name = 'evaluations'
@@ -440,17 +441,51 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        model = self.model
+        fields = model._meta.fields
+         # Campos mostrado
         context['fields'] = [
             {'name': field.name, 'verbose': field.verbose_name.title()}
             for field in self.fields if field.name not in self.EXCLUDED_FIELDS
         ]
+        
+        # Filtros: choices, booleanos, foreign keys
+        filters = {}
+
+        for field in fields:
+            if field.name in self.EXCLUDED_FIELDS:
+                continue
+
+            # Campos con choices
+            if field.choices:
+                filters[field.name] = [{'value': c[1], 'label': c[1]} for c in field.choices]
+
+            # BooleanField
+            elif isinstance(field, models.BooleanField):
+                filters[field.name] = [
+                    {'value': 'True', 'label': 'Sí'},
+                    {'value': 'False', 'label': 'No'},
+                ]
+
+            # ForeignKey
+            elif isinstance(field, models.ForeignKey):
+                related = field.related_model.objects.all()
+                filters[field.name] = [{'value': str(obj.pk), 'label': str(obj)} for obj in related]
+            
+            # si es datetime o date, solo marcamos el tipo
+            elif isinstance(field, models.DateField) or isinstance(field, models.DateTimeField):
+                filters[field.name] = {'type': 'date'}  # Sólo marcamos que es tipo fecha
+
+        context['dynamic_filters'] = filters
+        context['verbose_name_plural'] = model._meta.verbose_name_plural.title()
+        
+
         context['verbose_name_plural'] = self.model._meta.verbose_name_plural.title()
         context['create_view'] = 'evaluation-create'
         context['detail_view'] = 'evaluation-detail'
         context['delete_view'] = 'evaluation-delete'
         return context
-    
-
+   
 class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
     model = RiskEvaluation
     template_name = 'delete-resource.html'

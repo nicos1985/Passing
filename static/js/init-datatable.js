@@ -48,7 +48,7 @@ $(document).ready(function () {
     var value = $(this).val();
     var colIndex = colIndexMap[colname];
 
-    //console.log(`🟨 Filtro aplicado → Campo: ${colname}, Valor: "${value}", Columna #: ${colIndex}`);
+    console.log(`🟨 Filtro aplicado → Campo: ${colname}, Valor: "${value}", Columna #: ${colIndex}`);
 
     if (colIndex !== undefined) {
       table.column(colIndex).search(value).draw();

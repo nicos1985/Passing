@@ -289,7 +289,7 @@ class RiskEvaluation(models.Model):
     probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name='Probabilidad')
     risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
     risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name='Nivel de riesgo')
-    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tratamiento asociado')
+    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tratamiento asociado', related_name='risk_evaluation',)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
@@ -329,11 +329,15 @@ class RiskEvaluation(models.Model):
         # Obtener el nivel de riesgo y su etiqueta traducida
         level = self.risk_level
         label = self.get_risk_level_display()  # Traducción del nombre
+                # Mapping color_class o inline style
+        if level == 3:  # Importante (naranja)
+            style = 'background-color: #fd7e14; color: white;'
+            return f'<span class="badge" style="{style}">{label}</span>'
+
         color_class = {
             0: 'bg-success',   # Muy Bajo
-            1: 'bg-success',   # Bajo
+            1: 'bg-primary',   # Bajo
             2: 'bg-warning',   # Medio
-            3: 'bg-orange',    # Alto (usamos naranja custom)
             4: 'bg-danger',    # Muy Alto
         }.get(level, 'bg-secondary')
 
@@ -345,11 +349,15 @@ class RiskEvaluation(models.Model):
         value = getattr(self, field_name)
         label = dict(LevelOfImpact.choices).get(value, 'Desconocido')
 
+        # Mapping color_class o inline style
+        if value == 4:  # Importante (naranja)
+            style = 'background-color: #fd7e14; color: white;'
+            return f'<span class="badge" style="{style}">{label}</span>'
+        
         color_class = {
             1: 'bg-success',   # Incidental
-            2: 'bg-success',   # Menor
+            2: 'bg-primary',   # Menor
             3: 'bg-warning',   # Moderado
-            4: 'bg-orange',    # Importante
             5: 'bg-danger',    # Extremo
         }.get(value, 'bg-secondary')
 

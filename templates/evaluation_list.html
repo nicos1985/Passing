@@ -42,13 +42,56 @@
         </div>
 
         <div class="container">
-            
+            <!-- Botón de toggle -->
+<div class="mb-2">
+  <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse">
+    Filtros
+  </button>
+</div>
+
+<!-- Contenedor colapsable de filtros -->
+<div class="collapse" id="filtrosCollapse">
+  <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
+    <div class="row g-3">
+      {% for field in fields %}
+        {% if field.name in dynamic_filters %}
+          {% with dynamic_filters|dict_get:field.name as filtro %}
+            {% if filtro.type == 'date' %}
+              <div class="col-md-4">
+                  <label class="form-label">{{ field.verbose }}</label>
+                  <div class="row">
+                    <div class="col-12 col-sm-6 mb-2 mb-sm-0">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="min">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="max">
+                    </div>
+                  </div>
+                </div>
+
+            {% else %}
+              <div class="col-md-4">
+                <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
+                <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
+                  <option value="">Todos</option>
+                  {% for choice in filtro %}
+                    <option value="{{ choice.value }}">{{ choice.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+          {% endwith %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
             <table id="data" class="table table-sm align-middle" style="min-width: 1000px;">
                 <thead class="table-dark" >
                   <tr>
                     {% for field in fields %}
                     
-                    <th>{{ field.verbose }}</th>
+                    <th data-colname="{{ field.name }}">{{ field.verbose }}</th>
                                         
                     {% endfor %}
                     <th>Acciones</th>
@@ -58,16 +101,39 @@
                     {% for obj in object_list %}
                     <tr>
                       {% for field in fields %}
-                        <td>
+                        <td title="{{ obj|get_attr:field.name }}">
                           {% if field.name == 'evaluated_id' %}
                             <a href="{% evaluated_object_url obj %}">
                               <i class="fas fa-link" title="Ver objeto evaluado"></i>
                               {{ obj.evaluated_object }}
                             </a>
+                          {% elif field.name == 'description' or field.name == 'vulnerability' %}
+                            {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
+                          {% elif field.name == 'treatment' %}
+                            {% if obj.treatment %}
+                              <a href="{% url 'treatment-detail' obj.treatment.pk %}">
+                                {{ obj.treatment.name }}
+                              </a>
+                            {% else %}
+                              <span class="text-muted">Sin tratamiento</span>
+                            {% endif %}
+                          
+                          {% elif field.name == 'risk_level' %}
+                            {{ obj.get_risk_level_badge|safe }}
+                          {% elif field.name == 'confidenciality_impact' %}
+                            {{ obj.badge_confidenciality|safe }}
+                          {% elif field.name == 'integrity_impact' %}
+                            {{ obj.badge_integrity|safe }}
+                          {% elif field.name == 'availability_impact' %}
+                            {{ obj.badge_availability|safe }}
+                          {% elif field.name == 'impact_value'%}
+                            {{ obj.impact_value|floatformat:2 }}
+                          {% elif field.name == 'risk_value' %}
+                            {{ obj.risk_value|floatformat:2 }}
                           {% else %}
                             {{ obj|get_attr:field.name }}
                           {% endif %}
-                        </td>
+                        </class=>
                       {% endfor %}
                       
                       <td>
