@@ -18,7 +18,7 @@ class RiskEvaluationForm(forms.ModelForm):
     class Meta:
         model = RiskEvaluation
         fields = ['model_type', 'object_id', 'threat', 'vulnerability', 'description',
-                  'confidenciality_impact', 'integrity_impact', 'availability_impact', 'probability']
+                  'confidenciality_impact', 'integrity_impact', 'availability_impact', 'probability', 'treatment']
         widgets = {
             'description': Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
             'confidenciality_impact': Select(attrs={'class': 'form-control'}),

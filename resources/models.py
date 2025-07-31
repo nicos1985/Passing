@@ -289,7 +289,9 @@ class RiskEvaluation(models.Model):
     probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name='Probabilidad')
     risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
     risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name='Nivel de riesgo')
-
+    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tratamiento asociado')
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Evaluacion de riesgo'
@@ -315,7 +317,7 @@ class RiskEvaluation(models.Model):
         elif self.risk_value <= 9:
             self.risk_level = LevelOfRisk.LOW
         elif self.risk_value <= 14:
-            self.risk_level = LevelOfRisk.MEDIUM
+            self.risk_level = LevelOfRisk.MODERATE
         elif self.risk_value <= 19:
             self.risk_level = LevelOfRisk.HIGH
         else:
@@ -423,7 +425,6 @@ class ImplementationStatus(models.IntegerChoices):
 class Treatment(models.Model):
     """Model to define the Treatment of the Risk"""
     name = models.CharField(max_length=255, verbose_name="Nombre")
-    evaluation = models.ForeignKey(RiskEvaluation, on_delete=models.CASCADE, verbose_name="Evaluacion de riesgo")
     treatment_type = models.IntegerField(choices=TypeTreatment.choices, default=TypeTreatment.REDUCE, verbose_name='Tipo de tratamiento')
     description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
     controls = models.IntegerField(choices=Controls.choices, default=Controls.A5_INFORMATION_SECURITY_POLICIES, verbose_name='Controles Normalizados')
