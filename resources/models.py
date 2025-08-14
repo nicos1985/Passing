@@ -363,11 +363,11 @@ class RiskEvaluation(models.Model):
 
         # Posición de la “aguja” en la barra
         positions = {
-            0: '0%',    # Muy Bajo
+            0: '5%',    # Muy Bajo
             1: '25%',   # Bajo
             2: '50%',   # Moderado
             3: '75%',   # Alto
-            4: '100%',  # Muy Alto
+            4: '95%',  # Muy Alto
         }
         left_pos = positions.get(level, '0%')
 
