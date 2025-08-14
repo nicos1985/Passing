@@ -72,6 +72,7 @@
                 </select>
               </div>
             {% endif %}
+            
           {% endwith %}
         {% endif %}
       {% endfor %}
@@ -80,7 +81,7 @@
 </div>
 
 
-            <table id="data" class="table">
+            <table id="data" class="table" style="font-size: 0.86rem !important;">
                 <thead class="table-dark">
                   <tr>
                     {% for field in fields %}
@@ -97,9 +98,15 @@
                     <tr>
 
                       {% for field in fields %}
-                      <td>
+                      <td title="{{ obj|get_attr:field.name }}">
                         {% if field.name == "object_id" %}
                           {{ obj.content_object }}
+                        {% elif field.name == 'description' %}
+                          {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
+                        {% elif field.name == 'implementation_status' %}
+                          {{ obj.get_status_badge|safe }}
+                        {% elif field.name == 'deadline' %}
+                          {{ obj.get_deadline_badge|safe }}
                         {% else %}
                           {{ obj|get_attr:field.name }}
                         {% endif %}

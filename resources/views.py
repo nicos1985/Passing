@@ -414,7 +414,7 @@ class RiskEvaluationDetailView(DetailView):
         # Obtener campos comunes del objeto evaluado (heredado de RiskEvaluableObject)
         base_fields = []
         for field in evaluated._meta.get_fields():
-            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'created', 'updated']:
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['updated']:
                 value = getattr(evaluated, field.name, None)
 
                 if field.choices:
@@ -436,7 +436,7 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
     context_object_name = 'evaluations'
     fields = model._meta.fields  
     login_url = 'login'
-    EXCLUDED_FIELDS = ['created', 'updated','id']
+    EXCLUDED_FIELDS = ['created', 'updated', 'id']
 
 
     def get_context_data(self, **kwargs):

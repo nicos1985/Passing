@@ -1,8 +1,9 @@
+from datetime import date, timedelta
 from django.db import models
 from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-
+from django.utils import timezone
 
 ################################# MODELOS DE RECURSOS ###############################
 class AssetStatus(models.IntegerChoices):
@@ -323,25 +324,68 @@ class RiskEvaluation(models.Model):
         else:
             self.risk_level = LevelOfRisk.VERY_HIGH
 
+        is_new = self.pk is None  # <=== importante
         super().save(*args, **kwargs)
+
+
+            # Si no tiene tratamiento, crearlo
+        if not self.treatment:
+            # Determinar tipo de tratamiento según nivel de riesgo
+            if self.risk_level in [LevelOfRisk.VERY_LOW, LevelOfRisk.LOW]:
+                treatment_type = TypeTreatment.NOT_APPLICABLE  # 4
+            else:
+                treatment_type = TypeTreatment.REDUCE
+
+            # Crear tratamiento
+            treatment = Treatment.objects.create(
+                name=f"Tratamiento para evaluación {self.pk}",
+                treatment_type=treatment_type,
+                description=None,
+                controls=Controls.A5_INFORMATION_SECURITY_POLICIES,
+                content_type=self.evaluated_type,
+                object_id=self.evaluated_id,
+                deadline=timezone.now().date() + timedelta(days=30),
+                treatment_responsible=CustomUser.objects.first(),
+                treatment_oportunity=TreatmentOportunity.PREVENTIVE,
+                application_periodicity=ApplicationPeriodicity.PERMANENT,
+                control_automation=ControlAutomation.MANUAL,
+                priority=Priority.NO_PRIORITY,
+                implementation_status=ImplementationStatus.PENDING
+            )
+
+            # Asociar y volver a guardar la evaluación con su tratamiento
+            self.treatment = treatment
+            super().save(update_fields=["treatment"])
     
     def get_risk_level_badge(self):
-        # Obtener el nivel de riesgo y su etiqueta traducida
         level = self.risk_level
-        label = self.get_risk_level_display()  # Traducción del nombre
-                # Mapping color_class o inline style
-        if level == 3:  # Importante (naranja)
-            style = 'background-color: #fd7e14; color: white;'
-            return f'<span class="badge" style="{style}">{label}</span>'
+        label = self.get_risk_level_display()
 
-        color_class = {
-            0: 'bg-success',   # Muy Bajo
-            1: 'bg-primary',   # Bajo
-            2: 'bg-warning',   # Medio
-            4: 'bg-danger',    # Muy Alto
-        }.get(level, 'bg-secondary')
+        # Posición de la “aguja” en la barra
+        positions = {
+            0: '0%',    # Muy Bajo
+            1: '25%',   # Bajo
+            2: '50%',   # Moderado
+            3: '75%',   # Alto
+            4: '100%',  # Muy Alto
+        }
+        left_pos = positions.get(level, '0%')
 
-        return f'<span class="badge {color_class} text-white">{label}</span>'
+        html = f"""
+        <div style="display:inline-block; text-align:center; font-size:0.85rem; line-height:1.2;">
+            <div style="position:relative; width:110px; height:10px;
+                        background: linear-gradient(to right, #198754, #ffc107, #dc3545);
+                        border-radius:6px; margin-bottom:4px;">
+                <div style="position:absolute; top:-6px; left: calc({left_pos} - 5px);
+                            width:0; height:0; border-left:5px solid transparent;
+                            border-right:5px solid transparent; border-bottom:6px solid #212529;">
+                </div>
+            </div>
+            <div style="font-weight:500;">{label}</div>
+        </div>
+        """
+        return html
+
     
 
     def get_impact_badge(self, field_name):
@@ -382,6 +426,7 @@ class TypeTreatment(models.IntegerChoices):
     ASUME = 1, 'Asumir'
     TRANSFER = 2, 'Transferir'
     AVOID = 3, 'Evitar'
+    NOT_APPLICABLE = 4, 'No aplica'
     
 class Controls(models.IntegerChoices):
     """Model to define the type of controls segun ISO 27001"""
@@ -456,3 +501,24 @@ class Treatment(models.Model):
     def __str__(self):
         return self.name
     
+    def get_status_badge(self):
+        # Obtener el impacto y su etiqueta traducida
+        value = self.implementation_status
+        label = dict(ImplementationStatus.choices).get(value, 'Desconocido')
+        
+        color_class = {
+            0: 'bg-danger',   # pendiente
+            1: 'bg-warning',   # en progreso
+            2: 'bg-success',   # completado
+        }.get(value, 'bg-secondary')
+
+        return f'<span class="badge {color_class} text-white">{label}</span>'
+    
+    def get_deadline_badge(self):
+        
+        if self.deadline > timezone.now().date():
+            return f'<span class="badge bg-danger text-white">{self.deadline}</span>'
+        elif self.deadline == timezone.now().date():
+            return f'<span class="badge bg-warning text-white">{self.deadline}</span>'
+        else:
+            return f'<span class="badge bg-success text-white">{self.deadline}</span>'
