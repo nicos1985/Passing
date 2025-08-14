@@ -4,6 +4,8 @@ from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
+from django.utils.html import format_html, mark_safe
+from django.urls import reverse
 
 ################################# MODELOS DE RECURSOS ###############################
 class AssetStatus(models.IntegerChoices):
@@ -361,30 +363,41 @@ class RiskEvaluation(models.Model):
         level = self.risk_level
         label = self.get_risk_level_display()
 
-        # Posición de la “aguja” en la barra
+        # Posiciones para la aguja
         positions = {
-            0: '5%',    # Muy Bajo
+            0: '0%',    # Muy Bajo
             1: '25%',   # Bajo
             2: '50%',   # Moderado
             3: '75%',   # Alto
-            4: '95%',  # Muy Alto
+            4: '100%',  # Muy Alto
         }
         left_pos = positions.get(level, '0%')
+
+        # Colores del texto según nivel
+        text_colors = {
+            0: '#198754',  # Verde Bootstrap
+            1: '#198754',  # Verde
+            2: '#ffc107',  # Amarillo
+            3: '#fd7e14',  # Naranja
+            4: '#dc3545',  # Rojo
+        }
+        text_color = text_colors.get(level, '#6c757d')  # Gris si no matchea
 
         html = f"""
         <div style="display:inline-block; text-align:center; font-size:0.85rem; line-height:1.2;">
             <div style="position:relative; width:110px; height:10px;
-                        background: linear-gradient(to right, #198754, #ffc107, #dc3545);
+                        background: linear-gradient(to right, #198754, #ffc107, #fd7e14, #dc3545);
                         border-radius:6px; margin-bottom:4px;">
                 <div style="position:absolute; top:-6px; left: calc({left_pos} - 5px);
                             width:0; height:0; border-left:5px solid transparent;
                             border-right:5px solid transparent; border-bottom:6px solid #212529;">
                 </div>
             </div>
-            <div style="font-weight:500;">{label}</div>
+            <div style="font-weight:500; color:{text_color};">{label}</div>
         </div>
         """
         return html
+
 
     
 
@@ -415,6 +428,20 @@ class RiskEvaluation(models.Model):
 
     def badge_availability(self):
         return self.get_impact_badge('availability_impact')
+    
+
+    def treatment_status_link(self):
+        """
+        Muestra el badge de estado del tratamiento con link al detalle.
+        Si por alguna razón no hay treatment, muestra 'Sin tratamiento'.
+        """
+        if not self.treatment_id:
+            return format_html('<span class="text-muted">Sin tratamiento</span>')
+
+        badge_html = mark_safe(self.treatment.get_status_badge())  # Evita que se escape
+        url = reverse('treatment-detail', args=[self.treatment.pk])
+
+        return format_html('<a href="{}">{}</a>', url, badge_html)
     
 
  ###################### TRATAMIENTO DE RIESGO ###########################  

@@ -11,9 +11,13 @@ from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm,
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import F
+import logging
+
+
 # Create your views here.
 
-
+logger = logging.getLogger(__name__)
 ################################### Asset Views ###########################
 
 class DynamicModelListView(ListView):
@@ -436,8 +440,21 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
     context_object_name = 'evaluations'
     fields = model._meta.fields  
     login_url = 'login'
-    EXCLUDED_FIELDS = ['created', 'updated', 'id']
+    EXCLUDED_FIELDS = ['updated', 'id']
 
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related('treatment')
+            .order_by(
+                F('treatment__implementation_status').asc(nulls_last=True),
+                F('treatment__deadline').asc(nulls_last=True),
+                'id'
+            )
+        )
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

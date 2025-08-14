@@ -5,6 +5,8 @@ $(document).ready(function () {
   var table = $('#data').DataTable({
     responsive: false,
     colReorder: true,
+    order: [],
+    ordering: false,
     scrollX: true,
     dom: 'Rlfrtip',
     autoWidth: false,

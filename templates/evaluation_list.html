@@ -95,6 +95,7 @@
                                         
                     {% endfor %}
                     <th>Acciones</th>
+                    <th>check</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -110,14 +111,7 @@
                           {% elif field.name == 'description' or field.name == 'vulnerability' %}
                             {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
                           {% elif field.name == 'treatment' %}
-                            {% if obj.treatment %}
-                              <a href="{% url 'treatment-detail' obj.treatment.pk %}">
-                                {{ obj.treatment.name }}
-                              </a>
-                            {% else %}
-                              <span class="text-muted">Sin tratamiento</span>
-                            {% endif %}
-                          
+                            {{ obj.treatment_status_link }}
                           {% elif field.name == 'risk_level' %}
                             {{ obj.get_risk_level_badge|safe }}
                           {% elif field.name == 'confidenciality_impact' %}
@@ -141,6 +135,11 @@
                         <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="Detalle {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
                         <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="Eliminar {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
                     </td>
+                    <td class="text-muted">
+  {{ forloop.counter }} —
+  status: {{ obj.treatment.implementation_status }} —
+  deadline: {{ obj.treatment.deadline }}
+</td>
                     </tr>
                     
                   {% endfor %}
