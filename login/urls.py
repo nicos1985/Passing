@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView
+from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso
 from . import views 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
@@ -30,6 +30,9 @@ urlpatterns = [
     path('detail-user/<int:pk>', UserDetailView.as_view(), name='detail-user' ),
     path('deactivate-user/<int:pk>', DepartureUser.as_view(), name='deactivateuser' ),
     path('activate-user/<int:pk>', activate_user, name='activateuser' ),
+    #nuevo
+    path("sso/consume/", sso_consume, name="sso_consume"),
+    path("sso/verify-2fa/", verify_2fa_sso, name="verify_2fa_sso"),
 
 ]
 

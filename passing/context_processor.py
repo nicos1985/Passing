@@ -1,33 +1,53 @@
 from notifications.models import AdminNotification, UserNotifications
-from login.models import GlobalSettings
+from accounts.models import TenantSettings
+
+DEFAULT_MENU_COLOR = "#212629"
 
 def counter_admin_notifications(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+            try:
+                contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+            except Exception as e:
+                return {'contador_notis': 0}
+                print(f"Error en counter_admin_notifications: {e}")
         else:
-            contador_notis= UserNotifications.objects.filter(id_user = request.user, viewed=False).count()
+            try:
+                contador_notis = UserNotifications.objects.filter(id_user=request.user, viewed=False).count()
+            except Exception as e:
+                return {'contador_notis': 0}
+                print(f"Error en counter_user_notifications: {e}")
     else:
         contador_notis = 0
     return {'contador_notis': contador_notis}
 
 def menu_color(request):
-    color = '#212629'  # Color por defecto
-    company = None  # Empresa por defecto
+    color = DEFAULT_MENU_COLOR
+    company = None
 
     try:
-        # Intentar obtener la configuración global
-        settings = GlobalSettings.objects.filter(id=1).first()
-        
-        if settings:
-            color = settings.menu_color if settings.menu_color else '#212629'
-            company = settings.company_name if settings.company_name else None
+        tenant = getattr(request, "tenant", None)
+        if tenant:
+            ts = getattr(tenant, "settings", None)
+            if ts is None:
+                # fallback por si todavía no existe o no está creada
+                ts = TenantSettings.objects.filter(client_id=tenant.id).first()
 
-    except Exception as e:
-        print(f"Error en menu_color: {e}")  # Para depuración
+            if ts:
+                color = ts.menu_color or DEFAULT_MENU_COLOR
+                company = ts.company_name or None
+    except Exception:
+        # podés loguear si querés
+        pass
 
-    return {'color': color, 'company': company}
+    return {"color": color, "company": company}
+
 
 def tenant_context(request):
-    return {"tenant_schema": getattr(request, "tenant", None).schema_name if hasattr(request, "tenant") else "public"}
+    tenant = getattr(request, "tenant", None)
+    return {
+        "tenant_schema": getattr(tenant, "schema_name", "public"),
+        # útil si lo querés en templates:
+        "tenant_company": getattr(getattr(tenant, "settings", None), "company_name", None),
+    }
 

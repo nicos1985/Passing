@@ -25,13 +25,21 @@ import json
 from django.utils.html import escape
 import pyotp
 import qrcode
+from urllib.parse import quote as urlquote
 from io import BytesIO
 from django.contrib.auth import login
 from passing.config import EMAIL_SETTINGS
 from django.core.mail import EmailMessage
 from django.utils.html import format_html
 from email.mime.image import MIMEImage
-
+from django.contrib.auth import login, get_user_model
+from django.core import signing
+from django.http import HttpResponseForbidden
+from django.conf import settings
+from django_tenants.utils import get_tenant
+from accounts.models import TenantMembership, TenantSettings, AuthEvent
+from accounts.utils import get_ip, get_ua
+from django.contrib.auth import login as auth_login
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -42,6 +50,7 @@ def is_superadmin(user):
 #####################################
 
 # Create your views here.
+User = get_user_model()
 
 def register(request):
     if request.method == 'POST':
@@ -460,6 +469,22 @@ def activate_user(request, pk):
 
     return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
 
+def _resolve_2fa_user_from_request(request):
+    """
+    En flujo normal: devuelve request.user si está autenticado.
+    En flujo SSO: usa la sesión (twofa_pending_uid) seteada en sso_consume.
+    """
+    if request.user.is_authenticated:
+        return request.user
+
+    pending_uid = request.session.get("twofa_pending_uid")
+    client_id = request.session.get("twofa_client_id")
+    if pending_uid and client_id:
+        # opcional: podés chequear que connection.tenant.id == client_id
+        return User.objects.filter(pk=pending_uid).first()
+
+    return None
+
 
 def verify_2fa(request):
     if request.method == "POST":
@@ -478,11 +503,27 @@ def verify_2fa(request):
 
 
 def show_qr_code_2fa(request):
-    """Muestra el código QR en la web como imagen."""
-    user = request.user
-    qr_buffer = generate_qr_bytes(user)  
+    user_obj = _resolve_2fa_user_from_request(request)
+    if not user_obj:
+        return HttpResponseForbidden("Autenticación requerida o sesión SSO inválida.")
 
-    return HttpResponse(qr_buffer, content_type="image/png")
+    if not getattr(user_obj, "otp_secret", None):
+        user_obj.otp_secret = pyotp.random_base32()
+        user_obj.is_2fa_enabled = False
+        user_obj.save(update_fields=["otp_secret", "is_2fa_enabled"])
+
+    # ... generás tu QR como ya lo hacías ...
+
+    next_path = request.GET.get("next") or request.session.get("twofa_next") or "/"
+    verify_url = reverse("verify_2fa_sso")  # /sso/verify-2fa/
+    qr_b64 = generate_qr_base64(user_obj)  # o convertí tu bytes a base64
+    context = {
+        "qr_data_uri": f"data:image/png;base64,{qr_b64}",  # o usá qr_url si servís la imagen por URL
+        "otp_secret": user_obj.otp_secret,                 # opcional (para clave manual)
+        "next": request.GET.get("next") or request.session.get("twofa_next") or "/",
+        "user_email": getattr(user_obj, "email", ""),
+    }
+    return render(request, "qr_2fa.html", context)
 
 def generate_qr_bytes(user):
     """Genera un código QR en bytes para un usuario específico."""
@@ -683,6 +724,135 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
             if user.has_otp_secret:
                 disable_2fa_user(user)
 
+from django.db import connection
+def sso_consume(request):
+    print("DEBUG schema_name en request:", getattr(connection, "schema_name", None))
+    token = request.GET.get("token")
+    if not token:
+        return HttpResponseForbidden("Token requerido.")
+
+    try:
+        payload = signing.loads(
+            token,
+            salt=getattr(settings, "SSO_SIGNING_SALT", "sso-xfer-v1"),
+            max_age=getattr(settings, "SSO_TRANSFER_TTL_SECONDS", 90),
+        )
+    except signing.BadSignature:
+        return HttpResponseForbidden("Token inválido o vencido.")
+
+    uid = payload.get("uid")
+    next_path = payload.get("next") or "/"
+    slug = payload.get("client_slug")
+
+    user = User.objects.filter(pk=uid).first()
+    if not user or not user.is_active:
+        return HttpResponseForbidden("Usuario inválido.")
+
+    # 1) Intento por middleware
+    tenant = get_tenant(request)
+
+    # 2) Fallback por slug (robusto si tenant viene None o no coincide)
+    client = None
+    if tenant is not None and getattr(tenant, "schema_name", None) == slug:
+        client = tenant
+    else:
+        client = Client.objects.filter(schema_name=slug).first()
+
+    if not client:
+        return HttpResponseForbidden("Tenant desconocido.")
+
+    # 3) Chequeo de membresía en PUBLIC
+    has_membership = TenantMembership.objects.filter(
+        user_id=user.id, client_id=client.id, is_active=True
+    ).exists()
+    if not has_membership:
+        return HttpResponseForbidden("No tienes acceso a este espacio.")
+
+    # 4) Gate 2FA (si lo estás usando)
+    ts = getattr(client, "settings", None)
+    require_2fa = bool(ts and ts.sso_google_requires_2fa)
+
+    if require_2fa:
+        # seteo de sesión para el flujo SSO 2FA
+        request.session["twofa_pending_uid"] = user.id
+        request.session["twofa_next"] = next_path
+        request.session["twofa_client_id"] = client.id
+        # SIEMPRE vamos a la vista SSO de verificación (ella decide enrolar o verificar)
+        return redirect(reverse("verify_2fa_sso"))
+
+    # 5) Login y listo
+    _login_with_backend(request, user)
+    return redirect(next_path)
+
+def _login_with_backend(request, user):
+    backend = None
+    # Permití sobreescribir por settings si querés
+    backend = getattr(settings, "SSO_LOGIN_BACKEND", None)
+    if not backend:
+        # Usa el primero configurado o ModelBackend por defecto
+        backend = settings.AUTHENTICATION_BACKENDS[0] if getattr(settings, "AUTHENTICATION_BACKENDS", None) else "django.contrib.auth.backends.ModelBackend"
+    auth_login(request, user, backend=backend)
 
 
-    
+
+def verify_2fa_sso(request):
+    uid = request.session.get("twofa_pending_uid")
+    next_path = request.GET.get("next") or request.POST.get("next") \
+                or request.session.get("twofa_next") or "/"
+    client_id = request.session.get("twofa_client_id")
+
+    if not uid or not client_id:
+        return HttpResponseForbidden("Sesión de 2FA inválida.")
+
+    user = User.objects.filter(pk=uid).first()
+    if not user:
+        return HttpResponseForbidden("Usuario no válido.")
+
+    # --- GET: mostrar form si YA HAY otp_secret; si falta => ir a QR ---
+    if request.method == "GET":
+        if not user.otp_secret:  # <- SOLO este caso va a enrolamiento
+            enrol_url = reverse("show-qr-code-2fa")
+            return redirect(f"{enrol_url}?next={urlquote(next_path)}&sso=1&uid={user.id}")
+
+        # Mostrar el form de verificación (podés reutilizar qr_2fa.html o tener un template aparte)
+        return render(request, "qr_2fa.html", {
+            "next": next_path,
+            "user_email": user.email,
+            # Opcional: no mandes QR aquí para que el usuario se concentre en ingresar el código
+            # Si querés mostrarlo igual, pasá qr_data_uri como en show_qr_code_2fa
+        })
+
+    # --- POST: validar el TOTP SIEMPRE; NO redirigir a QR aquí ---
+    code = (request.POST.get("code") or "").strip()
+
+    if not user.otp_secret:
+        # Aún no enrolado (escenario raro si llegaste por POST)
+        enrol_url = reverse("show-qr-code-2fa")
+        return redirect(f"{enrol_url}?next={urlquote(next_path)}&sso=1&uid={user.id}")
+
+    ok = False
+    try:
+        totp = pyotp.TOTP(user.otp_secret)
+        ok = totp.verify(code, valid_window=1)
+    except Exception:
+        ok = False
+
+    if ok:
+        if not user.is_2fa_enabled:
+            user.is_2fa_enabled = True
+            user.save(update_fields=["is_2fa_enabled"])
+
+        # limpiar sesión sso-2fa
+        for k in ("twofa_pending_uid", "twofa_next", "twofa_client_id"):
+            request.session.pop(k, None)
+
+        _login_with_backend(request, user)
+        return redirect(next_path)
+
+    # Código inválido: re-render con error (sin mandar a QR)
+    return render(request, "qr_2fa.html", {
+        "otp_secret": user.otp_secret,
+        "error": "Código inválido o expirado. Probá nuevamente.",
+        "next": next_path,
+        "user_email": user.email,
+    }, status=403)

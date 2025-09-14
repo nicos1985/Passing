@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.http import HttpResponseForbidden
 from django.db import connection
 from django.contrib import messages
+from django_tenants.utils import get_public_schema_name
+
 
 class AdminAccessMiddleware:
     """
@@ -57,4 +59,35 @@ class TenantRouteMiddleware:
             return redirect('home')
             
 
+        return self.get_response(request)
+
+
+from django.db import connection
+from django.conf import settings
+
+class TenantDebugMiddleware:
+    def __init__(self, get_response): self.get_response = get_response
+    def __call__(self, request):
+        host = request.get_host()
+        schema = getattr(connection, "schema_name", None)
+        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+        print(f"[TENANTDBG] host={host} schema={schema} urlconf={urlconf}")
+        return self.get_response(request)
+
+
+class ForceTenantUrlconfMiddleware:
+    """
+    Si TenantMainMiddleware ya resolvió el schema, garantizamos que request.urlconf
+    apunte al URLConf correcto (public vs tenant). Evita que quede pegado en urls_public.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        schema = getattr(connection, "schema_name", None)
+        if schema:
+            if schema == get_public_schema_name():
+                request.urlconf = getattr(settings, "PUBLIC_SCHEMA_URLCONF", settings.ROOT_URLCONF)
+            else:
+                request.urlconf = getattr(settings, "TENANT_URLCONF", settings.ROOT_URLCONF)
         return self.get_response(request)
