@@ -20,7 +20,7 @@ class CustomLoginForm(AuthenticationForm):
     def clean(self):
         try:
             return super().clean()
-        except ValidationError as e:
+        except forms.ValidationError as e:
             # Log completo del error
             import logging
             logger = logging.getLogger(__name__)
