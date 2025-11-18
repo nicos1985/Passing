@@ -1,15 +1,15 @@
 from django.contrib import admin
 from django.urls import path
-from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LoginFormView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso
+from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso, home_tenant, login_alias_to_home
 from . import views 
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
+from django.contrib.auth.views import  LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
 from django.conf.urls.static import static
 
 
 urlpatterns = [
-    
-    path('', LoginFormView.as_view(), name='login'),
+    path("", login_alias_to_home, name="login"),
+    path('home/', views.home_tenant, name='home_tenant'),
     path('verify-2fa/',views.verify_2fa, name='verify_2fa'),
     path('show-qr-code-2fa/', views.show_qr_code_2fa, name='show-qr-code-2fa'),
     path('send-qr-email-for-user-ondemand/<int:pk>', views.send_qr_email_for_user_ondemand, name='send-qr-email-for-user-ondemand'),

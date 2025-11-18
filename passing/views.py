@@ -30,6 +30,9 @@ TEMPLATE = 'email_config.html'
 def home(request):
     return render(request, 'home.html')
 
+def landing(request):
+    return render(request, 'landing.html')
+
 def home_tenant(request):
     return redirect('login')
 

@@ -11,47 +11,60 @@ from urllib.parse import quote
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from client.models import Client, Domain
 from .utils import build_oauth_state, build_sso_token
-from django.contrib import messages
+from django.contrib import messages, auth       
 from allauth.account.utils import perform_login
 from .utils import redirect_to_tenant_with_token, get_memberships_for_email
 from .models import TenantMembership
+from .forms import HubLoginForm
 
 User = get_user_model()
 
+DEFAULT_NEXT_PATH = "/login/home/"
+
 def login_view(request):
     """
-    GET: muestra login + botón Google (auto).
-    POST: credenciales → branching memberships (0/1/n).
+    Login tradicional en el hub (PUBLIC) con usuario/contraseña.
+    Tras login exitoso -> branching por memberships (0/1/n).
     """
-    next_path = request.GET.get("next") or "/"
+    next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
+
     if request.method == "POST":
-        if request.POST.get("provider") == "google":
-            return redirect(f"{reverse('google_start_auto')}?next={quote(next_path)}")
+        form = HubLoginForm(request.POST)
+        if form.is_valid():
+            identity = form.cleaned_data["identity"]
+            password = form.cleaned_data["password"]
+            next_path = form.cleaned_data.get("next") or next_path
 
-        email = (request.POST.get("email") or "").strip()
-        password = request.POST.get("password") or ""
-        user = authenticate(request, username=email, password=password)  # ajustá backend si usás email
-        if not user:
-            messages.error(request, "Credenciales inválidas.")
-            return render(request, "login.html", {"next": next_path})
-        auth_login(request, user)
-        return _branch_after_hub_login(request, user, next_path)
+            user = authenticate(request, username=identity, password=password)
+            if not user:
+                messages.error(request, "Credenciales inválidas.")
+                return render(request, "login.html", {"form": form, "next": next_path})
 
-    return render(request, "login.html", {"next": next_path})
+            auth_login(request, user)  # queda logueado en el hub
+            return _branch_after_hub_login(request, user, next_path)
+    else:
+        form = HubLoginForm(initial={"next": next_path})
 
-def _branch_after_hub_login(request, user, next_path):
-    """
-    Después de login con credenciales del hub (no OAuth),
-    decide a dónde redirigir al usuario basado en sus membresías.
-    """
-    mems = TenantMembership.objects.select_related("client").filter(user=user, is_active=True)
-    if not mems.exists():
+    return render(request, "login.html", {"form": form, "next": next_path})
+
+def _branch_after_hub_login(request, user, next_path: str):
+    """ Después de login en el hub, branching por memberships (0/1/n). """
+    mems = (TenantMembership.objects
+            .select_related("client")
+            .filter(user=user, is_active=True))
+
+    count = mems.count()
+    if count == 0:
         messages.error(request, "Tu usuario no tiene cuentas asignadas. Contactá al administrador.")
-        return redirect(reverse("accounts:login"))
-    if mems.count() == 1:
-        return redirect_to_tenant_with_token(user, mems.first().client, next_path)
+        return redirect(reverse("login"))
+
+    if count == 1:
+        client = mems.first().client
+        return redirect_to_tenant_with_token(request, user, client, next_path)
+
+    # múltiples cuentas → selector
     request.session["tenant_select_next"] = next_path
-    return redirect(reverse("accounts:choose_tenant_view"))
+    return redirect(reverse("choose_tenant_view"))
 
 
 def logout_view(request):
@@ -66,7 +79,7 @@ def choose_tenant_view(request):
     """ Muestra un selector de tenants si el usuario tiene múltiples membresías.
     GET: muestra el formulario."""
     user = request.user
-    next_path = request.session.get("tenant_select_next", "/")
+    next_path = request.session.get("tenant_select_next", DEFAULT_NEXT_PATH)
     mems = TenantMembership.objects.select_related("client")\
                                    .filter(user=user, is_active=True)\
                                    .order_by("client__name", "client__schema_name")
@@ -74,11 +87,11 @@ def choose_tenant_view(request):
         client_slug = request.POST.get("client_slug")
         m = mems.filter(client__schema_name=client_slug).first()
         if not m:
-            messages.error(request, "No tenés acceso a ese tenant.")
+            messages.error(request, "No tenés acceso a esa cuenta.")
             return redirect(reverse("accounts:choose_tenant_view"))
         return redirect_to_tenant_with_token(user, m.client, next_path)
 
-    return render(request, "choose_tenant.html", {"memberships": mems, "next": next_path})
+    return redirect_to_tenant_with_token(request, user, m.client, next_path)
 
 
 
@@ -88,7 +101,7 @@ def google_start(request):
     It expects 'client' and 'next' parameters in the GET request.
     """
     client_slug = request.GET.get("client")
-    next_path = request.GET.get("next") or "/"
+    next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
     print(f'client_slug: {client_slug} / next_path: {next_path}')
     if not client_slug or not Client.objects.filter(schema_name=client_slug).exists():
         return HttpResponse("Client inválido.", status=400)
@@ -118,14 +131,14 @@ def post_login_redirect(request):
         state = request.session.pop("oauth_state", None)
 
     client_slug = None
-    next_path = "/"
+    next_path = DEFAULT_NEXT_PATH
 
     if state:
         try:
             print(f'state: {state}')
             s = signing.loads(state, salt="oauth-state-v1", max_age=300)
             client_slug = s.get("client_slug")
-            next_path = s.get("next") or "/"
+            next_path = s.get("next") or DEFAULT_NEXT_PATH
         except signing.BadSignature:
             print("BadSignature")
             pass
@@ -135,7 +148,7 @@ def post_login_redirect(request):
         client_slug = request.session.pop("oauth_client_slug", None)
     if next_path == "/":
         print("Fallback: next_path no encontrado")
-        next_path = request.session.pop("oauth_next_path", "/")
+        next_path = request.session.pop("oauth_next_path", DEFAULT_NEXT_PATH)
     # --------- FIN TU BLOQUE ORIGINAL ---------
 
     # 🔁 NUEVO: si NO hay client_slug, hacemos branching por memberships
@@ -143,23 +156,25 @@ def post_login_redirect(request):
         user = request.user
         if not user.is_authenticated:
             messages.error(request, "No se pudo iniciar sesión.")
-            return redirect(f"{reverse('accounts:login')}?next={next_path}")
+            return redirect(f"{reverse('login')}?next={next_path}")
 
-        mems = TenantMembership.objects.select_related("client")\
-                                       .filter(user=user, is_active=True)
+        mems = TenantMembership.objects.select_related("client").filter(user=user, is_active=True)
 
         count = mems.count()
         if count == 0:
-            messages.error(request, "Tu usuario no tiene tenants asignados. Contactá al administrador.")
-            return redirect(reverse("accounts:login"))
+            messages.error(request, "Tu usuario no tiene cuentas asignados. Contactá al administrador.")
+            return redirect(reverse("login"))
 
         if count == 1:
             client = mems.first().client
-            return redirect_to_tenant_with_token(user, client, next_path)
+
+            print(f'client: {client} || objtype: {type(client)}',)
+            return redirect_to_tenant_with_token(request, user, mems.first().client, next_path)
+
 
         # múltiples cuentas → selector
         request.session["tenant_select_next"] = next_path
-        return redirect(reverse("accounts:choose_tenant_view"))
+        return redirect(reverse("choose_tenant_view"))
 
     # Si SÍ hay client_slug (tu caso original) → seguimos como ya lo hacías
     dest = _resolve_tenant_base_url(request, client_slug)
@@ -170,13 +185,13 @@ def post_login_redirect(request):
         next_path=next_path,
         salt=getattr(settings, "SSO_SIGNING_SALT", "sso-xfer-v1"),
     )
-    return redirect(f"{dest}/sso/consume/?token={token}")
+    return redirect(f"{dest}/login/sso/consume/?token={token}")
 
 def google_start_auto(request):
     """
     Inicia Google OAuth SIN 'client'. Branching de tenants se hace en post_login_redirect.
     """
-    next_path = request.GET.get("next") or "/"
+    next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
     post_login_url = f"{reverse('post_login')}?next={quote(next_path)}"
 
     # Intentamos resolver la URL nombrada; si no existe, usamos el path de allauth.

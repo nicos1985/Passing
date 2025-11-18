@@ -1,70 +1,119 @@
-<!DOCTYPE html>
-{% extends 'base.html'%}
+{% extends "base.html" %}
 
-{% load static %}
-
-
-{% block head %}
-
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-
-{% endblock %}
 
 {% block content %}
+<div class="container py-4">
+  {% with nombre=request.user.get_full_name|default:request.user.username %}
+  <div class="mb-4">
+    <h1 class="h3 mb-1">¡Bienvenido, {{ nombre }}!</h1>
+    <p class="text-muted mb-0">Elegí una opción para comenzar.</p>
+  </div>
+  {% endwith %}
 
-{% if not request.user.is_authenticated %}
-<body>
-    <div class="container">
-        <div class="row">
-            <h3 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Necesitas loguearte. 
-                
-        </div>
-        <div class="row">
-            
-        </div>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
-            <div class="col">
-                <a class="card-text" href="{% url 'login' %}" style="text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fas fa-sign-in-alt"></i>&nbsp;&nbsp;&nbsp;Login</h4>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            
-        </div>
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} py-2 mb-2">{{ message }}</div>
+      {% endfor %}
     </div>
-{% else %}
+  {% endif %}
 
-<body>
-    <div class="container">
-        <div class="row">
-            <h3 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;"> 
-              
-        </div>
-        <div class="row">
-            <h1></h1>
-        </div>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
+  <!-- Accesos directos -->
+  <div class="row g-3">
+    <!-- Item -->
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'listpass' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
             
-            <div class="col">
-                <a class="card-text" href="{% url 'profile' request.user.username %}" style="margin-top: 20px; text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fa-solid fa-address-card"></i>&nbsp;&nbsp;&nbsp;Mi Perfil</h4>
-                        </div>
-                    </div>
-                </a>
+              <!-- Ícono simple (placeholder) -->
+              <span class="icon-circle" aria-hidden="true"><i class="fas fa-key" style="color: #FFD43B; font-size: 24px;"></i></span>
+            
+            <div>
+              <h2 class="h6 mb-1 text-body">Contraseñas</h2>
+              <p class="text-muted mb-0 small">Listado de contraseñas.</p>
             </div>
+          </div>
         </div>
+      </a>
     </div>
-{%endif%}
 
+    <!-- Copiá/pegá y editá estos bloques para más accesos -->
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'informationassets-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+              <span aria-hidden="true"><i class="fa fa-microchip" style="color: #ba0ea6ff; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Activos</h2>
+              <p class="text-muted mb-0 small">Activos de la informacion.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'vendor-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+            
+              <span aria-hidden="true"><i class="fa fa-handshake" style="color: #0d6efd; font-size: 24px;"></i></span>
+            
+            <div>
+              <h2 class="h6 mb-1 text-body">Proveedores</h2>
+              <p class="text-muted mb-0 small">Listado de proveedores</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Más placeholders, duplicá según necesites -->
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'profile' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+              <span aria-hidden="true"><i class="fa fa-user" style="color: #0d6efd; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Perfil</h2>
+              <p class="text-muted mb-0 small">Mi Perfil</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'evaluation-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+
+              <span aria-hidden="true"><i class="fa-solid fa-triangle-exclamation" style="color: #FFD43B; font-size: 24px;"></i></span>
+
+            <div>
+              <h2 class="h6 mb-1 text-body">Riesgos</h2>
+              <p class="text-muted mb-0 small">Evaluacion de riesgos</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'treatment-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+              <span aria-hidden="true"><i class="fa fa-syringe" style="color: #92eb6c; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Tratamientos</h2>
+              <p class="text-muted mb-0 small">Listado de tratamientos</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
 {% endblock %}

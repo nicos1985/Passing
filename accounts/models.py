@@ -67,6 +67,7 @@ class CustomUser(AbstractUser):
         return bool(self.otp_secret)
 
 class TenantMembership(models.Model):
+    """Relaciona usuarios con tenants (clients) específicos."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="memberships")
     client = models.ForeignKey(CLIENT_FK, on_delete=models.CASCADE, related_name="memberships")  # si tu app es 'clients', cambialo
     is_active = models.BooleanField(default=True)

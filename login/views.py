@@ -25,6 +25,7 @@ import json
 from django.utils.html import escape
 import pyotp
 import qrcode
+from django.db import transaction
 from urllib.parse import quote as urlquote
 from io import BytesIO
 from django.contrib.auth import login
@@ -40,6 +41,10 @@ from django_tenants.utils import get_tenant
 from accounts.models import TenantMembership, TenantSettings, AuthEvent
 from accounts.utils import get_ip, get_ua
 from django.contrib.auth import login as auth_login
+from django.core.exceptions import PermissionDenied
+from .utils import user_belongs_to_current_tenant
+from .mixins import TenantScopedUserMixin
+from .mixins import Safe404RedirectMixin
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -51,6 +56,20 @@ def is_superadmin(user):
 
 # Create your views here.
 User = get_user_model()
+
+
+def login_alias_to_home(request):
+    """Alias 'login' -> home_tenant."""
+    return redirect(reverse("home_tenant"))
+
+def login_alias_to_hub(request):
+    next_path = request.GET.get("next") or request.get_full_path()
+    hub = getattr(settings, "HUB_ORIGIN", "http://localhost:8000").rstrip("/")
+    return redirect(f"{hub}/accounts/?next={quote(next_path)}")
+
+def home_tenant(request):
+    return render(request, 'home_tenant.html')
+
 
 def register(request):
     if request.method == 'POST':
@@ -108,95 +127,92 @@ def register(request):
 def create_uid_token(request):
     pass
 
+def _hub_origin(request):
+    # En settings: HUB_ORIGIN = "http://localhost:8000" (o tu dominio en prod)
+    return getattr(settings, "HUB_ORIGIN", request.build_absolute_uri("/").rstrip("/"))
 
 
+
+@transaction.atomic
 def create_superuser(request, schema_name):
-    """Crea un super user la 1ra vez que se crea una cuenta. 
-    Envia mail de validacion de mail. 
+    """
+    Crea el superuser inicial del tenant y su TenantMembership (activo).
+    Envía mail de activación (usuario queda inactivo hasta activar).
     """
     client = get_object_or_404(Client, schema_name=schema_name)
-    
-    #valida si hay rol inicial y si no, crea el rol inicial para asignarle al superuser
-    try:
-        role, created = PermissionRoles.objects.get_or_create(rol_name='Rol Inicial',
-                                                            comment='Rol inicial',
-                                                            is_active=True
-                                                            )
-        #reated.contrasenas.set([])
-    except Exception as e:
-            messages.error(request, f'Hubo un error al crear el usuario | error: {e}')
-            return redirect('home')
-    
-    #Chequea si el flag de superuser creado esta en True.
-    if client.created_superuser == 1:
-        messages.warning(request, 'El usuario admin ya fue creado para este cliente.')
-        return redirect('home')
 
-    if request.method == 'POST':
+    if getattr(client, "created_superuser", 0) == 1:
+        messages.warning(request, "El usuario admin ya fue creado para este cliente.")
+        return redirect("home")
+
+    User = get_user_model()
+
+    if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
+            # 1) Crear usuario global (PUBLIC)
             user = form.save(commit=False)
             user.is_superuser = True
-            user.is_active = False  # El superusuario no estará activo hasta verificar el correo
-            user.assigned_role = role
-            user.client = client
+            user.is_staff = True
+            user.is_active = False  # hasta activar por email
+            # ⚠️ NO hacer: user.client = client  (usuarios son globales)
             user.save()
-            
-            #Crear Settings Globales
-            try:
-                global_settings = GlobalSettings.objects.create(company_name = client.client_name)
-            except Exception as e:
-                messages.warning(request, f'No se ha podido crear las Configuraciones Globales')
-                context['action'] = 'Error en Configuraciones globales'
-                return render(request, 'client_register.html', context)
-            
 
-            # Generar token de activación
+            # 2) Crear/activar TenantMembership
+            TenantMembership.objects.update_or_create(
+                user=user, client=client, defaults={"is_active": True}
+            )
+
+            # 3) (Opcional) Crear TenantSettings si no existe
+            TenantSettings.objects.get_or_create(client=client)
+
+            # 4) Marcar bandera en el client (si fallara más abajo, la transacción revierte)
+            if hasattr(client, "created_superuser"):
+                client.created_superuser = 1
+                client.save(update_fields=["created_superuser"])
+
+            # 5) Enviar email de activación (link al HUB)
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
 
-            # Construir la URL de activación
-            subdom_url = f'http://{request.get_host()}/login'
-            activation_url = f"http://{request.get_host()}/login/activate/{uid}/{token}/" #prestar atencion cuando pase a https
-
-            # Enviar correo electrónico
-            subject = 'Activa tu cuenta de usuario admin'
-            message_html = render_to_string('activation_email.html', {
-                'user': user,
-                'activation_url': activation_url,
-                'subdom_url': subdom_url
-            })
-            message = escape(json.dumps(message_html)) #lo paso a json para que no escape el html en la vista
-            mail_from= EMAIL_SETTINGS['DEFAULT_FROM_EMAIL']
-            context={'subject':subject,
-                         'message':message,
-                          'mail_from': mail_from,
-                          'email':user.email,
-                          'action':''}
+            hub = _hub_origin(request)  # p.ej. http://localhost:8000
+            # asumamos que tenés un view en el HUB: accounts:activate
+            # si todavía usás /login/activate/, ajustá el path abajo.
             try:
-                send_mail(subject, message='', from_email=mail_from, recipient_list=[user.email], html_message=message_html)
-                
-                context['action'] = '¿Recibiste el mail de verificacion?'
-                messages.success(request, 'El usuario admin ha sido creado. Revisa tu email para activarlo.')
-                return render(request,'recive-mail.html',context=context)
-            
-            except Exception as e:
-                messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
-                context['action'] = 'Error en el envío de mail.'
-                return render(request,'recive-mail.html',context=context) 
-            
-            
+                activation_path = reverse("activate-superuser", kwargs={"uidb64": uid, "token": token})
+            except Exception:
+                activation_path = f"/login/activate/{uid}/{token}/"
+
+            activation_url = f"{schema_name}.{hub}{activation_path}"
+            subdom_url = f"{hub}/login/"
+
+            subject = "Activa tu cuenta de usuario admin"
+            message_html = render_to_string("activation_email.html", {
+                "user": user,
+                "activation_url": activation_url,
+                "subdom_url": subdom_url
+            })
+
+            send_mail(subject, message="", from_email=settings.EMAIL_SETTINGS["DEFAULT_FROM_EMAIL"],
+                      recipient_list=[user.email], html_message=message_html)
+
+            messages.success(request, "El usuario admin ha sido creado. Revisa tu email para activarlo.")
+            return render(request, "recive-mail.html", {
+                "subject": subject,
+                "message": message_html,  # si usás la vista que muestra el HTML
+                "mail_from": settings.EMAIL_SETTINGS["DEFAULT_FROM_EMAIL"],
+                "email": user.email,
+                "action": "¿Recibiste el mail de verificación?"
+            })
     else:
         form = UserRegisterForm()
 
-    context = {
-        'form': form,
-        'title': 'Crear usuario admin',
-        'Action': 'create',
-    }
+    return render(request, "register.html", {
+        "form": form,
+        "title": "Crear usuario admin",
+        "Action": "create",
+    })
 
-    return render(request, 'register.html', context)
 
 User = get_user_model()
 
@@ -248,55 +264,24 @@ def activate_superuser(request, uidb64, token):
         user.is_active = True
         user.save()
         
-        
-        client = Client.objects.filter(id=user.client.id).first()
+    
+        current_schema = getattr(connection, "schema_name", None)
+        client = Client.objects.filter(schema_name=current_schema).first()
+            
         if client:
+            TenantMembership.objects.update_or_create(
+            user=user, client=client, defaults={"is_active": True}
+            )
             client.created_superuser = 1
             client.save()
         messages.success(request, 'Tu cuenta ha sido activada exitosamente.')
-        return redirect('login')
+        return redirect('home_tenant')
+
     else:
         messages.error(request, 'El enlace de activación es inválido o ha expirado.')
         return redirect('home')
 
 
-
-class LoginFormView(LoginView):
-    form_class = CustomLoginForm
-    template_name = 'login.html'
-    
-
-    def get_context_data(self, **kwargs):
-          
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Login'
-        context['entity'] = 'Ingreso'
-        context['list_url'] = reverse_lazy('listpass')
-        context['action'] = 'login'
-
-        return context
-    
-    def form_invalid(self, form):
-        """If the form is invalid, render the invalid form with error messages."""
-        messages.error(self.request, "Nombre de usuario o contraseña incorrectos.")
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def form_valid(self, form):
-        """If the form is valid, check for 2FA and handle redirection."""
-        user = form.get_user()
-
-        if user.is_2fa_enabled:
-            # Inicia sesión pero redirige a 2FA
-            login(self.request, user)  # Establece la sesión del usuario
-            self.request.session['is_2fa_verified'] = False  # Asegurarse de que no esté verificado
-            self.request.session['2fa_user_id'] = user.id  # Guardar el ID del usuario para 2FA
-            messages.info(self.request, "Por favor, verifica tu código de autenticación.")
-            return redirect('verify_2fa')  # Redirige a la vista de verificación 2FA
-
-        # Si no tiene 2FA habilitado, proceder normalmente
-        messages.success(self.request, f"Inicio de sesión exitoso. Bienvenido {user.username}.")
-        return super().form_valid(form)
-    
 
 
 class LogoutFormView(LogoutView):
@@ -378,96 +363,127 @@ class UserListView(ListView):
     context_object_name = 'users'
 
     def get_queryset(self):
-        obj = CustomUser.objects.all().order_by('is_active')
-        
+        obj = CustomUser.objects.filter(client=self.request.user.client).order_by('is_active')
         return obj
     
-@method_decorator(user_passes_test(is_administrator), name='dispatch') 
-class UserUpdateView(UpdateView):
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
+class UserUpdateView(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
     model = CustomUser
     form_class = UserForm
     template_name = 'user_form.html'
     success_url = reverse_lazy('userlist')
-    #print(f'now: {date.today()}')
+    not_found_message = "No se encontró el usuario a editar."
+    redirect_url_name = "userlist"
 
-   
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)  # puede lanzar Http404 → lo captura el mixin
+        self.ensure_target_in_tenant(obj)   # si no pertenece al tenant, lanzá PermissionDenied
+        return obj
+
     def get_initial(self):
-            initial = super().get_initial()
-            initial['birth_date'] = self.object.formatted_birth_date()
-            initial['admission_date'] = self.object.formatted_admission_date()
-            initial['departure_date'] = self.object.formatted_departure_date()
-            return initial
+        initial = super().get_initial()
+        initial['birth_date'] = self.object.formatted_birth_date()
+        initial['admission_date'] = self.object.formatted_admission_date()
+        initial['departure_date'] = self.object.formatted_departure_date()
+        return initial
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch')     
-class DepartureUser(UpdateView):
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
+class DepartureUser(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
     model = CustomUser
     form_class = UserDepartureForm
     template_name = 'departure_user.html'
-    success_url = reverse_lazy('userlist')  # Asegúrate de que 'userlist' sea el nombre correcto en urls.py
+    success_url = reverse_lazy('userlist')
+    not_found_message = "No se encontró el usuario a dar de baja."
+    redirect_url_name = "userlist"
+
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        self.ensure_target_in_tenant(obj)
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = self.get_object()  # Agregamos el usuario al contexto
+        context['user'] = self.get_object()
         return context
 
     def form_valid(self, form):
         try:
             user = self.get_object()
-            print(f'estoy en form valid: user = {user}')  # Obtener el usuario actual basado en la pk de la URL
+            # Evitá autobaja del propio admin
+            if user == self.request.user:
+                messages.error(self.request, "No podés darte de baja a vos mismo.")
+                return redirect('userlist')
+
+            # Seguridad extra: revalida tenant
+            if not user_belongs_to_current_tenant(user):
+                raise PermissionDenied("No podés operar usuarios de otra cuenta.")
+
             deactivate = deactivate_user(self.request, user.id)
-            print(f'deactivate return: {deactivate}')
             messages.success(self.request, f"Se dió de baja exitosamente al usuario {user.username}.")
+        except PermissionDenied as e:
+            messages.error(self.request, str(e))
+            return redirect('userlist')
         except Exception as e:
-            print(f'exception departure_user: {e}')
             messages.error(self.request, f"Error al dar de baja al usuario: {str(e)}")
         return super().form_valid(form)
-
-@method_decorator(user_passes_test(is_administrator), name='dispatch')     
-class UserDetailView(DetailView):
+ 
+@method_decorator(user_passes_test(is_administrator), name='dispatch')
+class UserDetailView(Safe404RedirectMixin, TenantScopedUserMixin, DetailView):
     model = CustomUser
     template_name = 'detail-user.html'
     success_url = reverse_lazy('userlist')
+    not_found_message = "No se encontró el usuario solicitado."
+    redirect_url_name = "userlist"
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        self.ensure_target_in_tenant(obj)
+        return obj
 
 
+@user_passes_test(is_administrator)
 def deactivate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, pk=pk)
-        print(f'user_deactivate = {user}')
-        if user == request.user:
-            messages.error(request, "No puedes eliminar el mismo usuario con el que estás logueado.")
+
+        if not user_belongs_to_current_tenant(user):
+            messages.error(request, "No podés operar usuarios de otro tenant.")
             return redirect('userlist')
-        
+
+        if user == request.user:
+            messages.error(request, "No podés eliminar el mismo usuario con el que estás logueado.")
+            return redirect('userlist')
+
         superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
         if user.is_superuser and superusers <= 1:
-            messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único superusuario.')
-        else:
-            message = user.inactivate()
-            
-            messages.success(request, message)
-        
-    except CustomUser.DoesNotExist:
-        messages.error(request, f"El usuario con ID {pk} no existe.")
+            messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único administrador.')
+            return redirect('userlist')
+
+        message = user.inactivate()
+        messages.success(request, message)
+        return redirect('userlist')
+
     except Exception as e:
         messages.error(request, f"Error al desactivar el usuario: {str(e)}")
-
-    return message
+        return redirect('userlist')
 
 @user_passes_test(is_administrator)
 def activate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, id=pk)
 
+        if not user_belongs_to_current_tenant(user):
+            messages.error(request, "No podés operar usuarios de otra cuenta.")
+            return redirect('userlist')
+
         message = user.activate()
         messages.success(request, message)
-        
-    except CustomUser.DoesNotExist:
-        message = f"El usuario con ID <strong>{pk}</strong> no existe."
-        messages.error(request, message)
-    except Exception as e:
-        message = f"Error al activar el usuario: {str(e)}"
-        messages.error(request, message)
+        return redirect('userlist')
 
-    return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
+    except Exception as e:
+        messages.error(request, f"Error al activar el usuario: {str(e)}")
+        return redirect('userlist')
 
 def _resolve_2fa_user_from_request(request):
     """

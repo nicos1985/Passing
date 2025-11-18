@@ -25,6 +25,7 @@ def resolve_primary_domain(client: TenantModel) -> str:
     return dom.domain
 
 def redirect_to_tenant_with_token(request, user, client, next_path="/"):
+    client = TenantModel.objects.get(schema_name=str(client))  # aseguramos instancia fresh
     token = build_sso_token(
         user_id=user.id,
         client_slug=client.schema_name,
@@ -38,7 +39,7 @@ def redirect_to_tenant_with_token(request, user, client, next_path="/"):
     scheme = "http" if settings.DEBUG else "https"
     port = _port_from_request(request) if settings.DEBUG else ""
 
-    return redirect(f"{scheme}://{host}{port}/sso/consume/?token={token}")
+    return redirect(f"{scheme}://{host}{port}/login/sso/consume/?token={token}")
 
 
 def _port_from_request(request) -> str:

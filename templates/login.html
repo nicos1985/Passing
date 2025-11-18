@@ -1,6 +1,6 @@
-{% extends 'base.html'%}
+{% extends "base.html" %}
 {% load static %}
-<html lang="es">
+
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
@@ -19,12 +19,13 @@
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next|default:'/' }}">
             <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input id="email" name="email" type="email" class="form-control" required autofocus>
+              <label for="id_identity" class="form-label">Email o usuario</label>
+              <input id="id_identity" name="identity" type="text" class="form-control"
+                     value="{{ form.identity.value|default_if_none:'' }}" required autofocus>
             </div>
             <div class="mb-2">
-              <label for="password" class="form-label">Contraseña</label>
-              <input id="password" name="password" type="password" class="form-control" required>
+              <label for="id_password" class="form-label">Contraseña</label>
+              <input id="id_password" name="password" type="password" class="form-control" required>
             </div>
             <div class="d-grid gap-2 mt-3">
               <button class="btn btn-primary" type="submit">Ingresar</button>
@@ -37,9 +38,7 @@
             <span class="flex-grow-1" style="border-bottom:1px solid #dee2e6;"></span>
           </div>
 
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="provider" value="google">
+          <form method="get" action="{% url 'google_start_auto' %}">
             <input type="hidden" name="next" value="{{ next|default:'/' }}">
             <button type="submit" class="btn btn-outline-dark w-100">
               <img src="{% static 'img/google.svg' %}" alt="" width="18" class="me-2">
@@ -50,7 +49,7 @@
         </div>
       </div>
       <p class="text-center text-muted mt-3" style="font-size:.9rem">
-        Serás derivado automáticamente al tenant si tu cuenta tiene un único acceso.
+        Si tu usuario pertenece a un solo tenant, te derivamos automáticamente.
       </p>
     </div>
   </div>
