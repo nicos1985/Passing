@@ -171,7 +171,14 @@
           {% block content %}
             
             {% endblock %}
+            {% if request.user.is_authenticated %}
           </div>
+          <script src="https://cdn-chatbot.anima.bot/chatbot.umd.js"></script>
+        <script>
+        window.onload = function() {initChatbot("eyJpdiI6Ijd3V0d0SjBOV3FKZEluYWdrbVRzTVE9PSIsInZhbHVlIjoiV2trNjlCaUREQjNoWFFoWmR6WlpZYlJ3ME1sRFhGbkI3QStFbjZRbTNRcz0iLCJtYWMiOiJkMzY2ZjI5YmY3NmU3ZTIwOTYyMGJlZDdkY2IzY2FiODU3ZDE4Y2Q1M2FjZmYyNmE3NjUyZWIxNDIzMTEyNjljIiwidGFnIjoiIn0=");};
+        </script>
+
+            {% endif %}
           </body>
 
             {% block javascript %}
