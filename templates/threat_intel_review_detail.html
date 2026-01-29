@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+    <div class="container mt-3">
+        <h2>Revisión: {{ review.item.cve_id }}</h2>
+        <p class="text-muted">Decisión en Run #{{ review.run.id }}</p>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+            <a class="btn btn-secondary" href="{% url 'threat_intel:review-list-run' review.run.id %}">
+                <i class="fa-solid fa-arrow-left"></i> Revisiones del Run
+            </a>
+            <a href="{% url 'threat_intel:review-update' review.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            <a href="{% url 'threat_intel:review-list' %}" class="btn btn-secondary">
+                <i class="fas fa-list"></i> Todas las Revisiones
+            </a>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Información de la Revisión</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Item:</strong> {{ review.item.cve_id }}</p>
+                            <p><strong>Run:</strong> <a href="{% url 'threat_intel:run-detail' review.run.id %}">Run #{{ review.run.id }}</a></p>
+                            <p><strong>Decisión:</strong>
+                                {% if review.decision == 'approve_ticket' %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-ticket"></i> Crear Ticket</span>
+                                {% elif review.decision == 'monitor' %}
+                                    <span class="badge bg-info"><i class="fa-solid fa-eye"></i> Monitorear</span>
+                                {% elif review.decision == 'not_applicable' %}
+                                    <span class="badge bg-secondary"><i class="fa-solid fa-times"></i> No Aplica</span>
+                                {% elif review.decision == 'postpone' %}
+                                    <span class="badge bg-warning"><i class="fa-solid fa-clock"></i> Postergar</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Decidido por:</strong> {{ review.decided_by.username }}</p>
+                            <p><strong>Fecha:</strong> {{ review.decided_at|date:"Y-m-d H:i:s" }}</p>
+                            {% if review.ticket_ref %}
+                            <p><strong>Ticket:</strong> <a href="{{ review.ticket_ref }}" target="_blank">{{ review.ticket_ref }}</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Información del Item</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>CVE:</strong> {{ review.item.cve_id }}</p>
+                            <p><strong>Severidad:</strong> <span class="badge bg-danger">{{ review.item.severity }}</span></p>
+                            <p><strong>CVSS Score:</strong> {{ review.item.cvss_score }}</p>
+                            <p><strong>Es Relevante:</strong>
+                                {% if review.item.is_relevant %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check"></i> Sí</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="fa-solid fa-times"></i> No</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Notas de la Revisión</h5>
+                </div>
+                <div class="card-body">
+                    {% if review.notes %}
+                        <p>{{ review.notes|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">Sin notas</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if review.analysis %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Análisis Asociado</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Resumen:</strong> {{ review.analysis.summary_es|truncatewords:50 }}</p>
+                    <p><strong>Prioridad:</strong> <span class="badge bg-info">{{ review.analysis.priority }}</span></p>
+                    <p><strong>Acción Recomendada:</strong> {{ review.analysis.recommended_action }}</p>
+                    <p><strong>Tecnologías Afectadas:</strong> {{ review.analysis.affected_tech }}</p>
+                    <p>
+                        <a href="{% url 'threat_intel:analysis-detail' review.analysis.id %}" class="btn btn-sm btn-primary">
+                            Ver Análisis Completo
+                        </a>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

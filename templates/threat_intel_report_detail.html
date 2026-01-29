@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>{{ report.subject }}</h2>
+        <p class="text-muted">Reporte para Run #{{ report.run.id }}</p>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+            <a class="btn btn-secondary" href="{% url 'threat_intel:report-list' %}">
+                <i class="fa-solid fa-arrow-left"></i> Volver a Reportes
+            </a>
+            <a class="btn btn-info" href="{% url 'threat_intel:run-detail' report.run.id %}">
+                <i class="fa-solid fa-link"></i> Ir al Run
+            </a>
+            {% if not report.sent_at %}
+            <a href="{% url 'threat_intel:report-send' report.id %}" class="btn btn-success">
+                <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="container">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Información del Reporte</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Asunto:</strong> {{ report.subject }}</p>
+                    <p><strong>Run:</strong> <a href="{% url 'threat_intel:run-detail' report.run.id %}">#{{ report.run.id }}</a></p>
+                    <p><strong>Período:</strong> {{ report.run.period_start|date:"Y-m-d" }} - {{ report.run.period_end|date:"Y-m-d" }}</p>
+                    <p><strong>Estado:</strong>
+                        <span class="badge {% if report.sent_at %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if report.sent_at %}Enviado {% else %}Borrador{% endif %}
+                        </span>
+                    </p>
+                    {% if report.sent_at %}
+                    <p><strong>Enviado:</strong> {{ report.sent_at|date:"Y-m-d H:i:s" }}</p>
+                    {% endif %}
+                    {% if report.recipients %}
+                    <p><strong>Destinatarios:</strong> {{ report.recipients|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Contenido del Reporte</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.body_html %}
+                        <div class="report-content">
+                            {{ report.body_html|safe }}
+                        </div>
+                    {% elif report.body_md %}
+                        <pre><code>{{ report.body_md }}</code></pre>
+                    {% else %}
+                        <p class="text-muted">No hay contenido generado</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Análisis Incluidos</h5>
+                </div>
+                <div class="card-body">
+                    {% if analyses %}
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>CVE</th>
+                                    <th>Severidad</th>
+                                    <th>Prioridad</th>
+                                    <th>Resumen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in analyses %}
+                                <tr>
+                                    <td><a href="{% url 'threat_intel:analysis-detail' analysis.id %}">{{ analysis.item.cve_id }}</a></td>
+                                    <td>{{ analysis.item.severity }}</td>
+                                    <td>{{ analysis.priority }}</td>
+                                    <td>{{ analysis.summary_es|truncatewords:15 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">No hay análisis disponibles para este reporte</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block head %}
+    <link href="{% static 'lib/select2-4.1.0/css/select2.min.css' %}" rel="stylesheet" />
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.1.0/js/select2.min.js' %}"></script>
+    <style>
+        .form-container { max-width: 800px; margin: 0 auto; }
+        .form-card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; border-radius: 12px; }
+        .form-card .card-header { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border-radius: 12px 12px 0 0 !important; padding: 1.5rem; }
+        .form-card .card-header h5 { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .form-group label { font-weight: 600; color: #333; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .form-control, .form-select, textarea { border-radius: 8px; border: 2px solid #e0e0e0; padding: 0.75rem; transition: all 0.3s ease; }
+        .form-control:focus, .form-select:focus, textarea:focus { border-color: #17a2b8; box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25); }
+        .form-text { display: block; margin-top: 0.4rem; font-size: 0.9rem; color: #6c757d; }
+        .form-card .card-body { padding: 2rem; }
+        .btn-group-submit { display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #f0f0f0; }
+        .btn-submit { flex: 1; padding: 0.75rem 1.5rem; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; border: none; }
+        .btn-submit-primary { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; }
+        .btn-submit-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(23, 162, 184, 0.4); color: white; }
+        .btn-submit-secondary { background: #f8f9fa; color: #333; border: 2px solid #e0e0e0; }
+        .btn-submit-secondary:hover { background: #e9ecef; border-color: #999; }
+        .back-button { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; color: #17a2b8; text-decoration: none; font-weight: 500; transition: all 0.3s ease; }
+        .back-button:hover { color: #138496; transform: translateX(-4px); }
+        #id_subject, #id_body_md, #id_recipients { width: 100%; box-sizing: border-box; }
+        #id_body_md { min-height: 150px; font-family: 'Courier New', monospace; }
+        .analysis-item { padding: 1rem; border-left: 4px solid #17a2b8; background: #f8f9fa; border-radius: 6px; margin-bottom: 0.75rem; }
+        .analysis-item .cve-id { font-weight: 600; color: #17a2b8; }
+        .analysis-item .severity { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <a href="{% url 'threat_intel:run-detail' run.id %}" class="back-button">
+            <i class="fa-solid fa-arrow-left"></i> Volver a Run
+        </a>
+
+        <div class="mb-4">
+            <h2 style="color: #333; font-weight: 700;">Crear Nuevo Reporte</h2>
+            <p class="text-muted">Para Run #{{ run.id }} ({{ run.period_start|date:"Y-m-d" }} - {{ run.period_end|date:"Y-m-d" }})</p>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-file-pdf"></i> Nuevo Reporte</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_subject">
+                                <i class="fa-solid fa-heading" style="color: #17a2b8;"></i> Asunto
+                            </label>
+                            {% if form.subject.errors %}
+                                {{ form.subject }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.subject.errors.0 }}</div>
+                            {% else %}
+                                {{ form.subject }}
+                            {% endif %}
+                            <small class="form-text">Título descriptivo del reporte</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_body_md">
+                                <i class="fa-solid fa-file-lines" style="color: #17a2b8;"></i> Contenido (Markdown)
+                            </label>
+                            {% if form.body_md.errors %}
+                                {{ form.body_md }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.body_md.errors.0 }}</div>
+                            {% else %}
+                                {{ form.body_md }}
+                            {% endif %}
+                            <small class="form-text">Puedes usar Markdown para formatear: **negrita**, *cursiva*, `código`, etc.</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_recipients">
+                                <i class="fa-solid fa-envelope" style="color: #17a2b8;"></i> Destinatarios
+                            </label>
+                            {% if form.recipients.errors %}
+                                {{ form.recipients }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.recipients.errors.0 }}</div>
+                            {% else %}
+                                {{ form.recipients }}
+                            {% endif %}
+                            <small class="form-text">Correos separados por comas: usuario1@example.com, usuario2@example.com</small>
+                        </div>
+
+                        <div class="btn-group-submit">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fa-solid fa-check-circle"></i> Crear Reporte
+                            </button>
+                            <button type="reset" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-redo"></i> Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Análisis Disponibles -->
+            <div class="card form-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-microscope"></i> Análisis Disponibles ({{ analyses|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if analyses %}
+                        {% for analysis in analyses %}
+                            <div class="analysis-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="cve-id"><i class="fa-solid fa-virus"></i> {{ analysis.item.cve_id }}</div>
+                                        <p class="mb-2 mt-2">{{ analysis.summary_es|truncatewords:30 }}</p>
+                                        <small class="text-muted">
+                                            Severidad: 
+                                            <span class="severity" style="background: 
+                                                {% if analysis.item.severity == 'CRITICAL' %}#dc3545
+                                                {% elif analysis.item.severity == 'HIGH' %}#fd7e14
+                                                {% elif analysis.item.severity == 'MEDIUM' %}#ffc107
+                                                {% else %}#28a745{% endif %}; color: white;">
+                                                {{ analysis.item.severity }}
+                                            </span>
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-info ms-3">{{ analysis.priority }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-circle-info"></i> No hay análisis disponibles para este run
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

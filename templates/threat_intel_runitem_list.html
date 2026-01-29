@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>Items del Run #{{ run.id }}</h2>
+        <p class="text-muted">Período: {{ run.period_start }} a {{ run.period_end }}</p>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+            <a class="btn btn-secondary btn-flat" href="{{ back_url }}">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Run
+            </a>
+            <a class="btn btn-primary btn-flat" href="{% url 'threat_intel:runitem-list' run.pk %}">
+                <i class="fa-solid fa-refresh"></i> Refrescar
+            </a>
+        </div>
+
+        <div class="container">
+            <!-- Filtros -->
+            <div class="mb-3">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="severity" class="form-label">Severidad</label>
+                        <select name="severity" id="severity" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="is_relevant" class="form-label">Relevancia</label>
+                        <select name="is_relevant" id="is_relevant" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="true">Relevantes</option>
+                            <option value="false">No relevantes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                    </div>
+                </form>
+            </div>
+
+            <table id="data" class="table table-sm" style="font-size: 0.86rem;">
+                <thead class="table-dark">
+                  <tr>
+                    <th>CVE/ID</th>
+                    <th>Título</th>
+                    <th>Severidad</th>
+                    <th>CVSS</th>
+                    <th>Relevante</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ri in run_items %}
+                  <tr>
+                    <td>{{ ri.item.canonical_id }}</td>
+                    <td title="{{ ri.item.title }}">{{ ri.item.title|truncatewords:8 }}</td>
+                    <td>
+                        <span class="badge bg-{% if ri.item.severity == 'critical' %}danger{% elif ri.item.severity == 'high' %}warning{% elif ri.item.severity == 'medium' %}info{% else %}secondary{% endif %}">
+                            {{ ri.item.severity }}
+                        </span>
+                    </td>
+                    <td>{{ ri.item.cvss|default:"N/A" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'threat_intel:item-toggle-relevant' ri.item.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="run_pk" value="{{ run.pk }}">
+                            <button type="submit" class="btn btn-sm {% if ri.item.is_relevant %}btn-success{% else %}btn-outline-success{% endif %}">
+                                {% if ri.item.is_relevant %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-times"></i>{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'threat_intel:item-detail' ri.item.id %}?run_pk={{ run.pk }}" class="btn btn-info">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <a href="{% url 'threat_intel:review-create' run.pk ri.item.id %}" class="btn btn-success">
+                                <i class="fas fa-plus-circle"></i> Review
+                            </a>
+                        </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No hay items para este run</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+            <nav aria-label="Paginación">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/init-datatable.js' %}"></script>
+{% endblock %}

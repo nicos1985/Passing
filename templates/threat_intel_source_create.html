@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block head %}
+    <style>
+        .form-container { max-width: 700px; margin: 0 auto; }
+        .form-card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; border-radius: 12px; }
+        .form-card .card-header { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border-radius: 12px 12px 0 0 !important; padding: 1.5rem; }
+        .form-card .card-header h5 { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .form-group label { font-weight: 600; color: #333; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .form-control, .form-select { border-radius: 8px; border: 2px solid #e0e0e0; padding: 0.75rem; transition: all 0.3s ease; }
+        .form-control:focus, .form-select:focus { border-color: #17a2b8; box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25); }
+        .form-text { display: block; margin-top: 0.4rem; font-size: 0.9rem; color: #6c757d; }
+        .form-card .card-body { padding: 2rem; }
+        .btn-group-submit { display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #f0f0f0; }
+        .btn-submit { flex: 1; padding: 0.75rem 1.5rem; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; border: none; }
+        .btn-submit-primary { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; }
+        .btn-submit-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(23, 162, 184, 0.4); color: white; }
+        .btn-submit-secondary { background: #f8f9fa; color: #333; border: 2px solid #e0e0e0; }
+        .btn-submit-secondary:hover { background: #e9ecef; border-color: #999; }
+        .back-button { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; color: #17a2b8; text-decoration: none; font-weight: 500; transition: all 0.3s ease; }
+        .back-button:hover { color: #138496; transform: translateX(-4px); }
+        #id_code, #id_name, #id_kind, #id_base_url { width: 100%; box-sizing: border-box; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <a href="{% url 'threat_intel:source-list' %}" class="back-button">
+            <i class="fa-solid fa-arrow-left"></i> Volver a Fuentes
+        </a>
+
+        <div class="mb-4">
+            <h2 style="color: #333; font-weight: 700;">Crear Nueva Fuente</h2>
+            <p class="text-muted">Agregar una nueva fuente de inteligencia de amenazas (NVD, CISA, AWS, etc.)</p>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-plus-circle"></i> Nueva Fuente de Datos</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_code">
+                                <i class="fa-solid fa-code" style="color: #17a2b8;"></i> Código (Único)
+                            </label>
+                            {% if form.code.errors %}
+                                {{ form.code }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.code.errors.0 }}</div>
+                            {% else %}
+                                {{ form.code }}
+                            {% endif %}
+                            <small class="form-text">ej: NVD, CISA, AWS, MSRC, GITHUB</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_name">
+                                <i class="fa-solid fa-database" style="color: #17a2b8;"></i> Nombre
+                            </label>
+                            {% if form.name.errors %}
+                                {{ form.name }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.name.errors.0 }}</div>
+                            {% else %}
+                                {{ form.name }}
+                            {% endif %}
+                            <small class="form-text">Nombre descriptivo de la fuente</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_kind">
+                                <i class="fa-solid fa-cog" style="color: #17a2b8;"></i> Tipo de Fuente
+                            </label>
+                            {% if form.kind.errors %}
+                                {{ form.kind }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.kind.errors.0 }}</div>
+                            {% else %}
+                                {{ form.kind }}
+                            {% endif %}
+                            <small class="form-text">Método de obtención: API REST, RSS Feed, o Web Scraping</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_base_url">
+                                <i class="fa-solid fa-link" style="color: #17a2b8;"></i> URL Base
+                            </label>
+                            {% if form.base_url.errors %}
+                                {{ form.base_url }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.base_url.errors.0 }}</div>
+                            {% else %}
+                                {{ form.base_url }}
+                            {% endif %}
+                            <small class="form-text">ej: https://services.nvd.nist.gov/rest/json/</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <div class="form-check" style="padding-left: 0;">
+                                <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_active" style="font-weight: 500; margin: 0;">
+                                    <i class="fa-solid fa-toggle-on" style="color: #17a2b8;"></i> Activa (usar en próximos scans)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="btn-group-submit">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fa-solid fa-check-circle"></i> Crear Fuente
+                            </button>
+                            <button type="reset" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-redo"></i> Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>{{ techtag.name }}</h2>
+        <p class="text-muted">Etiqueta de tecnología</p>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3">
+            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:techtag-list' %}">
+                <i class="fa-solid fa-arrow-left"></i> Volver a Etiquetas
+            </a>
+            <a href="{% url 'threat_intel:techtag-update' techtag.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+        </div>
+
+        <div class="container">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Información</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> {{ techtag.name }}</p>
+                            <p><strong>Estado:</strong>
+                                {% if techtag.is_active %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check"></i> Activa</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-times"></i> Inactiva</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Palabras Clave para Búsqueda</h5>
+                </div>
+                <div class="card-body">
+                    {% if techtag.keywords %}
+                        <p>Se usarán estas palabras para detectar automáticamente vulnerabilidades relacionadas con <strong>{{ techtag.name }}</strong>:</p>
+                        <div class="row">
+                            {% for keyword in techtag.keywords %}
+                                <div class="col-auto mb-2">
+                                    <span class="badge bg-info">{{ keyword }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No hay palabras clave definidas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

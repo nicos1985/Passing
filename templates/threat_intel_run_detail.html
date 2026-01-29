@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Run #{{ object.id }}</h2>
+            <a class="btn btn-secondary" href="{{ back_url }}">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <!-- Información del Run -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Información General</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                                {% for field in fields %}
+                                <tr>
+                                    <th scope="row" style="width: 30%;">{{ field.verbose_name }}:</th>
+                                    <td>{{ field.value|default:"N/A" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Acciones</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column gap-2">
+                        <a href="{{ items_url }}" class="btn btn-primary">
+                            <i class="fas fa-list"></i> Ver Items ({{ run_items_count }})
+                        </a>
+                        <a href="{% url 'threat_intel:review-list-run' object.id %}" class="btn btn-info">
+                            <i class="fas fa-check-circle"></i> Ver Revisiones
+                        </a>
+                        <a href="{% url 'threat_intel:report-create' object.id %}" class="btn btn-success">
+                            <i class="fas fa-file-pdf"></i> Crear Reporte
+                        </a>
+                        <a href="{{ export_url }}?format=csv" class="btn btn-secondary">
+                            <i class="fas fa-download"></i> Descargar CSV
+                        </a>
+                        <a href="{{ export_url }}?format=json" class="btn btn-secondary">
+                            <i class="fas fa-download"></i> Descargar JSON
+                        </a>
+                        <form method="post" action="{{ rerun_url }}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-sync"></i> Re-ejecutar Análisis
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Resumen</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Items encontrados:</strong> {{ run_items_count }}</p>
+                        <p><strong>Estado:</strong> 
+                            <span class="badge 
+                                {% if object.status == 'running' %}bg-warning
+                                {% elif object.status == 'success' %}bg-success
+                                {% elif object.status == 'failed' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ object.get_status_display|default:object.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Items (preview) -->
+        {% if run_items %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Items Detectados (primeros 10)</h5>
+                        <a href="{{ items_url }}" class="btn btn-sm btn-light">Ver todos</a>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>CVE/ID</th>
+                                    <th>Título</th>
+                                    <th>Severidad</th>
+                                    <th>CVSS</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ri in run_items|slice:":10" %}
+                                <tr>
+                                    <td>{{ ri.item.canonical_id }}</td>
+                                    <td title="{{ ri.item.title }}">{{ ri.item.title|truncatewords:6 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if ri.item.severity == 'critical' %}danger{% elif ri.item.severity == 'high' %}warning{% elif ri.item.severity == 'medium' %}info{% else %}secondary{% endif %}">
+                                            {{ ri.item.severity }}
+                                        </span>
+                                    </td>
+                                    <td>{{ ri.item.cvss|default:"N/A" }}</td>
+                                    <td>
+                                        <a href="{% url 'threat_intel:item-detail' ri.item.id %}?run_pk={{ object.pk }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

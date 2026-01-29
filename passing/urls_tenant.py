@@ -21,6 +21,7 @@ from .views import home_tenant, test_send_email, UpdateEmailConfigView
 urlpatterns = [
     path("login/", include("login.urls")),                
     path("resources/", include("resources.urls")),
+    path("threat-intel/", include("threat_intel.urls")),
     path("pass/", include("passbase.urls")),
     path("notifications/", include("notifications.urls")),
     path("perm/", include("permission.urls")),
