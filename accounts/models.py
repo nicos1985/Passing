@@ -4,12 +4,30 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
+from django.db import connection
+
+
+def avatar_upload_to(instance, filename):
+    """Place uploaded avatars under a tenant-prefixed folder.
+
+    Examples:
+      <schema>/avatars/filename.jpg
+      public/avatars/filename.jpg  (fallback)
+    """
+    try:
+        tenant = getattr(connection, "tenant", None)
+        schema_name = getattr(tenant, "schema_name", None) if tenant is not None else getattr(connection, "schema_name", None)
+        if not schema_name:
+            schema_name = "public"
+        return f"{schema_name}/avatars/{filename}"
+    except Exception:
+        return f"public/avatars/{filename}"
 
 
 CLIENT_FK = 'client.Client'   
 
 class CustomUser(AbstractUser):
-    avatar = models.ImageField(blank=True, null=True, upload_to='avatars/')
+    avatar = models.ImageField(blank=True, null=True, upload_to=avatar_upload_to)
     position = models.CharField(max_length=80, null=True, verbose_name='Puesto')
     email = models.EmailField(unique=True)
     documento = models.CharField(max_length=8, blank=True, null=True, verbose_name='documento')

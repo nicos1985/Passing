@@ -49,6 +49,7 @@ from django.core.exceptions import PermissionDenied
 from .utils import user_belongs_to_current_tenant
 from .mixins import TenantScopedUserMixin
 from .mixins import Safe404RedirectMixin
+import logging
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -362,23 +363,38 @@ class LogoutFormView(LogoutView):
 def profile_view(request):
     user = CustomUser.objects.get(id=request.user.id)
     if request.method == 'POST': 
+        logger = logging.getLogger(__name__)
+        logger.debug("profile_view POST: files=%s", list(request.FILES.keys()))
         profile_form = ProfileForm(request.POST, request.FILES, instance=user)
-        if profile_form.is_valid():
-            if profile_form.is_bound:
-                is_2fa_enabled = profile_form.cleaned_data['is_2fa_enabled']
-                if profile_form.initial['is_2fa_enabled'] == True:
-                    if is_2fa_enabled == False:
-                        disable_2fa(request)
-                else:
-                    qr_generate = is_2fa_enabled == True and user.otp_secret is None
-                    if qr_generate:
-                        profile_form.save()
-                        return render(request, 'generate-qr-code.html')
-                    else:
-                        profile_form.save()
-                        return render(request, 'listpass.html')
+        logger.debug("profile_form bound=%s", profile_form.is_bound)
+        valid = profile_form.is_valid()
+        logger.debug("profile_form is_valid=%s errors=%s", valid, profile_form.errors.as_json() if profile_form.errors else None)
+        if valid and profile_form.is_bound:
+            is_2fa_enabled = profile_form.cleaned_data.get('is_2fa_enabled')
+            initial_2fa = profile_form.initial.get('is_2fa_enabled')
+            # If user had 2FA enabled and turned it off, handle disable first
+            if initial_2fa == True and is_2fa_enabled == False:
+                disable_2fa(request)
+
+            # Determine whether we need to show QR after saving (newly enabled 2FA)
+            qr_generate = initial_2fa != True and is_2fa_enabled == True and user.otp_secret is None
+
+            try:
+                profile_form.save()
+                user.refresh_from_db()
+                logger.debug("After save: user.avatar.name=%s", getattr(user.avatar, 'name', None))
+                messages.success(request, f"Avatar guardado: {getattr(user.avatar, 'name', None)}")
+            except Exception as exc:
+                logger.exception("Error saving profile form/avatar: %s", exc)
+                messages.error(request, f"Excepción al guardar avatar: {str(exc)}")
+
+            if qr_generate:
+                return render(request, 'generate-qr-code.html')
+            else:
+                return render(request, 'listpass.html')
         else:
-            print('Formulario no válido')
+            logger.warning("Profile form invalid: %s", profile_form.errors)
+            messages.error(request, f"Error al guardar perfil: {profile_form.errors}")
         
     else:
         profile_form = ProfileForm(instance=user)

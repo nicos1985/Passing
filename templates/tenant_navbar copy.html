@@ -137,20 +137,28 @@
       <i class="fa-solid fa-bell fa-lg"></i>
     </a>
 
+    <!-- Quick password generator -->
+    <a href="#" class="text-dark ms-3" data-bs-toggle="modal" data-bs-target="#quickPasswordModal" title="Generador rápido">
+      <i class="fa-solid fa-key fa-lg" style="color: #f6dd4f"></i>
+    </a>
+
     <!-- Avatar y nombre -->
     <div class="d-flex align-items-center">
       
       <a href="{% url 'profile' %}" class="d-inline-block">
-        
-        <img src="{% get_media_prefix %}{{user.avatar}}" class="avatar border border-3 rounded-circle" alt="Avatar">
+        {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" class="avatar border border-3 rounded-circle" alt="Avatar">
+        {% else %}
+          <img src="{% static 'avatars/default-avatar.jpg' %}" class="avatar border border-3 rounded-circle" alt="Avatar">
+        {% endif %}
       </a>
       <a href="{% url 'profile' %}" class="ms-2 text-dark text-decoration-none link-primary">{{ request.user.username }}</a>
     </div>
  
       {% else %}
         
-
-        <img src="{% get_media_prefix %}avatars/default-avatar.jpg" class="avatar border border-3 rounded-circle" alt="Avatar">
+        
+        <img src="{% static 'avatars/default-avatar.jpg' %}" class="avatar border border-3 rounded-circle" alt="Avatar">
       </a>
       
    </div>
@@ -177,6 +185,22 @@
           {% if request.user.is_superuser or request.user.is_staff %}
       
           <!-- Botón de menú desplegable -->
+           <li>
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#passwordsubmenu" aria-expanded="false">
+              <i class="fa fa-key me-2" style= "color: rgb(246, 221, 79)"></i> Contraseñas
+            </button>
+            <div class="collapse ps-3" id="passwordsubmenu">
+              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                
+                
+                <li><a href="{% url 'createpass' %}" class="nav-link text-white"><i class="fa fa-plus me-2"></i>Nueva Contraseña</a></li>
+                <li><a href="{% url 'listpass' %}" class="nav-link text-white"><i class="fa fa-list me-2"></i>Lista</a></li>
+                <li><a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#quickPasswordModal"><i class="fa fa-key me-2"></i>Generador rápido</a></li>
+                
+              </ul>
+            </div>
+            </li>
+
           <li>
             <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#resourcesubmenu" aria-expanded="false">
               <i class="fa fa-server me-2" style= "color: rgb(106, 255, 106)"></i> Recursos
@@ -244,6 +268,121 @@
 
   
 
+  <!-- Quick Password Generator Modal -->
+  <div class="modal fade" id="quickPasswordModal" tabindex="-1" aria-labelledby="quickPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="quickPasswordModalLabel">Generador rápido de contraseñas</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Longitud</label>
+            <input id="qp-length" type="number" min="4" max="128" value="16" class="form-control">
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="qp-lower" checked>
+                <label class="form-check-label" for="qp-lower">Incluir minúsculas</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="qp-upper" checked>
+                <label class="form-check-label" for="qp-upper">Incluir mayúsculas</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="qp-numbers" checked>
+                <label class="form-check-label" for="qp-numbers">Incluir números</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="qp-symbols" checked>
+                <label class="form-check-label" for="qp-symbols">Incluir símbolos</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group mb-2">
+            <input id="qp-result" type="text" class="form-control" readonly placeholder="Contraseña generada">
+            <button id="qp-copy" class="btn btn-outline-secondary" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="qp-generate" type="button" class="btn btn-primary">Generar</button>
+          <button id="qp-create" type="button" class="btn btn-success">Crear y abrir formulario</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% block javascript %}{% endblock %}
+
+  <script>
+    (function(){
+      function generatePassword(len, opts){
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const syms = '!@#$%^&*()-_=+[]{};:,.<>/?|\\~`';
+
+        let charset = '';
+        if(opts.lower) charset += lower;
+        if(opts.upper) charset += upper;
+        if(opts.numbers) charset += nums;
+        if(opts.symbols) charset += syms;
+        if(!charset) return '';
+
+        const array = new Uint32Array(len);
+        window.crypto.getRandomValues(array);
+        let out = '';
+        for(let i=0;i<len;i++){
+          out += charset[array[i] % charset.length];
+        }
+        return out;
+      }
+
+      function qsParamEncode(s){
+        return encodeURIComponent(s);
+      }
+
+      document.addEventListener('DOMContentLoaded', function(){
+        const genBtn = document.getElementById('qp-generate');
+        const copyBtn = document.getElementById('qp-copy');
+        const createBtn = document.getElementById('qp-create');
+
+        genBtn && genBtn.addEventListener('click', function(){
+          const len = parseInt(document.getElementById('qp-length').value) || 16;
+          const opts = {
+            lower: document.getElementById('qp-lower').checked,
+            upper: document.getElementById('qp-upper').checked,
+            numbers: document.getElementById('qp-numbers').checked,
+            symbols: document.getElementById('qp-symbols').checked,
+          };
+          const pwd = generatePassword(len, opts);
+          document.getElementById('qp-result').value = pwd;
+        });
+
+        copyBtn && copyBtn.addEventListener('click', function(){
+          const val = document.getElementById('qp-result').value;
+          if(!val) return;
+          navigator.clipboard.writeText(val).catch(()=>{});
+        });
+
+        createBtn && createBtn.addEventListener('click', function(){
+          const val = document.getElementById('qp-result').value;
+          if(!val) return alert('Generá una contraseña primero.');
+          const url = '{% url "createpass" %}' + '?password=' + qsParamEncode(val);
+          window.location.href = url;
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

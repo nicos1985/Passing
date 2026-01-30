@@ -34,9 +34,9 @@
     <div class='container'>
         <div class="profile-image-container">
             {% if user_profile.avatar %}
-                <img class="rounded-circle" src="{% get_media_prefix %}{{user_profile.avatar}}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{{ user_profile.avatar.url }}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
             {% else %}
-                <img class="rounded-circle" src="{% get_media_prefix %}static/default-avatar.jpg" alt="Default Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" alt="Default Avatar" width="125" height="125">
             {% endif %}
             </div>
         </div>
@@ -112,7 +112,8 @@
 <script>
     const botonEditar = document.getElementById("botonEditar");
 const botonGuardar = document.getElementById('buttonsubmit');
-const campos = document.querySelectorAll('input');
+// Keep file inputs enabled so users can upload without clicking "Editar"
+const campos = document.querySelectorAll("input:not([type='file'])");
 
 // Inicialmente, deshabilita los campos y oculta el botón "Guardar"
 campos.forEach(function(input) {

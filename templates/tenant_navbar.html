@@ -157,7 +157,7 @@
                                 
                                 <li class="nav-item" style="margin-top: 5px;">
                                     {% if request.user.avatar %}
-                                        <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px" alt="Avatar">
+                                        <img class="rounded-circle" src="{{ request.user.avatar.url }}" width="51px" height="51px" borders="45px" alt="Avatar">
                                     {% else %}
                                         <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px" alt="Default Avatar">
                                     {% endif %}
