@@ -1,138 +1,92 @@
 <!DOCTYPE html>
-<html lang="es">
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
 {% load static %}
-
-
-{% block head %}
-
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-
-{% endblock %}
 
 {% block content %}
 
 <div class="container" style="height: 60px;">
-    <h2>{{title}}</h2>
+    <h2>{{ title }}</h2>
 </div>
 
-
-
 {% if request.user.is_authenticated %}
-<html>
-<head>
-    <title>Perfil de {{ user_profile.username }}</title>
-</head>
-<body>
     <div class='container'>
-        <div class="profile-image-container">
-            {% if user_profile.avatar %}
-                <img class="rounded-circle" src="{{ user_profile.avatar.url }}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
-            {% else %}
-                <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" alt="Default Avatar" width="125" height="125">
-            {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="form-card card shadow-sm">
+                    <div class="card-header">
+                        <h5>Mi Perfil</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="position-relative">
+                                {% if user_profile.avatar %}
+                                    <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
+                                {% else %}
+                                    <img src="{% static 'default-avatar.jpg' %}" alt="Default Avatar" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
+                                {% endif %}
+                                <div style="position:absolute; bottom:0; right:0;">
+                                    <label for="id_avatar" class="btn btn-sm btn-light border"><i class="fa fa-camera"></i></label>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-0">{{ user_profile.get_full_name }}</h4>
+                                <p class="text-muted mb-0">{{ user_profile.email }}</p>
+                                <p class="text-muted small">{{ user_profile.position }}</p>
+                            </div>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data" action="{% url 'profile' %}">
+                            {% csrf_token %}
+                            {{ profile_form.non_field_errors }}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre</label>
+                                    {{ profile_form.first_name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apellido</label>
+                                    {{ profile_form.last_name }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Correo</label>
+                                    {{ profile_form.email }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Puesto</label>
+                                    {{ profile_form.position }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Avatar</label>
+                                    {{ profile_form.avatar }}
+                                </div>
+                                <div class="col-12 d-flex align-items-center">
+                                    <div class="form-check form-switch me-3">
+                                        {{ profile_form.is_2fa_enabled }}
+                                    </div>
+                                    <div>
+                                        <label class="form-check-label">2do factor de autenticación</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Color del menú</label>
+                                    {{ profile_form.menu_color }}
+                                </div>
+                            </div>
+
+                            <div class="btn-group-submit mt-4">
+                                <button type="submit" class="btn btn-submit btn-submit-primary">Guardar cambios</button>
+                                <a href="/" class="btn btn-submit btn-submit-secondary">Volver</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-       
-        <div class="row">
-            <div class="col-md-4 mx-auto">
-                <form class= 'd-inline' id="Profileform" method='POST' enctype="multipart/form-data" action='{% url 'profile' %}'>
-                    {% csrf_token %}
-                    {{ profile_form.errors }}
-                    {{ profile_form.non_field_errors }}
-                    <h2>Perfil de {{ user_profile.username }}</h2>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="first_name" class="form-label">Nombre: </label>
-                        <input name="first_name" id="first_name" class="form-control" value="{{ user_profile.first_name }}" >
-                    </div>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="last_name" class="form-label">Apellido: </label>
-                        <input name="last_name" id="last_name" class="form-control" value="{{ user_profile.last_name }}" >
-                    </div>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="email" class="form-label">Correo electrónico:</label>
-                        <input name="email" id="email" class="form-control" value="{{ user_profile.email }}" >
-                    </div>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="position" class="form-label">Puesto:</label>
-                        <input name="position" id="position" class="form-control" value="{{ user_profile.position }}" >
-                    </div>
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="avatar" class="form-label">Avatar:</label>
-                        <input type="file" name="avatar" id="avatar" class="form-control" value="{{ user_profile.avatar }}" >
-                    </div>
-                    <div class="form-check-inline form-switch" style="margin-top: 20px; margin-bottom: 20px;">
-                        {{ profile_form.is_2fa_enabled }}
-                        <label for="is_2fa_enabled" class="form-label" style='margin-left:25px'>2do factor de autenticación</label>
-                        
-                        <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="Al habilitar 2do factor de autenticacion se te dará un codigo QR para que escanees con Google Authenticator de tu celular."></i>
-                    </div>
-                    
-                    {% if has_otp_secret == True %}
-                    <a href="{% url 'show-qr-code-2fa' %}" >Ver código QR<a>
-                    {%else%}
-                    {% endif %}
-                    <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label for="menu_color" class="form-label">Menu color:</label>
-                        <input type="color" name="menu_color" id="menu_color" class="form-control form-control-color" style="height: 40px; width: 100px" value="{{ user_profile.menu_color }}" >
-                    </div>
-                    
-                    
-                    </div>
-                        
-                        <div class="text-center" style="margin-top: 20px; margin-bottom: 20px;">
-                        <button id="botonEditar" class="btn btn-warning" type="button">Editar <i class="fas fa-pencil-alt"></i></button>
-                        </div>
-                    
-                    <div class="text-center" style="margin-top: 5px; margin-bottom: 5px;">
-                        <button id='buttonsubmit' type="submit" class="btn btn-primary">
-                               <i class="fas fa-save" style="margin-right:10px; text-decoration-line: none; color: white;"></i>Guardar
-                        </button> 
-                    </div> 
-                
-                </form>
-               
-
-             
-        </div>
+    </div>
+{% else %}
+    <div class="container text-center">
+        <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para ver el perfil.</h5>
     </div>
 {% endif %}
-</body>
+
 {% endblock %}
-
-{% block javascript %}
-
-<script>
-    const botonEditar = document.getElementById("botonEditar");
-const botonGuardar = document.getElementById('buttonsubmit');
-// Keep file inputs enabled so users can upload without clicking "Editar"
-const campos = document.querySelectorAll("input:not([type='file'])");
-
-// Inicialmente, deshabilita los campos y oculta el botón "Guardar"
-campos.forEach(function(input) {
-    input.disabled = true;
-});
-botonGuardar.disabled = true;
-
-
-botonEditar.addEventListener("click", function() {
-    campos.forEach(function(input) {
-        input.disabled = false; // Habilita los campos
-    });
-
-    botonEditar.disabled = true; // Deshabilita el botón "Editar"
-    botonGuardar.disabled = false;
-}); 
-
-</script>
-
-{%endblock%}
-
-</html>

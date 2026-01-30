@@ -59,6 +59,15 @@ class ProfileForm(forms.ModelForm):
         fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled']
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == 'is_2fa_enabled':
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif name == 'avatar':
+                field.widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_avatar'})
+            elif name == 'menu_color':
+                field.widget.attrs.update({'class': 'form-control form-control-color', 'style': 'height:44px; width:120px;'})
+            else:
+                field.widget.attrs.update({'class': 'form-control', 'autocomplete': 'off'})
 
 
 
