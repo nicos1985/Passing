@@ -10,6 +10,8 @@ from django.utils import timezone
 from resources.views import DynamicModelListView
 from .models import Run, RunItem, IntelItem, AIAnalysis, Report, Review, Source, TechTag
 from .services.ai import analyze_relevant_items_for_run
+from .services.emailer import send_report_email
+from .services.report_generator import generate_report_pdf, generate_report_markdown, generate_report_json
 from django.utils.text import capfirst
 import csv
 import json
@@ -461,12 +463,48 @@ This report contains the threat intelligence analysis for the period above.
 
 
 class ReportSendView(LoginRequiredMixin, View):
-    """Mark report as sent."""
+    """Send report via email with PDF attachment."""
     def post(self, request, pk):
         report = get_object_or_404(Report, pk=pk)
-        report.sent_at = timezone.now()
-        report.save()
-        messages.success(request, f'Reporte enviado')
+        
+        # Get send parameters from POST data
+        send_email = request.POST.get('send_email', False) == 'on'
+        include_pdf = request.POST.get('include_pdf', False) == 'on'
+        use_brevo = request.POST.get('use_brevo', False) == 'on'
+        
+        attachments = []
+        
+        # Generate PDF if requested
+        if include_pdf:
+            try:
+                filename, pdf_content = generate_report_pdf(report)
+                attachments.append((filename, pdf_content, "application/pdf"))
+                messages.info(request, f'PDF generado: {filename}')
+            except ImportError:
+                messages.warning(request, 'WeasyPrint no instalado. Instala con: pip install weasyprint')
+            except Exception as e:
+                messages.warning(request, f'Error generando PDF: {str(e)}')
+        
+        # Send email if requested
+        if send_email:
+            result = send_report_email(report, attachments=attachments, use_brevo=use_brevo)
+            
+            if result['status'] == 'success':
+                report.sent_at = timezone.now()
+                report.save()
+                backend = "Brevo" if use_brevo else "SMTP"
+                messages.success(
+                    request, 
+                    f"✓ Reporte enviado vía {backend} a {len(report.recipients or [])} destinatarios"
+                )
+            else:
+                messages.error(request, f"Error enviando email: {result['message']}")
+        else:
+            # Mark as sent even without email
+            report.sent_at = timezone.now()
+            report.save()
+            messages.success(request, 'Reporte marcado como enviado')
+        
         return redirect('threat_intel:report-detail', pk=pk)
 
 

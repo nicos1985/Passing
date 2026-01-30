@@ -20,7 +20,216 @@
 
   <!-- Accesos directos -->
   <div class="row g-3">
-    <!-- Item -->
+    <!-- Dashboard summary cards -->
+    <div class="col-12 mb-3">
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <a href="{% url 'treatment-list' %}?stage=0" class="text-decoration-none">
+          <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+              <h6 class="card-title">Pendientes</h6>
+              <h2 class="card-text">{{ stage_counts.0|default:0 }}</h2>
+              <small>Tratamientos pendientes</small>
+            </div>
+          </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="{% url 'treatment-list' %}?stage=1" class="text-decoration-none">
+          <div class="card text-dark bg-warning h-100">
+            <div class="card-body">
+              <h6 class="card-title">Análisis</h6>
+              <h2 class="card-text">{{ stage_counts.1|default:0 }}</h2>
+              <small>En análisis</small>
+            </div>
+          </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="{% url 'treatment-list' %}?stage=2" class="text-decoration-none">
+          <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+              <h6 class="card-title">En Progreso</h6>
+              <h2 class="card-text">{{ stage_counts.2|default:0 }}</h2>
+              <small>En ejecución</small>
+            </div>
+          </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="{% url 'treatment-list' %}?stage=3" class="text-decoration-none">
+          <div class="card text-white bg-success h-100">
+            <div class="card-body">
+              <h6 class="card-title">Implementados</h6>
+              <h2 class="card-text">{{ stage_counts.3|default:0 }}</h2>
+              <small>Implementados</small>
+            </div>
+          </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Critical risks and recent pending treatments -->
+    <div class="col-12">
+      <div class="row">
+    <!-- (Removed duplicated small access shortcuts) -->
+        <div class="col-12 col-lg-6">
+          <div class="card mb-3">
+            <div class="card-header">Evaluaciones críticas</div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-12">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body d-flex justify-content-between align-items-center p-3">
+                      <div>
+                        <div class="small text-muted">Con tratamiento no implementado</div>
+                        <div class="h3 mb-0"><a href="{% url 'evaluation-list' %}?not_implemented=1" class="text-decoration-none text-danger">{{ evaluations_not_implemented|default:0 }}</a></div>
+                      </div>
+                      <div class="text-end small text-muted">Revisa las evaluaciones con tratamiento pendiente</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row text-center mb-3">
+                <div class="col-6 col-sm-2">
+                  <div class="small">Muy Bajo</div>
+                  <div class="h4"><a href="{% url 'evaluation-list' %}?risk=0" class="text-decoration-none">{{ risk_map.0|default:0 }}</a></div>
+                </div>
+                <div class="col-6 col-sm-2">
+                  <div class="small">Bajo</div>
+                  <div class="h4"><a href="{% url 'evaluation-list' %}?risk=1" class="text-decoration-none">{{ risk_map.1|default:0 }}</a></div>
+                </div>
+                <div class="col-6 col-sm-2">
+                  <div class="small">Moderado</div>
+                  <div class="h4"><a href="{% url 'evaluation-list' %}?risk=2" class="text-decoration-none">{{ risk_map.2|default:0 }}</a></div>
+                </div>
+                <div class="col-6 col-sm-2">
+                  <div class="small">Alto</div>
+                  <div class="h4"><a href="{% url 'evaluation-list' %}?risk=3" class="text-decoration-none">{{ risk_map.3|default:0 }}</a></div>
+                </div>
+                <div class="col-6 col-sm-2">
+                  <div class="small">Muy Alto</div>
+                  <div class="h4"><a href="{% url 'evaluation-list' %}?risk=4" class="text-decoration-none">{{ risk_map.4|default:0 }}</a></div>
+                </div>
+              </div>
+              <hr />
+              <h6>Top críticas recientes</h6>
+              <ul class="list-group list-group-flush mt-2">
+                {% for ev in critical_evals %}
+                  <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <a href="{% url 'evaluation-detail' ev.pk %}" class="text-decoration-none text-reset w-100 d-flex justify-content-between align-items-start">
+                      <div>
+                        <div class="fw-bold">{{ ev.evaluated_object }}</div>
+                        <div class="small text-muted">{{ ev.threat }} — Nivel: {{ ev.get_risk_level_display }}</div>
+                      </div>
+                      <div class="text-end small">{{ ev.created|date:"Y-m-d" }}</div>
+                    </a>
+                  </li>
+                {% empty %}
+                  <li class="list-group-item">No hay evaluaciones críticas recientes.</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="card mb-3">
+            <div class="card-header">Tratamientos próximos / pendientes</div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                {% for t in recent_pending %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{% url 'treatment-detail' t.pk %}" class="text-decoration-none text-reset d-flex justify-content-between align-items-center w-100">
+                      <div>
+                        <div class="fw-bold">{{ t.name }}</div>
+                        <div class="small text-muted">{{ t.content_object }}</div>
+                      </div>
+                      <div class="text-end small">{{ t.deadline|date:"Y-m-d" }}</div>
+                    </a>
+                  </li>
+                {% empty %}
+                  <li class="list-group-item">No hay tratamientos pendientes.</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- Threat Intel resumen -->
+      <div class="col-12 mb-3">
+        <div class="card">
+          <div class="card-header">Threat Intel relevantes</div>
+          <div class="card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-6 col-sm-3">
+                <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=critical&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=critical{% endif %}" class="text-decoration-none">
+                  <div class="card text-white bg-danger h-100">
+                    <div class="card-body p-2 text-center">
+                      <div class="small">Critical</div>
+                      <div class="h4 mb-0">{{ ti_counts.critical|default:0 }}</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="col-6 col-sm-3">
+                <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=high&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=high{% endif %}" class="text-decoration-none">
+                  <div class="card text-white bg-warning h-100">
+                    <div class="card-body p-2 text-center text-dark">
+                      <div class="small">High</div>
+                      <div class="h4 mb-0">{{ ti_counts.high|default:0 }}</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="col-6 col-sm-3">
+                <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=medium&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=medium{% endif %}" class="text-decoration-none">
+                  <div class="card text-white bg-primary h-100">
+                    <div class="card-body p-2 text-center">
+                      <div class="small">Medium</div>
+                      <div class="h4 mb-0">{{ ti_counts.medium|default:0 }}</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="col-6 col-sm-3">
+                <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}{% endif %}" class="text-decoration-none">
+                  <div class="card text-white bg-secondary h-100">
+                    <div class="card-body p-2 text-center">
+                      <div class="small">Unknown</div>
+                      <div class="h4 mb-0">{{ ti_counts.unknown|default:0 }}</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <h6 class="mb-2">Items recientes (relevantes con IA)</h6>
+            <ul class="list-group list-group-flush">
+              {% for it in recent_threats %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                  <a href="{% url 'threat_intel:item-detail' it.pk %}" class="text-decoration-none text-reset w-100 d-flex justify-content-between align-items-start">
+                    <div>
+                      <div class="fw-bold">{{ it.canonical_id }} — {{ it.title|truncatechars:60 }}</div>
+                      <div class="small text-muted">Severity: {{ it.get_severity_display }}</div>
+                      <div class="small text-muted mt-1">{{ it.description|truncatechars:140 }}</div>
+                    </div>
+                    <div class="text-end small">{{ it.created_at|date:"Y-m-d" }}</div>
+                  </a>
+                </li>
+              {% empty %}
+                <li class="list-group-item">No hay items relevantes con análisis IA.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item -->
     <div class="col-12 col-sm-6 col-lg-4">
       <a href="{% url 'listpass' %}" class="text-decoration-none">
         <div class="card h-100 shadow-sm border-0">
@@ -32,6 +241,48 @@
             <div>
               <h2 class="h6 mb-1 text-body">Contraseñas</h2>
               <p class="text-muted mb-0 small">Listado de contraseñas.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'threat_intel:run-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span aria-hidden="true"><i class="fa-solid fa-play" style="color:#e04e4e; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Ejecuciones</h2>
+              <p class="text-muted mb-0 small">Runs de Threat Intel</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'threat_intel:report-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span aria-hidden="true"><i class="fa-solid fa-file-lines" style="color:#0d6efd; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Reportes</h2>
+              <p class="text-muted mb-0 small">Reportes generados</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <a href="{% url 'threat_intel:analysis-list' %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-start gap-3">
+            <span aria-hidden="true"><i class="fa-solid fa-magnifying-glass" style="color:#ffc107; font-size: 24px;"></i></span>
+            <div>
+              <h2 class="h6 mb-1 text-body">Análisis</h2>
+              <p class="text-muted mb-0 small">Análisis y resultados</p>
             </div>
           </div>
         </div>

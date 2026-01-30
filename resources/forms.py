@@ -1,8 +1,65 @@
-from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
-from .models import ClientCompany, InformationAssets, Project, RiskEvaluableObject, RiskEvaluation, Threat, Treatment, Vendor, Vulnerability
+from django.forms import (
+    CheckboxInput,
+    FileInput,
+    ModelForm,
+    PasswordInput,
+    RadioSelect,
+    Select,
+    TextInput,
+    Textarea,
+)
+from .models import (
+    ClientCompany,
+    InformationAssets,
+    Project,
+    RiskEvaluableObject,
+    RiskEvaluation,
+    Threat,
+    Treatment,
+    Vendor,
+    Vulnerability,
+)
 from django.contrib.contenttypes.models import ContentType
 from django import forms
 from itertools import chain
+
+
+# Small helper: map common field names to FontAwesome icons and placeholders
+ICON_MAP = {
+    'model_type': 'fa-cubes',
+    'object_id': 'fa-hashtag',
+    'threat': 'fa-exclamation-triangle',
+    'vulnerability': 'fa-bug',
+    'description': 'fa-file-lines',
+    'confidenciality_impact': 'fa-chart-bar',
+    'integrity_impact': 'fa-chart-bar',
+    'availability_impact': 'fa-chart-bar',
+    'probability': 'fa-chart-line',
+    'start_date': 'fa-calendar',
+    'finish_date': 'fa-calendar',
+    'deadline': 'fa-calendar',
+    'name': 'fa-tag',
+    'url': 'fa-link',
+    'email': 'fa-envelope',
+    'recipients': 'fa-users',
+    'ticket_ref': 'fa-ticket-simple',
+}
+
+def improve_widget_attrs(field_name, widget):
+    """Add consistent classes, placeholders and data-icon for templates."""
+    # base control class
+    existing = widget.attrs.get('class', '')
+    classes = f"{existing} form-control"
+    widget.attrs['class'] = classes.strip()
+    # autocomplete off by default
+    widget.attrs.setdefault('autocomplete', 'off')
+    # placeholder from field name (improve in template rendering)
+    placeholder = widget.attrs.get('placeholder') or f"Ingrese {field_name.replace('_', ' ')}"
+    widget.attrs['placeholder'] = placeholder
+    # attach data-icon if known
+    icon = ICON_MAP.get(field_name)
+    if icon:
+        widget.attrs['data-icon'] = icon
 
 class RiskEvaluationForm(forms.ModelForm):
     model_type = forms.ModelChoiceField(
@@ -11,7 +68,7 @@ class RiskEvaluationForm(forms.ModelForm):
         ]),
         label="Objeto evaluable"
     )
-    object_id = forms.IntegerField(label="ID del objeto")
+    object_id = forms.ChoiceField(label="ID del objeto")
     threat = forms.ModelChoiceField(queryset=Threat.objects.all())
     vulnerability = forms.ModelChoiceField(queryset=Vulnerability.objects.all())
 
@@ -29,16 +86,55 @@ class RiskEvaluationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Agregar clase Bootstrap manualmente a campos redefinidos
-        self.fields['model_type'].widget.attrs.update({'class': 'form-control'})
-        self.fields['object_id'].widget.attrs.update({'class': 'form-control'})
-        self.fields['threat'].widget.attrs.update({'class': 'form-control'})
-        self.fields['vulnerability'].widget.attrs.update({'class': 'form-control'})
+        # If POST (data provided) or editing an instance, populate object_id choices
+        # so Django's ChoiceField validation accepts the submitted value.
+        try:
+            # Django forms can receive bound data as the first positional arg
+            data = None
+            if args:
+                data = args[0]
+            else:
+                data = kwargs.get('data')
+            if data:
+                model_type_id = data.get('model_type')
+                if model_type_id:
+                    try:
+                        ct = ContentType.objects.get(pk=model_type_id)
+                        model_class = ct.model_class()
+                        self.fields['object_id'].choices = [(str(obj.pk), str(obj)) for obj in model_class.objects.all()]
+                    except Exception:
+                        self.fields['object_id'].choices = []
+
+            # If form is bound to an instance (edit), populate choices from that instance's content type
+            if hasattr(self, 'instance') and self.instance and getattr(self.instance, 'pk', None):
+                try:
+                    ct = self.instance.evaluated_type if hasattr(self.instance, 'evaluated_type') else None
+                    if ct is None and getattr(self.instance, 'evaluated_type_id', None):
+                        ct = ContentType.objects.get(pk=self.instance.evaluated_type_id)
+                    if ct:
+                        model_class = ct.model_class()
+                        self.fields['object_id'].choices = [(str(obj.pk), str(obj)) for obj in model_class.objects.all()]
+                        if getattr(self.instance, 'evaluated_id', None) is not None:
+                            self.fields['object_id'].initial = str(self.instance.evaluated_id)
+                except Exception:
+                    self.fields['object_id'].choices = []
+        except Exception:
+            # Fall back safely if ContentType lookups fail during import-time form construction
+            self.fields['object_id'].choices = []
+
+        # Improve widget attrs consistently (placeholders, icons, classes)
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.evaluated_type = self.cleaned_data['model_type']
-        instance.evaluated_id = self.cleaned_data['object_id']
+        # object_id comes from a ChoiceField as string, convert to int
+        instance.evaluated_id = int(self.cleaned_data['object_id'])
         if commit:
             instance.save()
         return instance
@@ -47,9 +143,12 @@ class InformationAssetsForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
             
     class Meta:
         model = InformationAssets
@@ -61,9 +160,12 @@ class VendorForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
 
     
     class Meta:
@@ -80,9 +182,12 @@ class ProjectAssetsForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
             
     class Meta:
         model = Project
@@ -170,17 +275,21 @@ class TreatmentForm(ModelForm):
         
 
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, (CheckboxInput, RadioSelect)):
-                field.widget.attrs['class'] = 'form-check-input'
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
             else:
-                field.widget.attrs['class'] = 'form-control'
-                field.widget.attrs['autocomplete'] = 'off'
+                improve_widget_attrs(field_name, widget)
 
     class Meta:
         model = Treatment
         exclude = ['content_type','object_id','created', 'updated']
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'},format='%Y-%m-%d'),
+            'analysis_notes': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'immediate_actions': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'corrective_actions': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'stage': forms.Select(attrs={'class': 'form-select'}),
         }
     
 
@@ -188,9 +297,12 @@ class ThreatForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
             
     class Meta:
         model = Threat
@@ -205,9 +317,12 @@ class VulnerabilityForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
             
     class Meta:
         model = Vulnerability

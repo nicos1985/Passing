@@ -1,4 +1,4 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Threat, Treatment, Vendor, Project, Vulnerability
@@ -33,12 +33,14 @@ urlpatterns = [
     path('evaluation-create/', crear_evaluacion, name='evaluation-create'),
     path('ajax/get-objects/', get_objects_by_type, name='ajax-get-objects'),
     path('evaluation/<int:pk>/', RiskEvaluationDetailView.as_view(), name='evaluation-detail'),
+    path('evaluation/<int:pk>/force-treatment/', force_create_treatment, name='evaluation-force-treatment'),
     path('evaluation-list/', RiskEvaluationListView.as_view(), name='evaluation-list'),
     path('evaluation-delete/<int:pk>/', RiskEvaluationDeleteView.as_view(), name='evaluation-delete'),
     #TReatment URLs
     path('treatment-create/', crear_tratamiento, name='treatment-create'),
     path('treatment-list/', TreatmentListView.as_view(), name='treatment-list'),
     path('treatment-detail/<int:pk>', GenericResourceDetailView.as_view(model=Treatment), name='treatment-detail'),
+    path('treatment-advance/<int:pk>/', advance_treatment_stage, name='treatment-advance'),
     path('treatment-delete/<int:pk>', TreatmentDeleteView.as_view(), name='treatment-delete'),
     path('treatment-update/<int:pk>', TreatmentUpdateView.as_view(), name='treatment-update'),
     path('test-colreorder/', test_colreorder, name='test_colreorder'),

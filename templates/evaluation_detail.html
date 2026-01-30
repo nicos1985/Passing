@@ -11,6 +11,16 @@
   <h2>Detalle de Evaluación</h2>
 
   <h4>Objeto evaluado: {{ evaluation.evaluated_object }}</h4>
+  <div class="mb-3">
+    {% if not evaluation.treatment %}
+      <form method="post" action="{% url 'evaluation-force-treatment' evaluation.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger">Forzar creación de tratamiento y vincular</button>
+      </form>
+    {% else %}
+      <p>Tratamiento asociado: <a href="{% url 'treatment-detail' evaluation.treatment.pk %}">#{{ evaluation.treatment.pk }} - {{ evaluation.treatment.name }}</a></p>
+    {% endif %}
+  </div>
  
 
   <div class="accordion mt-4" id="evaluatedObjectAccordion">
@@ -50,6 +60,41 @@
     <tr><th>Nivel de Riesgo</th><td>{{ evaluation.get_risk_level_badge|safe }}</td></tr>
   </table>
 
+  {% if evaluation.treatment %}
+  <div class="card mt-4">
+    <div class="card-header">Tratamiento asociado</div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <h5 class="mb-0">#{{ evaluation.treatment.pk }} — {{ evaluation.treatment.name }}</h5>
+          <div class="small text-muted">{{ evaluation.treatment.content_object }}</div>
+        </div>
+        <div class="text-end">
+          <div>{{ evaluation.treatment.get_stage_badge|safe }}</div>
+          <div class="mt-1">{{ evaluation.treatment.get_deadline_badge|safe }}</div>
+        </div>
+      </div>
+
+      <p class="mb-1"><strong>Responsable:</strong> {{ evaluation.treatment.treatment_responsible }}</p>
+      {% if evaluation.treatment.description %}
+        <p class="mb-1"><strong>Descripción:</strong> {{ evaluation.treatment.description }}</p>
+      {% endif %}
+      {% if evaluation.treatment.immediate_actions %}
+        <p class="mb-1"><strong>Acciones inmediatas:</strong> {{ evaluation.treatment.immediate_actions }}</p>
+      {% endif %}
+      {% if evaluation.treatment.corrective_actions %}
+        <p class="mb-1"><strong>Acciones correctivas:</strong> {{ evaluation.treatment.corrective_actions }}</p>
+      {% endif %}
+      {% if evaluation.treatment.analysis_notes %}
+        <p class="mb-1"><strong>Notas de análisis:</strong> {{ evaluation.treatment.analysis_notes }}</p>
+      {% endif %}
+
+      <div class="mt-3">
+        <a href="{% url 'treatment-detail' evaluation.treatment.pk %}" class="btn btn-sm btn-outline-primary">Ver detalle del tratamiento</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
   
 
   

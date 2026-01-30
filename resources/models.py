@@ -329,14 +329,15 @@ class RiskEvaluation(models.Model):
         is_new = self.pk is None  # <=== importante
         super().save(*args, **kwargs)
 
-
-            # Si no tiene tratamiento, crearlo
-        if not self.treatment:
-            # Determinar tipo de tratamiento según nivel de riesgo
-            if self.risk_level in [LevelOfRisk.VERY_LOW, LevelOfRisk.LOW]:
-                treatment_type = TypeTreatment.NOT_APPLICABLE  # 4
-            else:
-                treatment_type = TypeTreatment.REDUCE
+        # Si no tiene tratamiento, crearlo solo para riesgo moderado o superior
+        if (
+            not self.treatment
+            and not getattr(self, 'skip_treatment', False)
+            and self.risk_level is not None
+            and self.risk_level >= LevelOfRisk.MODERATE
+        ):
+            # Determinar tipo de tratamiento según nivel de riesgo (por ahora siempre REDUCE)
+            treatment_type = TypeTreatment.REDUCE
 
             # Crear tratamiento
             treatment = Treatment.objects.create(
@@ -352,7 +353,7 @@ class RiskEvaluation(models.Model):
                 application_periodicity=ApplicationPeriodicity.PERMANENT,
                 control_automation=ControlAutomation.MANUAL,
                 priority=Priority.NO_PRIORITY,
-                implementation_status=ImplementationStatus.PENDING
+                implementation_status=getattr(Treatment, 'implementation_status', None) and Treatment.implementation_status or None,
             )
 
             # Asociar y volver a guardar la evaluación con su tratamiento
@@ -438,7 +439,7 @@ class RiskEvaluation(models.Model):
         if not self.treatment_id:
             return format_html('<span class="text-muted">Sin tratamiento</span>')
 
-        badge_html = mark_safe(self.treatment.get_status_badge())  # Evita que se escape
+        badge_html = mark_safe(self.treatment.get_stage_badge())  # Evita que se escape
         url = reverse('treatment-detail', args=[self.treatment.pk])
 
         return format_html('<a href="{}">{}</a>', url, badge_html)
@@ -502,6 +503,14 @@ class ImplementationStatus(models.IntegerChoices):
     IN_PROGRESS = 1, 'En progreso'
     COMPLETED = 2, 'Completado'
 
+
+class TreatmentStage(models.IntegerChoices):
+    """Stages for a treatment lifecycle."""
+    PENDING = 0, 'Pendiente'
+    ANALYSIS = 1, 'Análisis'
+    IN_PROGRESS = 2, 'En proceso'
+    IMPLEMENTED = 3, 'Implementado'
+
 class Treatment(models.Model):
     """Model to define the Treatment of the Risk"""
     name = models.CharField(max_length=255, verbose_name="Nombre")
@@ -517,7 +526,16 @@ class Treatment(models.Model):
     application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name='Periodicidad de aplicacion')
     control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name='Automatizacion de control')
     priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name='Prioridad')
-    implementation_status = models.IntegerField(choices=ImplementationStatus.choices, default=ImplementationStatus.PENDING, verbose_name='Estado de implementacion')
+    # Compatibility column: some DBs/migrations still expect `implementation_status`.
+    # Keep this field mapped to the legacy DB column so ORM writes a safe default during creates.
+    implementation_status = models.IntegerField(choices=ImplementationStatus.choices, default=ImplementationStatus.PENDING, verbose_name='Estado de implementacion', db_column='implementation_status')
+    # New lifecycle stage and activity fields
+    stage = models.IntegerField(choices=TreatmentStage.choices, default=TreatmentStage.PENDING, verbose_name='Etapa')
+    analysis_notes = models.TextField(blank=True, null=True, verbose_name='Notas de análisis')
+    immediate_actions = models.TextField(blank=True, null=True, verbose_name='Acciones inmediatas')
+    corrective_actions = models.TextField(blank=True, null=True, verbose_name='Acciones correctivas')
+    stage_changed_at = models.DateTimeField(blank=True, null=True, verbose_name='Fecha cambio de etapa')
+    stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', verbose_name='Usuario que cambió etapa')
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
@@ -528,18 +546,32 @@ class Treatment(models.Model):
     def __str__(self):
         return self.name
     
-    def get_status_badge(self):
-        # Obtener el impacto y su etiqueta traducida
-        value = self.implementation_status
-        label = dict(ImplementationStatus.choices).get(value, 'Desconocido')
-        
+    # legacy `get_status_badge` removed; use `get_stage_badge` which reflects lifecycle stages
+
+    def get_stage_badge(self):
+        value = self.stage
+        label = dict(TreatmentStage.choices).get(value, 'Desconocido')
+
+        # Map lifecycle stages to badge colors:
+        # PENDING -> red, ANALYSIS -> yellow, IN_PROGRESS -> blue, IMPLEMENTED -> green
         color_class = {
-            0: 'bg-danger',   # pendiente
-            1: 'bg-warning',   # en progreso
-            2: 'bg-success',   # completado
+            TreatmentStage.PENDING: 'bg-danger',
+            TreatmentStage.ANALYSIS: 'bg-warning',
+            TreatmentStage.IN_PROGRESS: 'bg-primary',
+            TreatmentStage.IMPLEMENTED: 'bg-success',
         }.get(value, 'bg-secondary')
 
         return f'<span class="badge {color_class} text-white">{label}</span>'
+
+    def set_stage(self, new_stage, user=None):
+        """Helper to update stage and record timestamp/user."""
+        if new_stage == self.stage:
+            return
+        self.stage = new_stage
+        self.stage_changed_at = timezone.now()
+        if user and isinstance(user, CustomUser):
+            self.stage_changed_by = user
+        self.save(update_fields=['stage', 'stage_changed_at', 'stage_changed_by'])
     
     def get_deadline_badge(self):
         

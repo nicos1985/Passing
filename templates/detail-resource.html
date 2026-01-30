@@ -57,3 +57,64 @@
     {% endif %}
 </div>
 {% endblock %}
+ 
+{% if model_name == 'treatment' and request.user.is_authenticated %}
+<div class="container mt-2">
+    <a href="{% url 'evaluation-create' %}?type_id={{ object.content_type.pk }}&object_id={{ object.object_id }}&from_treatment={{ object.pk }}" class="btn btn-primary">
+        <i class="fa-solid fa-arrow-rotate-left"></i> Crear Re-evaluación
+    </a>
+</div>
+<!-- Treatment quick actions/modal -->
+<div class="modal fade" id="advanceStageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'treatment-advance' object.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Cambiar etapa del Tratamiento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Etapa</label>
+                        <select name="stage" class="form-select">
+                            {% for key, label in stage_choices %}
+                                <option value="{{ key }}" {% if key == object.stage %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notas de Análisis</label>
+                        <textarea name="analysis_notes" class="form-control" rows="4">{{ object.analysis_notes }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Acciones Inmediatas</label>
+                        <textarea name="immediate_actions" class="form-control" rows="3">{{ object.immediate_actions }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Acciones Correctivas</label>
+                        <textarea name="corrective_actions" class="form-control" rows="3">{{ object.corrective_actions }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar y Cambiar Etapa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const btn = document.createElement('a');
+    btn.className = 'btn btn-info ms-2';
+    btn.href = '#';
+    btn.dataset.bsToggle = 'modal';
+    btn.dataset.bsTarget = '#advanceStageModal';
+    btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Cambiar Etapa';
+    const container = document.querySelector('.mt-3');
+    if (container) container.appendChild(btn);
+});
+</script>
+{% endif %}

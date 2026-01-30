@@ -22,11 +22,14 @@ $(document).ready(function () {
 
         $(row).removeClass('table-warning table-primary table-success');
 
+        // Map stage text to row color: pendiente -> danger, análisis -> warning, en proceso -> primary, implementado -> success
         if (statusText.includes("pendiente")) {
+          $(row).addClass('table-danger');
+        } else if (statusText.includes("análisis") || statusText.includes("analisis")) {
           $(row).addClass('table-warning');
-        } else if (statusText.includes("en progreso")) {
+        } else if (statusText.includes("en proceso")) {
           $(row).addClass('table-primary');
-        } else if (statusText.includes("completado")) {
+        } else if (statusText.includes("implementado")) {
           $(row).addClass('table-success');
         }
       }
@@ -38,7 +41,8 @@ $(document).ready(function () {
     var colname = $(this).data('colname');
     if (colname) {
       colIndexMap[colname] = index;
-      if (colname === 'implementation_status') {
+      // detect stage column (replacing legacy implementation_status)
+      if (colname === 'stage' || colname === 'implementation_status') {
         statusColIndex = index;
       }
     }

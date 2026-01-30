@@ -39,81 +39,98 @@
 
 <body>
 
-<form method="post" id="risk-form" style="margin-top:20px;">
-    {% csrf_token %}
-    <div class="mb-3">
-      <label for="model_type">Tipo de objeto</label>
-      <select id="model_type" name="model_type" data-url="{% url 'ajax-get-objects' %}"  class="form-control">
-        <option value="">Seleccionar tipo...</option>
-        {% for ct in model_types %}
-          <option value="{{ ct.id }}">{{ ct.name }}</option>
-        {% endfor %}
-      </select>
+<div class="form-container" style="margin-top:20px;">
+  <div class="card form-card">
+    <div class="card-header">
+      <h5><i class="fa-solid fa-triangle-exclamation"></i> Crear / Editar Evaluación de Riesgo</h5>
     </div>
-  
-    <div class="mb-3">
-      <label for="object_id">Objeto</label>
-      <select id="object_id" name="object_id" class="form-control">
-        <option value="">Seleccionar objeto...</option>
-      </select>
-      {{ form.non_field_errors }}
-        {{ form.field_name.errors }}
+    <div class="card-body">
+      <form method="post" id="risk-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="row mb-3">
+          {% for field in form.visible_fields %}
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                  {% if field.name == 'model_type' %}
+                    <i class="fa-solid fa-cubes" style="color: #667eea;"></i>
+                  {% elif field.name == 'object_id' %}
+                    <i class="fa-solid fa-hashtag" style="color: #667eea;"></i>
+                  {% elif field.name == 'threat' %}
+                    <i class="fa-solid fa-exclamation-triangle" style="color: #667eea;"></i>
+                  {% elif field.name == 'vulnerability' %}
+                    <i class="fa-solid fa-bug" style="color: #667eea;"></i>
+                  {% elif field.name == 'description' %}
+                    <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
+                  {% elif field.name == 'confidenciality_impact' or field.name == 'integrity_impact' or field.name == 'availability_impact' %}
+                    <i class="fa-solid fa-chart-bar" style="color: #667eea;"></i>
+                  {% elif field.name == 'probability' %}
+                    <i class="fa-solid fa-chart-line" style="color: #667eea;"></i>
+                  {% else %}
+                    <i class="fa-solid fa-square" style="color: #667eea;"></i>
+                  {% endif %}
+                  &nbsp;{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="btn-group-submit">
+          <button type="submit" class="btn btn-submit btn-submit-primary">
+            <i class="fa-solid fa-check-circle"></i> Guardar Evaluación
+          </button>
+          <button type="reset" class="btn btn-submit btn-submit-secondary">
+            <i class="fa-solid fa-redo"></i> Limpiar
+          </button>
+        </div>
+      </form>
     </div>
-  
-    {{ form.threat.label_tag }}
-    {{ form.threat }}
-      
-     {{ form.vulnerability.label_tag }}
-     {{ form.vulnerability }}
-      
-     {{ form.description.label_tag }}
-     {{ form.description }}
-      
-     {{ form.confidenciality_impact.label_tag }}
-     {{ form.confidenciality_impact }}
-      
-     {{ form.integrity_impact.label_tag }}
-     {{ form.integrity_impact }}
-  
-    {{ form.availability_impact.label_tag }}
-    {{ form.availability_impact }}
-  
-    {{ form.probability.label_tag }}
-    {{ form.probability }}
-  
-    <button type="submit" class="btn btn-primary">Guardar Evaluación</button>
-  </form>
-</body>
+  </div>
+</div>
 
 
 
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const modelSelect = document.getElementById('model_type');
-        const fetchUrl = modelSelect.dataset.url;
-        const objectSelect = document.getElementById('object_id');
-    
-        modelSelect.addEventListener('change', function () {
-            const typeId = this.value;
-            objectSelect.innerHTML = '<option value="">Cargando...</option>';
-    
-            if (typeId) {
-                fetch(`${fetchUrl}?type_id=${typeId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
-                        data.objects.forEach(function (obj) {
-                            const option = document.createElement('option');
-                            option.value = obj.id;
-                            option.text = obj.name;
-                            objectSelect.appendChild(option);
-                        });
-                    });
-            } else {
-                objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
-            }
-        });
+  document.addEventListener('DOMContentLoaded', function () {
+    const modelSelect = document.getElementById('id_model_type') || document.getElementById('model_type');
+    const objectSelect = document.getElementById('id_object_id') || document.getElementById('object_id');
+    const fetchUrl = "{% url 'ajax-get-objects' %}";
+
+    if (!modelSelect || !objectSelect) return;
+
+    // Ensure dataset.url is available for other handlers
+    try { modelSelect.dataset.url = fetchUrl; } catch (e) {}
+
+    modelSelect.addEventListener('change', function () {
+      const typeId = this.value;
+      objectSelect.innerHTML = '<option value="">Cargando...</option>';
+
+      if (typeId) {
+        fetch(`${fetchUrl}?type_id=${typeId}`)
+          .then(response => response.json())
+          .then(data => {
+            objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+            data.objects.forEach(function (obj) {
+              const option = document.createElement('option');
+              option.value = obj.id;
+              option.text = obj.name;
+              objectSelect.appendChild(option);
+            });
+          })
+          .catch(() => {
+            objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+          });
+      } else {
+        objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+      }
     });
-    </script>
+  });
+  </script>
     {%endblock%}

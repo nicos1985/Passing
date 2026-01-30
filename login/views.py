@@ -38,6 +38,10 @@ from django.core import signing
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from django_tenants.utils import get_tenant
+from resources.models import Treatment, RiskEvaluation, TreatmentStage
+from django.db.models import Count, Q
+from threat_intel.models import IntelItem, Run, AIAnalysis
+from django.db.models import Count
 from accounts.models import TenantMembership, TenantSettings, AuthEvent
 from accounts.utils import get_ip, get_ua
 from django.contrib.auth import login as auth_login
@@ -68,7 +72,63 @@ def login_alias_to_hub(request):
     return redirect(f"{hub}/accounts/?next={quote(next_path)}")
 
 def home_tenant(request):
-    return render(request, 'home_tenant.html')
+    # Dashboard data: treatment counts by stage and recent pending treatments
+    stages_count = Treatment.objects.values('stage').annotate(count=Count('id'))
+    # Build a mapping of stage -> count
+    stage_counts = {item['stage']: item['count'] for item in stages_count}
+
+    recent_pending = Treatment.objects.filter(stage=0).order_by('deadline')[:8]
+
+    # Risk evaluations grouped by risk_level (0..4)
+    risk_counts = (
+        RiskEvaluation.objects.values('risk_level')
+        .annotate(count=Count('id'))
+    )
+    # ensure we expose all levels (0..4)
+    risk_map = {item['risk_level']: item['count'] for item in risk_counts}
+
+    # Critical evaluations (high/very high)
+    critical_evals = RiskEvaluation.objects.filter(risk_level__gte=3).select_related('evaluated_type')[:8]
+
+    # Evaluations with treatments not implemented (treatment exists and treatment.stage != IMPLEMENTED)
+    # Count evaluations that have an associated treatment and whose treatment
+    # is NOT in IMPLEMENTED stage.
+    evaluations_not_implemented = (
+        RiskEvaluation.objects.filter(treatment__isnull=False)
+        .exclude(treatment__stage=TreatmentStage.IMPLEMENTED)
+        .count()
+    )
+
+    # Threat Intel: counts for the latest run (relevant items with AI analysis in that run)
+    last_run = Run.objects.filter(status='success').order_by('-finished_at').first() or Run.objects.order_by('-started_at').first()
+    ti_counts = {}
+    recent_threats = []
+    if last_run:
+        # counts: all relevant items in last run (regardless of whether AIAnalysis exists)
+        counts_qs = IntelItem.objects.filter(runitem__run=last_run, is_relevant=True).distinct()
+        ti_counts_qs = counts_qs.values('severity').annotate(count=Count('id'))
+        ti_counts = {item['severity']: item['count'] for item in ti_counts_qs}
+
+        # recent list: keep items that also have an AIAnalysis in that run for richer context
+        items_qs = IntelItem.objects.filter(runitem__run=last_run, is_relevant=True, aianalysis__run=last_run).distinct()
+        recent_threats = items_qs.order_by('-runitem__detected_at')[:8]
+    else:
+        # fallback: any relevant items with AI analysis
+        items_qs = IntelItem.objects.filter(is_relevant=True, aianalysis__isnull=False).distinct()
+        ti_counts_qs = items_qs.values('severity').annotate(count=Count('id'))
+        ti_counts = {item['severity']: item['count'] for item in ti_counts_qs}
+        recent_threats = items_qs.order_by('-created_at')[:8]
+
+    return render(request, 'home_tenant.html', {
+        'stage_counts': stage_counts,
+        'recent_pending': recent_pending,
+        'risk_map': risk_map,
+        'critical_evals': critical_evals,
+        'evaluations_not_implemented': evaluations_not_implemented,
+        'ti_counts': ti_counts,
+        'recent_threats': recent_threats,
+        'last_run_pk': last_run.pk if last_run else None,
+    })
 
 
 def register(request):

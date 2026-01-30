@@ -22,9 +22,9 @@
                 <i class="fa-solid fa-link"></i> Ir al Run
             </a>
             {% if not report.sent_at %}
-            <a href="{% url 'threat_intel:report-send' report.id %}" class="btn btn-success">
-                <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
-            </a>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendReportModal">
+                <i class="fa-solid fa-paper-plane"></i> Enviar por Email
+            </button>
             {% endif %}
         </div>
 
@@ -101,4 +101,125 @@
             </div>
         </div>
     {% endif %}
+
+    <!-- Modal: Enviar Reporte por Email -->
+    <div class="modal fade" id="sendReportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-paper-plane"></i> Enviar Reporte por Email</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="{% url 'threat_intel:report-send' report.id %}">
+                    {% csrf_token %}
+                    
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Destinatarios:</strong><br>
+                            {% if report.recipients %}
+                                {{ report.recipients|join:", " }}
+                            {% else %}
+                                <span class="text-danger">No hay destinatarios configurados</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="send_email" 
+                                value="on" 
+                                id="sendEmailCheck"
+                                checked
+                            >
+                            <label class="form-check-label" for="sendEmailCheck">
+                                <strong>Enviar por email</strong>
+                                <small class="text-muted d-block">Enviar a los destinatarios configurados</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="include_pdf" 
+                                value="on" 
+                                id="includePdfCheck"
+                            >
+                            <label class="form-check-label" for="includePdfCheck">
+                                <strong>Incluir PDF como adjunto</strong>
+                                <small class="text-muted d-block">Requiere: pip install weasyprint</small>
+                            </label>
+                        </div>
+
+                        <hr>
+
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fa-solid fa-envelope"></i> Backend de Email
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="radio" 
+                                        name="backend" 
+                                        id="smtpBackend"
+                                        value="smtp"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="smtpBackend">
+                                        <strong>SMTP (Gmail)</strong>
+                                        <small class="text-muted d-block">Configurado en settings.py</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="radio" 
+                                        name="backend" 
+                                        id="brevoBackend"
+                                        value="brevo"
+                                    >
+                                    <label class="form-check-label" for="brevoBackend">
+                                        <strong>Brevo (SendinBlue)</strong>
+                                        <small class="text-muted d-block">
+                                            Requiere: BREVO_API_KEY en settings
+                                            <a href="#" title="Ver guía de configuración">(?)</a>
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <strong>Nota:</strong> La generación de PDF requiere la librería WeasyPrint.
+                            <br><code>pip install weasyprint</code>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Disable PDF option if sendEmail is unchecked
+        document.getElementById('sendEmailCheck').addEventListener('change', function() {
+            document.getElementById('includePdfCheck').disabled = !this.checked;
+        });
+    </script>
 {% endblock %}

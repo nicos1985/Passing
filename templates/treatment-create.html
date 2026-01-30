@@ -33,39 +33,95 @@
         <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
 <div class="container-fluid">
     <div class="row">
-        <h3 style="color: rgb(32, 32, 32); margin-top:30px;">{{action_type}} {{ verbose_name }}</h3>
-    </div>
-    <div class="row">
-        <button class="btn">
+        <div class="col-12 mb-3">
             <a class="btn btn-primary btn-flat" href= "{% url 'treatment-list' %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
-        </button>
+        </div>
     </div>
-         
-        <form method="POST">
-            {% csrf_token %}
-            {{form.errors}}
-            <h5 style="color: darkred; margin-top:30px;">{{message}}</h5>
 
-            <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
-                {% for field in form.visible_fields %}
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">
-                                    {{ field.errors|join:", " }}
-                                </div>
-                            {% endif %}
+    <div class="card form-card">
+        <div class="card-header">
+            <h5><i class="fa-solid fa-hand-holding-medical"></i> {{ action_type }} {{ verbose_name }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.errors }}
+                <h5 style="color: darkred; margin-top:10px;">{{ message }}</h5>
+                {# Stage control: show current stage badge and a compact selector above the main fields #}
+                <div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+                    <div class="col-12">
+                        <style>
+                            .stage-tiles { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+                            .stage-tile { cursor:pointer; padding:8px 12px; border-radius:8px; border:1px solid #dee2e6; background:#f8f9fa; display:flex; align-items:center; gap:8px; }
+                            .stage-tile.selected { background:#0d6efd; color:white; border-color:#0d6efd; }
+                            .stage-tile .stage-label { font-weight:600; }
+                            .stage-tile .stage-sub { font-size:0.85rem; opacity:0.85; }
+                        </style>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if form.instance and form.instance.pk %}
+                                    <strong>Etapa actual:</strong>
+                                    {{ form.instance.get_stage_badge|safe }}
+                                {% else %}
+                                    <strong>Etapa:</strong>
+                                    <span class="text-muted">Seleccione una etapa</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label mb-0">Cambiar etapa</label>
+                            </div>
                         </div>
+
+                        <div id="stageTiles" class="stage-tiles mt-2" aria-hidden="false"></div>
+
+                        {# keep the real select hidden so Django receives the value on submit #}
+                        <div style="display:none">{% if form.stage %}{{ form.stage }}{% endif %}</div>
                     </div>
-                {% endfor %}
-            </div>
-            <button type="submit" class="btn btn-primary btn-flat">
-                <i class="fas fa-save"></i> Guardar cambios
-            </button>
-            <input type="hidden" id="object_id_preselected" value="{{ form.fields.object_id.initial }}">
-        </form>
+                </div>
+
+                <div class="row" style="margin-top: 10px; margin-bottom: 20px;">
+                    {% for field in form.visible_fields %}
+                        {% if field.name != 'stage' %}
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {% if field.name == 'name' %}
+                                        <i class="fa-solid fa-tag" style="color: #667eea;"></i>
+                                    {% elif field.name == 'description' %}
+                                        <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
+                                    {% elif field.name == 'model_type' or field.name == 'object_id' %}
+                                        <i class="fa-solid fa-cubes" style="color: #667eea;"></i>
+                                    {% elif field.name == 'deadline' or field.name == 'start_date' or field.name == 'finish_date' %}
+                                        <i class="fa-solid fa-calendar" style="color: #667eea;"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-square" style="color: #667eea;"></i>
+                                    {% endif %}
+                                    &nbsp;{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">
+                                        {{ field.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="btn-group-submit">
+                    <button type="submit" class="btn btn-submit btn-submit-primary">
+                        <i class="fas fa-save"></i> Guardar cambios
+                    </button>
+                    <button type="reset" class="btn btn-submit btn-submit-secondary">
+                        <i class="fa-solid fa-redo"></i> Limpiar
+                    </button>
+                </div>
+                <input type="hidden" id="object_id_preselected" value="{{ form.fields.object_id.initial }}">
+            </form>
+        </div>
+    </div>
             </div>
         </div> 
 
@@ -112,6 +168,41 @@ $(document).ready(function () {
       $modelType.trigger('change');
     }
   });
+</script>
+<script>
+$(function(){
+    const $stageSelect = $('#id_stage');
+    const $tiles = $('#stageTiles');
+    if ($stageSelect.length && $tiles.length){
+        $tiles.empty();
+        $stageSelect.find('option').each(function(){
+            const val = $(this).attr('value');
+            const label = $(this).text();
+            const $tile = $(`<div class="stage-tile" data-value="${val}"><span class="stage-label">${label}</span></div>`);
+            $tiles.append($tile);
+        });
+
+        function selectTile(val){
+            $stageSelect.val(val);
+            $tiles.find('.stage-tile').removeClass('selected');
+            $tiles.find(`.stage-tile[data-value="${val}"]`).addClass('selected');
+        }
+
+        const current = $stageSelect.val() || $stageSelect.find('option:selected').val();
+        if (current) selectTile(current);
+
+        $tiles.on('click', '.stage-tile', function(){
+            const val = $(this).data('value').toString();
+            // Confirm when marking as Implementado (value might be '3')
+            if (val === '3'){
+                if (!confirm('Marcar como "Implementado" creará una re-evaluación asociada. ¿Desea continuar?')){
+                    return;
+                }
+            }
+            selectTile(val);
+        });
+    }
+});
 </script>
   
 
