@@ -165,13 +165,16 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
             if not contrasena.is_personal:
                 
-                global_settings = GlobalSettings.objects.get(id=1)
-                grant_permission_user_ids = global_settings.set_admins.values_list('id', flat=True)
-                print(list(grant_permission_user_ids))
+                global_settings = GlobalSettings.objects.filter(id=1).first()
+                if global_settings:
+                    grant_permission_user_ids = global_settings.set_admins.values_list('id', flat=True)
+                    print(list(grant_permission_user_ids))
+                else:
+                    grant_permission_user_ids = []
 
                 for user_id in grant_permission_user_ids:
                     try:
-                        user = get_object_or_404(CustomUser, id=user_id)
+                        user = get_object_or_404(CustomUser.for_current_tenant(), id=user_id)
                         if user not in auto_permission_users:
                             auto_permission_users.append(user)
                     except Http404:
@@ -234,9 +237,9 @@ def upload_csv(request):
                     error_rows.append(row)
                     continue
 
-                owner = CustomUser.objects.filter(username=row.get("owner")).first()
+                owner = CustomUser.for_current_tenant().filter(username=row.get("owner")).first()
                 if owner is None:
-                    owner = CustomUser.objects.filter(id=1).first()
+                    owner = CustomUser.for_current_tenant().filter(id=1).first()
 
                 seccion_raw = row.get("seccion")
                 seccion_nombre = seccion_raw.strip() if seccion_raw else None

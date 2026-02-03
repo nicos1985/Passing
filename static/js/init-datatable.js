@@ -1,4 +1,37 @@
 $(document).ready(function () {
+  console.log('🟢 [DT] init-datatable.js CARGADO - document.ready ejecutado');
+  
+  // ========== PERSISTENCIA DE BÚSQUEDA CON localStorage ==========
+  var STORAGE_KEY = 'dt_listpass_state';
+  
+  // Test inmediato de localStorage
+  console.log('🔍 [DT] Probando localStorage...');
+  console.log('🔍 [DT] localStorage disponible:', typeof localStorage !== 'undefined');
+  console.log('🔍 [DT] Valor actual en storage:', localStorage.getItem(STORAGE_KEY));
+
+  function saveState(search, length, page) {
+    try {
+      var state = { search: search || '', length: length || 10, page: page || 0, ts: Date.now() };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      console.log('💾 [DT] Estado GUARDADO:', state);
+      // Verificar que se guardó
+      console.log('💾 [DT] Verificación post-guardado:', localStorage.getItem(STORAGE_KEY));
+    } catch (e) { console.error('❌ [DT] Error guardando estado:', e); }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      console.log('📂 [DT] Raw desde localStorage:', raw);
+      if (raw) {
+        var state = JSON.parse(raw);
+        console.log('📂 [DT] Estado parseado:', state);
+        return state;
+      }
+    } catch (e) { console.error('❌ [DT] Error cargando estado:', e); }
+    return null;
+  }
+
   var statusColIndex = null;
   var colIndexMap = {};
 
@@ -7,6 +40,7 @@ $(document).ready(function () {
     colReorder: true,
     order: [],
     ordering: false,
+    // State persistence handled manually (minimal payload in cookie)
     scrollX: true,
     dom: 'Rlfrtip',
     autoWidth: false,
@@ -35,6 +69,69 @@ $(document).ready(function () {
       }
     }
   });
+
+  // expose table for external adjustments and ensure columns recalc on draw
+  window.passTable = table;
+
+  // ========== RESTAURAR ESTADO AL INICIAR ==========
+  function restoreState() {
+    console.log('🔄 [DT] restoreState() llamado');
+    var state = loadState();
+    if (state) {
+      console.log('🔄 [DT] Restaurando búsqueda:', state.search);
+      if (state.search) {
+        table.search(state.search);
+        // También actualizar el input visual
+        $('div.dataTables_filter input').val(state.search);
+      }
+      if (typeof state.length === 'number') {
+        table.page.len(state.length);
+      }
+      if (typeof state.page === 'number') {
+        table.page(state.page);
+      }
+      table.draw(false);
+    } else {
+      console.log('🔄 [DT] No hay estado guardado para restaurar');
+    }
+  }
+
+  // ========== GUARDAR ESTADO EN CAMBIOS ==========
+  function saveCurrentState() {
+    try {
+      var info = table.page.info();
+      var search = table.search();
+      console.log('🔔 [DT] saveCurrentState - search:', search, 'page:', info.page, 'length:', info.length);
+      saveState(search, info.length, info.page);
+    } catch (e) { console.error('❌ [DT] Error en saveCurrentState:', e); }
+  }
+
+  table.on('draw', function () {
+    try { table.columns.adjust(); } catch (e) { console.warn('passTable adjust failed', e); }
+  });
+
+  // Guardar en cada cambio de búsqueda, paginación o longitud
+  table.on('search.dt length.dt page.dt', function (e) {
+    console.log('🎯 [DT] Evento capturado:', e.type);
+    saveCurrentState();
+  });
+
+  // Restaurar estado después de que DataTables termine de inicializarse
+  table.on('init.dt', function () {
+    console.log('🚀 [DT] init.dt disparado - llamando restoreState()');
+    restoreState();
+  });
+
+  // ========== MANEJAR BOTÓN ATRÁS (BFCache) ==========
+  window.addEventListener('pageshow', function (ev) {
+    console.log('📄 [DT] pageshow - persisted:', ev.persisted);
+    if (ev.persisted) {
+      console.log('📄 [DT] Página desde BFCache - restaurando');
+      restoreState();
+    }
+  });
+
+  
 
   // Mapear columnas por data-colname
   $('#data thead th').each(function (index) {

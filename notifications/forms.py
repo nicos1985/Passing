@@ -4,7 +4,7 @@ from notifications.models import AdminNotification
 
 class CreateNotificationForm(forms.ModelForm):
     id_user_share = forms.ModelChoiceField(
-        queryset=CustomUser.objects.filter(is_active=True),
+        queryset=CustomUser.for_current_tenant().filter(is_active=True),
         widget=forms.Select(attrs={'class': 'form-select'}),
         label = 'Usuario a compartir',
         empty_label="Seleccione un usuario"  # Etiqueta personalizada

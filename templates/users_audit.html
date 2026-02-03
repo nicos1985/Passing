@@ -108,11 +108,17 @@
                     {{ user.user_id }} | Usuario: {{ user.user_name }}
                 </a>
             </h4> 
-            <a href="{% url 'permissionrolesupdate' user.user_role_assigned_id %}" target="_blank">
-                <button class="btn btn-secondary" style="background-color: #b6ffae; border-color: #e9ffe6; color: black;">
-                  <i class="fas fa-arrow-up-right-from-square"></i> Rol asignado: <strong>{{user.user_role_assigned}}</strong>
-                </button>
-            </a>
+                        {% if user.user_role_assigned_id %}
+                        <a href="{% url 'permissionrolesupdate' user.user_role_assigned_id %}" target="_blank">
+                                <button class="btn btn-secondary" style="background-color: #b6ffae; border-color: #e9ffe6; color: black;">
+                                    <i class="fas fa-arrow-up-right-from-square"></i> Rol asignado: <strong>{{user.user_role_assigned}}</strong>
+                                </button>
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary" disabled style="background-color: #b6ffae; border-color: #e9ffe6; color: black;">
+                                    <i class="fas fa-user-slash"></i> Rol asignado: <strong>Sin rol</strong>
+                        </button>
+                        {% endif %}
             <h6>Cantidad de diferencias: {{ user.count_differences }}</h6>
         </div>
     </div>

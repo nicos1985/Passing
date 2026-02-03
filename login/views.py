@@ -140,10 +140,26 @@ def register(request):
             try:
                 user = form.save(commit=False)
                 user.is_active = False
-            
+
                 username = form.cleaned_data['username']
-                user.client = Client.objects.get(schema_name=request.tenant.schema_name)
+                # Resolve current tenant's Client (public model) and attach membership
+                client = Client.objects.get(schema_name=request.tenant.schema_name)
+                user.client = client
                 user.save()
+
+                # Ensure TenantMembership exists so the user is associated to this tenant
+                try:
+                    TenantMembership.objects.update_or_create(
+                        user=user, client=client, defaults={"is_active": True}
+                    )
+                except Exception:
+                    # non-fatal: continue but log could be added
+                    pass
+                # Ensure tenant settings exist (idempotent)
+                try:
+                    TenantSettings.objects.get_or_create(client=client)
+                except Exception:
+                    pass
             except Exception as e:
                 messages.warning(request, 'La creacion de usuario ha tenido un problema save. error: {e}')
 
@@ -317,7 +333,7 @@ def activate_superuser(request, uidb64, token):
     
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
-        user = CustomUser.objects.get(pk=uid)
+        user = get_object_or_404(CustomUser.for_current_tenant(), pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
@@ -521,7 +537,7 @@ class UserDetailView(Safe404RedirectMixin, TenantScopedUserMixin, DetailView):
 @user_passes_test(is_administrator)
 def deactivate_user(request, pk):
     try:
-        user = get_object_or_404(CustomUser, pk=pk)
+        user = get_object_or_404(CustomUser.for_current_tenant(), pk=pk)
 
         if not user_belongs_to_current_tenant(user):
             messages.error(request, "No podés operar usuarios de otro tenant.")
@@ -531,7 +547,7 @@ def deactivate_user(request, pk):
             messages.error(request, "No podés eliminar el mismo usuario con el que estás logueado.")
             return redirect('userlist')
 
-        superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
+        superusers = CustomUser.for_current_tenant().filter(is_superuser=True, is_active=True).count()
         if user.is_superuser and superusers <= 1:
             messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único administrador.')
             return redirect('userlist')
@@ -547,7 +563,7 @@ def deactivate_user(request, pk):
 @user_passes_test(is_administrator)
 def activate_user(request, pk):
     try:
-        user = get_object_or_404(CustomUser, id=pk)
+        user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
 
         if not user_belongs_to_current_tenant(user):
             messages.error(request, "No podés operar usuarios de otra cuenta.")
@@ -675,39 +691,39 @@ def disable_2fa_user(user):
 
 
 def send_qr_code_email_inline(user):
-        """Envía el código QR incrustado en el cuerpo del email."""
-        
-        qr_base64 = generate_qr_base64(user)  # Obtener QR en Base64
-        
-        # Crear el cuerpo del email con la imagen incrustada
-        html_content = format_html(
-            """
-            <html>
-                <body>
-                    <p>Hola <b>{}</b>,</p>
-                    <p>Escanea este código QR para configurar la autenticación en dos pasos en la aplicación Passing:</p>
-                    <p>Escanea el código QR con "Google Authenticator"  <a href="https://play.google.com/store/search?q=google+authenticator&c=apps&hl=es_419" target="_blank">Descargalo aqui</a></p>
-                    <img src="data:image/png;base64,{}" alt="QR Code" style="width:200px; height:200px;">
-                    <p>Si tienes problemas, contáctanos.</p>
-                    <p>Atentamente, <br><b>El equipo de Passing</b></p>
-                </body>
-            </html>
-            """,
-            user.username, qr_base64
-        )
-        print(f'message_email {html_content}')
-        # Crear el email con formato HTML
-        email = EmailMessage(
-            subject="Tu Código QR para Autenticación en Passing",
-            body=html_content,
-            from_email="noreply@anima.bot",
-            to=[user.email]
-        )
+    """Envía el código QR incrustado en el cuerpo del email."""
 
-        email.content_subtype = "html"  # Especificar que el contenido es HTML
+    qr_base64 = generate_qr_base64(user)  # Obtener QR en Base64
 
-        # Enviar el email
-        email.send()
+    # Crear el cuerpo del email con la imagen incrustada
+    html_content = format_html(
+        """
+        <html>
+            <body>
+                <p>Hola <b>{}</b>,</p>
+                <p>Escanea este código QR para configurar la autenticación en dos pasos en la aplicación Passing:</p>
+                <p>Escanea el código QR con "Google Authenticator"  <a href="https://play.google.com/store/search?q=google+authenticator&c=apps&hl=es_419" target="_blank">Descargalo aqui</a></p>
+                <img src="data:image/png;base64,{}" alt="QR Code" style="width:200px; height:200px;">
+                <p>Si tienes problemas, contáctanos.</p>
+                <p>Atentamente, <br><b>El equipo de Passing</b></p>
+            </body>
+        </html>
+        """,
+        user.username, qr_base64
+    )
+    print(f'message_email {html_content}')
+    # Crear el email con formato HTML
+    email = EmailMessage(
+        subject="Tu Código QR para Autenticación en Passing",
+        body=html_content,
+        from_email="noreply@anima.bot",
+        to=[user.email]
+    )
+
+    email.content_subtype = "html"  # Especificar que el contenido es HTML
+
+    # Enviar el email
+    email.send()
 
 def send_qr_code_email_cid(user):
     """Envía el código QR como imagen embebida en el correo (CID)."""
@@ -740,7 +756,7 @@ def send_qr_code_email_cid(user):
     email.send()
     
 def send_qr_email_for_user_ondemand(request, pk):
-    user = CustomUser.objects.get(id=pk)
+    user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
     try:
         send_qr_code_email_cid(user)
         messages.success(request, f"El código QR a {user} se ha enviado correctamente al correo {user.email}.")
@@ -795,7 +811,7 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
         Activa todos los factores multiples de autenticacion a todos los usuarios. 
         Envia mail a cada uno con el QR para la activacion del mismo. 
         """
-        users = CustomUser.objects.filter(is_active=True)
+        users = CustomUser.for_current_tenant().filter(is_active=True)
         
 
         for user in users:
@@ -810,7 +826,7 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
 
     def deactivate_multifactor_for_all(self):
         """desactiva todos los factores multiples de autenticacion a todos los usuarios."""
-        users = CustomUser.objects.filter(is_active=True)
+        users = CustomUser.for_current_tenant().filter(is_active=True)
         
         for user in users:
             if user.has_otp_secret:

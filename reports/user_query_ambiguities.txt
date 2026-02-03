@@ -1,0 +1,66 @@
+Ambiguous CustomUser query sites — manual review required
+
+Purpose:
+- These call sites were flagged as ambiguous because it's unclear whether they should be tenant-scoped or intentionally global (public). Review each and decide whether to keep global behavior or change to tenant-scoped (using `CustomUser.for_current_tenant()` or `for_client()`), and whether additional business logic (e.g., fallback, admin intent) applies.
+
+Entries (file:line ~approx):
+
+1) login/views.py (~line 320)
+- Code: `user = CustomUser.objects.get(pk=uid)`
+- Why ambiguous: Could be resolving a user from SSO/HUB where global lookup might be intended. Replacing with tenant-scoped lookup may break SSO flows if tenant is determined differently.
+- Suggestion: If user must belong to current tenant, use `get_object_or_404(CustomUser.for_current_tenant(), pk=uid)`. If SSO uses public users, add an explicit membership check after lookup.
+
+2) login/views.py (~line 534)
+- Code: `superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()`
+- Why ambiguous: Counting superusers may be intended across PUBLIC (global admins). Tenant-scoping would change semantics.
+- Suggestion: Leave as global if it measures global admins; otherwise use `CustomUser.for_current_tenant().filter(...).count()`.
+
+3) login/views.py (~lines 524, 550, 743)
+- Code: `get_object_or_404(CustomUser, pk=pk)` / `CustomUser.objects.get(id=pk)`
+- Why ambiguous: Used in admin flows — if these views should only act on tenant users, enforce tenant-scoped get: `get_object_or_404(CustomUser.for_current_tenant(), pk=pk)`.
+- Suggestion: Prefer tenant-scoped get + explicit PermissionDenied if missing.
+
+4) login/views.py: `activate_multifactor_for_all` / `deactivate_multifactor_for_all` (~lines 780+)
+- Code: `users = CustomUser.objects.filter(is_active=True)`
+- Why ambiguous: This toggles 2FA; may be intended to affect only a tenant or all users globally. Changing it affects wide behavior.
+- Suggestion: If operation should be per-tenant, use `CustomUser.for_current_tenant().filter(is_active=True)`; otherwise document and keep global.
+
+5) resources/views.py & resources/models.py (~lines 351, 516)
+- Code: `treatment_responsible=CustomUser.objects.first()` used as placeholder/default
+- Why ambiguous: `.first()` on full table may pick a user from another tenant.
+- Suggestion: Use `CustomUser.for_current_tenant().first()` or compute/rescue at runtime; avoid defaults relying on global order.
+
+6) passbase/views.py (~lines 174, 237, 239)
+- Code: `get_object_or_404(CustomUser, id=user_id)`, `owner = CustomUser.objects.filter(username=...).first()`, etc.
+- Why ambiguous: Lookups should likely be tenant-scoped when operating within a tenant context.
+- Suggestion: Use `CustomUser.for_current_tenant()` for lookups, or explicitly check `TenantMembership` after fetch.
+
+7) passbase/tests.py (~line 49)
+- Code: `CustomUser.objects.create(username='testuser')`
+- Why ambiguous: Tests create users without `client` set; tenant-filtered queries in tests may fail.
+- Suggestion: Update tests to set `.client` or use factories; or mock `for_current_tenant()` in tests.
+
+8) permission/views.py (~lines 58, 95, 98, 163)
+- Code: `get_object_or_404(CustomUser, id=...)`, `get_object_or_404(CustomUser, username=...)`
+- Why ambiguous: Permission operations should be restricted to tenant users to avoid granting permissions across tenants.
+- Suggestion: Use `get_object_or_404(CustomUser.for_current_tenant(), ...)` or check `user_belongs_to_current_tenant()` after fetch.
+
+9) resources/models.py (other occurrences)
+- Code: various `.first()` / direct user references in model defaults or signals
+- Why ambiguous: Model-level defaults that assume a single user are risky in multi-tenant deployments.
+- Suggestion: Move tenant-scoped logic to runtime (views/management commands) or require explicit `client` resolution.
+
+General notes and replacement patterns:
+- Safe tenant-scoped single-object lookup:
+    get_object_or_404(CustomUser.for_current_tenant(), pk=pk)
+
+- Safe tenant-scoped list/choice queryset:
+    CustomUser.for_current_tenant().filter(is_active=True)
+
+- For global/system operations (superuser counts, onboarding scripts), document intent and leave global queries.
+
+Actionable next steps for you:
+- Review each entry above and mark whether it should be changed to tenant-scoped or kept global.
+- I can then apply precise patches per your decisions.
+
+File created: `reports/user_query_ambiguities.txt` — open and review.

@@ -513,7 +513,7 @@ def force_create_treatment(request, pk):
             content_type=evaluation.evaluated_type,
             object_id=evaluation.evaluated_id,
             deadline=timezone.now().date() + timedelta(days=30),
-            treatment_responsible=CustomUser.objects.first(),
+            treatment_responsible=CustomUser.for_current_tenant().first(),
             treatment_oportunity=TreatmentOportunity.PREVENTIVE,
             application_periodicity=ApplicationPeriodicity.PERMANENT,
             control_automation=ControlAutomation.MANUAL,
@@ -742,17 +742,28 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
             except Exception:
                 old_stage = None
 
-        response = super().form_valid(form)
+        # If stage changed via the form, use the model helper to record timestamp/user
+        new_stage = form.cleaned_data.get('stage', None)
 
-        # If stage changed via the form, update timestamp and user
-        try:
-            if old_stage is not None and form.instance.stage != old_stage:
-                form.instance.stage_changed_at = timezone.now()
-                if self.request.user.is_authenticated:
-                    form.instance.stage_changed_by = self.request.user
-                form.instance.save(update_fields=['stage_changed_at', 'stage_changed_by'])
-        except Exception:
-            pass
+        if old_stage is not None and new_stage is not None and new_stage != old_stage:
+            # Apply form changes without committing so `form.instance` has the new values
+            form.save(commit=False)
+            try:
+                user = self.request.user if getattr(self.request, 'user', None) and self.request.user.is_authenticated else None
+                form.instance.set_stage(new_stage, user=user)
+            except Exception:
+                # Fallback: if set_stage fails, attempt the previous behavior
+                try:
+                    form.instance.stage_changed_at = timezone.now()
+                    if getattr(self.request, 'user', None) and self.request.user.is_authenticated:
+                        form.instance.stage_changed_by = self.request.user
+                    form.instance.save(update_fields=['stage_changed_at', 'stage_changed_by'])
+                except Exception:
+                    pass
+            # Now persist the rest of the form (this will not overwrite stage_changed_* fields)
+            response = super().form_valid(form)
+        else:
+            response = super().form_valid(form)
 
         messages.success(self.request, "Tratamiento actualizado con éxito.")
         return response

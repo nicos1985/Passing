@@ -43,6 +43,20 @@ class CustomUser(AbstractUser):
     # De momento damos un stub para no romper templates/vistas que accedan a user.assigned_role.
     @property
     def assigned_role(self):
+        """
+        Devuelve el `PermissionRoles` asignado al usuario mediante el modelo `UserRoles`.
+        Como `CustomUser` está en PUBLIC y `PermissionRoles` en el esquema del tenant,
+        hacemos la consulta de forma segura y devolvemos None ante cualquier fallo.
+        """
+        try:
+            from django.apps import apps
+            UserRoles = apps.get_model('permission', 'UserRoles')
+            ur = UserRoles.objects.filter(user=self).select_related('rol').order_by('-created').first()
+            if ur:
+                return ur.rol
+        except Exception:
+            # No romper si por alguna razón el modelo no está disponible desde este contexto
+            return None
         return None
 
     # Este FK sí es a public (Client es shared en django-tenants)
@@ -83,6 +97,41 @@ class CustomUser(AbstractUser):
 
     def has_otp_secret(self):
         return bool(self.otp_secret)
+
+    # Tenant-aware helpers
+    @classmethod
+    def for_client(cls, client):
+        """Return a queryset of users belonging to the given client (public Client instance)."""
+        if client is None:
+            return cls.objects.none()
+        return cls.objects.filter(client=client)
+
+    @classmethod
+    def for_current_tenant(cls):
+        """Return users for the current tenant inferred from the DB connection.
+
+        This uses django-tenants' `connection.tenant` (or `connection.schema_name`) to
+        resolve the current client. If no tenant is available, returns an empty
+        queryset to avoid leaking all users from PUBLIC.
+        """
+        try:
+            from django.db import connection
+            tenant = getattr(connection, "tenant", None)
+            if tenant is None:
+                # try schema_name (fallback)
+                schema_name = getattr(connection, "schema_name", None)
+                if not schema_name:
+                    return cls.objects.none()
+                # try to import Client lazily to avoid circular imports
+                from client.models import Client
+                tenant = Client.objects.filter(schema_name=schema_name).first()
+
+            if tenant is None:
+                return cls.objects.none()
+
+            return cls.objects.filter(client=tenant)
+        except Exception:
+            return cls.objects.none()
 
 class TenantMembership(models.Model):
     """Relaciona usuarios con tenants (clients) específicos."""

@@ -10,8 +10,8 @@ class PermissionUserForm(forms.Form):
         
         super(PermissionUserForm, self).__init__(*args, **kwargs)
         
-        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.objects.filter(is_active=True), 
-                                                        widget=forms.Select(attrs={'class': 'form-select'}))
+        self.fields['usuario'] = forms.ModelChoiceField(queryset=CustomUser.for_current_tenant().filter(is_active=True), 
+                                widget=forms.Select(attrs={'class': 'form-select'}))
         
 
 class PermisoForm(forms.Form):
@@ -26,30 +26,27 @@ class PermisoForm(forms.Form):
 
             permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contrasena).exists()
 
+            # Obtén el usuario creador del log si existe, pero crea el campo siempre.
+            creator_user = None
             if log_contra_user_id:
+                try:
+                    creator_user = LogData.objects.get(entidad='Contraseña', contraseña=int(contrasena.id), action='Create').usuario
+                except LogData.DoesNotExist:
+                    creator_user = None
 
-                log_contra_user_id = LogData.objects.get(entidad='Contraseña',contraseña=int(contrasena.id), action='Create').usuario #traigo usuario creador de contraseña
-
-                if permission_exists:
-                    permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contrasena)
-                    initial_value = permission_instance.permission
-                    
-                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
-                        label=contrasena.nombre_contra,
-                        initial=initial_value,
-                        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
-                        required=False
-                        )
-                
-                else:
-                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
-                    label=contrasena.nombre_contra,
-                    initial=False,
-                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
-                    required=False
-                    )
+            if permission_exists:
+                permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contrasena)
+                initial_value = permission_instance.permission
             else:
-                log_contra_user_id = None    
+                initial_value = False
+
+            # Crea el campo del permiso (siempre)
+            self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
+                label=contrasena.nombre_contra,
+                initial=initial_value,
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': creator_user} ),
+                required=False
+            )
 
    # Obtén los campos originales
         fields = list(self.fields.items())
@@ -108,5 +105,5 @@ class UserRolForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserRolForm, self).__init__(*args, **kwargs)
-        self.fields['user'].queryset = CustomUser.objects.filter(is_active=True)
+        self.fields['user'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
         self.fields['rol'].queryset = PermissionRoles.objects.filter(is_active=True)

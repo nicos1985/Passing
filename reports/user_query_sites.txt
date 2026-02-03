@@ -1,0 +1,82 @@
+Report: CustomUser query sites and suggested tenant-scoped replacements
+
+Summary:
+- This file lists locations that query `CustomUser` and a suggested one-line replacement using the new helpers `CustomUser.for_current_tenant()` or `CustomUser.for_client(client)` where appropriate.
+- Ambiguous/global cases are marked and should be reviewed before automatic changes.
+
+Entries:
+
+1) login/views.py: ~line 320
+- Site: `user = CustomUser.objects.get(pk=uid)`
+- Suggestion: `user = get_object_or_404(CustomUser.for_current_tenant(), pk=uid)`
+- Note: Use tenant-scoped lookup to avoid returning a user from another client.
+
+2) login/views.py: ~line 364
+- Site: `user = CustomUser.objects.get(id=request.user.id)`
+- Suggestion: keep as-is (uses `request.user`) or use: `user = CustomUser.for_current_tenant().filter(id=request.user.id).first()`
+- Note: Not strictly necessary but acceptable to keep.
+
+3) login/views.py: ~line 442
+- Site already tenant-scoped: `CustomUser.objects.filter(client=self.request.user.client).order_by('is_active')`
+- Suggestion: replace with `CustomUser.for_current_tenant().order_by('is_active')` for consistency.
+
+4) login/views.py: ~lines 524, 550, 743
+- Sites: `get_object_or_404(CustomUser, pk=pk)` / `get_object_or_404(CustomUser, id=pk)` / `CustomUser.objects.get(id=pk)`
+- Suggestion: `get_object_or_404(CustomUser.for_current_tenant(), pk=pk)` or `CustomUser.for_current_tenant().get(id=pk)`
+- Note: Use where the operation must be tenant-scoped; otherwise document the reason to stay global.
+
+5) login/views.py: ~line 534
+- Site: `superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()`
+- Suggestion: REVIEW: if counting global superusers (admin across tenants) keep as-is. If meant per-tenant, use `CustomUser.for_current_tenant().filter(is_superuser=True, is_active=True).count()`
+
+6) login/views.py: ~lines 798, 813
+- Site: `users = CustomUser.objects.filter(is_active=True)`
+- Suggestion: `users = CustomUser.for_current_tenant().filter(is_active=True)`
+
+7) permission/views.py: ~lines 58, 95, 98, 163
+- Sites: `get_object_or_404(CustomUser, id=...)`, `get_object_or_404(CustomUser, username=...)`
+- Suggestion: `get_object_or_404(CustomUser.for_current_tenant(), id=...)` or validate membership after fetch.
+
+8) permission/views.py: ~line 347
+- Site: `users_active_all = CustomUser.objects.filter(is_active=True)`
+- Suggestion: `users_active_all = CustomUser.for_current_tenant().filter(is_active=True)`
+
+9) permission/forms.py: ~lines 13, 111
+- Sites: `ModelChoiceField(queryset=CustomUser.objects.filter(is_active=True))`, `self.fields['user'].queryset = CustomUser.objects.filter(is_active=True)`
+- Suggestion: `queryset=CustomUser.for_current_tenant().filter(is_active=True)` and likewise for assignments.
+
+10) resources/models.py & resources/views.py: ~lines 351, 516
+- Site: `treatment_responsible=CustomUser.objects.first()` used as default / placeholder
+- Suggestion: use tenant-scoped default: `treatment_responsible=CustomUser.for_current_tenant().first()` or compute at runtime and raise if none.
+
+11) passbase/views.py: ~lines 174, 237, 239
+- Sites: `get_object_or_404(CustomUser, id=user_id)`, `owner = CustomUser.objects.filter(username=...).first()`
+- Suggestion: use `CustomUser.for_current_tenant()` for lookups; in imports/tests consider setting `client` on created users.
+
+12) passbase/tests.py
+- Site: `CustomUser.objects.create(username='testuser')`
+- Suggestion: tests can continue using create, but consider setting `.client` or using factories to avoid ambiguity if tests rely on tenant filtering.
+
+13) notifications/forms.py
+- Site: `queryset=CustomUser.objects.filter(is_active=True)`
+- Suggestion: `queryset=CustomUser.for_current_tenant().filter(is_active=True)`
+
+14) resources/models.py (misc)
+- Site: `if user and isinstance(user, CustomUser):` (logic checks)
+- Suggestion: no change required; this is a type check.
+
+General guidance / rules to apply:
+- For list/choice querysets shown in forms or views, replace `CustomUser.objects.filter(...)` with `CustomUser.for_current_tenant().filter(...)`.
+- For single-object lookups use `get_object_or_404(CustomUser.for_current_tenant(), ...)` to return 404 for out-of-tenant objects.
+- For explicit global admin operations (e.g., counting superusers across all tenants) keep `CustomUser.objects.filter(...)` and add comment explaining intent.
+- For model defaults or `objects.first()` used as placeholder, prefer `for_current_tenant()` or explicit resolution at runtime.
+
+Ambiguous cases (manual review recommended):
+- Any code that intentionally operates across tenants (superuser/system-level scripts).
+- Tests that create users in PUBLIC: ensure test tenancy context or set `client` to a test client.
+
+Next actions available (pick one):
+- I can automatically apply safe replacements for non-ambiguous sites (forms ModelChoiceField querysets and simple `.filter(is_active=True)` usages).
+- Or I can create a PR/patch per-file with the changes for your review.
+
+--- End of report

@@ -348,7 +348,7 @@ class RiskEvaluation(models.Model):
                 content_type=self.evaluated_type,
                 object_id=self.evaluated_id,
                 deadline=timezone.now().date() + timedelta(days=30),
-                treatment_responsible=CustomUser.objects.first(),
+                treatment_responsible=CustomUser.for_current_tenant().first(),
                 treatment_oportunity=TreatmentOportunity.PREVENTIVE,
                 application_periodicity=ApplicationPeriodicity.PERMANENT,
                 control_automation=ControlAutomation.MANUAL,
@@ -534,8 +534,8 @@ class Treatment(models.Model):
     analysis_notes = models.TextField(blank=True, null=True, verbose_name='Notas de análisis')
     immediate_actions = models.TextField(blank=True, null=True, verbose_name='Acciones inmediatas')
     corrective_actions = models.TextField(blank=True, null=True, verbose_name='Acciones correctivas')
-    stage_changed_at = models.DateTimeField(blank=True, null=True, verbose_name='Fecha cambio de etapa')
-    stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', verbose_name='Usuario que cambió etapa')
+    stage_changed_at = models.DateTimeField(blank=True, null=True, editable=False, verbose_name='Fecha cambio de etapa')
+    stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', editable=False, verbose_name='Usuario que cambió etapa')
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 

@@ -46,7 +46,7 @@ class ContrasenaFormTest(TenantTestCase):
 class ContrasenaUFormTest(TenantTestCase):
     def setUp(self):
         self.seccion = SeccionContra.objects.create(nombre_seccion='Work')
-        self.user = CustomUser.objects.create(username='testuser')
+        self.user = CustomUser.objects.create(username='testuser', client=self.tenant)
         self.contra = Contrasena.objects.create(
             nombre_contra='Gmail',
             seccion=self.seccion,
