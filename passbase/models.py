@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from django.utils import timezone
 from datetime import datetime
 from django.db import models
@@ -10,6 +11,8 @@ from cryptography.fernet import Fernet
 from login.models import CustomUser
 from passbase.crypto import decrypt_data, encrypt_data
 from passing import settings
+
+logger = logging.getLogger(__name__)
 
 # Create your models here.
 class SeccionContra(models.Model):
@@ -70,23 +73,16 @@ class Contrasena(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Si es una nueva contraseña, crear un log
-        print(f'is_new: {is_new}')
+        # Si es una nueva contraseña, crear un log (redactando datos sensibles)
+        logger.debug("Contrasena save: is_new=%s id=%s", is_new, getattr(self, 'id', None))
         if is_new:
-            print('entra a crear objeto log desde el modelo')
             LogData.objects.create(
                 entidad="Contrasena",
-                password= self.contraseña,
+                password="[REDACTED]",
                 contraseña=self.id,  # Guardamos el ID de la contraseña creada
                 usuario=self.owner if self.owner else None,  # Usuario que creó la contraseña
                 action="Create",
-                detail=f'''Nombre: {self.nombre_contra}, 
-                                Seccion: {self.seccion}, 
-                                Usuario: {self.usuario}, 
-                                Link: {self.link}, 
-                                Info: {self.info},
-                                owner: {self.owner}''',
-                
+                detail=f"Nombre: {self.nombre_contra}, Seccion: {self.seccion}, Link: {self.link}, Info: {self.info}, owner: {self.owner}",
             )
         
 
@@ -259,7 +255,7 @@ class LogData(models.Model):
                 usuario_encrypted = None
             return usuario_encrypted
         except Exception as e:
-            print(f"Error extracting encrypted user: {e}")
+            logger.exception("Error extracting encrypted user: %s", e)
             return None
 
     def get_decrypted_user(self, usuario_encrypted):

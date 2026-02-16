@@ -21,6 +21,9 @@ from .models import (
 )
 from django.contrib.contenttypes.models import ContentType
 from django import forms
+import logging
+
+logger = logging.getLogger(__name__)
 from itertools import chain
 
 
@@ -248,11 +251,11 @@ class TreatmentForm(ModelForm):
                 self.fields['object_id'].initial = str(self.instance.object_id)
                 self.fields['object_id'].widget.attrs['data-selected'] = str(self.instance.object_id)
 
-                print(f"✅ Edit mode - loaded object_id choices: {choices}")
-                print(f"🧲 Initial object_id: {self.fields['object_id'].initial}")
+                logger.info("Edit mode - loaded object_id choices: %s", choices)
+                logger.debug("Initial object_id: %s", self.fields['object_id'].initial)
 
             except Exception as e:
-                print(f"⚠️ Error cargando object_id en modo edición: {e}")
+                logger.exception("Error cargando object_id en modo edición")
                 self.fields['object_id'].choices = []
 
         # Cargar dinámicamente choices en POST para que Django valide correctamente
@@ -267,7 +270,7 @@ class TreatmentForm(ModelForm):
                         (str(obj.pk), str(obj)) for obj in model_class.objects.all()
                     ]
                 except Exception as e:
-                    print(f'Error al cargar object_id choices dinámicamente: {e}')
+                    logger.exception('Error al cargar object_id choices dinámicamente')
                     self.fields['object_id'].choices = []
         else:
             # En GET inicial, dejarlo vacío

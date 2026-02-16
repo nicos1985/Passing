@@ -254,7 +254,8 @@ print(f"✓ Sent {len(attachments)} attachments")
 export THREAT_INTEL_EMAIL_BACKEND=smtp        # or "brevo"
 
 # Brevo API (optional)
-export BREVO_API_KEY=xkeysib-1234567890...
+# Set your actual key in the environment (example redacted):
+export BREVO_API_KEY="xkeysib-REDACTED"
 ```
 
 ### Django Settings
@@ -277,7 +278,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "noreply@anima.bot"
-EMAIL_HOST_PASSWORD = "..."
+EMAIL_HOST_PASSWORD = "<REDACTED>"  # set via env/.env in deploy
 DEFAULT_FROM_EMAIL = "noreply@anima.bot"
 ```
 

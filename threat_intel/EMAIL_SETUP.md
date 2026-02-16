@@ -23,14 +23,14 @@ This guide explains how to use the email service for Threat Intelligence reports
 Your Django settings use Gmail SMTP:
 
 ```python
-# passing/settings.py
+# passing/settings.py (use environment variables; do NOT store secrets in repo)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "noreply@anima.bot"
-EMAIL_HOST_PASSWORD = "bqrgbxmleytmtkyf"
-DEFAULT_FROM_EMAIL = "noreply@anima.bot"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "noreply@anima.bot")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")  # set via env/.env in deploy
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@anima.bot")
 ```
 
 ### Sending a Report with SMTP
@@ -58,9 +58,9 @@ result = send_report_email(report, attachments=attachments)
 ### Prerequisites
 
 1. **Install Brevo SDK**:
-   ```bash
-   pip install sib-api-v3-sdk
-   ```
+```bash
+pip install sib-api-v3-sdk
+```
 
 2. **Get API Key from Brevo**:
    - Go to https://www.brevo.com/
@@ -70,17 +70,17 @@ result = send_report_email(report, attachments=attachments)
 
 3. **Add to Django Settings**:
 
-   **Option A: Environment Variable (Recommended)**
-   ```bash
-   # .env or export command
-   export BREVO_API_KEY="xkeysib-your-api-key-here"
-   ```
+    **Option A: Environment Variable (Recommended)**
+    ```bash
+    # .env or export command
+    export BREVO_API_KEY="xkeysib-REDACTED"
+    ```
 
-   **Option B: Settings File**
-   ```python
-   # passing/settings.py
-   BREVO_API_KEY = "xkeysib-your-api-key-here"
-   ```
+    **Option B: Settings File**
+    ```python
+    # passing/settings.py
+    BREVO_API_KEY = "xkeysib-REDACTED"
+    ```
 
 4. **Configure Backend**:
    ```python

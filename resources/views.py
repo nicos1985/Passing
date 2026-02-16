@@ -682,7 +682,8 @@ def crear_tratamiento(request):
             
             return redirect('treatment-detail', pk=treatment.pk)
         else:
-            print("❌ Formulario inválido.")
+            messages.error(request, "Formulario inválido.")
+            logger.warning("Formulario inválido en crear_tratamiento para user %s", request.user)
             # Mostramos los choices que están cargados para el select
     else:
         form = TreatmentForm()

@@ -29,11 +29,7 @@
                   <div class="text-secondary small p-3 text-center">QR no disponible</div>
                 {% endif %}
               </div>
-              {% if otp_secret %}
-                <div class="form-text mt-2">
-                  ¿No podés escanear? Clave manual: <code class="user-select-all">{{ otp_secret }}</code>
-                </div>
-              {% endif %}
+              {# Do not expose the raw OTP secret in the UI; users should scan the QR or use the app to add the account. #}
             </div>
 
             <div class="col-md-7">

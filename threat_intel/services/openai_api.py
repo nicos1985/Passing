@@ -9,6 +9,9 @@ import json
 from typing import Optional, Dict, Any, List
 import requests
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIAPIClient:
@@ -38,7 +41,7 @@ class OpenAIAPIClient:
             "Content-Type": "application/json",
         })
         
-        print(f"[OpenAI API] Cliente inicializado - Modelo: {self.model}", flush=True)
+        logger.info("[OpenAI API] Cliente inicializado - Modelo: %s", self.model)
     
     def create_message(
         self,
@@ -63,7 +66,7 @@ class OpenAIAPIClient:
             requests.RequestException: Si falla la conexión
             ValueError: Si hay error en la respuesta
         """
-        print("[OpenAI API] Enviando request...", flush=True)
+        logger.debug("[OpenAI API] Enviando request...")
         
         payload = {
             "model": self.model,
@@ -85,14 +88,14 @@ class OpenAIAPIClient:
             response.raise_for_status()
             
         except requests.Timeout:
-            print("[OpenAI API] ✗ TIMEOUT", flush=True)
+            logger.error("[OpenAI API] ✗ TIMEOUT")
             raise
         except requests.ConnectionError as e:
-            print(f"[OpenAI API] ✗ Connection error: {e}", flush=True)
+            logger.exception("[OpenAI API] ✗ Connection error")
             raise
         except requests.HTTPError as e:
             error_data = response.json() if response.text else {}
-            print(f"[OpenAI API] ✗ HTTP {response.status_code}: {error_data}", flush=True)
+            logger.error("[OpenAI API] ✗ HTTP %s: %s", response.status_code, error_data)
             raise ValueError(f"OpenAI API error: {error_data.get('error', {}).get('message', str(e))}")
         
         data = response.json()
@@ -100,11 +103,11 @@ class OpenAIAPIClient:
         # Extraer contenido
         try:
             content = data["choices"][0]["message"]["content"]
-            print("[OpenAI API] ✓ Response recibida", flush=True)
+            logger.debug("[OpenAI API] ✓ Response recibida")
             return content
             
         except (KeyError, IndexError) as e:
-            print(f"[OpenAI API] ✗ Error parsing response: {e}", flush=True)
+            logger.exception("[OpenAI API] ✗ Error parsing response")
             raise ValueError(f"Unexpected response format: {data}")
     
     def __del__(self):

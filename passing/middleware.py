@@ -4,6 +4,10 @@ from django.http import HttpResponseForbidden
 from django.db import connection
 from django.contrib import messages
 from django_tenants.utils import get_public_schema_name
+from django.utils.module_loading import import_string
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AdminAccessMiddleware:
@@ -26,7 +30,7 @@ class AdminAccessMiddleware:
                 else:
                     return HttpResponseForbidden("El acceso al panel de administración está deshabilitado error 403.")
             except Exception as e:
-                print(f"Error al verificar acceso al admin: {e}")
+                logger.exception("Error al verificar acceso al admin")
                 return HttpResponseForbidden("No se puede verificar el acceso al admin.")
 
         return self.get_response(request)
@@ -71,7 +75,7 @@ class TenantDebugMiddleware:
         host = request.get_host()
         schema = getattr(connection, "schema_name", None)
         urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-        print(f"[TENANTDBG] host={host} schema={schema} urlconf={urlconf}")
+        logger.debug("[TENANTDBG] host=%s schema=%s urlconf=%s", host, schema, urlconf)
         return self.get_response(request)
 
 
@@ -91,3 +95,4 @@ class ForceTenantUrlconfMiddleware:
             else:
                 request.urlconf = getattr(settings, "TENANT_URLCONF", settings.ROOT_URLCONF)
         return self.get_response(request)
+

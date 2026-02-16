@@ -10,6 +10,9 @@ from django.utils import timezone
 import traceback
 from threat_intel.models import AIAnalysis, IntelItem, Run
 from threat_intel.services.openai_api import get_openai_api_client
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 PROMPT_V1_SYSTEM = """Sos analista de ciberseguridad para una empresa de software pequeña.
@@ -194,7 +197,7 @@ def analyze_item(client: Any, item: IntelItem, model_name: str, prompt_version: 
             max_tokens=2000,
         )
     except Exception as e:
-        print(f"[AI] Error calling OpenAI: {e}", flush=True)
+        logger.exception("[AI] Error calling OpenAI")
         raise
     
     #print("AI raw output:", out)
@@ -218,7 +221,7 @@ def analyze_relevant_items_for_run(run: Run) -> int:
     try:
         client = get_openai_api_client()
     except Exception as e:
-        print(f"[AI] ERROR creando cliente: {e}", flush=True)
+        logger.exception("[AI] ERROR creando cliente")
         raise
     
     # Configuración
@@ -234,28 +237,28 @@ def analyze_relevant_items_for_run(run: Run) -> int:
         except Exception:
             max_items = None
     
-    #print(f"[AI] Modelo: {model_name}, Prompt: {prompt_version}", flush=True)
-    #print(f"[AI] Top N medium: {medium_top_n}", flush=True)
+    logger.debug("[AI] Modelo: %s, Prompt: %s", model_name, prompt_version)
+    logger.debug("[AI] Top N medium: %d", medium_top_n)
 
-    #print("armando queryset base...", flush=True)
+    logger.debug("armando queryset base...")
     qs = (IntelItem.objects
         .filter(runitem__run=run, is_relevant=True)
         .distinct())
-    #print("queryset base OK (aún no evaluado)", flush=True)
+    logger.debug("queryset base OK (aún no evaluado)")
 
-    #print("evaluando critical/high...", flush=True)
+    logger.debug("evaluando critical/high...")
     crit_high = list(qs.filter(severity__in=["critical", "high"]).order_by("-cvss")[:200])
-    #print(f"critical/high list OK: {len(crit_high)}", flush=True)
+    logger.debug("critical/high list OK: %d", len(crit_high))
 
-    #print("evaluando medium...", flush=True)
+    logger.debug("evaluando medium...")
     medium = list(qs.filter(severity="medium").order_by("-cvss")[:medium_top_n])
-    #print(f"medium list OK: {len(medium)}", flush=True)
+    logger.debug("medium list OK: %d", len(medium))
 
     to_analyze = crit_high + medium
     # apply optional global cap
     if max_items is not None and max_items >= 0:
         to_analyze = to_analyze[:max_items]
-    #print(f"Items to analyze: {len(to_analyze)}", flush=True)
+    logger.debug("Items to analyze: %d", len(to_analyze))
 
     processed = 0
     for item in to_analyze:
@@ -265,8 +268,8 @@ def analyze_relevant_items_for_run(run: Run) -> int:
         try:
             data = analyze_item(client, item, model_name=model_name, prompt_version=prompt_version)
         except Exception as e:
-            print(f"[AI] Failed for {item.canonical_id}: {e}", flush=True)
-            print(traceback.format_exc(), flush=True)
+            logger.exception("[AI] Failed for %s", item.canonical_id)
+            logger.debug(traceback.format_exc())
             continue
         #print(f"[AI] Analysis for {item.canonical_id}: {data}")
         # Sanitize/normalize values to avoid DB field length errors and

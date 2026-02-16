@@ -19,6 +19,9 @@ from .forms import HubLoginForm
 
 User = get_user_model()
 
+import logging
+logger = logging.getLogger(__name__)
+
 DEFAULT_NEXT_PATH = "/login/home/"
 
 def login_view(request):
@@ -89,9 +92,13 @@ def choose_tenant_view(request):
         if not m:
             messages.error(request, "No tenés acceso a esa cuenta.")
             return redirect(reverse("accounts:choose_tenant_view"))
-        return redirect_to_tenant_with_token(user, m.client, next_path)
+        return redirect_to_tenant_with_token(request, request.user, m.client, next_path)
 
-    return redirect_to_tenant_with_token(request, user, m.client, next_path)
+    # GET: mostrar selector de tenants
+    return render(request, "choose_tenant.html", {
+        "memberships": mems,
+        "next": next_path,
+    })
 
 
 
@@ -102,7 +109,7 @@ def google_start(request):
     """
     client_slug = request.GET.get("client")
     next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
-    print(f'client_slug: {client_slug} / next_path: {next_path}')
+    logger.debug("google_start client_slug=%s next_path=%s", client_slug, next_path)
     if not client_slug or not Client.objects.filter(schema_name=client_slug).exists():
         return HttpResponse("Client inválido.", status=400)
 
@@ -125,7 +132,8 @@ def post_login_redirect(request):
     """
     # --------- TU BLOQUE ORIGINAL (sin cambios) ---------
     state = request.GET.get("_s")
-    print('post_login_redirect')
+    logger.debug("post_login_redirect")
+    # Debug statements removed to avoid verbose logs in production
 
     if not state:
         state = request.session.pop("oauth_state", None)
@@ -135,19 +143,19 @@ def post_login_redirect(request):
 
     if state:
         try:
-            print(f'state: {state}')
+            logger.debug("state=%s", state)
             s = signing.loads(state, salt="oauth-state-v1", max_age=300)
             client_slug = s.get("client_slug")
             next_path = s.get("next") or DEFAULT_NEXT_PATH
         except signing.BadSignature:
-            print("BadSignature")
+            logger.warning("BadSignature while loading oauth state")
             pass
 
     if not client_slug:
-        print("Fallback: client_slug no encontrado")
+        logger.debug("Fallback: client_slug no encontrado")
         client_slug = request.session.pop("oauth_client_slug", None)
     if next_path == "/":
-        print("Fallback: next_path no encontrado")
+        logger.debug("Fallback: next_path no encontrado")
         next_path = request.session.pop("oauth_next_path", DEFAULT_NEXT_PATH)
     # --------- FIN TU BLOQUE ORIGINAL ---------
 
@@ -168,7 +176,7 @@ def post_login_redirect(request):
         if count == 1:
             client = mems.first().client
 
-            print(f'client: {client} || objtype: {type(client)}',)
+            logger.debug("client=%s type=%s", client, type(client))
             return redirect_to_tenant_with_token(request, user, mems.first().client, next_path)
 
 
@@ -178,14 +186,16 @@ def post_login_redirect(request):
 
     # Si SÍ hay client_slug (tu caso original) → seguimos como ya lo hacías
     dest = _resolve_tenant_base_url(request, client_slug)
-    print(f'dest: {dest}')
+    logger.debug("dest=%s", dest)
     token = build_sso_token(
         user_id=request.user.id,
         client_slug=client_slug,
         next_path=next_path,
         salt=getattr(settings, "SSO_SIGNING_SALT", "sso-xfer-v1"),
     )
-    return redirect(f"{dest}/login/sso/consume/?token={token}")
+    url = f"{dest}/login/sso/consume/?token={token}"
+    # Return absolute redirect URL to tenant consume endpoint
+    return redirect(url)
 
 def google_start_auto(request):
     """

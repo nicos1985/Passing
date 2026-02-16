@@ -1,5 +1,8 @@
 from notifications.models import AdminNotification, UserNotifications
 from accounts.models import TenantSettings
+import logging
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_MENU_COLOR = "#212629"
 
@@ -9,14 +12,14 @@ def counter_admin_notifications(request):
             try:
                 contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False).count()
             except Exception as e:
+                logger.exception('Error en counter_admin_notifications')
                 return {'contador_notis': 0}
-                print(f"Error en counter_admin_notifications: {e}")
         else:
             try:
                 contador_notis = UserNotifications.objects.filter(id_user=request.user, viewed=False).count()
             except Exception as e:
+                logger.exception('Error en counter_user_notifications')
                 return {'contador_notis': 0}
-                print(f"Error en counter_user_notifications: {e}")
     else:
         contador_notis = 0
     return {'contador_notis': contador_notis}

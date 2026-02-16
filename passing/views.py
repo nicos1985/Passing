@@ -121,7 +121,7 @@ class UpdateEmailConfigView(View):
             
 
             for key, value in EMAIL_SETTINGS.items():
-                print(f'{key}:{value}')
+                logger.debug('%s: %s', key, value)
 
             return render(request, TEMPLATE, {'message':'El formulario se envió correctamente', 'form':form, })
         else:

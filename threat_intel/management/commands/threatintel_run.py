@@ -18,6 +18,9 @@ from threat_intel.services.relevance import mark_relevance_for_run
 from threat_intel.services.report import build_report_for_run
 from threat_intel.services.emailer import send_report_email
 from threat_intel.services.ai import analyze_relevant_items_for_run
+import logging
+
+logger = logging.getLogger(__name__)
 
 CONNECTOR_MAP = {
     "NVD": NvdConnector,
@@ -87,7 +90,7 @@ class Command(BaseCommand):
                 try:
                     items, new_cursor = connector.fetch(start_dt, end_dt, cursor=state.cursor or None)
                 except Exception as e:
-                    print(f"Error fetching from source {code}: {e}")
+                    logger.exception("Error fetching from source %s", code)
                     continue
 
                 fetched_total += len(items)
@@ -141,12 +144,13 @@ class Command(BaseCommand):
             # 4) (Optional) AI analysis — lo dejamos preparado, pero apagado al inicio
             if cfg.get("ENABLE_AI_ANALYSIS", False):
                 try:
-                    print("Starting AI analysis for relevant items...")
+                    logger.info("Starting AI analysis for relevant items...")
                     analyzed = analyze_relevant_items_for_run(run)
                     
                     self.stdout.write(self.style.SUCCESS(f"AI analysis created for {analyzed} items"))
                 except Exception as e:
                     import traceback
+                    logger.exception("AI analysis failed")
                     self.stderr.write(self.style.WARNING("AI analysis failed. Details:"))
                     self.stderr.write(traceback.format_exc())
 

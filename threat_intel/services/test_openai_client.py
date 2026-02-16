@@ -10,6 +10,9 @@ from django_tenants.test.cases import TenantTestCase
 from django.conf import settings
 
 from threat_intel.services.openai_client import OpenAIClientManager, get_openai_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TestOpenAIClientManager(TenantTestCase):
@@ -22,7 +25,7 @@ class TestOpenAIClientManager(TenantTestCase):
         # Debe cargar configuración
         self.assertIsNotNone(manager.cfg)
         self.assertTrue(len(manager.model_name) > 0)
-        print(f"[TEST] Modelo configurado: {manager.model_name}")
+        logger.info("[TEST] Modelo configurado: %s", manager.model_name)
 
     def test_api_key_validation(self):
         """Verifica que detecta cuando falta API key."""
@@ -33,7 +36,7 @@ class TestOpenAIClientManager(TenantTestCase):
                 manager.validate_api_key()
             
             self.assertIn("OPENAI_API_KEY", str(cm.exception))
-            print(f"[TEST] Validación de API key funciona: {cm.exception}")
+            logger.info("[TEST] Validación de API key funciona: %s", cm.exception)
 
     def test_api_key_found(self):
         """Verifica que encuentra la API key en settings."""
@@ -47,7 +50,7 @@ class TestOpenAIClientManager(TenantTestCase):
         # Debe encontrar la API key
         self.assertIsNotNone(manager.api_key)
         self.assertTrue(len(manager.api_key) > 0)
-        print(f"[TEST] API Key encontrada en manager")
+        logger.info("[TEST] API Key encontrada en manager")
 
     @patch('threat_intel.services.openai_client.OpenAI')
     def test_create_client_success(self, mock_openai_class):
@@ -66,7 +69,7 @@ class TestOpenAIClientManager(TenantTestCase):
         
         self.assertIsNotNone(client)
         self.assertEqual(client, mock_client)
-        print("[TEST] Cliente creado exitosamente")
+        logger.info("[TEST] Cliente creado exitosamente")
 
     @patch('threat_intel.services.openai_client.OpenAI')
     def test_create_client_exception(self, mock_openai_class):
@@ -85,7 +88,7 @@ class TestOpenAIClientManager(TenantTestCase):
             manager.create_client()
         
         self.assertIn("Connection error", str(cm.exception))
-        print(f"[TEST] Excepción capturada correctamente: {cm.exception}")
+        logger.info("[TEST] Excepción capturada correctamente: %s", cm.exception)
 
     @patch('threat_intel.services.openai_client.OpenAI')
     def test_get_client_singleton(self, mock_openai_class):
@@ -108,7 +111,7 @@ class TestOpenAIClientManager(TenantTestCase):
         self.assertEqual(client1, client2)
         # OpenAI() debe llamarse solo una vez
         self.assertEqual(mock_openai_class.call_count, 1)
-        print("[TEST] Cliente se reutiliza correctamente (singleton)")
+        logger.info("[TEST] Cliente se reutiliza correctamente (singleton)")
 
     def test_get_model_name(self):
         """Verifica obtención del nombre del modelo."""
@@ -116,7 +119,7 @@ class TestOpenAIClientManager(TenantTestCase):
         model = manager.get_model_name()
         
         self.assertTrue(len(model) > 0)
-        print(f"[TEST] Modelo obtenido: {model}")
+        logger.info("[TEST] Modelo obtenido: %s", model)
 
     def test_get_config(self):
         """Verifica obtención de configuración."""
@@ -124,7 +127,7 @@ class TestOpenAIClientManager(TenantTestCase):
         config = manager.get_config()
         
         self.assertIsInstance(config, dict)
-        print(f"[TEST] Configuración obtenida: {config}")
+        logger.info("[TEST] Configuración obtenida: %s", config)
 
     def test_factory_function(self):
         """Verifica que la factory function funciona."""
@@ -132,7 +135,7 @@ class TestOpenAIClientManager(TenantTestCase):
         
         self.assertIsInstance(manager, OpenAIClientManager)
         self.assertIsNotNone(manager.cfg)
-        print("[TEST] Factory function funciona")
+        logger.info("[TEST] Factory function funciona")
 
     @override_settings(OPENAI_API_KEY="", THREAT_INTEL={})
     def test_error_without_api_key(self):
@@ -147,7 +150,7 @@ class TestOpenAIClientManager(TenantTestCase):
         with self.assertRaises(RuntimeError):
             manager.create_client()
         
-        print("[TEST] Errores sin API key capturados correctamente")
+        logger.info("[TEST] Errores sin API key capturados correctamente")
 
 
 class TestOpenAIClientIntegration(TenantTestCase):
@@ -170,4 +173,4 @@ class TestOpenAIClientIntegration(TenantTestCase):
             client = manager.create_client()
             
             self.assertIsNotNone(client)
-            print("[TEST] Flujo completo ejecutado exitosamente")
+                logger.info("[TEST] Flujo completo ejecutado exitosamente")

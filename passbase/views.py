@@ -18,6 +18,9 @@ from permission.models import ContraPermission
 from django.contrib.auth.decorators import user_passes_test
 import csv
 import io
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -70,7 +73,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         # Verificar permisos antes de continuar
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
-        print(f'users_permissions: {users_permissions}')
+        logger.debug('users_permissions: %s', users_permissions)
         lista_permision_user = [permision.user_id for permision in users_permissions]
 
         if request.user not in lista_permision_user:
@@ -91,7 +94,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
 
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
-        print(f'user permissions: {users_permissions}')
+        logger.debug('user permissions: %s', users_permissions)
 
         for log in log_data:
             try:
@@ -102,7 +105,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
                     decrypted_user = log.get_decrypted_user(encrypted_user)
                     log.detail = log.detail.replace(encrypted_user, decrypted_user)
             except Exception as e:
-                print(f"Error processing log {log.id}: {e}")
+                logger.exception('Error processing log %s', log.id)
 
         context['contraseña'] = contrasena
         context['log_data'] = log_data if log_data.exists() else None
@@ -130,7 +133,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form, *args, **kwargs):
         cleaned_data = form.cleaned_data
-        print(f'cleaned_Data: {cleaned_data}')
+        logger.debug('cleaned_Data keys: %s', list(cleaned_data.keys()))
         cleaned_data['owner'] = self.request.user
         
         try:
@@ -140,15 +143,13 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             contraseña = cleaned_data.get('contraseña')
             usuario = cleaned_data.get('usuario')
 
-            # Genera el hash de la combinación de usuario y contraseña
+            # Genera el hash de la combinación de usuario y contraseña (no loguear la contraseña)
             hash_combination = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
-            print(f'usuario + contraseña: {usuario + contraseña}')
-
-            print(f'hash combination: {hash_combination}')
+            logger.debug('creating password hash for user=%s, hash_prefix=%s', usuario, hash_combination[:8])
             # Verifica si el hash ya existe en la base de datos
             objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
             if objeto_repetido:
-                print(f'has existe?: {objeto_repetido}')
+                logger.info('hash already exists, existing object: %s', objeto_repetido)
                 messages.error(self.request, f"La combinación de usuario y contraseña ya existe. \n Propietario: <strong>{objeto_repetido.owner}</strong> | Nombre: <strong>{objeto_repetido.nombre_contra}</strong> ")
                 return self.form_invalid(form)
 
@@ -156,7 +157,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                 contrasena.contraseña = encrypt_data(contraseña)
                 contrasena.usuario = encrypt_data(usuario)
                 contrasena.hash = hash_combination
-                print(f'contraseña.hash: {contrasena.hash}') # Guarda el hash
+                logger.debug('contraseña.hash saved (prefix): %s', str(contrasena.hash)[:8])
                 contrasena.save()
             
             # Gestión de permisos de acceso
@@ -168,7 +169,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                 global_settings = GlobalSettings.objects.filter(id=1).first()
                 if global_settings:
                     grant_permission_user_ids = global_settings.set_admins.values_list('id', flat=True)
-                    print(list(grant_permission_user_ids))
+                    logger.debug('grant_permission_user_ids: %s', list(grant_permission_user_ids))
                 else:
                     grant_permission_user_ids = []
 
@@ -219,12 +220,12 @@ def upload_csv(request):
 
             # Leer archivo con fallback de codificación
             raw_data = file.read()
-            try:
-                print("Intentando decodificar con UTF-8...")
-                decoded_file = raw_data.decode("utf-8").splitlines()
-            except UnicodeDecodeError:
-                print("Error de decodificación con UTF-8, intentando con Latin-1...")
-                decoded_file = raw_data.decode("latin1").splitlines()
+                try:
+                    logger.debug('Intentando decodificar con UTF-8...')
+                    decoded_file = raw_data.decode("utf-8").splitlines()
+                except UnicodeDecodeError:
+                    logger.warning('Error de decodificación con UTF-8, intentando con Latin-1...')
+                    decoded_file = raw_data.decode("latin1").splitlines()
 
             reader = csv.DictReader(decoded_file)
 
@@ -321,7 +322,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     def get(self, request, *args, **kwargs):
         # Verificar permisos antes de continuar
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
-        print(f'users_permissions: {users_permissions}')
+        logger.debug('users_permissions: %s', users_permissions)
         lista_permision_user = [permision.user_id for permision in users_permissions]
 
         if request.user not in lista_permision_user:
@@ -649,7 +650,7 @@ def denypermission(request, pk):
                                                         type_notification = f'Se te denegó la contraseña {permission.contra_id.nombre_contra}',
                                                         comment = f'{request.user.username} denegó el acceso',
     )
-    print(f'notificacion creada: {notificacion_user}')
+    logger.info('notificacion creada: %s', notificacion_user)
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -660,14 +661,14 @@ def encrypt_all():
 
     for contrasena in contrasenas:
         if not contrasena.usuario.startswith("b'gAAAA"):
-            print(f'contraseña id: {contrasena.id}')
+            logger.info('Encrypting contrasena id=%s', contrasena.id)
             original_user = contrasena.usuario
             original_password = contrasena.contraseña
             contrasena.usuario = contrasena.encrypt_user()
             contrasena.contraseña = contrasena.encrypt_password()
             contrasena.save()
             encrypted_data.append((contrasena.id, original_user, original_password))
-            print(f'contraseña encriptada : {contrasena.contraseña}')
+            logger.debug('Contrasena id=%s encrypted', contrasena.id)
     
     return encrypted_data
 
@@ -689,21 +690,21 @@ def encrypt_log_data():
 
             # Encriptar el usuario dentro del campo detail si no está encriptado
             encrypted_user = entry.get_encrypted_user()
-            print(f'usuario encrypted: {encrypted_user}')
+            logger.debug('entry %s encrypted_user present: %s', entry.id, bool(encrypted_user))
             if encrypted_user and not encrypted_user.startswith("b'gAAAA"):
                 decrypted_user = entry.get_decrypted_user(encrypted_user)
-                print(f'usuario decrypted: {decrypted_user}')
+                logger.debug('entry %s decrypted_user obtained (omitted)', entry.id)
                 encrypted_user = encrypt_data(decrypted_user).decode()
-                print(f'usuario encrypted2: {encrypted_user}')
+                logger.debug('entry %s encrypted_user replaced', entry.id)
 
                 # Reemplazar el usuario desencriptado con el encriptado
                 entry.detail = entry.detail.replace(decrypted_user, encrypted_user)
                 entry.save()
 
         except ObjectDoesNotExist:
-            print(f'No se encontró la contraseña para el log con id {entry.id}')
+            logger.warning('No se encontró la contraseña para el log con id %s', entry.id)
         except Exception as e:
-            print(f'Error processing log {entry.id}: {e}')
+            logger.exception('Error processing log %s', entry.id)
     
     return encrypted_log_data
 
@@ -742,7 +743,7 @@ def rollback_encryption(request):
                     contras.contraseña = original_password
                     contras.save()
                 except ObjectDoesNotExist:
-                    print(f'Contrasena con id {contras_id} no encontrada para rollback.')
+                    logger.warning('Contrasena con id %s no encontrada para rollback.', contras_id)
             
             if line.startswith('LogData'):
                 parts = line.strip().split(', ')
@@ -762,9 +763,9 @@ def rollback_encryption(request):
                     
                     log.save()
                 except ObjectDoesNotExist:
-                    print(f'LogData con id {log_id} no encontrada para rollback.')
+                    logger.warning('LogData con id %s no encontrada para rollback.', log_id)
                 except Exception as e:
-                    print(f'Error processing rollback for log {log.id}: {e}')
+                    logger.exception('Error processing rollback for log %s: %s', log_id, e)
     return render(request, TEMPLATE_NAME, {'messages': 'Se desencriptaron todas las contraseñas'})
 
 

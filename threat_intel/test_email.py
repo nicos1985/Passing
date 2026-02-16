@@ -4,6 +4,7 @@ Email service testing script.
 Run from Django shell: python manage.py shell < threat_intel/test_email.py
 """
 
+import logging
 from threat_intel.models import Report, Run
 from threat_intel.services.emailer import (
     send_report_email, 
@@ -16,99 +17,102 @@ from threat_intel.services.report_generator import (
     generate_report_json
 )
 
-print("=" * 70)
-print("THREAT INTEL EMAIL SERVICE TEST")
-print("=" * 70)
+logger = logging.getLogger(__name__)
+logger.info("%s", "=" * 70)
+logger.info("THREAT INTEL EMAIL SERVICE TEST")
+logger.info("%s", "=" * 70)
 
 # Get a sample report
 try:
     report = Report.objects.first()
     if not report:
-        print("\n❌ No reports found. Create a report first.")
+        logger.error("No reports found. Create a report first.")
         exit(1)
-    
-    print(f"\n✓ Using report: #{report.id} - {report.subject}")
-    print(f"  Recipients: {report.recipients or 'None configured'}")
+
+    logger.info("Using report: #%(id)s - %(subj)s", {"id": report.id, "subj": report.subject})
+    logger.info("Recipients: %s", (report.recipients or 'None configured'))
     
 except Exception as e:
-    print(f"\n❌ Error loading report: {e}")
+    logger.exception("Error loading report")
     exit(1)
 
 # Test 1: Generate Markdown
-print("\n" + "=" * 70)
-print("TEST 1: Generate Markdown Report")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 1: Generate Markdown Report")
+logger.info("%s", "=" * 70)
 try:
     filename, content = generate_report_markdown(report)
-    print(f"✓ Generated: {filename}")
-    print(f"  Size: {len(content)} bytes")
+    logger.info("Generated: %s", filename)
+    logger.info("Size: %d bytes", len(content))
 except Exception as e:
-    print(f"❌ Error: {e}")
+    logger.exception("Error generating markdown report")
 
 # Test 2: Generate JSON
-print("\n" + "=" * 70)
-print("TEST 2: Generate JSON Report")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 2: Generate JSON Report")
+logger.info("%s", "=" * 70)
 try:
     filename, content = generate_report_json(report)
-    print(f"✓ Generated: {filename}")
-    print(f"  Size: {len(content)} bytes")
+    logger.info("Generated: %s", filename)
+    logger.info("Size: %d bytes", len(content))
 except Exception as e:
-    print(f"❌ Error: {e}")
+    logger.exception("Error generating JSON report")
 
 # Test 3: Generate PDF (if WeasyPrint installed)
-print("\n" + "=" * 70)
-print("TEST 3: Generate PDF Report (Requires WeasyPrint)")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 3: Generate PDF Report (Requires WeasyPrint)")
+logger.info("%s", "=" * 70)
 try:
     filename, content = generate_report_pdf(report)
-    print(f"✓ Generated: {filename}")
-    print(f"  Size: {len(content)} bytes")
+    logger.info("Generated: %s", filename)
+    logger.info("Size: %d bytes", len(content))
 except ImportError:
-    print("⚠ WeasyPrint not installed. Install with: pip install weasyprint")
+    logger.warning("WeasyPrint not installed. Install with: pip install weasyprint")
 except Exception as e:
-    print(f"❌ Error: {e}")
+    logger.exception("Error generating PDF report")
 
 # Test 4: Send via SMTP (without email)
-print("\n" + "=" * 70)
-print("TEST 4: Send via SMTP (Test - No Email)")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 4: Send via SMTP (Test - No Email)")
+logger.info("%s", "=" * 70)
 if report.recipients:
     try:
-        # Just print what would be sent
-        print(f"✓ Would send via SMTP to:")
+        # Just log what would be sent
+        logger.info("Would send via SMTP to:")
         for recipient in report.recipients:
-            print(f"    - {recipient}")
-        print(f"\nSubject: {report.subject}")
-        print(f"Body: {report.body_md[:100]}...")
+            logger.info("    - %s", recipient)
+        logger.info("Subject: %s", report.subject)
+        logger.info("Body: %.100s...", report.body_md)
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.exception("Error during SMTP test output")
 else:
-    print("⚠ No recipients configured. Skipping.")
+    logger.warning("No recipients configured. Skipping.")
 
 # Test 5: Test Brevo configuration
-print("\n" + "=" * 70)
-print("TEST 5: Check Brevo Configuration")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 5: Check Brevo Configuration")
+logger.info("%s", "=" * 70)
 from django.conf import settings
 
 brevo_key = getattr(settings, 'BREVO_API_KEY', None)
 backend = getattr(settings, 'THREAT_INTEL_EMAIL_BACKEND', 'smtp')
 
-print(f"Email Backend: {backend}")
-print(f"Brevo API Key: {'✓ Configured' if brevo_key else '❌ Not configured'}")
+logger.info("Email Backend: %s", backend)
+logger.info("Brevo API Key: %s", ('✓ Configured' if brevo_key else '❌ Not configured'))
 
 if not brevo_key:
-    print("\nTo use Brevo:")
-    print("  1. Install SDK: pip install sib-api-v3-sdk")
-    print("  2. Add to settings.py or environment:")
-    print("     BREVO_API_KEY = 'xkeysib-...'")
-    print("     THREAT_INTEL_EMAIL_BACKEND = 'brevo'")
+if not brevo_key:
+    logger.info("To use Brevo:")
+    logger.info("  1. Install SDK: pip install sib-api-v3-sdk")
+    logger.info("  2. Add to settings.py or environment:")
+    logger.info("     BREVO_API_KEY = 'xkeysib-...' ")
+    logger.info("     THREAT_INTEL_EMAIL_BACKEND = 'brevo'")
 
 # Test 6: Full test with attachments (simulation)
-print("\n" + "=" * 70)
-print("TEST 6: Prepare Email with Attachments (Simulation)")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST 6: Prepare Email with Attachments (Simulation)")
+logger.info("%s", "=" * 70)
+
 if report.recipients:
     try:
         attachments = []
@@ -116,40 +120,40 @@ if report.recipients:
         # Add Markdown
         md_file, md_content = generate_report_markdown(report)
         attachments.append((md_file, md_content, "text/markdown"))
-        print(f"✓ Added: {md_file}")
+        logger.info("Added: %s", md_file)
         
         # Add JSON
         json_file, json_content = generate_report_json(report)
         attachments.append((json_file, json_content, "application/json"))
-        print(f"✓ Added: {json_file}")
+        logger.info("Added: %s", json_file)
         
         # Try PDF
         try:
             pdf_file, pdf_content = generate_report_pdf(report)
             attachments.append((pdf_file, pdf_content, "application/pdf"))
-            print(f"✓ Added: {pdf_file}")
+            logger.info("Added: %s", pdf_file)
         except ImportError:
-            print("⚠ PDF skipped (WeasyPrint not installed)")
+            logger.warning("PDF skipped (WeasyPrint not installed)")
         
-        print(f"\nTotal attachments: {len(attachments)}")
-        print("Total size: {:.2f} MB".format(sum(len(content) for _, content, _ in attachments) / 1024 / 1024))
+        logger.info("Total attachments: %d", len(attachments))
+        logger.info("Total size: %.2f MB", sum(len(content) for _, content, _ in attachments) / 1024 / 1024)
         
         # Show what send_report_email would do
-        print("\n✓ Ready to send with:")
-        print(f"  - Recipients: {', '.join(report.recipients)}")
-        print(f"  - Attachments: {len(attachments)} files")
-        print(f"  - Backend: {backend}")
+        logger.info("Ready to send with:")
+        logger.info("  - Recipients: %s", ', '.join(report.recipients))
+        logger.info("  - Attachments: %d files", len(attachments))
+        logger.info("  - Backend: %s", backend)
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.exception("Error preparing attachments or sending preview")
 else:
-    print("⚠ No recipients configured. Skipping.")
+    logger.warning("No recipients configured. Skipping.")
 
-print("\n" + "=" * 70)
-print("TEST COMPLETE")
-print("=" * 70)
-print("\nTo actually send an email, use:")
-print("  from threat_intel.services.emailer import send_report_email")
-print("  result = send_report_email(report, attachments=[...], use_brevo=False)")
-print("\nOr use the web UI: /threat-intel/reports/<id>/ → 'Enviar por Email'")
-print("=" * 70)
+logger.info("%s", "\n" + "=" * 70)
+logger.info("TEST COMPLETE")
+logger.info("%s", "=" * 70)
+logger.info("To actually send an email, use:")
+logger.info("  from threat_intel.services.emailer import send_report_email")
+logger.info("  result = send_report_email(report, attachments=[...], use_brevo=False)")
+logger.info("Or use the web UI: /threat-intel/reports/<id>/ → 'Enviar por Email'")
+logger.info("%s", "=" * 70)

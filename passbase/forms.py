@@ -1,6 +1,9 @@
 from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
 from .models import Contrasena, SeccionContra
 from django import forms
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ContrasenaForm(ModelForm):
@@ -86,7 +89,7 @@ class ContrasenaUForm(ModelForm):
                     form.field.widget.attrs['class'] = 'form-control'
                     form.field.widget.attrs['autocomplete'] = 'off'
             except Exception as e:
-                print(f'no se pudo hacer esto: {e}')
+                logger.exception('no se pudo hacer esto: %s', e)
                 form.field.widget.attrs['class'] = 'form-control'
                 form.field.widget.attrs['autocomplete'] = 'off'
 

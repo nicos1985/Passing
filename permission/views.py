@@ -14,6 +14,9 @@ from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
+import logging
+
+logger = logging.getLogger(__name__)
 
 #devuelve si es administrador
 def is_administrator(user):
@@ -40,14 +43,14 @@ class PermissionListView(LoginRequiredMixin, ListView):
 @user_passes_test(is_superadmin)
 def seleccionar_usuario(request):
     usuario_form = PermissionUserForm()
-    print(f'usuario_form no post: {usuario_form}')
+    logger.debug('usuario_form no post: %s', usuario_form)
     if request.method == 'POST':
         usuario_form = PermissionUserForm(request.POST)
-        print(f'usuario_form post: {usuario_form}')
+        logger.debug('usuario_form post: %s', usuario_form)
         if usuario_form.is_valid():
-            print('formulario userform es valido')
+            logger.debug('formulario userform es valido')
             usuario = usuario_form.cleaned_data['usuario']
-            print(f'usuario = {usuario}')
+            logger.debug('usuario = %s', usuario)
             # Redirige a la vista de permisos y pasa el usuario
             return redirect('permissionform2', usuario_id=usuario.id)
 
@@ -58,7 +61,7 @@ def gestion_permisos(request, usuario_id):
     usuario = get_object_or_404(CustomUser.for_current_tenant(), id=usuario_id)
     permiso_form = PermisoForm(usuario, request.POST or None)
     contrasenas = Contrasena.objects.filter(is_personal=False)
-    print(f'gestion_permisos: found {contrasenas.count()} contrasenas')
+    logger.debug('gestion_permisos: found %d contrasenas', contrasenas.count())
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
@@ -71,19 +74,19 @@ def gestion_permisos(request, usuario_id):
                     user_id=usuario,
                     contra_id=contrasena
                 )
-                print(f'permissions: {permissions}')
+                logger.debug('permissions: %s', permissions)
                 permissions.permission = permiso
-                print(f'permissions.permission: {permissions.permission}')
+                logger.debug('permissions.permission: %s', permissions.permission)
                 permissions.save()
 
             # Redirige a donde desees después de guardar los cambios
             messages.success(request,  'los permisos han sido asignados correctamente.')
             
             return redirect('listpass')
-    else:
-        for contra in contrasenas:
-            print(f'contraseñas: {contra.usuario}')
-        return render(request, 'create-perm-p2.html', {
+        else:
+            for contra in contrasenas:
+                logger.debug('contraseñas: %s', getattr(contra, 'usuario', None))
+            return render(request, 'create-perm-p2.html', {
             'permiso_form': permiso_form,
             'usuario' : usuario,
             'contraseñas' : contrasenas,
@@ -115,14 +118,14 @@ def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
                                                             type_notification = f"recibiste acceso a {contrasena.nombre_contra}",
                                                             comment = "Admin te dió acceso."
         )
-        print(f'user_notificarions_share: {user_notification_share}')
+        logger.debug('user_notificarions_share: %s', user_notification_share)
         user_notification = UserNotifications.objects.create(
                                                             id_contrasena = contrasena,
                                                             id_user = user,
                                                             type_notification = "Permiso Concedido",
                                                             comment = f"Se dió acceso a {user_share.username}."
         )
-        print(f'user_notification: {user_notification}')
+        logger.debug('user_notification: %s', user_notification)
         message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
         messages.success(request, message)
 
@@ -152,7 +155,7 @@ def give_permission(request, user, contrasena):
                         contra_id=contrasena, 
                         permission=True
                     )
-        print(f'permissions: {permission}')
+        logger.debug('permissions: %s', permission)
     except Exception as e:
         message = f'Hubo un error al intentar crear un permiso {contrasena}. Error {e}'
         messages.error(request, message)
@@ -301,17 +304,17 @@ def update_owner(request):
     for contrasena in contrasenas:
         try:
             log_mod = LogData.objects.get(contraseña=contrasena.id, action='Create', entidad='Contraseña')
-            print(f'log_mod: {log_mod}')
+            logger.debug('log_mod: %s', log_mod)
 
             contrasena.owner = log_mod.usuario
             contrasena.save()
-            print(f'contrasena_owner_ok: {contrasena.owner}')
+            logger.debug('contrasena_owner_ok: %s', contrasena.owner)
 
         except LogData.DoesNotExist:
 
             contrasena.owner = None
             contrasena.save()
-            print(f'contrasena_owner_notexist: {contrasena.owner}')
+            logger.debug('contrasena_owner_notexist: %s', contrasena.owner)
 
     return render(request, 'listpass.html')
 
@@ -331,7 +334,7 @@ def obtener_reporte_contrasenas_repetidas():
             else:
                 contrasenas_desencriptadas[decrypted_password] = [contrasena_obj]
         except Exception as e:
-            print(f"Error desencriptando la contraseña con id {contrasena_obj.id}: {e}")
+            logger.exception('Error desencriptando la contraseña con id %s', contrasena_obj.id)
 
     # Filtrar solo las contraseñas repetidas
     contrasenas_duplicadas = {k: v for k, v in contrasenas_desencriptadas.items() if len(v) > 1}
@@ -440,7 +443,7 @@ def users_audit(request):
     data['strength_pass'] = strength_count
     data['pass_duplicate_count'] = reporte_contrasenas_repetidas
 
-    print(f'context: {data}')
+    logger.debug('context: %s', data)
 
     return render(request, 'users_audit.html', context={'data': data})
 

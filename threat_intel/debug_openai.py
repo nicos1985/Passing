@@ -22,53 +22,57 @@ django.setup()
 from django.conf import settings
 from openai import OpenAI
 import traceback
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def debug_openai_connection():
     """Debuggea la conexión con OpenAI paso a paso."""
     
-    print("="*60)
-    print("DEBUGGING CONEXIÓN OPENAI")
-    print("="*60)
+    logger.info("%s", "="*60)
+    logger.info("DEBUGGING CONEXIÓN OPENAI")
+    logger.info("%s", "="*60)
     
     # Paso 1: Verificar configuración
-    print("\n[PASO 1] Verificando configuración de settings...")
+    logger.info("\n[PASO 1] Verificando configuración de settings...")
     openai_api_key = getattr(settings, 'OPENAI_API_KEY', None)
     threat_intel_cfg = getattr(settings, 'THREAT_INTEL', {})
     
-    print(f"  settings.OPENAI_API_KEY: {'✓ Encontrada' if openai_api_key else '✗ No encontrada'}")
-    print(f"  settings.THREAT_INTEL: {bool(threat_intel_cfg)}")
+    logger.info("  settings.OPENAI_API_KEY: %s", ('✓ Encontrada' if openai_api_key else '✗ No encontrada'))
+    logger.info("  settings.THREAT_INTEL: %s", bool(threat_intel_cfg))
     
     api_key = openai_api_key or threat_intel_cfg.get('OPENAI_API_KEY')
     if api_key:
-        print(f"  API Key final: {api_key[:10]}...{api_key[-4:]}")
+        logger.info("  API Key final: <redacted>")
     else:
-        print("  ✗ ERROR: No hay API key disponible")
+        logger.error("  ✗ ERROR: No hay API key disponible")
         return False
     
     # Paso 2: Verificar variable de entorno
-    print("\n[PASO 2] Verificando variable de entorno...")
-    print(f"  OPENAI_API_KEY en env (antes): {'✓' if os.environ.get('OPENAI_API_KEY') else '✗'}")
+    logger.info("\n[PASO 2] Verificando variable de entorno...")
+    logger.info("  OPENAI_API_KEY en env (antes): %s", ('✓' if os.environ.get('OPENAI_API_KEY') else '✗'))
     
     try:
         os.environ['OPENAI_API_KEY'] = api_key
-        print(f"  OPENAI_API_KEY en env (después): ✓")
+        logger.info("  OPENAI_API_KEY en env (después): ✓")
     except Exception as e:
-        print(f"  ✗ Error setting env: {e}")
+        logger.exception("  ✗ Error setting env")
         return False
     
     # Paso 3: Verificar versión de OpenAI
-    print("\n[PASO 3] Verificando versión de OpenAI...")
+    logger.info("\n[PASO 3] Verificando versión de OpenAI...")
     try:
         import openai
-        print(f"  openai.__version__: {openai.__version__}")
-        print(f"  openai location: {openai.__file__}")
+        logger.info("  openai.__version__: %s", openai.__version__)
+        logger.info("  openai location: %s", openai.__file__)
     except Exception as e:
-        print(f"  ✗ Error: {e}")
+        logger.exception("  ✗ Error: %s", e)
     
     # Paso 4: Intentar crear cliente sin usar API (con timeout)
-    print("\n[PASO 4] Intentando instanciar OpenAI()...")
-    print("  (Si esto se cuelga, es un problema de threading en Windows)")
+    logger.info("\n[PASO 4] Intentando instanciar OpenAI()...")
+    logger.info("  (Si esto se cuelga, es un problema de threading en Windows)")
     
     import threading
     import time
@@ -79,12 +83,12 @@ def debug_openai_connection():
     def create_client_in_thread():
         nonlocal client, error
         try:
-            print("  [Thread] Llamando: client = OpenAI()")
+            logger.info("  [Thread] Llamando: client = OpenAI()")
             client = OpenAI()
-            print("  [Thread] ✓ Cliente creado")
+            logger.info("  [Thread] ✓ Cliente creado")
         except Exception as e:
             error = e
-            print(f"  [Thread] ✗ Error: {type(e).__name__}: {e}")
+            logger.exception("  [Thread] ✗ Error: %s", type(e).__name__)
     
     # Crear en thread separado con timeout
     thread = threading.Thread(target=create_client_in_thread, daemon=True)
@@ -92,37 +96,36 @@ def debug_openai_connection():
     thread.join(timeout=5.0)
     
     if thread.is_alive():
-        print("  ✗ TIMEOUT: La creación del cliente se colgó después de 5 segundos")
-        print("  Esto indica un problema de threading/Windows con OpenAI SDK")
+        logger.error("  ✗ TIMEOUT: La creación del cliente se colgó después de 5 segundos")
+        logger.error("  Esto indica un problema de threading/Windows con OpenAI SDK")
         return False
     
     if error:
-        print(f"  ✗ Error: {type(error).__name__}: {error}")
-        print(f"\nTraceback completo:")
-        print(traceback.print_exc())
+        logger.exception("  ✗ Error creating client: %s", type(error).__name__)
+        logger.debug("Traceback (most recent call last):")
+        logger.debug(traceback.format_exc())
         return False
     
     if not client:
-        print("  ✗ No se pudo crear el cliente (desconocido)")
+        logger.error("  ✗ No se pudo crear el cliente (desconocido)")
         return False
     
-    print("  ✓ Cliente creado exitosamente")
+    logger.info("  ✓ Cliente creado exitosamente")
     
     # Paso 5: Intentar hacer un request simple
-    print("\n[PASO 5] Intentando hacer un request simple...")
+    logger.info("\n[PASO 5] Intentando hacer un request simple...")
     try:
-        print("  Llamando: client.models.list()")
+        logger.info("  Llamando: client.models.list()")
         models = client.models.list()
-        print(f"  ✓ Modelos disponibles: {len(list(models))}")
+        logger.info("  ✓ Modelos disponibles: %d", len(list(models)))
     except Exception as e:
-        print(f"  ✗ Error: {type(e).__name__}: {e}")
-        print(f"\nTraceback completo:")
-        print(traceback.format_exc())
+        logger.exception("  ✗ Error during models.list(): %s", type(e).__name__)
+        logger.debug(traceback.format_exc())
         return False
     
-    print("\n" + "="*60)
-    print("✓ TODO FUNCIONÓ CORRECTAMENTE")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("✓ TODO FUNCIONÓ CORRECTAMENTE")
+    logger.info("="*60)
     return True
 
 
@@ -131,9 +134,9 @@ if __name__ == '__main__':
         success = debug_openai_connection()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\n\nInterrumpido por el usuario")
+        logger.warning("Interrumpido por el usuario")
         sys.exit(1)
     except Exception as e:
-        print(f"\n✗ ERROR NO ESPERADO: {e}")
-        print(traceback.format_exc())
+        logger.exception("✗ ERROR NO ESPERADO: %s", e)
+        logger.debug(traceback.format_exc())
         sys.exit(1)

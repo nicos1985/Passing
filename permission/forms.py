@@ -4,6 +4,9 @@ from login.models import CustomUser
 from .models import ContraPermission, PermissionRoles, UserRoles
 from passbase.models import Contrasena, LogData
 from django.forms.models import ModelChoiceField, ModelChoiceIterator, ModelMultipleChoiceField
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PermissionUserForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -50,7 +53,7 @@ class PermisoForm(forms.Form):
 
    # Obtén los campos originales
         fields = list(self.fields.items())
-        print(f'fields: {fields}')
+        logger.debug('fields: %s', fields)
       
 
         # Ordena los campos según el atributo 'seccion' del widget

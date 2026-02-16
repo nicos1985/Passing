@@ -38,6 +38,9 @@ from django.core import signing
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from django_tenants.utils import get_tenant
+import logging
+
+logger = logging.getLogger(__name__)
 from resources.models import Treatment, RiskEvaluation, TreatmentStage
 from django.db.models import Count, Q
 from threat_intel.models import IntelItem, Run, AIAnalysis
@@ -627,7 +630,6 @@ def show_qr_code_2fa(request):
     qr_b64 = generate_qr_base64(user_obj)  # o convertí tu bytes a base64
     context = {
         "qr_data_uri": f"data:image/png;base64,{qr_b64}",  # o usá qr_url si servís la imagen por URL
-        "otp_secret": user_obj.otp_secret,                 # opcional (para clave manual)
         "next": request.GET.get("next") or request.session.get("twofa_next") or "/",
         "user_email": getattr(user_obj, "email", ""),
     }
@@ -711,7 +713,7 @@ def send_qr_code_email_inline(user):
         """,
         user.username, qr_base64
     )
-    print(f'message_email {html_content}')
+    logger.debug('Prepared QR email for user %s (HTML content omitted)', user.username)
     # Crear el email con formato HTML
     email = EmailMessage(
         subject="Tu Código QR para Autenticación en Passing",
@@ -794,10 +796,10 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
 
         if instance.multifactor_status == MultifactorChoices.ACTIVADO:
             # Ejecuta una función si el campo `multifactor_status` está activado
-            print(f'pasa por activado')
+            logger.info('GlobalSettings: multifactor_status ACTIVADO')
             self.activate_multifactor_for_all()
         elif instance.multifactor_status == MultifactorChoices.DESACTIVADO:
-            print(f'pasa por desactivado')
+            logger.info('GlobalSettings: multifactor_status DESACTIVADO')
             self.deactivate_multifactor_for_all()
 
         instance.save()  # Guarda el objeto en la base de datos
@@ -834,7 +836,8 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
 
 from django.db import connection
 def sso_consume(request):
-    print("DEBUG schema_name en request:", getattr(connection, "schema_name", None))
+    # debug removed: do not log request headers in production
+    # print("DEBUG schema_name en request:", getattr(connection, "schema_name", None))
     token = request.GET.get("token")
     if not token:
         return HttpResponseForbidden("Token requerido.")
@@ -957,9 +960,8 @@ def verify_2fa_sso(request):
         _login_with_backend(request, user)
         return redirect(next_path)
 
-    # Código inválido: re-render con error (sin mandar a QR)
+    # Código inválido: re-render con error (sin exponer otp_secret)
     return render(request, "qr_2fa.html", {
-        "otp_secret": user.otp_secret,
         "error": "Código inválido o expirado. Probá nuevamente.",
         "next": next_path,
         "user_email": user.email,

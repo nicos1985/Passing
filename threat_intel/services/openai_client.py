@@ -10,6 +10,9 @@ import traceback
 from typing import Optional, Dict, Any
 from django.conf import settings
 from openai import OpenAI
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIClientManager:
@@ -25,8 +28,8 @@ class OpenAIClientManager:
 
     def _validate_config(self) -> None:
         """Valida y carga configuración de settings."""
-        print("[OpenAI] Validando configuración...", flush=True)
-        print(f"[OpenAI] THREAT_INTEL config: {self.cfg}", flush=True)
+        logger.info("[OpenAI] Validando configuración...")
+        logger.debug("[OpenAI] THREAT_INTEL config: %s", self.cfg)
         
         # Obtener API key de dos fuentes posibles
         self.api_key = (
@@ -35,13 +38,13 @@ class OpenAIClientManager:
         )
         
         if self.api_key:
-            print(f"[OpenAI] API Key encontrada: {self.api_key[:10]}...{self.api_key[-4:]}", flush=True)
+            logger.info("[OpenAI] API Key encontrada")
         else:
-            print("[OpenAI] ❌ API Key NO encontrada", flush=True)
+            logger.warning("[OpenAI] API Key NO encontrada")
         
         # Obtener modelo
         self.model_name = self.cfg.get("OPENAI_MODEL") or "gpt-4.1-mini"
-        print(f"[OpenAI] Modelo: {self.model_name}", flush=True)
+        logger.info("[OpenAI] Modelo: %s", self.model_name)
 
     def validate_api_key(self) -> None:
         """
@@ -53,7 +56,7 @@ class OpenAIClientManager:
                 "OPENAI_API_KEY is not set in settings or THREAT_INTEL config. "
                 "Revisa settings.OPENAI_API_KEY o settings.THREAT_INTEL['OPENAI_API_KEY']"
             )
-        print("[OpenAI] ✓ API Key validada", flush=True)
+        logger.info("[OpenAI] ✓ API Key validada")
 
     def create_client(self) -> OpenAI:
         """
@@ -66,27 +69,24 @@ class OpenAIClientManager:
             RuntimeError: Si la API key no está disponible
             Exception: Si falla la creación del cliente
         """
-        print("[OpenAI] Creando cliente...", flush=True)
+        logger.info("[OpenAI] Creando cliente...")
         
         # Validar API key primero
         self.validate_api_key()
         
         try:
             # Setear variable de entorno (requerida por OpenAI SDK)
-            print("[OpenAI] Configurando variable de entorno OPENAI_API_KEY", flush=True)
+            logger.debug("[OpenAI] Configurando variable de entorno OPENAI_API_KEY")
             os.environ["OPENAI_API_KEY"] = self.api_key
             
             # Crear cliente
-            print("[OpenAI] Instanciando OpenAI()...", flush=True)
+            logger.debug("[OpenAI] Instanciando OpenAI()...")
             self.client = OpenAI()
-            
-            print("[OpenAI] ✓ Cliente creado exitosamente", flush=True)
+            logger.info("[OpenAI] ✓ Cliente creado exitosamente")
             return self.client
             
         except Exception as e:
-            print(f"[OpenAI] ❌ Error al crear cliente: {type(e).__name__}", flush=True)
-            print(f"[OpenAI] Detalle: {repr(e)}", flush=True)
-            print(f"[OpenAI] Traceback:\n{traceback.format_exc()}", flush=True)
+            logger.exception("[OpenAI] ❌ Error al crear cliente: %s", type(e).__name__)
             raise
 
     def get_client(self) -> OpenAI:
@@ -116,15 +116,15 @@ class OpenAIClientManager:
         Returns:
             bool: True si la conexión funciona
         """
-        print("[OpenAI] Testeando conexión...", flush=True)
+        logger.info("[OpenAI] Testeando conexión...")
         try:
             client = self.get_client()
             # Hacer un call simple (no cuesta mucho)
             # Nota: esto sí cuesta dinero pero es solo para testing
-            print("[OpenAI] ✓ Conexión exitosa", flush=True)
+            logger.info("[OpenAI] ✓ Conexión exitosa")
             return True
         except Exception as e:
-            print(f"[OpenAI] ❌ Conexión fallida: {e}", flush=True)
+            logger.exception("[OpenAI] ❌ Conexión fallida")
             return False
 
 
