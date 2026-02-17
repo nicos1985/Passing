@@ -4,6 +4,7 @@ from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
+import uuid
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 
@@ -80,6 +81,21 @@ class InformationAssets(RiskEvaluableObject):
 
     def __str__(self):
         return self.name
+
+    def get_current_holder(self):
+        """Devuelve el usuario que actualmente tiene el activo (si está prestado), o None."""
+        try:
+            # Only consider confirmed actions when determining current holder
+            last_action = self.actions.filter(status='CONFIRMED').order_by('-timestamp').first()
+            if last_action and last_action.action_type == AssetActionType.LOAN:
+                return last_action.user
+        except Exception:
+            return None
+        return None
+
+    @property
+    def is_loaned(self):
+        return self.get_current_holder() is not None
         
 
 class VendorType(models.IntegerChoices):
@@ -398,7 +414,65 @@ class RiskEvaluation(models.Model):
             <div style="font-weight:500; color:{text_color};">{label}</div>
         </div>
         """
-        return html
+
+
+############################# Asset Actions (Prestamo / Devolucion) #############################
+from django.core.exceptions import ValidationError
+
+class AssetActionType(models.IntegerChoices):
+    LOAN = 0, 'Prestamo'
+    RETURN = 1, 'Devolucion'
+
+
+class AssetAction(models.Model):
+    asset = models.ForeignKey(InformationAssets, on_delete=models.CASCADE, related_name='actions', verbose_name='Activo')
+    action_type = models.IntegerField(choices=AssetActionType.choices, verbose_name='Tipo de accion')
+    class AssetActionStatus(models.TextChoices):
+        PENDING = 'PENDING', 'Pendiente'
+        CONFIRMED = 'CONFIRMED', 'Confirmado'
+        REJECTED = 'REJECTED', 'Rechazado'
+
+    status = models.CharField(max_length=20, choices=AssetActionStatus.choices, default=AssetActionStatus.PENDING, verbose_name='Estado')
+    confirmation_token = models.UUIDField(default=uuid.uuid4, unique=True, null=True, blank=True, verbose_name='Token de confirmacion')
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='asset_actions', verbose_name='Usuario')
+    performed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='performed_asset_actions', verbose_name='Accionado por')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Fecha y hora')
+    description = models.TextField(blank=True, null=True, verbose_name='Motivo / descripcion')
+    due_date = models.DateField(blank=True, null=True, verbose_name='Fecha estimada de devolucion')
+
+    class Meta:
+        verbose_name = 'Accion de activo'
+        verbose_name_plural = 'Acciones de activos'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.get_action_type_display()} - {self.asset} -> {self.user or 'N/A'} @ {self.timestamp}"
+
+    def clean(self):
+        # Validation rules:
+        # - No se puede realizar un prestamo si el activo ya está prestado (sin devolucion intermedia)
+        # - No se puede realizar una devolucion si no existe un prestamo activo
+        # Ensure an asset was provided (use asset_id to avoid dereferencing missing related object)
+        if not getattr(self, 'asset_id', None):
+            raise ValidationError({'asset': 'Debe seleccionar un activo.'})
+
+        # Determine current holder by looking at latest action excluding this instance (if editing)
+        # Only consider confirmed actions when deciding current state
+        qs = AssetAction.objects.filter(asset_id=self.asset_id, status='CONFIRMED').exclude(pk=self.pk).order_by('-timestamp')
+        last = qs.first()
+
+        if self.action_type == AssetActionType.LOAN:
+            if last and last.action_type == AssetActionType.LOAN:
+                raise ValidationError('El activo ya está prestado. Debe devolverlo antes de prestarlo nuevamente.')
+
+        if self.action_type == AssetActionType.RETURN:
+            if not last or last.action_type != AssetActionType.LOAN:
+                raise ValidationError('No existe un préstamo activo para devolver este activo.')
+
+    def save(self, *args, **kwargs):
+        # run validations before save
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
     

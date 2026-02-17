@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="col-lg-11 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Historial de acciones - {% if asset %}{{ asset.name }}{% else %}Todos{% endif %}</h4>
+            <div>
+                <a class="btn btn-secondary" href="{% url 'informationassets-list' %}">Volver</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table id="data" class="table table-striped" style="width:100%">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Acción</th>
+                            <th>Activo</th>
+                            <th>Usuario</th>
+                            <th>Accionado por</th>
+                            <th>Estado</th>
+                            <th>Vto estimado</th>
+                            <th>Fecha / Hora</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in action_items %}
+                        {% with act=item.act asset=item.asset %}
+                        <tr class="{% if item.is_overdue %}table-danger{% endif %}">
+                            <td><i class="fa-solid {{ item.icon }} me-2" style="{{ item.icon_color|safe }}"></i> {{ act.get_action_type_display }}</td>
+                            <td>
+                                {% if asset and asset.pk %}
+                                    <a href="{% url 'informationassets-detail' asset.pk %}">{{ asset.name }}</a>
+                                {% elif item.asset and item.asset.pk %}
+                                    <a href="{% url 'informationassets-detail' item.asset.pk %}">{{ item.asset_name }}</a>
+                                {% else %}
+                                    {{ item.asset_name }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if act.user %}
+                                    <a href="{% url 'asset-actions-user' act.user.pk %}">{{ act.user.get_full_name|default:act.user.username }}</a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if act.performed_by %}
+                                    <a href="{% url 'asset-actions-user' act.performed_by.pk %}">{{ act.performed_by.get_full_name|default:act.performed_by.username }}</a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if act.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                {% elif act.status == 'CONFIRMED' %}
+                                    <span class="badge bg-success">Confirmado</span>
+                                {% elif act.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% else %}
+                                    {{ act.get_status_display }}
+                                {% endif %}
+                            </td>
+                            <td>{% if item.due_date %}{{ item.due_date }}{% else %}—{% endif %}</td>
+                            <td>{{ act.timestamp }}</td>
+                            <td>{% if act.description %}{{ act.description }}{% else %}—{% endif %}</td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/init-datatable.js' %}"></script>
+{% endblock %}

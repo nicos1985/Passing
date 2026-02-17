@@ -28,6 +28,11 @@
             <a class="btn btn-primary btn-flat" href="{% url create_view %}">
                 <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
             </a>
+            {% if model_name == 'informationassets' %}
+            <a class="btn btn-outline-secondary btn-flat" href="{% url 'asset-actions-all' %}">
+              <i class="fas fa-history"></i> Historial de préstamos
+            </a>
+            {% endif %}
         </div>
 
         
@@ -123,6 +128,17 @@
                         <a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="Editar {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>
                         <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="Detalle {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
                         <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="Eliminar {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
+                        {% if model_name == 'informationassets' %}
+                          {% if obj.is_loaned %}
+                            <a href="{% url 'asset-return' %}?asset={{ obj.id }}"><i class="fas fa-rotate-left" title="Devolver" style="color:#0d6efd !important; margin-left:8px;"></i></a>
+                          {% else %}
+                            <a href="{% url 'asset-loan' %}?asset={{ obj.id }}"><i class="fas fa-hand-holding" title="Prestar" style="color:#198754 !important; margin-left:8px;"></i></a>
+                          {% endif %}
+                          <a href="{% url 'asset-actions' obj.id %}"><i class="fas fa-history" title="Historial" style="color:#6c757d !important; margin-left:8px;"></i></a>
+                          {% if obj.pending_actions_count %}
+                            <span class="badge bg-warning text-dark ms-2" title="Acciones pendientes de confirmación">Pendiente: {{ obj.pending_actions_count }}</span>
+                          {% endif %}
+                        {% endif %}
                     </td>
                     </tr>
                     

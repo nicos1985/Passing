@@ -1,4 +1,6 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking, AssetActionListView, AssetActionAllListView
+from .views import confirm_asset_action
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from .models import ClientCompany, InformationAssets, Threat, Treatment, Vendor, Project, Vulnerability
@@ -56,4 +58,12 @@ urlpatterns = [
     path('vulnerability-detail/<int:pk>', GenericResourceDetailView.as_view(model=Vulnerability), name='vulnerability-detail'),
     path('vulnerability-update/<int:pk>', VulnerabilityUpdateView.as_view(), name='vulnerability-update'),
     path('vulnerability-delete/<int:pk>', VulnerabilityDeleteView.as_view(), name='vulnerability-delete'),
+    # Asset action URLs (prestamo / devolucion / seguimiento)
+    path('asset-loan/', LoanCreateView.as_view(), name='asset-loan'),
+    path('asset-return/', ReturnCreateView.as_view(), name='asset-return'),
+    path('asset-tracking/', asset_tracking, name='asset-tracking'),
+        path('asset-actions/<int:asset_id>/', AssetActionListView.as_view(), name='asset-actions'),
+        path('asset-actions/', AssetActionAllListView.as_view(), name='asset-actions-all'),
+        path('asset-actions/user/<int:user_id>/', AssetActionAllListView.as_view(), name='asset-actions-user'),
+        path('asset-action-confirm/<uuid:token>/', confirm_asset_action, name='asset-action-confirm'),
 ]

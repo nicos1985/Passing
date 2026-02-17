@@ -24,10 +24,11 @@ from .models import (
     Priority,
 )
 from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, ThreatForm, TreatmentForm, VendorForm, ClientAssetsForm, VulnerabilityForm
+from .forms import LoanForm, ReturnForm
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Q, Count
 import logging
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -36,6 +37,10 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from login.models import CustomUser
+from .models import AssetAction, AssetActionType
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Optional imports to support mapping from threat_intel -> resources
 try:
@@ -94,6 +99,8 @@ class DynamicModelListView(ListView):
 
         context['dynamic_filters'] = filters
         context['verbose_name_plural'] = model._meta.verbose_name_plural.title()
+        # Expose model_name for templates (avoid accessing _meta from templates)
+        context['model_name'] = model._meta.model_name
         return context
 
     
@@ -108,6 +115,22 @@ class AssetListView(LoginRequiredMixin, DynamicModelListView):
         context['update_view'] = f'{self.model._meta.model_name}-update'
         context['delete_view'] = f'{self.model._meta.model_name}-delete'
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
+        # Attach pending actions count to each asset in the list for UI badges
+        assets = context.get('object_list') or self.get_queryset()
+        asset_ids = [a.pk for a in assets]
+        pending_map = {}
+        if asset_ids:
+            qs = AssetAction.objects.filter(asset_id__in=asset_ids, status='PENDING').values('asset_id').annotate(count=Count('pk'))
+            pending_map = {item['asset_id']: item['count'] for item in qs}
+
+        # Set attribute on asset objects for template convenience
+        for a in assets:
+            try:
+                a.pending_actions_count = pending_map.get(a.pk, 0)
+            except Exception:
+                a.pending_actions_count = 0
+
+        context['pending_map'] = pending_map
         return context
 
 
@@ -147,6 +170,266 @@ class AssetDetailView(LoginRequiredMixin, DetailView):
     model=InformationAssets
     template_name = 'detail-resource.html'
     login_url = 'login'
+
+
+class LoanCreateView(LoginRequiredMixin, CreateView):
+    model = AssetAction
+    form_class = LoanForm
+    template_name = 'CU-asset-action.html'
+    login_url = 'login'
+
+    def get_success_url(self):
+        return reverse_lazy('informationassets-list')
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.performed_by = self.request.user
+        obj.action_type = AssetActionType.LOAN
+        # Keep in pending until beneficiary confirms
+        obj.status = AssetAction.AssetActionStatus.PENDING
+        obj.save()
+
+        # send confirmation email to beneficiary
+        try:
+            token = str(obj.confirmation_token)
+            confirm_url = self.request.build_absolute_uri(reverse('asset-action-confirm', args=[token]))
+            subject = f"Confirmación de préstamo: {obj.asset.name}"
+            body = f"Se ha solicitado un préstamo del activo '{obj.asset.name}'.\n\nDescripción: {obj.description or '-'}\nFecha estimada de devolución: {obj.due_date or '-'}\nSolicitado por: {obj.performed_by.get_full_name() or obj.performed_by.username}\n\nPara confirmar el préstamo haga click en el siguiente enlace:\n{confirm_url}\n\nSi no reconoce esta solicitud, ignore este correo."
+            if obj.user and obj.user.email:
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [obj.user.email])
+        except Exception:
+            logger.exception('Error enviando email de confirmación de préstamo')
+
+        messages.info(self.request, 'Préstamo creado como pendiente. Se ha enviado una solicitud de confirmación al usuario destino.')
+        return redirect(self.get_success_url())
+
+    def get_initial(self):
+        initial = super().get_initial()
+        asset_id = self.request.GET.get('asset')
+        if asset_id:
+            initial['asset'] = asset_id
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['action_label'] = 'Préstamo'
+        ctx['action_icon'] = 'fa-hand-holding'
+        # if asset provided, expose asset for template
+        asset_id = self.request.GET.get('asset') or self.request.POST.get('asset')
+        if asset_id:
+            try:
+                ctx['asset_obj'] = InformationAssets.objects.get(pk=asset_id)
+            except Exception:
+                ctx['asset_obj'] = None
+        return ctx
+
+
+class ReturnCreateView(LoginRequiredMixin, CreateView):
+    model = AssetAction
+    form_class = ReturnForm
+    template_name = 'CU-asset-action.html'
+    login_url = 'login'
+
+    def get_success_url(self):
+        return reverse_lazy('informationassets-list')
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.performed_by = self.request.user
+        obj.action_type = AssetActionType.RETURN
+        obj.status = AssetAction.AssetActionStatus.PENDING
+        obj.save()
+
+        # send confirmation email to the recipient (current holder)
+        try:
+            token = str(obj.confirmation_token)
+            confirm_url = self.request.build_absolute_uri(reverse('asset-action-confirm', args=[token]))
+            subject = f"Confirmación de devolución: {obj.asset.name}"
+            body = f"Se ha solicitado la devolución del activo '{obj.asset.name}'.\n\nDescripción: {obj.description or '-'}\nSolicitado por: {obj.performed_by.get_full_name() or obj.performed_by.username}\n\nPara confirmar la devolución haga click en el siguiente enlace:\n{confirm_url}\n\nSi no reconoce esta solicitud, ignore este correo."
+            # send to the user who currently holds the asset
+            recipient = None
+            try:
+                holder = obj.asset.get_current_holder()
+                if holder and holder.email:
+                    recipient = holder.email
+            except Exception:
+                recipient = None
+
+            if recipient:
+                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
+        except Exception:
+            logger.exception('Error enviando email de confirmación de devolución')
+
+        messages.info(self.request, 'Devolución creada como pendiente. Se ha enviado una solicitud de confirmación al usuario actual que tiene el activo.')
+        return redirect(self.get_success_url())
+
+    def get_initial(self):
+        initial = super().get_initial()
+        asset_id = self.request.GET.get('asset')
+        if asset_id:
+            initial['asset'] = asset_id
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['action_label'] = 'Devolución'
+        ctx['action_icon'] = 'fa-rotate-left'
+        asset_id = self.request.GET.get('asset') or self.request.POST.get('asset')
+        if asset_id:
+            try:
+                ctx['asset_obj'] = InformationAssets.objects.get(pk=asset_id)
+            except Exception:
+                ctx['asset_obj'] = None
+        return ctx
+
+
+class AssetActionListView(LoginRequiredMixin, ListView):
+    model = AssetAction
+    template_name = 'asset-actions-list.html'
+    context_object_name = 'actions'
+    login_url = 'login'
+
+    def get_queryset(self):
+        asset_id = self.kwargs.get('asset_id')
+        return AssetAction.objects.filter(asset_id=asset_id).order_by('-timestamp')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        asset_id = self.kwargs.get('asset_id')
+        try:
+            ctx['asset'] = InformationAssets.objects.get(pk=asset_id)
+        except Exception:
+            ctx['asset'] = None
+        # Build enriched action items for template (include icon, overdue flag, asset name, due_date)
+        actions = ctx.get('actions', [])
+        items = []
+        today = timezone.now().date()
+        for act in actions:
+            try:
+                asset_obj = act.asset
+            except Exception:
+                asset_obj = None
+
+            is_overdue = False
+            if act.action_type == AssetActionType.LOAN and getattr(act, 'due_date', None) and asset_obj and asset_obj.is_loaned and today > act.due_date:
+                is_overdue = True
+
+            if act.action_type == AssetActionType.LOAN:
+                icon = 'fa-hand-holding'
+                icon_color = 'color: #198754 !important;'  # green
+            else:
+                icon = 'fa-rotate-left'
+                icon_color = 'color: #0d6efd !important;'  # blue
+
+            items.append({
+                'act': act,
+                'asset': asset_obj,
+                'asset_name': asset_obj.name if asset_obj else '—',
+                'due_date': act.due_date,
+                'is_overdue': is_overdue,
+                'icon': icon,
+                'icon_color': icon_color,
+            })
+
+        ctx['action_items'] = items
+        return ctx
+
+
+class AssetActionAllListView(LoginRequiredMixin, ListView):
+    model = AssetAction
+    template_name = 'asset-actions-list.html'
+    context_object_name = 'actions'
+    login_url = 'login'
+
+    def get_queryset(self):
+        # Allow filtering by user via URL kwarg (asset-actions/user/<id>/)
+        user_id = self.kwargs.get('user_id')
+        qs = AssetAction.objects.all().order_by('-timestamp')
+        if user_id:
+            qs = qs.filter(user_id=user_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['asset'] = None
+        ctx['title'] = 'Historial de todos los activos'
+        # If filtering by user, attach the user object to context for header
+        user_id = self.kwargs.get('user_id')
+        if user_id:
+            try:
+                ctx['filter_user'] = CustomUser.objects.get(pk=user_id)
+                ctx['title'] = f"Historial de {ctx['filter_user'].get_full_name() or ctx['filter_user'].username}"
+            except Exception:
+                ctx['filter_user'] = None
+        # Build enriched action items for template
+        actions = ctx.get('actions', [])
+        items = []
+        today = timezone.now().date()
+        for act in actions:
+            try:
+                asset_obj = act.asset
+            except Exception:
+                asset_obj = None
+
+            is_overdue = False
+            if act.action_type == AssetActionType.LOAN and getattr(act, 'due_date', None) and asset_obj and asset_obj.is_loaned and today > act.due_date:
+                is_overdue = True
+
+            icon = 'fa-hand-holding' if act.action_type == AssetActionType.LOAN else 'fa-rotate-left'
+
+            icon_color = 'color: #198754 !important;' if act.action_type == AssetActionType.LOAN else 'color: #0d6efd !important;'
+
+            items.append({
+                'act': act,
+                'asset': asset_obj,
+                'asset_name': asset_obj.name if asset_obj else '—',
+                'due_date': act.due_date,
+                'is_overdue': is_overdue,
+                'icon': icon,
+                'icon_color': icon_color,
+            })
+
+        ctx['action_items'] = items
+        return ctx
+
+
+@login_required
+def asset_tracking(request):
+    """Lista de activos con su titular actual y el historial reciente."""
+    assets = InformationAssets.objects.all()
+    data = []
+    for a in assets:
+        holder = a.get_current_holder()
+        recent_actions = a.actions.all()[:10]
+        data.append({'asset': a, 'holder': holder, 'recent_actions': recent_actions})
+    return render(request, 'asset-tracking.html', {'data': data})
+
+
+@login_required
+def confirm_asset_action(request, token):
+    """Confirm an AssetAction by its confirmation token. Marks as CONFIRMED when valid."""
+    try:
+        aa = AssetAction.objects.get(confirmation_token=token)
+    except AssetAction.DoesNotExist:
+        return HttpResponse('Token inválido o acción no encontrada.', status=404)
+
+    if aa.status != AssetAction.AssetActionStatus.PENDING:
+        return HttpResponse('Esta acción ya fue procesada.', status=400)
+
+    # mark confirmed and save
+    aa.status = AssetAction.AssetActionStatus.CONFIRMED
+    aa.timestamp = timezone.now()
+    try:
+        aa.save()
+    except ValidationError as e:
+        # If the action cannot be confirmed due to business validation (e.g., trying to return without loan),
+        # mark it as rejected and return a 400 with the error message.
+        aa.status = AssetAction.AssetActionStatus.REJECTED
+        aa.save(update_fields=['status'])
+        return HttpResponse(f'No se pudo confirmar la acción: {e.messages}', status=400)
+
+    # Simple response page
+    return HttpResponse('Acción confirmada correctamente. Puede cerrar esta ventana.')
 
 class GenericResourceDetailView(DetailView):
     template_name = 'detail-resource.html'

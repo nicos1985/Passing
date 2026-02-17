@@ -117,16 +117,14 @@ class CustomUser(AbstractUser):
         try:
             from django.db import connection
             tenant = getattr(connection, "tenant", None)
+            # fallback: try to resolve client from connection.schema_name
             if tenant is None:
-                # try schema_name (fallback)
                 schema_name = getattr(connection, "schema_name", None)
-                if not schema_name:
-                    return cls.objects.none()
-                # try to import Client lazily to avoid circular imports
-                from client.models import Client
-                tenant = Client.objects.filter(schema_name=schema_name).first()
+                if schema_name:
+                    from client.models import Client
+                    tenant = Client.objects.filter(schema_name=schema_name).first()
 
-            if tenant is None:
+            if not tenant:
                 return cls.objects.none()
 
             return cls.objects.filter(client=tenant)

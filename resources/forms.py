@@ -19,9 +19,11 @@ from .models import (
     Vendor,
     Vulnerability,
 )
+from .models import AssetAction, AssetActionType
 from django.contrib.contenttypes.models import ContentType
 from django import forms
 import logging
+from login.models import CustomUser
 
 logger = logging.getLogger(__name__)
 from itertools import chain
@@ -334,3 +336,75 @@ class VulnerabilityForm(ModelForm):
         widgets = {
             'description': Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
         }
+
+
+class LoanForm(forms.ModelForm):
+    """Formulario para crear un préstamo (AssetAction with LOAN)."""
+    class Meta:
+        model = AssetAction
+        fields = ['asset', 'user', 'description', 'due_date']
+        widgets = {
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only allow assets that are not currently loaned
+        available_assets = InformationAssets.objects.all()
+        # filter out assets that are currently loaned
+        available_assets = [a for a in available_assets if not a.is_loaned]
+        self.fields['asset'].queryset = InformationAssets.objects.filter(pk__in=[a.pk for a in available_assets])
+        # user choices: solo usuarios del tenant actual
+        try:
+            self.fields['user'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
+        except Exception:
+            # fallback seguro por si no existe el helper
+            self.fields['user'].queryset = CustomUser.objects.filter(is_active=True)
+
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
+
+    def save(self, commit=True, performed_by=None):
+        instance = super().save(commit=False)
+        instance.action_type = AssetActionType.LOAN
+        if performed_by:
+            instance.performed_by = performed_by
+        if commit:
+            instance.save()
+        return instance
+
+
+class ReturnForm(forms.ModelForm):
+    """Formulario para registrar una devolución (AssetAction with RETURN)."""
+    class Meta:
+        model = AssetAction
+        fields = ['asset', 'description']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only allow assets that are currently loaned
+        loaned = [a for a in InformationAssets.objects.all() if a.is_loaned]
+        self.fields['asset'].queryset = InformationAssets.objects.filter(pk__in=[a.pk for a in loaned])
+
+        for fname, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (CheckboxInput, RadioSelect)):
+                widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+            else:
+                improve_widget_attrs(fname, widget)
+
+    def save(self, commit=True, performed_by=None):
+        instance = super().save(commit=False)
+        instance.action_type = AssetActionType.RETURN
+        # set user to the current holder if available
+        holder = instance.asset.get_current_holder()
+        instance.user = holder
+        if performed_by:
+            instance.performed_by = performed_by
+        if commit:
+            instance.save()
+        return instance
