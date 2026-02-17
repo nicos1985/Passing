@@ -16,6 +16,8 @@ urlpatterns = [
     # IntelItem views
     path('items/<int:pk>/', views.IntelItemDetailView.as_view(), name='item-detail'),
     path('items/<int:pk>/toggle-relevant/', views.IntelItemToggleRelevantView.as_view(), name='item-toggle-relevant'),
+    path('items/<int:pk>/link-threat/', views.LinkThreatView.as_view(), name='link-threat'),
+    path('ajax/search-threats/', views.search_threats_ajax, name='search-threats-ajax'),
     
     # AIAnalysis views
     path('analyses/', views.AIAnalysisListView.as_view(), name='analysis-list'),

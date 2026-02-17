@@ -220,12 +220,12 @@ def upload_csv(request):
 
             # Leer archivo con fallback de codificación
             raw_data = file.read()
-                try:
-                    logger.debug('Intentando decodificar con UTF-8...')
-                    decoded_file = raw_data.decode("utf-8").splitlines()
-                except UnicodeDecodeError:
-                    logger.warning('Error de decodificación con UTF-8, intentando con Latin-1...')
-                    decoded_file = raw_data.decode("latin1").splitlines()
+            try:
+                logger.debug('Intentando decodificar con UTF-8...')
+                decoded_file = raw_data.decode("utf-8").splitlines()
+            except UnicodeDecodeError:
+                logger.warning('Error de decodificación con UTF-8, intentando con Latin-1...')
+                decoded_file = raw_data.decode("latin1").splitlines()
 
             reader = csv.DictReader(decoded_file)
 

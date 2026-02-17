@@ -213,6 +213,8 @@ class TypeThreat(models.IntegerChoices):
     INTRUSION = 14, 'Intrusion'
     TERRORISM = 15, 'Terrorismo'
     OTHERS = 16, 'Otros'
+    THREAT_INTEL = 17, 'Inteligencia de amenazas'
+    
 
 class Threat(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")
@@ -353,7 +355,6 @@ class RiskEvaluation(models.Model):
                 application_periodicity=ApplicationPeriodicity.PERMANENT,
                 control_automation=ControlAutomation.MANUAL,
                 priority=Priority.NO_PRIORITY,
-                implementation_status=getattr(Treatment, 'implementation_status', None) and Treatment.implementation_status or None,
             )
 
             # Asociar y volver a guardar la evaluación con su tratamiento

@@ -9,12 +9,15 @@ from django.db.models import Q
 from django.utils import timezone
 from resources.views import DynamicModelListView
 from .models import Run, RunItem, IntelItem, AIAnalysis, Report, Review, Source, TechTag
+from .models import IntelThreatLink
+from resources.models import Threat as ResourcesThreat
 from .services.ai import analyze_relevant_items_for_run
 from .services.emailer import send_report_email
 from .services.report_generator import generate_report_pdf, generate_report_markdown, generate_report_json
 from django.utils.text import capfirst
 import csv
 import json
+from django.shortcuts import render
 
 
 class RunListView(LoginRequiredMixin, DynamicModelListView):
@@ -205,6 +208,57 @@ class IntelItemToggleRelevantView(LoginRequiredMixin, View):
         if run_pk:
             return redirect('threat_intel:runitem-list', run_pk=run_pk)
         return redirect('threat_intel:run-list')
+
+
+class LinkThreatView(LoginRequiredMixin, View):
+    """Manual link page: search existing `resources.Threat` and link it to this IntelItem."""
+    def get(self, request, pk):
+        item = get_object_or_404(IntelItem, pk=pk)
+        q = request.GET.get('q', '')
+        threats = ResourcesThreat.objects.all()
+        if q:
+            threats = threats.filter(name__icontains=q)
+        return render(request, 'threat_intel_link_threat.html', {
+            'item': item,
+            'threats': threats[:200],
+            'q': q,
+            'back_url': reverse('threat_intel:item-detail', args=[item.pk])
+        })
+
+    def post(self, request, pk):
+        item = get_object_or_404(IntelItem, pk=pk)
+        threat_id = request.POST.get('threat_id')
+        if not threat_id:
+            messages.error(request, 'Debe seleccionar una amenaza para vincular.')
+            return redirect('threat_intel:link-threat', pk=pk)
+        try:
+            threat = ResourcesThreat.objects.get(pk=int(threat_id))
+            link, created = IntelThreatLink.objects.get_or_create(
+                intel_item=item,
+                resources_threat=threat,
+                defaults={
+                    'match_type': 'manual',
+                    'created_by': request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+                }
+            )
+            if created:
+                messages.success(request, f'Vinculación creada: {threat.name}')
+            else:
+                messages.info(request, 'La vinculación ya existía.')
+        except ResourcesThreat.DoesNotExist:
+            messages.error(request, 'Amenaza seleccionada inválida.')
+
+        return redirect('threat_intel:item-detail', pk=pk)
+
+
+def search_threats_ajax(request):
+    q = request.GET.get('q', '')
+    results = []
+    if q:
+        qs = ResourcesThreat.objects.filter(name__icontains=q)[:50]
+        for t in qs:
+            results.append({'id': t.pk, 'name': t.name})
+    return JsonResponse({'results': results})
 
 
 class AIAnalysisListView(LoginRequiredMixin, ListView):

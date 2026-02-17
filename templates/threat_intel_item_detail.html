@@ -177,6 +177,9 @@
                 <a href="{% url 'threat_intel:run-detail' run.id %}" class="btn btn-info">
                     <i class="fas fa-link"></i> Ver Run
                 </a>
+                <a href="{% url 'evaluation-create' %}?intel_item_id={{ item.id }}" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Crear Evaluación
+                </a>
                 {% else %}
                 <a href="{% url 'threat_intel:run-list' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Volver a Runs

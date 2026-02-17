@@ -220,7 +220,7 @@ def create_superuser(request, schema_name):
     Envía mail de activación (usuario queda inactivo hasta activar).
     """
     client = get_object_or_404(Client, schema_name=schema_name)
-
+    
     if getattr(client, "created_superuser", 0) == 1:
         messages.warning(request, "El usuario admin ya fue creado para este cliente.")
         return redirect("home")

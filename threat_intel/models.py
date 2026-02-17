@@ -177,6 +177,31 @@ class Review(models.Model):
 
     ticket_ref = models.CharField(max_length=200, blank=True)  # link/ID a Bitrix o sistema interno
 
+
+class IntelThreatLink(models.Model):
+    """
+    Enlace persistente entre un `IntelItem` detectado por threat_intel
+    y una entrada del catálogo `resources.Threat`.
+
+    Esto permite reutilizar el catálogo de `resources` al crear evaluaciones
+    y mantener trazabilidad de qué ítems de inteligencia fueron mapeados.
+    """
+    MATCH_TYPE = [("auto", "Auto-match"), ("manual", "Manual")] 
+
+    intel_item = models.ForeignKey("IntelItem", on_delete=models.CASCADE, related_name="threat_links")
+    resources_threat = models.ForeignKey("resources.Threat", on_delete=models.CASCADE, related_name="intel_links")
+    matched_at = models.DateTimeField(default=timezone.now)
+    match_type = models.CharField(max_length=20, choices=MATCH_TYPE, default="auto")
+    confidence = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = [("intel_item", "resources_threat")]
+
+    def __str__(self):
+        return f"IntelItem {self.intel_item_id} -> Threat {self.resources_threat_id} ({self.match_type})"
+
 class SourceState(models.Model):
     """
     Estado/cursor por fuente dentro de un tenant schema.

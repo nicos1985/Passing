@@ -37,6 +37,13 @@ from django.utils import timezone
 from datetime import timedelta
 from login.models import CustomUser
 
+# Optional imports to support mapping from threat_intel -> resources
+try:
+    from threat_intel.models import IntelThreatLink, IntelItem
+except Exception:
+    IntelThreatLink = None
+    IntelItem = None
+
 
 # Create your views here.
 
@@ -427,15 +434,50 @@ def crear_evaluacion(request):
     type_id = request.GET.get('type_id') or request.GET.get('model_type')
     object_id = request.GET.get('object_id')
     from_treatment = request.GET.get('from_treatment')
+    intel_item_id = request.GET.get('intel_item_id')
 
     if request.method == 'POST':
         form = RiskEvaluationForm(request.POST)
         if form.is_valid():
             evaluacion = form.save()
             return redirect('evaluation-detail', pk=evaluacion.pk)
+        else:
+            # Surface validation errors to user
+            messages.error(request, 'Errores en el formulario: ' + '; '.join(
+                [f"{k}: {', '.join(map(str,v))}" for k,v in form.errors.items()]
+            ))
     else:
         initial = {}
         form = RiskEvaluationForm()
+        # If intel_item_id provided, attempt mapping to resources.Threat even when no type_id
+        if intel_item_id and IntelThreatLink is not None and IntelItem is not None:
+            try:
+                intel = IntelItem.objects.get(pk=int(intel_item_id))
+                link = IntelThreatLink.objects.filter(intel_item=intel).select_related('resources_threat').first()
+                if link:
+                    initial['threat'] = link.resources_threat.pk
+                else:
+                    possible = Threat.objects.filter(name__iexact=(getattr(intel, 'title', '') or '')).first()
+                    if possible:
+                        IntelThreatLink.objects.create(
+                            intel_item=intel,
+                            resources_threat=possible,
+                            match_type='auto',
+                            created_by=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+                        )
+                        initial['threat'] = possible.pk
+                    else:
+                        new_th = Threat.objects.create(name=(getattr(intel, 'title', None) or f"IntelItem {intel.pk}"), description=(getattr(intel, 'description', '') or ''), type_threat=ThreatType.THREAT_INTEL)
+                        IntelThreatLink.objects.create(
+                            intel_item=intel,
+                            resources_threat=new_th,
+                            match_type='auto',
+                            created_by=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+                        )
+                        initial['threat'] = new_th.pk
+            except Exception:
+                # Fail silently on mapping errors but keep flow
+                pass
         # If type_id provided, restrict choices for object_id to that model
         if type_id:
             try:
@@ -452,6 +494,38 @@ def crear_evaluacion(request):
                 if from_treatment:
                     form_desc = f"Re-evaluación iniciada desde tratamiento #{from_treatment}."
                     initial['description'] = form_desc
+
+                # If arriving from threat_intel, try to map intel item -> resources.Threat
+                if intel_item_id and IntelThreatLink is not None and IntelItem is not None:
+                    try:
+                        intel = IntelItem.objects.get(pk=int(intel_item_id))
+                        # Look for existing link
+                        link = IntelThreatLink.objects.filter(intel_item=intel).select_related('resources_threat').first()
+                        if link:
+                            initial['threat'] = link.resources_threat.pk
+                        else:
+                            # Try to auto-match by exact name
+                            possible = Threat.objects.filter(name__iexact=(getattr(intel, 'title', '') or '')).first()
+                            if possible:
+                                IntelThreatLink.objects.create(
+                                    intel_item=intel,
+                                    resources_threat=possible,
+                                    match_type='auto',
+                                    created_by=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+                                )
+                                initial['threat'] = possible.pk
+                            else:
+                                # create a new resources.Threat and link it
+                                new_th = Threat.objects.create(name=(getattr(intel, 'title', None) or f"IntelItem {intel.pk}"), description=(getattr(intel, 'description', '') or ''))
+                                IntelThreatLink.objects.create(
+                                    intel_item=intel,
+                                    resources_threat=new_th,
+                                    match_type='auto',
+                                    created_by=request.user if getattr(request, 'user', None) and request.user.is_authenticated else None,
+                                )
+                                initial['threat'] = new_th.pk
+                    except IntelItem.DoesNotExist:
+                        pass
                 # recreate form with initial
                 form = RiskEvaluationForm(initial=initial)
                 form.fields['object_id'].choices = choices
