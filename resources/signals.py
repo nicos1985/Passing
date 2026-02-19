@@ -6,10 +6,7 @@ from django.utils import timezone
 
 @receiver(post_save, sender=Treatment)
 def treatment_post_save(sender, instance: Treatment, created, **kwargs):
-    """When a Treatment reaches IMPLEMENTED, create a follow-up RiskEvaluation prefilling
-    from the most recent evaluation for the same object. The created RiskEvaluation will
-    set `skip_treatment=True` to avoid auto-creating another Treatment.
-    """
+    """Cuando un tratamiento alcanza IMPLEMENTED, genera una re-evaluación del mismo objeto y evita crear otro tratamiento automáticamente."""
     try:
         if instance.stage == TreatmentStage.IMPLEMENTED:
             # find last evaluation for this object (excluding ones created at the same time)

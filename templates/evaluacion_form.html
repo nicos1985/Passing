@@ -49,8 +49,21 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
 
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <div>
+          <a class="btn btn-outline-secondary" href="{% url 'risk-list' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+        </div>
+        <div>
+          {% if related_links %}
+            {% for rl in related_links %}
+              <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
         <div class="row mb-3">
-          {% for field in form.visible_fields %}
+                {% for field in form.visible_fields %}
             <div class="col-md-6 mb-3">
               <div class="form-group">
                 <label for="{{ field.id_for_label }}" class="form-label">
@@ -75,6 +88,9 @@
                 {{ field }}
                 {% if field.errors %}
                   <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
                 {% endif %}
               </div>
             </div>

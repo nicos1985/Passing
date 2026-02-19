@@ -1,4 +1,5 @@
-from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking, ChecklistTemplateListView, ChecklistTemplateCreateView, VendorEvaluationCreateView, VendorEvaluationDetailView, VendorEvaluationPendingOwnerListView
+from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking, ChecklistTemplateListView, ChecklistTemplateCreateView, VendorEvaluationCreateView, VendorEvaluationDetailView, checklist_template_detail, VendorChecklistCreateView
 from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteView, AssetDetailView, RiskEvaluationDetailView, RiskEvaluationListView, ThreatCreateView, ThreatDeleteView, ThreatListView, ThreatUpdateView, TreatmentDeleteView, TreatmentListView, TreatmentUpdateView, VendorListView, VendorCreateView, VendorUpdateView, VendorDetailView, VendorDeleteView, GenericResourceDetailView, VulnerabilityCreateView, VulnerabilityDeleteView, VulnerabilityListView, VulnerabilityUpdateView, crear_evaluacion, crear_tratamiento, get_objects_by_type, RiskEvaluationDeleteView, test_colreorder, advance_treatment_stage, force_create_treatment, LoanCreateView, ReturnCreateView, asset_tracking, AssetActionListView, AssetActionAllListView
 from .views import confirm_asset_action
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
@@ -13,12 +14,19 @@ urlpatterns = [
     path('asset-update/<int:pk>', AssetUpdateView.as_view(), name='informationassets-update'),
     path('asset-detail/<int:pk>', GenericResourceDetailView.as_view(model=InformationAssets), name='informationassets-detail'),
     path('asset-delete/<int:pk>', AssetDeleteView.as_view(), name='informationassets-delete'),
-    # Vulnerability URLs
+    # Vendor URLs
     path('vendor-list/', VendorListView.as_view(), name='vendor-list'),
     path('vendor-create/', VendorCreateView.as_view(), name='vendor-create'),
     path('vendor-update/<int:pk>', VendorUpdateView.as_view(), name='vendor-update'),
     path('vendor-detail/<int:pk>', GenericResourceDetailView.as_view(model=Vendor), name='vendor-detail'),
     path('vendor-delete/<int:pk>', VendorDeleteView.as_view(), name='vendor-delete'),
+    path('checklist-templates/', ChecklistTemplateListView.as_view(), name='checklist-templates'),
+    path('checklist-templates/create/', ChecklistTemplateCreateView.as_view(), name='checklist-template-create'),
+    path('vendor-evaluation-create/', VendorEvaluationCreateView.as_view(), name='vendor-evaluation-create'),
+    path('vendor-evaluations/pending/', VendorEvaluationPendingOwnerListView.as_view(), name='vendor-evaluations-pending'),
+    path('vendor-evaluation/<int:pk>/', VendorEvaluationDetailView.as_view(), name='vendor-evaluation-detail'),
+    path('checklist-template/<int:pk>/', checklist_template_detail, name='checklist-template-detail'),
+    path('vendor-checklist-create/', VendorChecklistCreateView.as_view(), name='vendor-checklist-create'),
     # Project URLs
     path('project-list/', ProjectListView.as_view(), name='project-list'),
     path('project-create/', ProjectCreateView.as_view(), name='project-create'),
@@ -62,8 +70,8 @@ urlpatterns = [
     path('asset-loan/', LoanCreateView.as_view(), name='asset-loan'),
     path('asset-return/', ReturnCreateView.as_view(), name='asset-return'),
     path('asset-tracking/', asset_tracking, name='asset-tracking'),
-        path('asset-actions/<int:asset_id>/', AssetActionListView.as_view(), name='asset-actions'),
-        path('asset-actions/', AssetActionAllListView.as_view(), name='asset-actions-all'),
-        path('asset-actions/user/<int:user_id>/', AssetActionAllListView.as_view(), name='asset-actions-user'),
-        path('asset-action-confirm/<uuid:token>/', confirm_asset_action, name='asset-action-confirm'),
+    path('asset-actions/<int:asset_id>/', AssetActionListView.as_view(), name='asset-actions'),
+    path('asset-actions/', AssetActionAllListView.as_view(), name='asset-actions-all'),
+    path('asset-actions/user/<int:user_id>/', AssetActionAllListView.as_view(), name='asset-actions-user'),
+    path('asset-action-confirm/<uuid:token>/', confirm_asset_action, name='asset-action-confirm'),
 ]

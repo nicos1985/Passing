@@ -41,7 +41,7 @@ from django_tenants.utils import get_tenant
 import logging
 
 logger = logging.getLogger(__name__)
-from resources.models import Treatment, RiskEvaluation, TreatmentStage
+from resources.models import Treatment, RiskEvaluation, TreatmentStage, VendorEvaluation, VendorEvaluationStatus
 from django.db.models import Count, Q
 from threat_intel.models import IntelItem, Run, AIAnalysis
 from django.db.models import Count
@@ -53,6 +53,8 @@ from .utils import user_belongs_to_current_tenant
 from .mixins import TenantScopedUserMixin
 from .mixins import Safe404RedirectMixin
 import logging
+from django.utils import timezone
+from datetime import timedelta
 
 # Funcion para user_passes_test 
 def is_administrator(user):
@@ -65,6 +67,25 @@ def is_superadmin(user):
 # Create your views here.
 User = get_user_model()
 
+PENDING_EVALUATION_WINDOW_DAYS = 14
+
+def _pending_vendor_evaluations_for_dashboard(request):
+    include_all = request.user.is_staff or request.user.is_superuser
+    today = timezone.localdate()
+    end_date = today + timedelta(days=PENDING_EVALUATION_WINDOW_DAYS)
+    qs = (
+        VendorEvaluation.objects.filter(
+            status=VendorEvaluationStatus.PENDING,
+            scheduled_date__isnull=False,
+            scheduled_date__lte=end_date,
+        )
+        .select_related('vendor')
+        .order_by('scheduled_date')
+    )
+    if include_all:
+        return qs
+    return qs.filter(vendor__owner=request.user)
+
 
 def login_alias_to_home(request):
     """Alias 'login' -> home_tenant."""
@@ -75,6 +96,7 @@ def login_alias_to_hub(request):
     hub = getattr(settings, "HUB_ORIGIN", "http://localhost:8000").rstrip("/")
     return redirect(f"{hub}/accounts/?next={quote(next_path)}")
 
+@login_required
 def home_tenant(request):
     # Dashboard data: treatment counts by stage and recent pending treatments
     stages_count = Treatment.objects.values('stage').annotate(count=Count('id'))
@@ -123,6 +145,10 @@ def home_tenant(request):
         ti_counts = {item['severity']: item['count'] for item in ti_counts_qs}
         recent_threats = items_qs.order_by('-created_at')[:8]
 
+    pending_eval_qs = _pending_vendor_evaluations_for_dashboard(request)
+    pending_evals_card_count = pending_eval_qs.count()
+    pending_evals_card_list = list(pending_eval_qs[:3])
+
     return render(request, 'home_tenant.html', {
         'stage_counts': stage_counts,
         'recent_pending': recent_pending,
@@ -132,6 +158,9 @@ def home_tenant(request):
         'ti_counts': ti_counts,
         'recent_threats': recent_threats,
         'last_run_pk': last_run.pk if last_run else None,
+        'pending_evals_card_count': pending_evals_card_count,
+        'pending_evals_card_list': pending_evals_card_list,
+        'pending_evals_window_days': PENDING_EVALUATION_WINDOW_DAYS,
     })
 
 

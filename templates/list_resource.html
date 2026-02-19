@@ -33,6 +33,17 @@
               <i class="fas fa-history"></i> Historial de préstamos
             </a>
             {% endif %}
+            {% if model_name == 'vendor' %}
+            <a class="btn btn-secondary btn-flat" href="{% url 'checklist-template-create' %}">
+              <i class="fa-solid fa-list-check"></i> Crear plantilla de checklist
+            </a>
+            <a class="btn btn-success btn-flat" href="{% url 'vendor-evaluation-create' %}">
+              <i class="fa-solid fa-file-pen"></i> Crear evaluación
+            </a>
+            <a class="btn btn-info btn-flat" href="{% url 'vendor-evaluations-pending' %}">
+              <i class="fa-solid fa-clock-rotate-left"></i> Evaluaciones pendientes
+            </a>
+            {% endif %}
         </div>
 
         
@@ -128,6 +139,11 @@
                         <a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="Editar {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>
                         <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="Detalle {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
                         <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="Eliminar {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
+                        {% if model_name == 'vendor' %}
+                          <a href="{% url 'vendor-checklist-create' %}?vendor={{ obj.id }}" title="Asignar plantilla"><i class="fa-solid fa-link" style="color:#0d6efd; margin-left:8px;"></i></a>
+                          <a href="{% url 'vendor-evaluation-create' %}?vendor={{ obj.id }}" title="Crear evaluación"><i class="fa-solid fa-file-pen" style="color:#198754; margin-left:8px;"></i></a>
+                    
+                        {% endif %}
                         {% if model_name == 'informationassets' %}
                           {% if obj.is_loaned %}
                             <a href="{% url 'asset-return' %}?asset={{ obj.id }}"><i class="fas fa-rotate-left" title="Devolver" style="color:#0d6efd !important; margin-left:8px;"></i></a>

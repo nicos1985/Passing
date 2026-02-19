@@ -56,6 +56,36 @@
     </div>
     {% endif %}
 </div>
+    {% if model_name == 'vendor' %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Evaluaciones del proveedor</h5>
+            <a class="btn btn-sm btn-primary float-end" href="{{ create_evaluation_url }}">Crear evaluación</a>
+        </div>
+        <div class="card-body">
+            {% if evaluations %}
+            <table class="table table-sm">
+                <thead>
+                    <tr><th>ID</th><th>Fecha</th><th>Estado</th><th>Evaluado por</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                    {% for ev in evaluations %}
+                        <tr>
+                            <td>{{ ev.id }}</td>
+                            <td>{{ ev.scheduled_date }}</td>
+                            <td>{{ ev.get_status_display }}</td>
+                            <td>{% if ev.performed_by %}{{ ev.performed_by }}{% else %}-{% endif %}</td>
+                            <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'vendor-evaluation-detail' ev.pk %}">Ver</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No hay evaluaciones registradas para este proveedor.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 {% endblock %}
  
 {% if model_name == 'treatment' and request.user.is_authenticated %}

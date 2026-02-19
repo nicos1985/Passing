@@ -15,6 +15,9 @@ from .models import (
     Project,
     ClientCompany,
     Vulnerability,
+    ChecklistTemplate,
+    VendorEvaluation,
+    VendorEvaluationStatus,
     TreatmentStage,
     TypeTreatment,
     Controls,
@@ -25,6 +28,7 @@ from .models import (
 )
 from .forms import InformationAssetsForm, ProjectAssetsForm, RiskEvaluationForm, ThreatForm, TreatmentForm, VendorForm, ClientAssetsForm, VulnerabilityForm
 from .forms import LoanForm, ReturnForm
+from .forms import ChecklistTemplateForm, ChecklistItemForm, VendorChecklistForm, VendorEvaluationForm, VendorEvaluationItemFormSet
 from django.utils.text import capfirst
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -37,10 +41,14 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from login.models import CustomUser
+from accounts.models import TenantSettings
 from .models import AssetAction, AssetActionType
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
+from django.forms import inlineformset_factory
+from .models import ChecklistTemplate, ChecklistItem, VendorChecklist
+from .forms import ChecklistTemplateForm, ChecklistItemForm, VendorChecklistForm
 
 # Optional imports to support mapping from threat_intel -> resources
 try:
@@ -56,6 +64,7 @@ logger = logging.getLogger(__name__)
 ################################### Asset Views ###########################
 
 class DynamicModelListView(ListView):
+    """Lista cualquier modelo con filtros e información dinámica basada en su meta."""
     template_name = 'list_resource.html'
     EXCLUDED_FIELDS = ['created', 'updated', 'id']
 
@@ -106,6 +115,7 @@ class DynamicModelListView(ListView):
     
 
 class AssetListView(LoginRequiredMixin, DynamicModelListView):
+    """Expone los activos de información junto con indicadores de acciones pendientes."""
     model = InformationAssets
     login_url = 'login'
 
@@ -135,6 +145,7 @@ class AssetListView(LoginRequiredMixin, DynamicModelListView):
 
 
 class AssetCreateView(LoginRequiredMixin, CreateView):
+    """Permite crear activos de información conservando enlaces relacionados."""
     model = InformationAssets
     form_class = InformationAssetsForm
     template_name = 'CU-resource.html'
@@ -148,9 +159,17 @@ class AssetCreateView(LoginRequiredMixin, CreateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Crear'
+        # related links for quick navigation
+        try:
+            context['related_links'] = [
+                (reverse(context['list_url_name']), f'Ver {context["verbose_name_plural"]}')
+            ]
+        except Exception:
+            context['related_links'] = []
         return context
 
 class AssetUpdateView(LoginRequiredMixin, UpdateView):
+    """Gestiona la edición de activos de información con contexto enriquecido."""
     model = InformationAssets
     form_class = InformationAssetsForm
     template_name = 'CU-resource.html'
@@ -164,15 +183,23 @@ class AssetUpdateView(LoginRequiredMixin, UpdateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
+        try:
+            context['related_links'] = [
+                (reverse(context['list_url_name']), f'Ver {context["verbose_name_plural"]}')
+            ]
+        except Exception:
+            context['related_links'] = []
         return context
 
 class AssetDetailView(LoginRequiredMixin, DetailView):
+    """Muestra el detalle completo de un activo de información."""
     model=InformationAssets
     template_name = 'detail-resource.html'
     login_url = 'login'
 
 
 class LoanCreateView(LoginRequiredMixin, CreateView):
+    """Solicita un préstamo de activo y envía el correo de confirmación al destinatario."""
     model = AssetAction
     form_class = LoanForm
     template_name = 'CU-asset-action.html'
@@ -221,10 +248,20 @@ class LoanCreateView(LoginRequiredMixin, CreateView):
                 ctx['asset_obj'] = InformationAssets.objects.get(pk=asset_id)
             except Exception:
                 ctx['asset_obj'] = None
+        # related links: asset detail and asset list
+        try:
+            links = []
+            links.append((reverse('informationassets-list'), 'Ver activos'))
+            if ctx.get('asset_obj'):
+                links.append((reverse('informationassets-detail', args=[ctx['asset_obj'].pk]), 'Ver activo'))
+            ctx['related_links'] = links
+        except Exception:
+            ctx['related_links'] = []
         return ctx
 
 
 class ReturnCreateView(LoginRequiredMixin, CreateView):
+    """Solicita la devolución de un activo y notifica al encargado actual."""
     model = AssetAction
     form_class = ReturnForm
     template_name = 'CU-asset-action.html'
@@ -280,10 +317,18 @@ class ReturnCreateView(LoginRequiredMixin, CreateView):
                 ctx['asset_obj'] = InformationAssets.objects.get(pk=asset_id)
             except Exception:
                 ctx['asset_obj'] = None
+        try:
+            links = [(reverse('informationassets-list'), 'Ver activos')]
+            if ctx.get('asset_obj'):
+                links.append((reverse('informationassets-detail', args=[ctx['asset_obj'].pk]), 'Ver activo'))
+            ctx['related_links'] = links
+        except Exception:
+            ctx['related_links'] = []
         return ctx
 
 
 class AssetActionListView(LoginRequiredMixin, ListView):
+    """Lista las acciones realizadas sobre un activo específico."""
     model = AssetAction
     template_name = 'asset-actions-list.html'
     context_object_name = 'actions'
@@ -336,6 +381,7 @@ class AssetActionListView(LoginRequiredMixin, ListView):
 
 
 class AssetActionAllListView(LoginRequiredMixin, ListView):
+    """Muestra el historial global de acciones sobre activos, con filtro opcional por usuario."""
     model = AssetAction
     template_name = 'asset-actions-list.html'
     context_object_name = 'actions'
@@ -407,7 +453,7 @@ def asset_tracking(request):
 
 @login_required
 def confirm_asset_action(request, token):
-    """Confirm an AssetAction by its confirmation token. Marks as CONFIRMED when valid."""
+    """Confirma la acción de un activo mediante token y actualiza su estado."""
     try:
         aa = AssetAction.objects.get(confirmation_token=token)
     except AssetAction.DoesNotExist:
@@ -432,6 +478,7 @@ def confirm_asset_action(request, token):
     return HttpResponse('Acción confirmada correctamente. Puede cerrar esta ventana.')
 
 class GenericResourceDetailView(DetailView):
+    """Detalle genérico basado en el modelo indicado, incluyendo campos y acciones auxiliares."""
     template_name = 'detail-resource.html'
     model = None  # importante: por compatibilidad, aunque se setea dinámicamente
 
@@ -484,11 +531,21 @@ class GenericResourceDetailView(DetailView):
             context['delete_url'] = None
             context['back_url'] = '#'
 
+        # If the object is a Vendor, include its evaluations for direct access in the detail view
+        try:
+            if model_name == 'vendor':
+                context['evaluations'] = getattr(obj, 'evaluations').all().order_by('-scheduled_date')
+                context['create_evaluation_url'] = reverse('vendor-evaluation-create') + f'?vendor={obj.pk}'
+        except Exception:
+            context['evaluations'] = []
+            context['create_evaluation_url'] = reverse('vendor-evaluation-create')
+
         return context
 
 
 
 class AssetDeleteView(LoginRequiredMixin, DeleteView):
+    """Borra un activo de información mostrando un resumen antes de confirmar."""
     model = InformationAssets
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('informationassets-list') 
@@ -504,6 +561,7 @@ class AssetDeleteView(LoginRequiredMixin, DeleteView):
 ####################################### Vendor Views ###########################
 
 class VendorListView(LoginRequiredMixin, DynamicModelListView):
+    """Lista proveedores con las mismas herramientas dinámicas que para otros recursos."""
     model = Vendor
     login_url = 'login'
 
@@ -517,6 +575,7 @@ class VendorListView(LoginRequiredMixin, DynamicModelListView):
 
 
 class VendorCreateView(LoginRequiredMixin, CreateView):
+    """Permite registrar proveedores y vincular plantillas de checklist iniciales."""
     model = Vendor
     form_class = VendorForm
     template_name = 'CU-resource.html'
@@ -531,8 +590,27 @@ class VendorCreateView(LoginRequiredMixin, CreateView):
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Crear'
         return context
+    
+    def form_valid(self, form):
+        # Derive non-editable fields before persisting
+        vendor = form.instance
+        vendor.criticality = vendor.compute_criticality()
+        vendor.control_period = vendor.compute_control_period()
+        response = super().form_valid(form)
+        try:
+            template = form.cleaned_data.get('initial_checklist_template')
+            if template and self.object:
+                # create assignment if not exists
+                VendorChecklist.objects.get_or_create(vendor=self.object, template=template, defaults={'customized': False})
+        except Exception:
+            pass
+        scheduled = self.object.schedule_next_evaluation(from_date=self.object.start_date)
+        if scheduled:
+            messages.info(self.request, f'Primera evaluación pendiente programada para {scheduled.scheduled_date}')
+        return response
 
 class VendorUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza los datos de un proveedor conservando enlaces contextuales siempre."""
     model = Vendor
     form_class = VendorForm
     template_name = 'CU-resource.html'
@@ -549,11 +627,13 @@ class VendorUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 class VendorDetailView(LoginRequiredMixin, DetailView):
+    """Presenta los detalles de un proveedor junto a sus métricas recientes."""
     model=Vendor
     template_name = 'detail-vendor.html'
     login_url = 'login'
 
 class VendorDeleteView(LoginRequiredMixin, DeleteView):
+    """Confirma la eliminación de un proveedor y redirige al listado."""
     model = Vendor
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('vendor-list') 
@@ -570,6 +650,7 @@ class VendorDeleteView(LoginRequiredMixin, DeleteView):
 ############################# Project Views ###########################
 
 class ProjectListView(LoginRequiredMixin, DynamicModelListView):
+    """Expone el listado de proyectos con filtros automáticos."""
     model = Project
     login_url = 'login'
 
@@ -582,6 +663,7 @@ class ProjectListView(LoginRequiredMixin, DynamicModelListView):
         return context
     
 class ProjectCreateView(LoginRequiredMixin, CreateView):
+    """Formulario para crear proyectos con atributos temporales necesarios."""
     model = Project
     form_class = ProjectAssetsForm
     template_name = 'CU-resource.html'
@@ -598,6 +680,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         return context
 
 class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza proyectos y reusa la plantilla de formulario base."""
     model = Project
     form_class = ProjectAssetsForm
     template_name = 'CU-resource.html'
@@ -614,6 +697,7 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         return context
     
 class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+    """Confirma la eliminación de un proyecto mostrando su nombre."""
     model = Project
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('project-list') 
@@ -629,6 +713,7 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 ############################# Client Views ###########################
 
 class ClientListView(LoginRequiredMixin, DynamicModelListView):
+    """Lista clientes utilizando los filtros dinámicos heredados."""
     model = ClientCompany
     login_url = 'login'
 
@@ -641,6 +726,7 @@ class ClientListView(LoginRequiredMixin, DynamicModelListView):
         return context
     
 class ClientCreateView(LoginRequiredMixin, CreateView):
+    """Creación guiada de clientes con campos de fecha y lista relacionada."""
     model = ClientCompany
     form_class = ClientAssetsForm
     template_name = 'CU-resource.html'
@@ -657,6 +743,7 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         return context
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza clientes y conserva el comportamiento de formularios estándar."""
     model = ClientCompany
     form_class = ClientAssetsForm
     template_name = 'CU-resource.html'
@@ -673,6 +760,7 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         return context
     
 class ClientDeleteView(LoginRequiredMixin, DeleteView):
+    """Elimina un cliente después de confirmar sus datos básicos."""
     model = ClientCompany
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('clientcompany-list') 
@@ -688,6 +776,7 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
 ############################ Evaluation Views ###########################
 
 def get_objects_by_type(request):
+    """Devuelve instancias de un modelo dado para llenar selects vía AJAX."""
     # Check if the request is an AJAX request
     content_type_id = request.GET.get('type_id')
     ct = ContentType.objects.get(id=content_type_id)
@@ -701,6 +790,7 @@ def get_objects_by_type(request):
 
 
 def crear_evaluacion(request):
+    """Prepara y procesa el formulario para generar una evaluación de riesgo."""
     
     model_types = ContentType.objects.filter(model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
@@ -818,9 +908,14 @@ def crear_evaluacion(request):
     return render(request, 'evaluacion_form.html', {
         'form': form,
         'model_types': model_types,
+        'related_links': [
+            (reverse('evaluation-list'), 'Lista de evaluaciones'),
+            (reverse('checklist-templates'), 'Plantillas de checklist'),
+        ],
     })
 
 class RiskEvaluationDetailView(DetailView):
+    """Muestra la evaluación de riesgo y los campos del objeto evaluado."""
     model = RiskEvaluation
     template_name = 'evaluation_detail.html'
     context_object_name = 'evaluation'  
@@ -851,11 +946,7 @@ class RiskEvaluationDetailView(DetailView):
 @login_required
 @require_POST
 def force_create_treatment(request, pk):
-    """Force creation of a Treatment for the given RiskEvaluation and link them.
-
-    This bypasses the automatic restriction (only moderate+ risk) and ensures the
-    created Treatment is assigned to the evaluation so the relation exists.
-    """
+    """Genera manualmente un tratamiento vinculado a una evaluación específica."""
     evaluation = get_object_or_404(RiskEvaluation, pk=pk)
 
     if evaluation.treatment is not None:
@@ -888,7 +979,7 @@ def force_create_treatment(request, pk):
     return redirect('evaluation-detail', pk=pk)
     
 class RiskEvaluationListView(LoginRequiredMixin, ListView):
-    """List view for Risk Evaluations"""
+    """Lista las evaluaciones de riesgo con filtros por nivel y tratamiento."""
     model = RiskEvaluation
     template_name = 'evaluation_list.html'
     context_object_name = 'evaluations'
@@ -974,6 +1065,7 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
         return context
    
 class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
+    """Elimina evaluaciones de riesgo tras mostrar una confirmación."""
     model = RiskEvaluation
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('evaluation-list') 
@@ -991,6 +1083,7 @@ class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
 ############################ Treatment Views ###########################
 
 class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
+    """Lista tratamientos con filtros por etapa y vista dinámica."""
     model = Treatment
     login_url = 'login'
 
@@ -1016,6 +1109,7 @@ class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
         return qs
 
 def crear_tratamiento(request):
+    """Gestiona el formulario para crear un tratamiento asociado a un recurso."""
     model_types = ContentType.objects.filter(model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
     ])
@@ -1049,12 +1143,17 @@ def crear_tratamiento(request):
     return render(request, 'treatment-create.html', {
         'form': form,
         'model_types': model_types,
+        'related_links': [
+            (reverse('treatment-list'), 'Lista de tratamientos'),
+            (reverse('checklist-templates'), 'Plantillas de checklist'),
+        ],
     })
 
 
     
 
 class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
+    """Borra un tratamiento después de confirmar su contexto."""
     model = Treatment
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('treatment-list') 
@@ -1069,6 +1168,7 @@ class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
     
 
 class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza los detalles del tratamiento y registra cambios de etapa."""
     model = Treatment
     form_class = TreatmentForm
     template_name = 'treatment-create.html'
@@ -1128,10 +1228,12 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
     
 
 def test_colreorder(request):
+    """Renderiza una tabla de prueba con columnas reordenables."""
     return render(request, 'test_table.html')
 
 
 class ClientListView(LoginRequiredMixin, DynamicModelListView):
+    """Lista clientes con filtros automáticos reutilizando la vista dinámica."""
     model = ClientCompany
     login_url = 'login'
 
@@ -1144,6 +1246,7 @@ class ClientListView(LoginRequiredMixin, DynamicModelListView):
         return context
     
 class ThreatCreateView(LoginRequiredMixin, CreateView):
+    """Permite crear amenazas y mantener los campos de descripción."""
     model = Threat
     form_class = ThreatForm
     template_name = 'CU-resource.html'
@@ -1161,6 +1264,7 @@ class ThreatCreateView(LoginRequiredMixin, CreateView):
 
 
 class ThreatListView(LoginRequiredMixin, DynamicModelListView):
+    """Expone el listado de amenazas con metadatos dinámicos."""
     model = Threat
     login_url = 'login'
 
@@ -1173,6 +1277,7 @@ class ThreatListView(LoginRequiredMixin, DynamicModelListView):
         return context
     
 class ThreatUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza una amenaza manteniendo el contexto original."""
     model = Threat
     form_class = ThreatForm
     template_name = 'CU-resource.html'
@@ -1189,6 +1294,7 @@ class ThreatUpdateView(LoginRequiredMixin, UpdateView):
         return context
     
 class ThreatDetailView(LoginRequiredMixin, DetailView):
+    """Detalle para una amenaza con campos visibles y enlaces auxiliares."""
     model = Threat
     template_name = 'detail-resource.html'
     login_url = 'login'
@@ -1231,6 +1337,7 @@ class ThreatDetailView(LoginRequiredMixin, DetailView):
         return context
     
 class ThreatDeleteView(LoginRequiredMixin, DeleteView):
+    """Elimina una amenaza tras confirmar sus datos."""
     model = Threat
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('threat-list') 
@@ -1245,6 +1352,7 @@ class ThreatDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class VulnerabilityListView(LoginRequiredMixin, DynamicModelListView):
+    """Lista vulnerabilidades con filtros automáticos similares a otras vistas."""
     model = Vulnerability
     login_url = 'login'
 
@@ -1257,6 +1365,7 @@ class VulnerabilityListView(LoginRequiredMixin, DynamicModelListView):
         return context
     
 class VulnerabilityCreateView(LoginRequiredMixin, CreateView):
+    """Formulario para crear vulnerabilidades con descripción detallada."""
     model = Vulnerability
     form_class = VulnerabilityForm
     template_name = 'CU-resource.html'
@@ -1273,6 +1382,7 @@ class VulnerabilityCreateView(LoginRequiredMixin, CreateView):
         return context
     
 class VulnerabilityUpdateView(LoginRequiredMixin, UpdateView):
+    """Actualiza vulnerabilidades reutilizando el mismo formulario."""
     model = Vulnerability
     form_class = VulnerabilityForm
     template_name = 'CU-resource.html'
@@ -1289,6 +1399,7 @@ class VulnerabilityUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 class VulnerabilityDetailView(LoginRequiredMixin, DetailView):
+    """Muestra los detalles de una vulnerabilidad y sus campos asociados."""
     model = Vulnerability
     template_name = 'detail-resource.html'
     login_url = 'login'
@@ -1331,6 +1442,7 @@ class VulnerabilityDetailView(LoginRequiredMixin, DetailView):
         return context
 
 class VulnerabilityDeleteView(LoginRequiredMixin, DeleteView):
+    """Elimina una vulnerabilidad luego de confirmar su contexto."""
     model = Vulnerability
     template_name = 'delete-resource.html'
     success_url = reverse_lazy('vulnerability-list') 
@@ -1347,7 +1459,7 @@ class VulnerabilityDeleteView(LoginRequiredMixin, DeleteView):
 @login_required
 @require_POST
 def advance_treatment_stage(request, pk):
-    """Advance or change the stage of a Treatment. Expects POST with 'stage' and optional notes fields."""
+    """Avanza la etapa de un tratamiento y guarda notas complementarias opcionales."""
     treatment = get_object_or_404(Treatment, pk=pk)
 
     # Permission: only staff, superuser or responsible user
@@ -1378,3 +1490,249 @@ def advance_treatment_stage(request, pk):
 
     messages.success(request, f"Etapa actualizada a {treatment.get_stage_display()}.")
     return redirect('treatment-detail', pk=pk)
+
+
+class ChecklistTemplateListView(LoginRequiredMixin, ListView):
+    """Lista las plantillas de checklist disponibles para asignar a recursos."""
+    model = ChecklistTemplate
+    template_name = 'checklist_templates_list.html'
+    login_url = 'login'
+
+
+class ChecklistTemplateCreateView(LoginRequiredMixin, CreateView):
+    """Permite crear plantillas de checklist y navegar hacia listas relacionadas."""
+    model = ChecklistTemplate
+    form_class = ChecklistTemplateForm
+    template_name = 'checklist_template_form.html'
+    success_url = reverse_lazy('checklist-templates')
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['related_links'] = [
+            (reverse('checklist-templates'), 'Lista de plantillas'),
+            (reverse('vendor-list'), 'Proveedores'),
+        ]
+        return context
+
+
+class VendorEvaluationCreateView(LoginRequiredMixin, CreateView):
+    """Formulario para ingresar evaluaciones de proveedores y registrar responsables."""
+    model = VendorEvaluation
+    form_class = VendorEvaluationForm
+    template_name = 'vendor_evaluation_form.html'
+    login_url = 'login'
+
+    def get_success_url(self):
+        return reverse_lazy('vendor-evaluation-detail', args=[self.object.pk])
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        if not obj.performed_by:
+            obj.performed_by = self.request.user
+        obj.save()
+        return super().form_valid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # allow prefilling vendor via ?vendor=<pk>
+        vendor_pk = self.request.GET.get('vendor')
+        if vendor_pk:
+            initial['vendor'] = vendor_pk
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['related_links'] = [
+            (reverse('vendor-list'), 'Lista de proveedores'),
+            (reverse('checklist-templates'), 'Plantillas de checklist'),
+        ]
+        return ctx
+
+
+class VendorEvaluationDetailView(LoginRequiredMixin, DetailView):
+    """Detalle de evaluación con posibilidad de editar ítems y marcar completada."""
+    model = VendorEvaluation
+    template_name = 'vendor_evaluation_detail.html'
+    login_url = 'login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        evaluation = self.get_object()
+        queryset = evaluation.items.all()
+        formset = VendorEvaluationItemFormSet(queryset=queryset)
+        context['formset'] = formset
+        # related links for quick navigation
+        try:
+            context['related_links'] = [
+                (reverse('vendor-list'), 'Lista de proveedores'),
+                (reverse('vendor-evaluation-create') + f'?vendor={evaluation.vendor.pk}', 'Nueva evaluación para proveedor'),
+            ]
+        except Exception:
+            context['related_links'] = []
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        formset = VendorEvaluationItemFormSet(request.POST, queryset=self.object.items.all())
+        if formset.is_valid():
+            formset.save()
+            if request.POST.get('mark_completed'):
+                self.object.status = VendorEvaluationStatus.COMPLETED
+                self.object.performed_at = timezone.now()
+                if not self.object.performed_by:
+                    self.object.performed_by = request.user
+                self.object.save()
+                next_eval = self.object.vendor.schedule_next_evaluation(
+                    from_date=self.object.scheduled_date
+                )
+                if next_eval:
+                    messages.success(request, f'Se programó una nueva evaluación pendiente para {next_eval.scheduled_date}')
+                messages.success(request, 'Evaluación marcada como completada y guardada correctamente')
+            else:
+                messages.success(request, 'Evaluación guardada correctamente')
+            return redirect(reverse('vendor-evaluation-detail', args=[self.object.pk]))
+        else:
+            context = self.get_context_data()
+            context['formset'] = formset
+            return render(request, self.template_name, context)
+
+
+def get_pending_evaluations_queryset(user, include_all=False):
+    """Construye el queryset de evaluaciones pendientes, opcionalmente para todos los usuarios."""
+    qs = VendorEvaluation.objects.filter(
+        status=VendorEvaluationStatus.PENDING,
+        scheduled_date__isnull=False,
+    ).select_related('vendor').order_by('scheduled_date')
+    if include_all:
+        return qs
+    return qs.filter(vendor__owner=user)
+
+
+def _reminder_lead_days_for_request(request):
+    """Obtiene los días de anticipación para recordatorios desde la configuración del tenant."""
+    tenant = getattr(request, 'tenant', None)
+    reminder_days = None
+    if tenant:
+        settings_obj = getattr(tenant, 'settings', None)
+        if settings_obj is None:
+            settings_obj = TenantSettings.for_client(getattr(tenant, 'id', None))
+        if settings_obj:
+            reminder_days = settings_obj.reminder_lead_days
+    return reminder_days if reminder_days is not None else 14
+
+
+def build_pending_evaluations_context(request, queryset):
+    """Construye el contexto de evaluaciones pendientes con banderas de recordatorio."""
+    reminder_days = _reminder_lead_days_for_request(request)
+    pending = list(queryset) if queryset is not None else []
+    for evaluation in pending:
+        evaluation.can_perform_evaluation = evaluation.can_be_performed(reminder_days)
+    return {
+        'pending_evaluations': pending,
+        'reminder_lead_days': reminder_days,
+    }
+
+
+class VendorEvaluationPendingOwnerListView(LoginRequiredMixin, ListView):
+    """Lista evaluaciones pendientes para el dueño o el staff, con contexto de recordatorios."""
+    model = VendorEvaluation
+    template_name = 'vendor_evaluation_pending_list.html'
+    context_object_name = 'pending_evaluations'
+    login_url = 'login'
+
+    def get_queryset(self):
+        include_all = self.request.user.is_staff or self.request.user.is_superuser
+        return get_pending_evaluations_queryset(self.request.user, include_all=include_all)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pending_qs = context.get('pending_evaluations') or self.get_queryset()
+        context.update(build_pending_evaluations_context(self.request, pending_qs))
+        return context
+
+
+def checklist_template_detail(request, pk):
+    """Ver y editar una plantilla y sus items (inline formset)."""
+    template = get_object_or_404(ChecklistTemplate, pk=pk)
+    ChecklistItemFormSet = inlineformset_factory(ChecklistTemplate, ChecklistItem, form=ChecklistItemForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        form = ChecklistTemplateForm(request.POST, instance=template)
+        formset = ChecklistItemFormSet(request.POST, instance=template)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, 'Plantilla y items guardados correctamente')
+            return redirect('checklist-templates')
+    else:
+        form = ChecklistTemplateForm(instance=template)
+        formset = ChecklistItemFormSet(instance=template)
+
+    return render(request, 'checklist_template_detail.html', {
+        'form': form,
+        'formset': formset,
+        'object': template,
+        'related_links': [
+            (reverse('checklist-templates'), 'Volver a plantillas'),
+            (reverse('checklist-template-create'), 'Crear nueva plantilla'),
+        ],
+    })
+
+
+class VendorChecklistCreateView(LoginRequiredMixin, CreateView):
+    """Asigna o actualiza la checklist de seguridad asociada a un proveedor."""
+    model = VendorChecklist
+    form_class = VendorChecklistForm
+    template_name = 'vendor_checklist_form.html'
+    success_url = reverse_lazy('vendor-list')
+    login_url = 'login'
+
+    def form_valid(self, form):
+        vendor = form.cleaned_data['vendor']
+        template = form.cleaned_data['template']
+        customized = form.cleaned_data.get('customized', False)
+        notes = form.cleaned_data.get('notes') or ''
+        assignment_qs = VendorChecklist.objects.filter(vendor=vendor).order_by('-updated')
+        assignment = assignment_qs.first()
+        created = False
+        if assignment:
+            assignment.template = template
+            assignment.customized = customized
+            assignment.notes = notes
+            assignment.save()
+        else:
+            assignment = VendorChecklist.objects.create(
+                vendor=vendor,
+                template=template,
+                customized=customized,
+                notes=notes,
+            )
+            created = True
+        VendorChecklist.objects.filter(vendor=vendor).exclude(pk=assignment.pk).delete()
+        self.object = assignment
+        action = 'asignada' if created else 'actualizada'
+        messages.success(self.request, f'Checklist {action} al proveedor correctamente')
+        return redirect(self.get_success_url())
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # allow prefilling from query params: ?vendor=<pk>&template=<pk>
+        v = self.request.GET.get('vendor')
+        t = self.request.GET.get('template')
+        if v:
+            initial['vendor'] = v
+        if t:
+            initial['template'] = t
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        try:
+            ctx['related_links'] = [
+                (reverse('vendor-list'), 'Lista de proveedores'),
+                (reverse('checklist-templates'), 'Plantillas de checklist'),
+            ]
+        except Exception:
+            ctx['related_links'] = []
+        return ctx

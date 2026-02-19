@@ -80,6 +80,19 @@
                     </div>
                 </div>
 
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}{% url 'treatment-list' %}{% endif %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+                    </div>
+                    <div>
+                        {% if related_links %}
+                            {% for rl in related_links %}
+                                <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
                 <div class="row" style="margin-top: 10px; margin-bottom: 20px;">
                     {% for field in form.visible_fields %}
                         {% if field.name != 'stage' %}
@@ -103,6 +116,9 @@
                                     <div class="text-danger small">
                                         {{ field.errors|join:", " }}
                                     </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
                                 {% endif %}
                             </div>
                         </div>

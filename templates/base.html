@@ -63,6 +63,17 @@
     </div>
   </div>
 
+  <script>
+    $(document).ready(function () {
+      $('textarea.form-control').each(function () {
+        var rows = parseInt($(this).attr('rows')) || 0;
+        if (rows !== 5) {
+          $(this).attr('rows', 1);
+        }
+        $(this).css('resize', 'vertical');
+      });
+    });
+  </script>
   {% block javascript %}{% endblock %}
 </body>
 </html>

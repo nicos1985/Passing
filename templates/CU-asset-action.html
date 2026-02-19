@@ -30,6 +30,18 @@
                         <h5 class="mb-0">{{ action_label|default:"Acción" }}</h5>
                     </div>
                 <div class="card-body">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <a class="btn btn-outline-secondary" href="{% url 'informationassets-list' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+                        </div>
+                        <div>
+                            {% if related_links %}
+                                {% for rl in related_links %}
+                                    <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
                     <form method="post">
                         {% csrf_token %}
                         {{ form.non_field_errors }}
@@ -40,6 +52,9 @@
                                     {{ field }}
                                     {% if field.errors %}
                                         <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text|safe }}</small>
                                     {% endif %}
                                 </div>
                             {% endfor %}

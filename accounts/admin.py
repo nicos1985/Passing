@@ -9,7 +9,14 @@ class TenantMembershipAdmin(admin.ModelAdmin):
 
 @admin.register(TenantSettings)
 class TenantSettingsAdmin(admin.ModelAdmin):
-    list_display = ("client", "company_name", "is_active", "sso_google_enabled", "sso_google_requires_2fa")
+    list_display = (
+        "client",
+        "company_name",
+        "is_active",
+        "sso_google_enabled",
+        "sso_google_requires_2fa",
+        "evaluation_reminder_days",
+    )
     list_filter = ("is_active", "sso_google_enabled", "sso_google_requires_2fa")
     search_fields = ("client__schema_name", "company_name")
 

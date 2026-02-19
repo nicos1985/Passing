@@ -18,6 +18,11 @@ from .models import (
     Treatment,
     Vendor,
     Vulnerability,
+    ChecklistTemplate,
+    ChecklistItem,
+    VendorChecklist,
+    VendorEvaluation,
+    VendorEvaluationItem,
 )
 from .models import AssetAction, AssetActionType
 from django.contrib.contenttypes.models import ContentType
@@ -51,7 +56,7 @@ ICON_MAP = {
 }
 
 def improve_widget_attrs(field_name, widget):
-    """Add consistent classes, placeholders and data-icon for templates."""
+    """Agrega clases, marcadores y data-icon para homogeneizar los widgets."""
     # base control class
     existing = widget.attrs.get('class', '')
     classes = f"{existing} form-control"
@@ -66,7 +71,18 @@ def improve_widget_attrs(field_name, widget):
     if icon:
         widget.attrs['data-icon'] = icon
 
+
+def apply_default_widget_attrs(form_instance):
+    """Aplica atributos y estilos predeterminados a todos los campos del formulario."""
+    for fname, field in form_instance.fields.items():
+        widget = field.widget
+        if isinstance(widget, (CheckboxInput, RadioSelect)):
+            widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
+        else:
+            improve_widget_attrs(fname, widget)
+
 class RiskEvaluationForm(forms.ModelForm):
+    """Formulario para crear o editar evaluaciones de riesgo ligadas a distintos recursos."""
     model_type = forms.ModelChoiceField(
         queryset=ContentType.objects.filter(model__in=[
             'informationassets', 'vendor', 'project', 'clientcompany'
@@ -129,6 +145,14 @@ class RiskEvaluationForm(forms.ModelForm):
 
         # Improve widget attrs consistently (placeholders, icons, classes)
         for fname, field in self.fields.items():
+            # If editing an existing Vendor, prefill with the currently assigned template (if any)
+            try:
+                if getattr(self, 'instance', None) and getattr(self.instance, 'pk', None):
+                    assignment = VendorChecklist.objects.filter(vendor=self.instance).first()
+                    if assignment and assignment.template_id:
+                        self.fields['initial_checklist_template'].initial = assignment.template_id
+            except Exception:
+                pass
             widget = field.widget
             if isinstance(widget, (CheckboxInput, RadioSelect)):
                 widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
@@ -145,6 +169,7 @@ class RiskEvaluationForm(forms.ModelForm):
         return instance
 
 class InformationAssetsForm(ModelForm):
+    """Formulario para gestionar activos de información con estilizado uniforme."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -162,15 +187,43 @@ class InformationAssetsForm(ModelForm):
 
 
 class VendorForm(ModelForm):
+    """Formulario para crear o editar proveedores y seleccionar una plantilla inicial."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # extra helper field to allow selecting a checklist template at vendor creation
+        try:
+            from django.urls import reverse
+            from django.utils.safestring import mark_safe
+
+            link = reverse('checklist-templates')
+            help_html = mark_safe(f'<a href="{link}" target="_blank">Ver plantillas</a>')
+
+            self.fields['initial_checklist_template'] = forms.ModelChoiceField(
+                queryset=ChecklistTemplate.objects.filter(active=True),
+                required=True,
+                label='Plantilla de checklist de requisitos de seguridad',
+                help_text=help_html,
+            )
+        except Exception:
+            # safe fallback if model not ready at import
+            pass
+        # Ensure computed fields are not editable in the form
+        self.fields.pop('criticality', None)
+        self.fields.pop('control_period', None)
         for fname, field in self.fields.items():
             widget = field.widget
             if isinstance(widget, (CheckboxInput, RadioSelect)):
                 widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
             else:
                 improve_widget_attrs(fname, widget)
+        # Limit owner choices to users in the current tenant
+        try:
+            if 'owner' in self.fields:
+                self.fields['owner'].queryset = CustomUser.for_current_tenant()
+        except Exception:
+            # Fallback: leave default queryset if tenant resolution fails
+            pass
 
     
     class Meta:
@@ -184,6 +237,7 @@ class VendorForm(ModelForm):
 
 
 class ProjectAssetsForm(ModelForm):
+    """Formulario para mantener proyectos y coordinar sus datos temporales."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -205,6 +259,7 @@ class ProjectAssetsForm(ModelForm):
 
 
 class ClientAssetsForm(ModelForm):
+    """Formulario para administrar clientes con controles básicos de visualización."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -223,6 +278,7 @@ class ClientAssetsForm(ModelForm):
 
 
 class TreatmentForm(ModelForm):
+    """Formulario que permite definir tratamientos y asociarlos a un recurso específico."""
 
     model_type = forms.ModelChoiceField(
         queryset=ContentType.objects.filter(model__in=[
@@ -299,6 +355,7 @@ class TreatmentForm(ModelForm):
     
 
 class ThreatForm(ModelForm):
+    """Formulario para crear o editar amenazas con descripción ampliada."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -319,6 +376,7 @@ class ThreatForm(ModelForm):
 
 
 class VulnerabilityForm(ModelForm):
+    """Formulario para registrar vulnerabilidades y sus descripciones."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -376,6 +434,94 @@ class LoanForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class ChecklistTemplateForm(ModelForm):
+    """Formulario para definir plantillas de checklist y sus atributos básicos."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_default_widget_attrs(self)
+
+    class Meta:
+        model = ChecklistTemplate
+        fields = ['name', 'description', 'active']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class ChecklistItemForm(ModelForm):
+    """Formulario para editar los ítems que componen una plantilla."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_default_widget_attrs(self)
+
+    class Meta:
+        model = ChecklistItem
+        fields = ['order', 'text', 'required', 'controls']
+        widgets = {
+            'order': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'text': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class VendorChecklistForm(ModelForm):
+    """Formulario para asignar o actualizar checklists de seguridad a proveedores."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_default_widget_attrs(self)
+
+    class Meta:
+        model = VendorChecklist
+        fields = ['vendor', 'template', 'customized', 'notes']
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class VendorEvaluationForm(ModelForm):
+    """Formulario para registrar evaluaciones programadas a proveedores."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_default_widget_attrs(self)
+        try:
+            self.fields['performed_by'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
+        except Exception:
+            self.fields['performed_by'].queryset = CustomUser.objects.filter(is_active=True)
+
+    class Meta:
+        model = VendorEvaluation
+        fields = ['vendor', 'scheduled_date', 'performed_by', 'performed_at', 'status', 'notes']
+        widgets = {
+            'scheduled_date': forms.DateInput(attrs={'type': 'date'}),
+            'performed_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'notes': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class VendorEvaluationItemForm(ModelForm):
+    """Formulario para capturar las respuestas de cada pregunta en una evaluación."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_default_widget_attrs(self)
+
+    class Meta:
+        model = VendorEvaluationItem
+        fields = ['question_text', 'result', 'observations']
+        widgets = {
+            'question_text': forms.HiddenInput(),
+            'result': forms.Select(attrs={'class': 'form-select form-control'}),
+            'observations': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+from django.forms import modelformset_factory
+
+VendorEvaluationItemFormSet = modelformset_factory(
+    VendorEvaluationItem,
+    form=VendorEvaluationItemForm,
+    extra=0,
+)
 
 
 class ReturnForm(forms.ModelForm):

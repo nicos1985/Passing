@@ -21,7 +21,7 @@ class TreatmentFlowTests(TenantTestCase):
         self.resp = User.objects.create_user('resp', 'resp@example.com', 'pass')
 
         # create an information asset to link to
-        self.asset = InformationAssets.objects.create(name='Test Asset', owner='owner')
+        self.asset = InformationAssets.objects.create(name='Test Asset', owner=self.staff)
 
         # create a treatment
         ct = ContentType.objects.get_for_model(self.asset)
@@ -93,7 +93,7 @@ class AssetActionFlowTests(TenantTestCase):
         self.benef = User.objects.create_user(username='benef2', email='benef2@example.com', password='pass')
         self.other = User.objects.create_user(username='other2', email='other2@example.com', password='pass')
         # create an asset
-        self.asset = InformationAssets.objects.create(name='Laptop B', owner='Org')
+        self.asset = InformationAssets.objects.create(name='Laptop B', owner=self.perf)
 
     @classmethod
     def setUpClass(cls):

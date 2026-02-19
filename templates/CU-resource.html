@@ -1,14 +1,8 @@
-
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 
 {% load static %}
 
-
-{% block head %}
-
-
-
-{% endblock %}
+{% block head %}{% endblock %}
 
 {% block content %}
 
@@ -17,118 +11,110 @@
     <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario administrador para navegar. 
         <br>Si no tienes cuenta puedes registrarte.</h5>
     <div class="row justify-content-center mt-4">
-        
         <div class="col-sm-12 d-flex justify-content-center">
             <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
         </div>
-        <span></span>
         <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
+            <a class="btn btn-primary" href="{% url 'register' %}" style = 'margin-top: 20px;'>Registrarse</a>
         </div>
-    
     </div>
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
-<div class="container pt-5" >
-        <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12 mb-3">
-            <a class="btn btn-primary btn-flat" href= "{% url list_url_name %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
-        </div>
-    </div>
-
-    <div class="card form-card">
-        <div class="card-header">
-            <h5><i class="fa-solid fa-folder-open"></i> {{ action_type }} {{ verbose_name }}</h5>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                {% csrf_token %}
-                {{ form.errors }}
-                <h5 style="color: darkred; margin-top:10px;">{{ message }}</h5>
-
-                <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
-                    {% for field in form.visible_fields %}
-                        <div class="col-md-6 mb-3">
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}" class="form-label">
-                                    {% if field.name == 'name' %}
-                                        <i class="fa-solid fa-tag" style="color: #667eea;"></i>
-                                    {% elif field.name == 'description' %}
-                                        <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
-                                    {% elif field.name == 'email' or field.name == 'recipients' %}
-                                        <i class="fa-solid fa-envelope" style="color: #667eea;"></i>
-                                    {% elif field.name == 'url' or field.name == 'ticket_ref' %}
-                                        <i class="fa-solid fa-link" style="color: #667eea;"></i>
-                                    {% elif field.name == 'start_date' or field.name == 'finish_date' or field.name == 'deadline' %}
-                                        <i class="fa-solid fa-calendar" style="color: #667eea;"></i>
-                                    {% elif field.name == 'threat' or field.name == 'vulnerability' or field.name == 'probability' %}
-                                        <i class="fa-solid fa-shield-virus" style="color: #667eea;"></i>
-                                    {% else %}
-                                        <i class="fa-solid fa-square" style="color: #667eea;"></i>
-                                    {% endif %}
-                                    &nbsp;{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="text-danger small">
-                                        {{ field.errors|join:", " }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
+<div class="container pt-5">
+    <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <a class="btn btn-primary btn-flat" href="{% url list_url_name %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
                 </div>
-
-                <div class="btn-group-submit">
-                    <button type="submit" class="btn btn-submit btn-submit-primary">
-                        <i class="fas fa-save"></i> Guardar cambios
-                    </button>
-                    <button type="reset" class="btn btn-submit btn-submit-secondary">
-                        <i class="fa-solid fa-redo"></i> Limpiar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
             </div>
-        </div> 
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-folder-open"></i> {{ action_type }} {{ verbose_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+                        </div>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form %}
+                            {% for field in form.visible_fields %}
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <div class="text-danger">{{ field.errors.as_text }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="btn-group-submit mt-3">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fas fa-save"></i> Guardar cambios
+                            </button>
+                            <button type="reset" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-redo"></i> Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
     </div>
 
 </div>
-{%endif%}
+{% endif %}
 
 {% endblock %}
+
 {% block javascript %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  
-
-    $('#id_model_type').on('change', function () {
-      const modelId = $(this).val();
-      console.log("Model ID selected:", modelId);
-
-      $.ajax({
-        url: "{% url 'ajax-get-objects' %}",
-        data: { type_id: modelId },
-        success: function (data) {
-          console.log("AJAX success:", data.objects);
-          const objectSelect = $('#id_object_id');
-          objectSelect.empty();
-          objectSelect.append(`<option value="">Seleccione un recurso</option>`);
-          data.objects.forEach(function (obj) {
-            objectSelect.append(`<option value="${obj.id}">${obj.name}</option>`);
-          });
-        },
-        error: function (xhr) {
-          console.error("AJAX error:", xhr.responseText);
+document.addEventListener('DOMContentLoaded', function () {
+    // Make textareas default to 1 row (except those explicitly set to 5), and allow vertical resize
+    document.querySelectorAll('textarea.form-control').forEach(function (el) {
+        var rows = parseInt(el.getAttribute('rows')) || 0;
+        if (rows !== 5) {
+            el.setAttribute('rows', 1);
         }
-      });
+        el.style.resize = 'vertical';
     });
-  
+
+    // AJAX load for model -> objects
+    var modelType = document.getElementById('id_model_type');
+    if (modelType) {
+        modelType.addEventListener('change', function () {
+            var modelId = this.value;
+            console.log('Model ID selected:', modelId);
+            fetch(`{% url 'ajax-get-objects' %}?type_id=${encodeURIComponent(modelId)}`)
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    console.log('AJAX success:', data.objects);
+                    var objectSelect = document.getElementById('id_object_id');
+                    if (!objectSelect) return;
+                    objectSelect.innerHTML = '<option value="">Seleccione un recurso</option>';
+                    data.objects.forEach(function (obj) {
+                        var opt = document.createElement('option');
+                        opt.value = obj.id;
+                        opt.textContent = obj.name;
+                        objectSelect.appendChild(opt);
+                    });
+                })
+                .catch(function (err) { console.error('AJAX error:', err); });
+        });
+    }
+});
 </script>
-
-
-{% endblock%}
+{% endblock %}

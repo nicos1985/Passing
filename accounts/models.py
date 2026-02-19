@@ -155,6 +155,11 @@ class TenantSettings(models.Model):
     menu_color = models.CharField(max_length=7, blank=True, null=True, default="#212629")
     company_name = models.CharField(max_length=50, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    evaluation_reminder_days = models.PositiveSmallIntegerField(
+        default=14,
+        verbose_name='Días de aviso para evaluaciones',
+        help_text='Cuántos días antes del vencimiento se notifica a los owners.',
+    )
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -165,6 +170,16 @@ class TenantSettings(models.Model):
 
     def __str__(self):
         return f"Settings({self.client.schema_name})"
+
+    @property
+    def reminder_lead_days(self):
+        return max(0, self.evaluation_reminder_days or 0)
+
+    @classmethod
+    def for_client(cls, client):
+        if client is None:
+            return None
+        return cls.objects.filter(client=client).first()
     
 
 

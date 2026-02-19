@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-5">
+  <div class="col-lg-10 col-xl-8 mx-auto">
+    <div class="card form-card shadow-sm">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <h5 class="mb-0"><i class="fa-solid fa-list"></i> Crear plantilla de checklist</h5>
+          <p class="text mb-0">Define el contenido general y los controles asociados.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light btn-sm" href="{% url 'checklist-templates' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+          {% if related_links %}
+            {% for link, label in related_links %}
+              <a class="btn btn-outline-light btn-sm" href="{{ link }}">{{ label }}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div class="row">
+            {% for field in form.visible_fields %}
+              <div class="col-md-6 mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar plantilla</button>
+            <a class="btn btn-outline-secondary" href="{% url 'checklist-templates' %}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
