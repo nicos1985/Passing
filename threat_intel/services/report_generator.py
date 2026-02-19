@@ -1,29 +1,12 @@
 # threat_intel/services/report_generator.py
-"""
-Report PDF/Binary generation utilities.
-Supports converting HTML reports to PDF for email attachments.
-"""
+"""Utilidades para generar archivos binarios (PDF/Markdown/JSON) desde reportes."""
 from __future__ import annotations
 from typing import Optional, Tuple
 from datetime import datetime
 
 
 def generate_report_pdf(report) -> Tuple[str, bytes]:
-    """
-    Generate PDF from report HTML content.
-    
-    Requires: pip install weasyprint
-    
-    Args:
-        report: Report instance with body_html
-    
-    Returns:
-        Tuple of (filename, pdf_bytes)
-    
-    Example:
-        filename, pdf_content = generate_report_pdf(report)
-        attachments = [(filename, pdf_content, "application/pdf")]
-    """
+    """Genera un PDF a partir del HTML del reporte para adjuntar."""
     try:
         from weasyprint import HTML
         from io import BytesIO
@@ -79,15 +62,7 @@ def generate_report_pdf(report) -> Tuple[str, bytes]:
 
 
 def generate_report_markdown(report) -> Tuple[str, bytes]:
-    """
-    Export report as Markdown file.
-    
-    Args:
-        report: Report instance with body_md
-    
-    Returns:
-        Tuple of (filename, markdown_bytes)
-    """
+    """Exporta el reporte como archivo Markdown."""
     content = f"""# {report.subject}
 
 **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
@@ -108,15 +83,7 @@ def generate_report_markdown(report) -> Tuple[str, bytes]:
 
 
 def generate_report_json(report) -> Tuple[str, bytes]:
-    """
-    Export report as JSON for programmatic consumption.
-    
-    Args:
-        report: Report instance
-    
-    Returns:
-        Tuple of (filename, json_bytes)
-    """
+    """Exporta el reporte en formato JSON para consumo automatizado."""
     import json
     
     data = {

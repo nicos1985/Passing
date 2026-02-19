@@ -1,6 +1,12 @@
+"""Management command para eliminar tenants y sus esquemas (peligroso).
+
+Ejecutar solo en entornos controlados. Elimina todos los tenants excepto `public`.
+"""
+
 from django.core.management.base import BaseCommand
 from django_tenants.utils import get_tenant_model
 from django.db import connection
+
 
 class Command(BaseCommand):
     help = 'Elimina todos los tenants y sus esquemas'

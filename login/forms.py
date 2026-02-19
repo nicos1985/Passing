@@ -1,3 +1,5 @@
+"""Formularios de autenticación, registro y perfiles para el hub y el tenant."""
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
@@ -9,6 +11,7 @@ from django_recaptcha.widgets import ReCaptchaV3
 
 
 class CustomLoginForm(AuthenticationForm):
+    """Login protegido con reCaptcha para el hub público."""
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
@@ -19,6 +22,7 @@ class CustomLoginForm(AuthenticationForm):
 )
     
 class UserRegisterForm(UserCreationForm):
+    """Registro manual de usuarios globales para crear superusuarios o perfiles clásicos."""
     email = forms.EmailField()
     password1 = forms.CharField(label = 'Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label = 'Confirmar Contraseña', widget=forms.PasswordInput)
@@ -49,6 +53,7 @@ class UserRegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    """Actualiza el perfil del usuario incluyendo avatar, preferencias de color y 2FA."""
     menu_color = forms.CharField(
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
         widget=forms.TextInput(attrs={'type': 'color'})
@@ -72,6 +77,7 @@ class ProfileForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    """Formulario de administración para crear o editar usuarios dentro del tenant."""
     admission_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     birth_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     is_superuser = forms.RadioSelect()
@@ -92,9 +98,10 @@ class UserForm(forms.ModelForm):
         
 
 class UserDepartureForm(forms.ModelForm):
-     departure_date = forms.DateField(label= 'Fecha de baja',widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-     departure_motive = forms.CharField(label= 'Motivo de baja',widget=forms.Textarea(attrs={'class': 'form-control'}))
-     class Meta:
+    """Permite desactivar usuarios y registrar motivo + fecha de baja."""
+    departure_date = forms.DateField(label= 'Fecha de baja',widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    departure_motive = forms.CharField(label= 'Motivo de baja',widget=forms.Textarea(attrs={'class': 'form-control'}))
+    class Meta:
         model = CustomUser
         fields = ['departure_date', 'departure_motive', 'is_active']
 
@@ -104,6 +111,7 @@ class UserDepartureForm(forms.ModelForm):
 
 
 class AdminLoginForm(AuthenticationForm):
+    """Login para administradores con reCaptcha reforzado."""
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
@@ -114,6 +122,7 @@ class AdminLoginForm(AuthenticationForm):
 )    
 
 class GlobalSettingsForm(forms.ModelForm):
+    """Edita los parámetros globales del tenant como SSO y recordatorios."""
     menu_color = forms.CharField(
         max_length=7,
         widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),

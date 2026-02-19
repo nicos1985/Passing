@@ -1,7 +1,10 @@
+"""Pruebas unitarias básicas para formularios de `passbase`."""
+
 from django_tenants.test.cases import TenantTestCase
 from passbase.forms import ContrasenaForm, ContrasenaUForm, SectionForm
 from passbase.models import SeccionContra, Contrasena
 from login.models import CustomUser
+
 
 class SectionFormTest(TenantTestCase):
     def test_section_form_valid(self):
@@ -18,6 +21,7 @@ class SectionFormTest(TenantTestCase):
         form = SectionForm()
         self.assertEqual(form.fields['nombre_seccion'].widget.attrs['class'], 'form-control')
         self.assertEqual(form.fields['nombre_seccion'].widget.attrs['autocomplete'], 'off')
+
 
 class ContrasenaFormTest(TenantTestCase):
     def setUp(self):
@@ -42,6 +46,7 @@ class ContrasenaFormTest(TenantTestCase):
         form = ContrasenaForm()
         self.assertEqual(form.fields['nombre_contra'].widget.attrs['class'], 'form-control')
         self.assertEqual(form.fields['contraseña'].widget.input_type, 'password')
+
 
 class ContrasenaUFormTest(TenantTestCase):
     def setUp(self):

@@ -10,22 +10,28 @@ from urllib.parse import urlsplit
 TenantModel = get_tenant_model()
 
 def build_oauth_state(client_slug: str, next_path: str = "/"):
+    """Infla el estado de OAuth con tenant objetivo y ruta siguiente."""
+
     payload = {"client_slug": client_slug, "next": next_path, "ts": timezone.now().timestamp()}
     return signing.dumps(payload, salt="oauth-state-v1")
 
 def build_sso_token(user_id: int, client_slug: str, next_path: str = "/",
                     salt: str = None):
+    """Genera el JWT simple que el tenant consume para logear al usuario vía SSO."""
     salt = salt or "sso-xfer-v1"
     payload = {"uid": user_id, "client_slug": client_slug, "next": next_path}
     return signing.dumps(payload, salt=salt)
 
 def resolve_primary_domain(client: TenantModel) -> str:
+    """Busca el dominio primario del tenant o compone uno para desarrollo."""
+
     dom = Domain.objects.filter(tenant=client, is_primary=True).first()
     if not dom:
         return f"{client.schema_name}.localhost:8000"
     return dom.domain
 
 def redirect_to_tenant_with_token(request, user, client, next_path="/"):
+    """Construye la URL de login SSO del tenant y redirige al usuario."""
     # Accept either a Tenant instance or a schema_name string
     if hasattr(client, "schema_name"):
         client_obj = client
@@ -90,6 +96,7 @@ def _port_from_request(request) -> str:
     return ""
 
 def get_memberships_for_email(email: str):
+    """Recupera usuario y memberships activos para el email dado."""
     from .models import CustomUser, TenantMembership
     try:
         user = CustomUser.objects.get(email__iexact=email)
@@ -99,10 +106,12 @@ def get_memberships_for_email(email: str):
     return user, mems
 
 def get_ip(request):
+    """Extrae la IP real leyendo `X-Forwarded-For` y fallback a REMOTE_ADDR."""
     xff = request.META.get("HTTP_X_FORWARDED_FOR")
     if xff:
         return xff.split(",")[0].strip()
     return request.META.get("REMOTE_ADDR")
 
 def get_ua(request):
+    """Devuelve el agente de usuario reportado por el navegador."""
     return request.META.get("HTTP_USER_AGENT", "")

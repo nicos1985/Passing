@@ -20,9 +20,12 @@ logger = logging.getLogger(__name__)
 
 #devuelve si es administrador
 def is_administrator(user):
+    """True si el usuario es staff o superusuario."""
     return user.is_superuser or user.is_staff
 
+
 def is_superadmin(user):
+    """True solo para superusuarios globales."""
     return user.is_superuser
 
 

@@ -7,11 +7,13 @@ class Command(BaseCommand):
     help = "Crea/actualiza el SocialApp de Google y lo asocia al SITE_ID actual."
 
     def add_arguments(self, parser):
+        """Define los argumentos CLI necesarios para crear el SocialApp."""
         parser.add_argument("--client-id", required=True)
         parser.add_argument("--secret", required=True)
         parser.add_argument("--name", default="Google Passing")
 
     def handle(self, *args, **opts):
+        """Actualiza o crea la app de Google y la asocia al sitio configurado."""
         client_id = opts["client_id"]
         secret = opts["secret"]
         name = opts["name"]

@@ -98,6 +98,7 @@ def login_alias_to_hub(request):
 
 @login_required
 def home_tenant(request):
+    """Dashboard tenant con métricas de treatments, riesgos y threat intelligence recientes."""
     # Dashboard data: treatment counts by stage and recent pending treatments
     stages_count = Treatment.objects.values('stage').annotate(count=Count('id'))
     # Build a mapping of stage -> count
@@ -165,6 +166,7 @@ def home_tenant(request):
 
 
 def register(request):
+    """Crea usuarios nuevos dentro del tenant actual y les envía el email de activación."""
     if request.method == 'POST':
         form = UserForm(request.POST)
         
@@ -234,10 +236,11 @@ def register(request):
     return render(request, 'register.html', context)
 
 def create_uid_token(request):
+    """Placeholder para generar tokens de activación si se necesita más adelante."""
     pass
 
 def _hub_origin(request):
-    # En settings: HUB_ORIGIN = "http://localhost:8000" (o tu dominio en prod)
+    """Devuelve la URL base del hub (PUBLIC) para construir enlaces absolutos."""
     return getattr(settings, "HUB_ORIGIN", request.build_absolute_uri("/").rstrip("/"))
 
 
@@ -409,6 +412,7 @@ class LogoutFormView(LogoutView):
         
 @login_required
 def profile_view(request):
+    """Actualiza datos del perfil y el avatar del usuario autenticado, incluyendo 2FA."""
     user = CustomUser.objects.get(id=request.user.id)
     if request.method == 'POST': 
         logger = logging.getLogger(__name__)
@@ -458,11 +462,13 @@ def profile_view(request):
 
 
 class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
+    """LoginView derivado que muestra la plantilla propia del hub para resetear contraseña."""
     template_name = 'password_reset.html'
     success_message = "Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña."
 
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    """Confirma el token y activa al usuario cuando recupera la contraseña."""
     template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
     form_class = SetPasswordForm  # Especifica el formulario que deseas utilizar
 
@@ -481,7 +487,8 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
         return super().form_valid(form)
 
 @method_decorator(user_passes_test(is_administrator), name='dispatch') 
-class UserListView(ListView):   
+class UserListView(ListView):  
+    """Lista los usuarios del tenant para administradores."""
     model = CustomUser
     template_name = 'user_list.html'
     context_object_name = 'users'
@@ -492,6 +499,7 @@ class UserListView(ListView):
     
 @method_decorator(user_passes_test(is_administrator), name='dispatch')
 class UserUpdateView(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
+    """Actualiza los datos de un usuario, garantizando que pertenezca al tenant."""
     model = CustomUser
     form_class = UserForm
     template_name = 'user_form.html'
@@ -513,6 +521,7 @@ class UserUpdateView(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
 
 @method_decorator(user_passes_test(is_administrator), name='dispatch')
 class DepartureUser(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
+    """Maneja la desactivación ordenada de un usuario dentro del tenant."""
     model = CustomUser
     form_class = UserDepartureForm
     template_name = 'departure_user.html'
@@ -527,6 +536,7 @@ class DepartureUser(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
         return obj
 
     def get_context_data(self, **kwargs):
+        """Incluye el usuario objetivo en el contexto del formulario de baja."""
         context = super().get_context_data(**kwargs)
         context['user'] = self.get_object()
         return context
@@ -554,6 +564,7 @@ class DepartureUser(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
  
 @method_decorator(user_passes_test(is_administrator), name='dispatch')
 class UserDetailView(Safe404RedirectMixin, TenantScopedUserMixin, DetailView):
+    """Expone la información de un usuario dentro del tenant con seguridad."""
     model = CustomUser
     template_name = 'detail-user.html'
     success_url = reverse_lazy('userlist')
@@ -568,6 +579,7 @@ class UserDetailView(Safe404RedirectMixin, TenantScopedUserMixin, DetailView):
 
 @user_passes_test(is_administrator)
 def deactivate_user(request, pk):
+    """Inactiva un usuario asegurando que no sea el único superusuario activo."""
     try:
         user = get_object_or_404(CustomUser.for_current_tenant(), pk=pk)
 
@@ -594,6 +606,7 @@ def deactivate_user(request, pk):
 
 @user_passes_test(is_administrator)
 def activate_user(request, pk):
+    """Re-activa un usuario previamente desactivado y registra el mensaje de éxito."""
     try:
         user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
 
@@ -627,6 +640,7 @@ def _resolve_2fa_user_from_request(request):
 
 
 def verify_2fa(request):
+    """Verifica el código TOTP del usuario enrutado por el middleware 2FA."""
     if request.method == "POST":
         code = request.POST.get("otp_code")
         if request.user.otp_secret:
@@ -643,6 +657,7 @@ def verify_2fa(request):
 
 
 def show_qr_code_2fa(request):
+    """Muestra el QR generado para enrolar el segundo factor."""
     user_obj = _resolve_2fa_user_from_request(request)
     if not user_obj:
         return HttpResponseForbidden("Autenticación requerida o sesión SSO inválida.")
@@ -787,6 +802,7 @@ def send_qr_code_email_cid(user):
     email.send()
     
 def send_qr_email_for_user_ondemand(request, pk):
+    """Envía el QR por email cuando el admin lo solicita explícitamente."""
     user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
     try:
         send_qr_code_email_cid(user)
@@ -865,6 +881,7 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
 
 from django.db import connection
 def sso_consume(request):
+    """Consume el token SSO, valida membresía y completa el login sin hacer form manual."""
     # debug removed: do not log request headers in production
     # print("DEBUG schema_name en request:", getattr(connection, "schema_name", None))
     token = request.GET.get("token")
@@ -925,6 +942,7 @@ def sso_consume(request):
     return redirect(next_path)
 
 def _login_with_backend(request, user):
+    """Ejecuta el login forzado usando el backend configurado para SSO."""
     backend = None
     # Permití sobreescribir por settings si querés
     backend = getattr(settings, "SSO_LOGIN_BACKEND", None)
@@ -936,6 +954,7 @@ def _login_with_backend(request, user):
 
 
 def verify_2fa_sso(request):
+    """Verifica el código TOTP dentro del flujo SSO antes de redirigir al tenant."""
     uid = request.session.get("twofa_pending_uid")
     next_path = request.GET.get("next") or request.POST.get("next") \
                 or request.session.get("twofa_next") or "/"

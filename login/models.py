@@ -1,20 +1,26 @@
+"""Modelos y helpers del login tenant: settings globales y helpers asociados."""
+
 from django.db import models
 from django.db import connection
 from accounts.models import CustomUser
 
 class MultifactorChoices(models.IntegerChoices):
+    """Opciones que describen el estado de habilitación del segundo factor."""
     DESACTIVADO = 0, 'Desactivado'
     ACTIVADO = 1, 'Activado'
     USER_CHOICE = 2, 'A eleccion del usuario'
 
 def find_admin():
+    """Devuelve el ID del primer superusuario público."""
     su = CustomUser.objects.filter(is_superuser=True).order_by("id").first()
     return su.id if su else None
 
 def get_domain_name(client=None):
+    """Helper que expone el nombre del tenant actual según la conexión."""
     return str(connection.tenant)
 
 class GlobalSettings(models.Model):
+    """Configuraciones globales por tenant: 2FA en masa, dashboard y administradores."""
     multifactor_status = models.PositiveSmallIntegerField(choices=MultifactorChoices.choices, verbose_name='Politica 2do factor autenticacion', default=MultifactorChoices.DESACTIVADO)
     is_admin_dash_active = models.BooleanField(default=False, verbose_name='Dashboard administrador')
     menu_color = models.CharField(max_length=7, null=True, blank=True, verbose_name='Color de menu', default='#212629')

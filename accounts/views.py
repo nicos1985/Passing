@@ -103,10 +103,7 @@ def choose_tenant_view(request):
 
 
 def google_start(request):
-    """
-    Initiates the Google OAuth login process.
-    It expects 'client' and 'next' parameters in the GET request.
-    """
+    """Inicia el flujo OAuth de Google desde el hub y guarda el estado de redirección."""
     client_slug = request.GET.get("client")
     next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
     logger.debug("google_start client_slug=%s next_path=%s", client_slug, next_path)
@@ -125,11 +122,7 @@ def google_start(request):
 
 @login_required
 def post_login_redirect(request):
-    """
-    Después del login (Google vía allauth o credenciales del hub),
-    si viene `_s` con client_slug => seguir tu flujo tradicional.
-    Si NO viene client_slug => branching por memberships (0/1/n).
-    """
+    """Después del login orquesta el redireccionamiento de tenant o el selector de cuentas."""
     # --------- TU BLOQUE ORIGINAL (sin cambios) ---------
     state = request.GET.get("_s")
     logger.debug("post_login_redirect")
@@ -198,9 +191,7 @@ def post_login_redirect(request):
     return redirect(url)
 
 def google_start_auto(request):
-    """
-    Inicia Google OAuth SIN 'client'. Branching de tenants se hace en post_login_redirect.
-    """
+    """Activa Google OAuth sin `client`, delegando la selección de tenant al post-login."""
     next_path = request.GET.get("next") or DEFAULT_NEXT_PATH
     post_login_url = f"{reverse('post_login')}?next={quote(next_path)}"
 
@@ -214,9 +205,7 @@ def google_start_auto(request):
     return redirect(f"{allauth_login_url}?process=login&next={quote(post_login_url)}")
 
 def _resolve_tenant_base_url(request, client_slug: str) -> str:
-    """
-    Resolves the base URL for a given tenant, handling development and production environments.
-    """
+    """Devuelve la URL base del tenant considerando entornos de desarrollo y producción."""
     scheme = "http" if settings.DEBUG else "https"
     base_dev = "localhost"  # puedes extraer a settings.TENANT_BASE_DOMAIN_DEV
 
@@ -238,8 +227,7 @@ def _resolve_tenant_base_url(request, client_slug: str) -> str:
     return f"{scheme}://{host}{_maybe_port(request)}"
 
 def _maybe_port(request):
-    """ Adds port to the URL in development if present.
-    """
+    """Agrega el puerto al redirect cuando se ejecuta en desarrollo."""
     if settings.DEBUG:
         hub_host = request.get_host()
         if ":" in hub_host:

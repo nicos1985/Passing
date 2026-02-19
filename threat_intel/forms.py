@@ -4,7 +4,7 @@ from .models import Report, Review, Source, TechTag
 
 
 class ReportForm(forms.ModelForm):
-    """Form for creating/updating threat intelligence reports."""
+    """Formulario para crear o editar reportes de inteligencia de amenazas."""
     class Meta:
         model = Report
         fields = ['subject', 'body_md', 'body_html', 'recipients']
@@ -32,7 +32,7 @@ class ReportForm(forms.ModelForm):
 
 
 class ReportSendForm(forms.Form):
-    """Form for sending reports via email."""
+    """Formulario para configurar el envío de reportes por email."""
     BACKEND_CHOICES = [
         ('smtp', 'SMTP (Gmail/Default)'),
         ('brevo', 'Brevo (SendinBlue)'),
@@ -65,7 +65,7 @@ class ReportSendForm(forms.Form):
 
 
 class ReviewForm(forms.ModelForm):
-    """Form for creating/updating reviews of threat intel items."""
+    """Formulario para crear o actualizar revisiones de ítems de inteligencia."""
     class Meta:
         model = Review
         fields = ['decision', 'notes', 'ticket_ref']
@@ -84,7 +84,7 @@ class ReviewForm(forms.ModelForm):
 
 
 class SourceForm(forms.ModelForm):
-    """Form for creating/updating threat intelligence sources."""
+    """Formulario para gestionar fuentes de inteligencia de amenazas."""
     class Meta:
         model = Source
         fields = ['name', 'url', 'api_key', 'enabled']
@@ -97,7 +97,7 @@ class SourceForm(forms.ModelForm):
 
 
 class TechTagForm(forms.ModelForm):
-    """Form for creating/updating technology tags."""
+    """Formulario para crear o editar etiquetas tecnológicas."""
     class Meta:
         model = TechTag
         fields = ['name', 'category', 'keywords']

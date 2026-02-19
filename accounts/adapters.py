@@ -10,10 +10,14 @@ from .utils import get_ip, get_ua
 User = get_user_model()
 
 class AccountAdapter(DefaultAccountAdapter):
+    """Impide registros nuevos desde allauth y deja solo el login."""
+
     def is_open_for_signup(self, request):
         return False  # sin registro por allauth
 
 class SocialAdapter(DefaultSocialAccountAdapter):
+    """Vincula logins de Google con usuarios existentes y audita fallos."""
+
     def pre_social_login(self, request, sociallogin):
         # Si ya existe el SocialAccount, allauth seguirá normal
         if sociallogin.is_existing:

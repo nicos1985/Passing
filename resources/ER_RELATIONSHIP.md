@@ -11,29 +11,28 @@ Este diagrama resume las principales entidades del módulo `resources` y cómo s
 
 ## Diagrama
 ```mermaid
-%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#0b5fff', 'edgeLabelBackground':'#ffffff', 'fontSize':'14px' }}}%%
-erDiagram
-    RiskEvaluableObject <|-- InformationAssets : hereda
-    RiskEvaluableObject <|-- Vendor : hereda
-    RiskEvaluableObject <|-- Project : hereda
-    RiskEvaluableObject <|-- ClientCompany : hereda
+graph TD
+	RiskEvaluableObject -->|hereda| InformationAssets
+	RiskEvaluableObject -->|hereda| Vendor
+	RiskEvaluableObject -->|hereda| Project
+	RiskEvaluableObject -->|hereda| ClientCompany
 
-    InformationAssets ||--o{ AssetAction : "acciones"
-    AssetAction }o--|| CustomUser : "user"
-    AssetAction }o--|| CustomUser : "performed_by"
+	InformationAssets -->|acciones| AssetAction
+	AssetAction -->|user| CustomUser
+	AssetAction -->|performed_by| CustomUser
 
-    Vendor ||--|{ VendorChecklist : "tiene"
-    VendorChecklist }o--|| ChecklistTemplate : "plantilla"
-    ChecklistTemplate ||--|{ ChecklistItem : "contiene"
-    Vendor ||--|{ VendorEvaluation : "tiene"
-    VendorEvaluation ||--|{ VendorEvaluationItem : "responde"
-    VendorEvaluation }o--|| CustomUser : "performed_by"
-    VendorEvaluationItem }o--|| ChecklistItem : "snapshot"
+	Vendor -->|tiene| VendorChecklist
+	VendorChecklist -->|plantilla| ChecklistTemplate
+	ChecklistTemplate -->|contiene| ChecklistItem
+	Vendor -->|tiene| VendorEvaluation
+	VendorEvaluation -->|responde| VendorEvaluationItem
+	VendorEvaluation -->|performed_by| CustomUser
+	VendorEvaluationItem -->|snapshot| ChecklistItem
 
-    RiskEvaluation }o--|| Threat : "analiza"
-    RiskEvaluation }o--|| Vulnerability : "analiza"
-    RiskEvaluableObject ||--o{ RiskEvaluation : "es evaluado"
-    RiskEvaluation ||--|| Treatment : "coordina"
+	RiskEvaluation -->|analiza| Threat
+	RiskEvaluation -->|analiza| Vulnerability
+	RiskEvaluableObject -->|es evaluado| RiskEvaluation
+	RiskEvaluation -->|coordina| Treatment
 
-    ChecklistTemplate ||--o{ VendorEvaluation : "respaldada por"
+	ChecklistTemplate -->|respaldada por| VendorEvaluation
 ```

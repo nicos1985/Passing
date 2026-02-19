@@ -4,6 +4,7 @@ from django_tenants.utils import get_tenant
 from .models import TenantMembership
 
 def require_tenant_membership(view):
+    """Bloquea vistas públicas si el usuario no tiene membership activa para el tenant."""
     @wraps(view)
     def _wrapped(request, *args, **kwargs):
         if not request.user.is_authenticated:

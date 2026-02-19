@@ -1,3 +1,5 @@
+"""Modelos de contraseñas privadas, secciones y auditorías para los tenants."""
+
 import hashlib
 import logging
 from django.utils import timezone
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Create your models here.
 class SeccionContra(models.Model):
+    """Agrupa contraseñas en secciones temáticas y controla su estado."""
 
     nombre_seccion = models.CharField(max_length=50)
     active = models.BooleanField(default=True)
@@ -31,7 +34,7 @@ class SeccionContra(models.Model):
     
 
 class Contrasena(models.Model):
-  
+    """Registro cifrado de credenciales con metadatos de sección, propietario y hash."""
 
     nombre_contra = models.CharField(max_length=255, unique=True)
     seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE)
@@ -88,6 +91,7 @@ class Contrasena(models.Model):
 
     @classmethod
     def bulk_create_with_logs(cls, entries):
+        """Inserta múltiples contraseñas y registra logs de creación en bloque."""
         objects = cls.objects.bulk_create(entries)
 
         logs = [
@@ -110,26 +114,31 @@ class Contrasena(models.Model):
 
 
     def get_decrypted_password(self):
+        """Desencripta la contraseña almacenada y la devuelve en texto."""
         if not isinstance(self.contraseña, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.contraseña).__name__}")
         return decrypt_data(self.contraseña)
     
     def get_decrypted_user(self):
+        """Devuelve el nombre de usuario original desencriptado."""
         if not isinstance(self.usuario, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
         return decrypt_data(self.usuario)
    
     def encrypt_password(self):
+        """Vuelve a cifrar la contraseña actual para operaciones internas."""
         if not isinstance(self.contraseña, (str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.contraseña).__name__}")
         return encrypt_data(self.contraseña)
     
     def encrypt_user(self):
+        """Vuelve a cifrar el campo usuario sin guardar el modelo."""
         if not isinstance(self.usuario, (str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.usuario).__name__}")
         return encrypt_data(self.usuario)
 
     def ratio_calculation(self, created_value):
+        """Calcula un código de color que representa el estado de vencimiento."""
         fecha_hoy = timezone.now()
         dias_actualizacion = self.actualizacion
         dias_transcurridos = (fecha_hoy - created_value).days
@@ -148,6 +157,7 @@ class Contrasena(models.Model):
             return '#7CFF6D' #Contraseña en plazo
 
     def last_pass_change(self):
+        """Recupera la fecha del último cambio de contraseña registrado."""
         log_data_change_pass = LogData.objects.filter(contraseña=self.id, action='change pass').order_by('-created')[:1]
         
         if log_data_change_pass.exists():
@@ -166,6 +176,7 @@ class Contrasena(models.Model):
 
     @property
     def flag(self):
+        """Retorna el color que indica si la contraseña está próxima a vencer."""
         created_value = self.last_pass_change()
         if created_value is None:
             return 'Sin data'
@@ -173,6 +184,7 @@ class Contrasena(models.Model):
 
     @property
     def last_change(self):
+        """Diferencia en días desde la última modificación válida."""
         created_value = self.last_pass_change()
         if created_value is None:
             return 'Sin data'
@@ -184,6 +196,7 @@ class Contrasena(models.Model):
     
     @property
     def password_strength(self):
+        """Clasifica la fortaleza de la contraseña descifrada."""
         password = decrypt_data(self.contraseña)
         length = len(password)
 
@@ -221,6 +234,7 @@ class Contrasena(models.Model):
 
         
 class LogData(models.Model):
+    """Audita cambios sobre contraseñas y secciones guardando detalles cifrados."""
     entidad = models.CharField(max_length=50)
     contraseña = models.IntegerField()
     password = models.CharField(max_length=500, blank=True)
@@ -236,16 +250,19 @@ class LogData(models.Model):
         return str(self.contraseña)
     
     def encrypt_password(self):
+        """Cifra el valor en texto plano del campo password."""
         if not isinstance(self.password, (str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.password).__name__}")
         return encrypt_data(self.password)
     
     def get_decrypted_password(self):
+        """Desencripta el password almacenado en este log."""
         if not isinstance(self.password, (bytes, str)):
             raise TypeError(f"Expected bytes or str, but got {type(self.password).__name__}")
         return decrypt_data(self.password)
     
     def get_encrypted_user(self):
+        """Extrae el usuario cifrado embebido en el detalle del log."""
         try:
             usuario_encrypted_match = re.search(r'Usuario: (.+?),', self.detail)
             if usuario_encrypted_match:
@@ -259,7 +276,7 @@ class LogData(models.Model):
             return None
 
     def get_decrypted_user(self, usuario_encrypted):
-            if usuario_encrypted is None:
-                return None
-            else:
-                return decrypt_data(usuario_encrypted)
+        """Desencripta el usuario almacenado dentro de la cadena de detalle."""
+        if usuario_encrypted is None:
+            return None
+        return decrypt_data(usuario_encrypted)

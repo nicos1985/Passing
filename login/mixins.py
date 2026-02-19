@@ -1,3 +1,4 @@
+"""Mixins reutilizables para proteger vistas dentro de un tenant."""
 
 from django.db import connection
 from django.core.exceptions import PermissionDenied

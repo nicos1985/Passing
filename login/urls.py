@@ -1,3 +1,5 @@
+"""Rutas públicas y protegidas del login hub y tenant."""
+
 from django.contrib import admin
 from django.urls import path
 from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso, home_tenant, login_alias_to_home

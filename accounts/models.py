@@ -27,6 +27,7 @@ def avatar_upload_to(instance, filename):
 CLIENT_FK = 'client.Client'   
 
 class CustomUser(AbstractUser):
+    """Usuario personalizado del hub con campos adicionales y helpers tenant-aware."""
     avatar = models.ImageField(blank=True, null=True, upload_to=avatar_upload_to)
     position = models.CharField(max_length=80, null=True, verbose_name='Puesto')
     email = models.EmailField(unique=True)
@@ -101,19 +102,14 @@ class CustomUser(AbstractUser):
     # Tenant-aware helpers
     @classmethod
     def for_client(cls, client):
-        """Return a queryset of users belonging to the given client (public Client instance)."""
+        """Devuelve usuarios activos asociados al cliente público especificado."""
         if client is None:
             return cls.objects.none()
         return cls.objects.filter(client=client)
 
     @classmethod
     def for_current_tenant(cls):
-        """Return users for the current tenant inferred from the DB connection.
-
-        This uses django-tenants' `connection.tenant` (or `connection.schema_name`) to
-        resolve the current client. If no tenant is available, returns an empty
-        queryset to avoid leaking all users from PUBLIC.
-        """
+        """Restringe el queryset al tenant activo considerando la conexión actual."""
         try:
             from django.db import connection
             tenant = getattr(connection, "tenant", None)
@@ -148,6 +144,7 @@ class TenantMembership(models.Model):
 
 
 class TenantSettings(models.Model):
+    """Configuraciones por cliente que controlan SSO, recordatorios y presencia del dash."""
     client = models.OneToOneField(CLIENT_FK, on_delete=models.CASCADE, related_name="settings")
     # Migrados/compatibles con tu GlobalSettings (por ahora solo los creamos; migraremos luego)
     multifactor_status = models.PositiveSmallIntegerField(default=0)  # usaremos tus choices luego
@@ -186,6 +183,7 @@ class TenantSettings(models.Model):
 
 
 class AuthEvent(models.Model):
+    """Registra eventos autenticación/SSO para auditoría y troubleshooting."""
     LOGIN_PASSWORD = "login_password"
     LOGIN_GOOGLE = "login_google"
     SSO_CONSUME = "sso_consume"

@@ -1,10 +1,10 @@
+"""URLs públicas del hub que inician login, Google OAuth y selección de tenant."""
+
 from django.urls import path
 from .views import google_start, google_start_auto, post_login_redirect, login_view, logout_view, choose_tenant_view
 
 
 urlpatterns = [
-    
-    
     path('', login_view, name='login'),
     path("logout/", logout_view, name="logout"),
     path("google/start-auto/", google_start_auto, name="google_start_auto"),

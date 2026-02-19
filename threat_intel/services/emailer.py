@@ -1,8 +1,6 @@
 # threat_intel/services/emailer.py
-"""
-Email service for threat intelligence reports.
-Supports SMTP (Django default) and Brevo (SendinBlue) backends.
-"""
+"""Servicio de correo para reportes de threat intelligence.
+Soporta backend SMTP (por defecto de Django) y Brevo (SendinBlue)."""
 from __future__ import annotations
 from typing import Optional, List, Tuple
 import os
@@ -15,17 +13,7 @@ def send_report_email_smtp(
     report: Report,
     attachments: Optional[List[Tuple[str, bytes, str]]] = None
 ) -> None:
-    """
-    Send report via SMTP (Django EmailBackend).
-    
-    Args:
-        report: Report instance with subject, body_md, body_html, recipients
-        attachments: List of tuples (filename, content, mimetype)
-                    e.g., [("report.pdf", pdf_bytes, "application/pdf")]
-    
-    Raises:
-        RuntimeError: If no recipients are configured
-    """
+    """Envía un reporte mediante SMTP (EmailBackend de Django)."""
     recipients = report.recipients or []
     if not recipients:
         raise RuntimeError("No recipients configured for threat intel email.")
@@ -53,21 +41,7 @@ def send_report_email_brevo(
     report: Report,
     attachments: Optional[List[Tuple[str, bytes, str]]] = None
 ) -> dict:
-    """
-    Send report via Brevo (SendinBlue) API.
-    Requires 'sib-api-v3-sdk' package and BREVO_API_KEY in settings.
-    
-    Args:
-        report: Report instance
-        attachments: List of tuples (filename, content, mimetype)
-    
-    Returns:
-        Response dict from Brevo API
-    
-    Raises:
-        ImportError: If sib_api_v3_sdk not installed
-        RuntimeError: If BREVO_API_KEY not configured or no recipients
-    """
+    """Envía el reporte a través de la API de Brevo (SendinBlue)."""
     try:
         from sib_api_v3_sdk import ApiClient, Configuration
         from sib_api_v3_sdk.apis.transactional_emails_api import TransactionalEmailsApi
@@ -143,26 +117,7 @@ def send_report_email(
     attachments: Optional[List[Tuple[str, bytes, str]]] = None,
     use_brevo: bool = False
 ) -> dict:
-    """
-    Send report email using configured backend (SMTP or Brevo).
-    
-    Args:
-        report: Report instance
-        attachments: List of tuples (filename, content, mimetype)
-        use_brevo: Force Brevo backend (default: False uses SMTP)
-    
-    Returns:
-        Response dict: {"status": "success"/"error", "message": str}
-    
-    Example:
-        # Simple text + PDF attachment
-        pdf_bytes = b"...PDF content..."
-        attachments = [("report.pdf", pdf_bytes, "application/pdf")]
-        send_report_email(report, attachments=attachments)
-        
-        # Force Brevo
-        send_report_email(report, attachments=attachments, use_brevo=True)
-    """
+    """Envía el reporte usando el backend configurado (SMTP o Brevo)."""
     backend = getattr(settings, "THREAT_INTEL_EMAIL_BACKEND", "smtp").lower()
     
     if use_brevo or backend == "brevo":

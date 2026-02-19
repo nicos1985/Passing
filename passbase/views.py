@@ -1,3 +1,5 @@
+"""Vistas y endpoints que administran contraseñas, secciones y tareas de cifrado."""
+
 import hashlib
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
@@ -24,9 +26,11 @@ logger = logging.getLogger(__name__)
 
 # Funcion para user_passes_test 
 def is_administrator(user):
+    """Valida que el staff o superusuario pueda acceder a vistas protegidas."""
     return user.is_superuser or user.is_staff
 
 def is_superadmin(user):
+    """Detecta explícitamente al superadministrador global."""
     return user.is_superuser
 #####################################
 
@@ -34,6 +38,7 @@ TEMPLATE_NAME = 'listpass.html'
 ENTITY_CONTRASENA = 'Contraseña'
 ACCION_TYPE = 'edit new'
 class ContrasListView(LoginRequiredMixin, ListView):
+    """Lista contraseñas que el usuario puede ver y despliega sus datos descifrados."""
     model = Contrasena
     template_name = TEMPLATE_NAME
     context_object_name = 'query_perm'

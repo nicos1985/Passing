@@ -1,9 +1,5 @@
-from django_tenants.test.cases import TenantTestCase
-from django.test import override_settings
-from django.core import mail
-from django.contrib.auth import get_user_model
-from login.views import send_qr_code_email_inline
-from pathlib import Path
+"""Tests que revisan que los correos de 2FA no filtren secretos."""
+
 from django_tenants.test.cases import TenantTestCase
 from django.test import override_settings
 from django.core import mail
@@ -15,6 +11,7 @@ User = get_user_model()
 
 
 class Protect2FATests(TenantTestCase):
+    """Verifica que el QR y los correos de 2FA no expongan el secret."""
     def test_qr_template_does_not_reference_otp_secret(self):
         tpl = Path('templates/qr_2fa.html').read_text(encoding='utf-8')
         self.assertNotIn('{{ otp_secret', tpl)

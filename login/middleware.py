@@ -1,7 +1,10 @@
 from django.shortcuts import redirect
 from django.contrib import messages
 
+
 class TwoFactorAuthMiddleware:
+    """Middleware que obliga al usuario a completar 2FA antes de continuar."""
+
     def __init__(self, get_response):
         self.get_response = get_response
 
