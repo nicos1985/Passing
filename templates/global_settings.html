@@ -1,14 +1,14 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<div class ='justify-content-sm-center' style="margin-top: 80px;">
+<div class='justify-content-sm-center' style="margin-top: 80px;">
 <div class="d-flex justify-content-center" >
 
     <div class="card center">
             <div class="card-title">
                 <div class="container" style="height: 85px; padding-top: 20px; ">
-                    <h2><i class="fas fa-sign-in-alt" ></i>   Configuracion Global</h2>
+                    <h2><i class="fas fa-sign-in-alt"></i> {% trans "Configuración Global" %}</h2>
                     
                 </div>
             </div>
@@ -22,10 +22,9 @@
                     {{form.as_p}}
 
                         <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-                            <i class="fas fa-save"></i> Guardar
-
-                            
-                        </form>
+                            <i class="fas fa-save"></i> {% trans "Guardar" %}
+                        </button>
+                    </form>
                         
                         
                     

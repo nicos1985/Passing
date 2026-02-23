@@ -1,5 +1,5 @@
 {% extends 'base.html'%}
-
+{% load i18n %}
 
 {% block content %}
 
@@ -17,16 +17,16 @@
                 <div class="card-body">
                     <form method="POST" >
                         {% csrf_token %}
-                    <h5> ¿Estas seguro que deseas {{action}}: {{ object.nombre_seccion }}? </h5>
+                    <h5> {% trans "¿Estas seguro que deseas" %} {{action}}: {{ object.nombre_seccion }}? </h5>
 
                 </div>
                                      
                 <button type="submit" class="btn btn-danger">           
-                    <i class="fas fa-trash" class="btn btn-danger"></i> {{action}}
+                    <i class="fas fa-trash" class="btn btn-danger"></i> {% trans action %}
                 </button>        
                             
                             <button  class="btn">
-                                <a class="btn btn-primary btn-flat" href= {% url 'listsection' %}> <i class="fas fa-ban"></i> Cancelar </a>
+                                <a class="btn btn-primary btn-flat" href= {% url 'listsection' %}> <i class="fas fa-ban"></i> {% trans "Cancelar" %} </a>
                             </button>
                         </div> 
                     </form>

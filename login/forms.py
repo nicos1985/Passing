@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import CustomUser, GlobalSettings
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
+from django.conf import settings
 
 
 
@@ -59,9 +60,16 @@ class ProfileForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'type': 'color'})
     )
 
+    # Selector de idioma para la UI
+    language = forms.ChoiceField(
+        label='Idioma',
+        choices=getattr(settings, 'LANGUAGES', [('es', 'Español')]),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled']
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled', 'language']
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():

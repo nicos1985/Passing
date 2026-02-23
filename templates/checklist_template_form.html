@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container pt-5">
@@ -6,11 +7,11 @@
     <div class="card form-card shadow-sm">
       <div class="card-header d-flex align-items-center justify-content-between">
         <div>
-          <h5 class="mb-0"><i class="fa-solid fa-list"></i> Crear plantilla de checklist</h5>
-          <p class="text mb-0">Define el contenido general y los controles asociados.</p>
+          <h5 class="mb-0"><i class="fa-solid fa-list"></i> {% trans "Crear plantilla de checklist" %}</h5>
+          <p class="text mb-0">{% trans "Define el contenido general y los controles asociados." %}</p>
         </div>
         <div class="d-flex gap-2">
-          <a class="btn btn-outline-light btn-sm" href="{% url 'checklist-templates' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+          <a class="btn btn-outline-light btn-sm" href="{% url 'checklist-templates' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
           {% if related_links %}
             {% for link, label in related_links %}
               <a class="btn btn-outline-light btn-sm" href="{{ link }}">{{ label }}</a>
@@ -37,8 +38,8 @@
             {% endfor %}
           </div>
           <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar plantilla</button>
-            <a class="btn btn-outline-secondary" href="{% url 'checklist-templates' %}">Cancelar</a>
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> {% trans "Guardar plantilla" %}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'checklist-templates' %}">{% trans "Cancelar" %}</a>
           </div>
         </form>
       </div>

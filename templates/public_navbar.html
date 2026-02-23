@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
     {% load static %}
+    {% load i18n %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Navbar - Passing</title>
+    <title>{% trans "Navbar - Passing" %}</title>
 
     <!-- Estilos -->
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}">
@@ -33,16 +34,18 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'listpass' %}">
-                            <i class="fa-solid fa-house" style="color:white;"></i>&nbsp;Inicio
+                            <i class="fa-solid fa-house me-2" style="color:white;"></i>{% trans "Inicio" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'client_register' %}">
-                            <i class="fa-solid fa-address-card" style="color:white;"></i>&nbsp;Crear cuenta
+                            <i class="fa-solid fa-address-card me-2" style="color:white;"></i>{% trans "Crear cuenta" %}
                         </a>
                     </li>
-                    <li>
-                        este es public
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fa-solid fa-info-circle me-2" style="color:white;"></i>{% trans "Este es público" %}
+                        </a>    
                     </li>
                 </ul>
             </div>

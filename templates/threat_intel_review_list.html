@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
     <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -11,18 +11,18 @@
 
 {% block content %}
     <div class="container mt-3">
-        <h2>Revisiones</h2>
-        <p class="text-muted">Listado de decisiones y revisiones de items</p>
+        <h2>{% trans "Revisiones" %}</h2>
+        <p class="text-muted">{% trans "Listado de decisiones y revisiones de items" %}</p>
     </div>
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
             <a class="btn btn-secondary" href="{% url 'threat_intel:run-list' %}">
-                <i class="fa-solid fa-arrow-left"></i> Volver a Runs
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Runs" %}
             </a>
             {% if not run_pk %}
             <a class="btn btn-info" href="{% url 'threat_intel:run-list' %}">
-                <i class="fa-solid fa-plus-circle"></i> Crear Review (desde Run)
+                <i class="fa-solid fa-plus-circle"></i> {% trans "Crear Review (desde Run)" %}
             </a>
             {% endif %}
         </div>
@@ -30,21 +30,21 @@
         <div class="container">
             {% if run_pk %}
             <div class="alert alert-info">
-                Mostrando revisiones para <strong>Run #{{ run_pk }}</strong>
-                <a href="{% url 'threat_intel:review-list' %}" class="alert-link">Ver todas las revisiones</a>
+                {% blocktrans with rp=run_pk %}Mostrando revisiones para <strong>Run #{{ rp }}</strong>{% endblocktrans %}
+                <a href="{% url 'threat_intel:review-list' %}" class="alert-link">{% trans "Ver todas las revisiones" %}</a>
             </div>
             {% endif %}
 
             <table id="data" class="table table-sm">
                 <thead class="table-dark">
                     <tr>
-                        <th>CVE</th>
-                        <th>Run</th>
-                        <th>Decisión</th>
-                        <th>Decidido por</th>
-                        <th>Fecha</th>
-                        <th>Ticket</th>
-                        <th>Acciones</th>
+                        <th>{% trans "CVE" %}</th>
+                        <th>{% trans "Run" %}</th>
+                        <th>{% trans "Decisión" %}</th>
+                        <th>{% trans "Decidido por" %}</th>
+                        <th>{% trans "Fecha" %}</th>
+                        <th>{% trans "Ticket" %}</th>
+                        <th>{% trans "Acciones" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,14 +53,14 @@
                         <td><a href="{% url 'threat_intel:item-detail' review.item.id %}">{{ review.item.cve_id }}</a></td>
                         <td><a href="{% url 'threat_intel:run-detail' review.run.id %}">Run #{{ review.run.id }}</a></td>
                         <td>
-                            {% if review.decision == 'approve_ticket' %}
-                                <span class="badge bg-danger"><i class="fa-solid fa-ticket"></i> Crear Ticket</span>
+                                {% if review.decision == 'approve_ticket' %}
+                                <span class="badge bg-danger"><i class="fa-solid fa-ticket"></i> {% trans "Crear Ticket" %}</span>
                             {% elif review.decision == 'monitor' %}
-                                <span class="badge bg-info"><i class="fa-solid fa-eye"></i> Monitorear</span>
+                                <span class="badge bg-info"><i class="fa-solid fa-eye"></i> {% trans "Monitorear" %}</span>
                             {% elif review.decision == 'not_applicable' %}
-                                <span class="badge bg-secondary"><i class="fa-solid fa-times"></i> No Aplica</span>
+                                <span class="badge bg-secondary"><i class="fa-solid fa-times"></i> {% trans "No Aplica" %}</span>
                             {% elif review.decision == 'postpone' %}
-                                <span class="badge bg-warning"><i class="fa-solid fa-clock"></i> Postergar</span>
+                                <span class="badge bg-warning"><i class="fa-solid fa-clock"></i> {% trans "Postergar" %}</span>
                             {% endif %}
                         </td>
                         <td>{{ review.decided_by.username }}</td>
@@ -76,16 +76,16 @@
                         </td>
                         <td>
                             <a href="{% url 'threat_intel:review-detail' review.id %}" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> Ver
+                                <i class="fas fa-eye"></i> {% trans "Ver" %}
                             </a>
                             <a href="{% url 'threat_intel:review-update' review.id %}" class="btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i> Editar
+                                <i class="fas fa-edit"></i> {% trans "Editar" %}
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted">No hay revisiones disponibles</td>
+                        <td colspan="7" class="text-center text-muted">{% trans "No hay revisiones disponibles" %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -96,10 +96,10 @@
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1">Primera</a>
+                            <a class="page-link" href="?page=1">{% trans "Primera" %}</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">{% trans "Anterior" %}</a>
                         </li>
                     {% endif %}
 
@@ -109,10 +109,10 @@
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">{% trans "Siguiente" %}</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{% trans "Última" %}</a>
                         </li>
                     {% endif %}
                 </ul>

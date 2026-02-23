@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf import settings
 from django.urls import path, include
 from django.conf.urls.static import static
-from .views import home_tenant, test_send_email, UpdateEmailConfigView
+from .views import home_tenant, test_send_email, UpdateEmailConfigView, set_language
 
 urlpatterns = [
+    path("i18n/", include("django.conf.urls.i18n")),
+    path("i18n/setlang/", set_language, name="set_language"),
     path("login/", include("login.urls")),                
     path("resources/", include("resources.urls")),
     path("threat-intel/", include("threat_intel.urls")),

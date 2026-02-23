@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <style>
         .form-container { max-width: 700px; margin: 0 auto; }
@@ -28,18 +28,18 @@
 {% block content %}
     <div class="form-container">
         <a href="{% url 'threat_intel:source-list' %}" class="back-button">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Fuentes
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Fuentes" %}
         </a>
 
         <div class="mb-4">
-            <h2 style="color: #333; font-weight: 700;">Crear Nueva Fuente</h2>
-            <p class="text-muted">Agregar una nueva fuente de inteligencia de amenazas (NVD, CISA, AWS, etc.)</p>
+            <h2 style="color: #333; font-weight: 700;">{% trans "Crear Nueva Fuente" %}</h2>
+            <p class="text-muted">{% trans "Agregar una nueva fuente de inteligencia de amenazas (NVD, CISA, AWS, etc.)" %}</p>
         </div>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
                 <div class="card-header">
-                    <h5><i class="fa-solid fa-plus-circle"></i> Nueva Fuente de Datos</h5>
+                    <h5><i class="fa-solid fa-plus-circle"></i> {% trans "Nueva Fuente de Datos" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" class="form" novalidate>
@@ -47,7 +47,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="id_code">
-                                <i class="fa-solid fa-code" style="color: #17a2b8;"></i> Código (Único)
+                                <i class="fa-solid fa-code" style="color: #17a2b8;"></i> {% trans "Código (Único)" %}
                             </label>
                             {% if form.code.errors %}
                                 {{ form.code }}
@@ -55,12 +55,12 @@
                             {% else %}
                                 {{ form.code }}
                             {% endif %}
-                            <small class="form-text">ej: NVD, CISA, AWS, MSRC, GITHUB</small>
+                            <small class="form-text">{% trans "ej: NVD, CISA, AWS, MSRC, GITHUB" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_name">
-                                <i class="fa-solid fa-database" style="color: #17a2b8;"></i> Nombre
+                                <i class="fa-solid fa-database" style="color: #17a2b8;"></i> {% trans "Nombre" %}
                             </label>
                             {% if form.name.errors %}
                                 {{ form.name }}
@@ -68,12 +68,12 @@
                             {% else %}
                                 {{ form.name }}
                             {% endif %}
-                            <small class="form-text">Nombre descriptivo de la fuente</small>
+                            <small class="form-text">{% trans "Nombre descriptivo de la fuente" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_kind">
-                                <i class="fa-solid fa-cog" style="color: #17a2b8;"></i> Tipo de Fuente
+                                <i class="fa-solid fa-cog" style="color: #17a2b8;"></i> {% trans "Tipo de Fuente" %}
                             </label>
                             {% if form.kind.errors %}
                                 {{ form.kind }}
@@ -81,12 +81,12 @@
                             {% else %}
                                 {{ form.kind }}
                             {% endif %}
-                            <small class="form-text">Método de obtención: API REST, RSS Feed, o Web Scraping</small>
+                            <small class="form-text">{% trans "Método de obtención: API REST, RSS Feed, o Web Scraping" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_base_url">
-                                <i class="fa-solid fa-link" style="color: #17a2b8;"></i> URL Base
+                                <i class="fa-solid fa-link" style="color: #17a2b8;"></i> {% trans "URL Base" %}
                             </label>
                             {% if form.base_url.errors %}
                                 {{ form.base_url }}
@@ -94,24 +94,24 @@
                             {% else %}
                                 {{ form.base_url }}
                             {% endif %}
-                            <small class="form-text">ej: https://services.nvd.nist.gov/rest/json/</small>
+                            <small class="form-text">{% trans "ej: https://services.nvd.nist.gov/rest/json/" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <div class="form-check" style="padding-left: 0;">
                                 <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
                                 <label class="form-check-label" for="id_is_active" style="font-weight: 500; margin: 0;">
-                                    <i class="fa-solid fa-toggle-on" style="color: #17a2b8;"></i> Activa (usar en próximos scans)
+                                    <i class="fa-solid fa-toggle-on" style="color: #17a2b8;"></i> {% trans "Activa (usar en próximos scans)" %}
                                 </label>
                             </div>
                         </div>
 
                         <div class="btn-group-submit">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fa-solid fa-check-circle"></i> Crear Fuente
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Crear Fuente" %}
                             </button>
                             <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> Limpiar
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>

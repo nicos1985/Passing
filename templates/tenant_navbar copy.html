@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xml:lang="es">
 {% load static %}
+{% load i18n %}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -187,15 +188,15 @@
           <!-- Botón de menú desplegable -->
            <li>
             <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#passwordsubmenu" aria-expanded="false">
-              <i class="fa fa-key me-2" style= "color: rgb(246, 221, 79)"></i> Contraseñas
+              <i class="fa fa-key me-2" style= "color: rgb(246, 221, 79)"></i> {% trans "Contraseñas" %}
             </button>
             <div class="collapse ps-3" id="passwordsubmenu">
               <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                 
                 
-                <li><a href="{% url 'createpass' %}" class="nav-link text-white"><i class="fa fa-plus me-2"></i>Nueva Contraseña</a></li>
-                <li><a href="{% url 'listpass' %}" class="nav-link text-white"><i class="fa fa-list me-2"></i>Lista</a></li>
-                <li><a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#quickPasswordModal"><i class="fa fa-key me-2"></i>Generador rápido</a></li>
+                <li><a href="{% url 'createpass' %}" class="nav-link text-white"><i class="fa fa-plus me-2"></i>{% trans "Nueva Contraseña" %}</a></li>
+                <li><a href="{% url 'listpass' %}" class="nav-link text-white"><i class="fa fa-list me-2"></i>{% trans "Lista" %}</a></li>
+                <li><a href="#" class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#quickPasswordModal"><i class="fa fa-key me-2"></i>{% trans "Generador rápido" %}</a></li>
                 
               </ul>
             </div>
@@ -203,52 +204,52 @@
 
           <li>
             <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#resourcesubmenu" aria-expanded="false">
-              <i class="fa fa-server me-2" style= "color: rgb(106, 255, 106)"></i> Recursos
+              <i class="fa fa-server me-2" style= "color: rgb(106, 255, 106)"></i> {% trans "Recursos" %}
             </button>
             <div class="collapse ps-3" id="resourcesubmenu">
               <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                 
                 
-                <li><a href="{% url 'informationassets-list' %}" class="nav-link text-white"><i class="fa fa-microchip me-2"></i>Activos</a></li>
-                <li><a href="{% url 'vendor-list' %}" class="nav-link text-white"><i class="fa fa-handshake me-2"></i>Proveedores</a></li>
-                <li><a href="{% url 'project-list' %}" class="nav-link text-white"><i class="fa fa-bars-progress me-2"></i>Proyectos</a></li>
-                <li><a href="{% url 'clientcompany-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-user me-2"></i>Clientes</a></li>
+                <li><a href="{% url 'informationassets-list' %}" class="nav-link text-white"><i class="fa fa-microchip me-2"></i>{% trans "Activos" %}</a></li>
+                <li><a href="{% url 'vendor-list' %}" class="nav-link text-white"><i class="fa fa-handshake me-2"></i>{% trans "Proveedores" %}</a></li>
+                <li><a href="{% url 'project-list' %}" class="nav-link text-white"><i class="fa fa-bars-progress me-2"></i>{% trans "Proyectos" %}</a></li>
+                <li><a href="{% url 'clientcompany-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-user me-2"></i>{% trans "Clientes" %}</a></li>
               </ul>
             </div>
           </li>
           <li>
             <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#risksubmenu" aria-expanded="false">
-              <i class="fa-solid fa-triangle-exclamation me-2" style= "color: #f7ff5f"></i> Riesgos
+              <i class="fa-solid fa-triangle-exclamation me-2" style= "color: #f7ff5f"></i> {% trans "Riesgos" %}
             </button>
           <div class="collapse ps-3" id="risksubmenu">
             <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="{% url 'threat-list' %}" class="nav-link text-white"><i class="fa fa-ghost me-2"></i>Amenazas</a></li>
-          <li><a href="{% url 'vulnerability-list' %}" class="nav-link text-white"><i class="fa fa-arrow-right-to-bracket me-2"></i>Vulnerabilidades</a></li>
-          <li><a href="{% url 'evaluation-list' %}" class="nav-link text-white"><i class="fa fa-magnifying-glass-chart me-2"></i>Evaluaciones</a></li>
-          <li><a href="{% url 'treatment-list' %}" class="nav-link text-white"><i class="fa fa-syringe me-2"></i>Tratamientos</a></li>
+          <li><a href="{% url 'threat-list' %}" class="nav-link text-white"><i class="fa fa-ghost me-2"></i>{% trans "Amenazas" %}</a></li>
+          <li><a href="{% url 'vulnerability-list' %}" class="nav-link text-white"><i class="fa fa-arrow-right-to-bracket me-2"></i>{% trans "Vulnerabilidades" %}</a></li>
+          <li><a href="{% url 'evaluation-list' %}" class="nav-link text-white"><i class="fa fa-magnifying-glass-chart me-2"></i>{% trans "Evaluaciones" %}</a></li>
+          <li><a href="{% url 'treatment-list' %}" class="nav-link text-white"><i class="fa fa-syringe me-2"></i>{% trans "Tratamientos" %}</a></li>
         </div>
       </li>
       <li>
         <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#threatintelsubmenu" aria-expanded="false">
-          <i class="fa-solid fa-brain me-2" style= "color: #ff6b9d"></i> Inteligencia de Amenazas
+          <i class="fa-solid fa-brain me-2" style= "color: #ff6b9d"></i> {% trans "Inteligencia de Amenazas" %}
         </button>
         <div class="collapse ps-3" id="threatintelsubmenu">
           <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-            <li><a href="{% url 'threat_intel:run-list' %}" class="nav-link text-white"><i class="fa fa-play me-2"></i>Ejecuciones</a></li>
-            <li><a href="{% url 'threat_intel:analysis-list' %}" class="nav-link text-white"><i class="fa fa-robot me-2"></i>Análisis IA</a></li>
-            <li><a href="{% url 'threat_intel:report-list' %}" class="nav-link text-white"><i class="fa fa-file-pdf me-2"></i>Reportes</a></li>
-            <li><a href="{% url 'threat_intel:review-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-check me-2"></i>Revisiones</a></li>
+            <li><a href="{% url 'threat_intel:run-list' %}" class="nav-link text-white"><i class="fa fa-play me-2"></i>{% trans "Ejecuciones" %}</a></li>
+            <li><a href="{% url 'threat_intel:analysis-list' %}" class="nav-link text-white"><i class="fa fa-robot me-2"></i>{% trans "Análisis IA" %}</a></li>
+            <li><a href="{% url 'threat_intel:report-list' %}" class="nav-link text-white"><i class="fa fa-file-pdf me-2"></i>{% trans "Reportes" %}</a></li>
+            <li><a href="{% url 'threat_intel:review-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-check me-2"></i>{% trans "Revisiones" %}</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a href="{% url 'threat_intel:config' %}" class="nav-link text-white"><i class="fa-solid fa-sliders me-2"></i>Config. Amenazas</a></li>
+            <li><a href="{% url 'threat_intel:config' %}" class="nav-link text-white"><i class="fa-solid fa-sliders me-2"></i>{% trans "Config. Amenazas" %}</a></li>
           </ul>
         </div>
       </li>
       <li>
-          <li><a href="{% url 'config' %}" class="nav-link text-white"><i class="fa fa-gear me-2"></i>Configuracion</a></li>
+          <li><a href="{% url 'config' %}" class="nav-link text-white"><i class="fa fa-gear me-2"></i>{% trans "Configuración" %}</a></li>
           {% endif %}
           <li class="mt-3"> 
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-              <button class="btn btn-outline-light w-100"><i class="fa fa-right-from-bracket me-2"></i>Salir</button>
+              <button class="btn btn-outline-light w-100"><i class="fa fa-right-from-bracket me-2"></i>{% trans "Salir" %}</button>
             </form>
           </li>
         {% else %}
@@ -273,50 +274,50 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="quickPasswordModalLabel">Generador rápido de contraseñas</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <h5 class="modal-title" id="quickPasswordModalLabel">{% trans "Generador rápido de contraseñas" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans "Cerrar" %}"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
-            <label class="form-label">Longitud</label>
+            <label class="form-label">{% trans "Longitud" %}</label>
             <input id="qp-length" type="number" min="4" max="128" value="16" class="form-control">
           </div>
           <div class="row g-2 mb-2">
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="1" id="qp-lower" checked>
-                <label class="form-check-label" for="qp-lower">Incluir minúsculas</label>
+                <label class="form-check-label" for="qp-lower">{% trans "Incluir minúsculas" %}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="1" id="qp-upper" checked>
-                <label class="form-check-label" for="qp-upper">Incluir mayúsculas</label>
+                <label class="form-check-label" for="qp-upper">{% trans "Incluir mayúsculas" %}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="1" id="qp-numbers" checked>
-                <label class="form-check-label" for="qp-numbers">Incluir números</label>
+                <label class="form-check-label" for="qp-numbers">{% trans "Incluir números" %}</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="1" id="qp-symbols" checked>
-                <label class="form-check-label" for="qp-symbols">Incluir símbolos</label>
+                <label class="form-check-label" for="qp-symbols">{% trans "Incluir símbolos" %}</label>
               </div>
             </div>
           </div>
 
           <div class="input-group mb-2">
-            <input id="qp-result" type="text" class="form-control" readonly placeholder="Contraseña generada">
-            <button id="qp-copy" class="btn btn-outline-secondary" type="button">Copiar</button>
+            <input id="qp-result" type="text" class="form-control" readonly placeholder="{% trans "Contraseña generada" %}">
+            <button id="qp-copy" class="btn btn-outline-secondary" type="button">{% trans "Copiar" %}</button>
           </div>
         </div>
         <div class="modal-footer">
-          <button id="qp-generate" type="button" class="btn btn-primary">Generar</button>
-          <button id="qp-create" type="button" class="btn btn-success">Crear y abrir formulario</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button id="qp-generate" type="button" class="btn btn-primary">{% trans "Generar" %}</button>
+          <button id="qp-create" type="button" class="btn btn-success">{% trans "Crear y abrir formulario" %}</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cerrar" %}</button>
         </div>
       </div>
     </div>
@@ -377,7 +378,7 @@
 
         createBtn && createBtn.addEventListener('click', function(){
           const val = document.getElementById('qp-result').value;
-          if(!val) return alert('Generá una contraseña primero.');
+          if(!val) return alert('{% trans "Generá una contraseña primero." %}');
           const url = '{% url "createpass" %}' + '?password=' + qsParamEncode(val);
           window.location.href = url;
         });

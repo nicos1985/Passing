@@ -12,6 +12,10 @@ from .forms import ClientRegisterForm, EmailConfigForm
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 import logging
+from django.utils import translation
+from django.conf import settings
+from django.shortcuts import HttpResponseRedirect
+from django.middleware.csrf import get_token
 # Funcion para user_passes_test 
 def is_administrator(user):
     return user.is_superuser or user.is_staff
@@ -204,3 +208,31 @@ def client_register(request):
     }
 
     return render(request, 'client_register.html', context)
+
+
+def set_language(request):
+    """Simple view para cambiar el idioma de la sesión y cookie.
+
+    Espera un POST con `language` (ej: 'en' o 'es'). Redirige a `next` o a la página anterior.
+    """
+    next_url = request.POST.get('next') or request.GET.get('next') or request.META.get('HTTP_REFERER') or '/'
+    lang_code = request.POST.get('language') or request.GET.get('language')
+
+    # seguridad básica para redirecciones
+    try:
+        # Django <4 used is_safe_url; use same check via allowed hosts
+        from django.utils.http import url_has_allowed_host_and_scheme
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            next_url = '/'
+    except Exception:
+        pass
+
+    if lang_code and lang_code in dict(getattr(settings, 'LANGUAGES', [])):
+        session_key = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
+        request.session[session_key] = lang_code
+        translation.activate(lang_code)
+        response = HttpResponseRedirect(next_url)
+        response.set_cookie(getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language'), lang_code)
+        return response
+
+    return HttpResponseRedirect(next_url)

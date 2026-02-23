@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% load custom_tags %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
@@ -20,9 +20,9 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
-            <a class="btn btn-primary btn-flat" href="{% url 'threat_intel:run-list' %}">
-                <i class="fa-solid fa-refresh"></i> Refrescar
-            </a>
+          <a class="btn btn-primary btn-flat" href="{% url 'threat_intel:run-list' %}">
+            <i class="fa-solid fa-refresh"></i> {% trans "Refrescar" %}
+          </a>
         </div>
 
         <div class="container">
@@ -57,7 +57,7 @@
                           <div class="col-md-4">
                             <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
                             <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
-                              <option value="">Todos</option>
+                              <option value="">{% trans "Todos" %}</option>
                               {% for choice in filtro %}
                                 <option value="{{ choice.value }}">{{ choice.label }}</option>
                               {% endfor %}
@@ -78,7 +78,7 @@
                     {% for field in fields %}
                     <th data-colname="{{ field.name }}">{{ field.verbose }}</th>
                     {% endfor %}
-                    <th>Acciones</th>
+                    <th>{% trans "Acciones" %}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -95,8 +95,8 @@
                       </td>
                       {% endfor %}
                       <td>
-                        <a href="{% url 'threat_intel:run-detail' obj.id %}"><i class="fas fa-eye" title="Detalle" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
-                        <a href="{% url 'threat_intel:run-export' obj.id %}?format=csv" title="Descargar CSV"><i class="fas fa-download" style="color: #28a745; margin-right:5px;"></i></a>
+                        <a href="{% url 'threat_intel:run-detail' obj.id %}"><i class="fas fa-eye" title="{% trans 'Detalle' %}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
+                        <a href="{% url 'threat_intel:run-export' obj.id %}?format=csv" title="{% trans 'Descargar CSV' %}"><i class="fas fa-download" style="color: #28a745; margin-right:5px;"></i></a>
                     </td>
                     </tr>
                     

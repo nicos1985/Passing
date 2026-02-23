@@ -1,17 +1,18 @@
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+    <title>{% trans "Activación de cuenta" %}</title>
+    </head>
 <body>
-    <p>Hola {{ user.name }}, {{user.last_name}},</p>
-    <p>Gracias por registrarte. Por favor, haz clic en el enlace a continuación para activar tu cuenta de superusuario:</p>
-    <p><a href="{{ activation_url }}">Activar mi cuenta</a></p>
-    <p><a href="{{ subdom_url }}">este es tu dominio</a></p>
-    <p>{{subdom_url}}</p>
-    <p>Si no solicitaste esta cuenta, por favor ignora este correo.</p>
+    <p>{% blocktrans with first=user.name last=user.last_name %}Hola {{ first }}, {{ last }},{% endblocktrans %}</p>
+    <p>{% trans "Gracias por registrarte. Por favor, haz clic en el enlace a continuación para activar tu cuenta de superusuario:" %}</p>
+    <p><a href="{{ activation_url }}">{% trans "Activar mi cuenta" %}</a></p>
+    <p><a href="{{ subdom_url }}">{% trans "Este es tu dominio" %}</a></p>
+    <p>{{ subdom_url }}</p>
+    <p>{% trans "Si no solicitaste esta cuenta, por favor ignora este correo." %}</p>
 </body>
 </html>
 

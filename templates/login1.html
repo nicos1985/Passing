@@ -1,58 +1,44 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<div class ='justify-content-sm-center' style="margin-top: 80px;">
-<div class="d-flex justify-content-center" >
-
-    <div class="card center">
+<div class='justify-content-sm-center' style="margin-top: 80px;">
+    <div class="d-flex justify-content-center">
+        <div class="card center">
             <div class="card-title">
-                <div class="container" style="height: 85px; padding-top: 20px; ">
-                    <h2><i class="fas fa-sign-in-alt" ></i>{{title}}</h2>
-                    
+                <div class="container" style="height: 85px; padding-top: 20px;">
+                    <h2><i class="fas fa-sign-in-alt"></i> {{ title }}</h2>
                 </div>
             </div>
 
-            <div class="card-body "style="background-color: #F7F7F7; width: 26rem;">
-
-
-                    <form class = 'form' method="POST" action=".">
-                        {% csrf_token %}
+            <div class="card-body" style="background-color: #F7F7F7; width: 26rem;">
+                <form class='form' method="POST" action=".">
+                    {% csrf_token %}
 
                     <div>
-                        <label for="id_username">Username:</label>
+                        <label for="id_username">{% trans "Usuario:" %}</label>
                         <input type="text" name="username" id="id_username" class="form-control" style="margin-bottom: 25px;">
                     </div>
+
                     <div>
-                        <label for="id_password">Password:</label>
-                        
+                        <label for="id_password">{% trans "Contraseña:" %}</label>
                         <input type="password" name="password" id="id_password" class="form-control" style="margin-bottom: 25px;" autocomplete="current-password">
-
-                    
                     </div>
+
                     <div>
-                        
-                        
-                        {{form.captcha}}
-
-                    
+                        {{ form.captcha }}
                     </div>
 
-
+                    <div class="mt-3">
                         <button type="submit" class="btn btn-primary btn-flat">
-                            <i class="fas fa-sign-in-alt"></i> Ingresar
-
-                            
+                            <i class="fas fa-sign-in-alt"></i> {% trans "Ingresar" %}
                         </button>
-                        &nbsp&nbsp
-                        <a href={% url 'password_reset' %}>
-                            No recuerdo mi contraseña
-                        </a>
-                        
-                        </div> 
-                    </form>
+                        &nbsp;&nbsp;
+                        <a href="{% url 'password_reset' %}">{% trans "No recuerdo mi contraseña" %}</a>
+                    </div>
+
+                </form>
             </div>
-            
         </div>
     </div>
 </div>

@@ -1,9 +1,6 @@
-
-<!DOCTYPE html>
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 
@@ -41,18 +38,18 @@
 {% block content %}
 <body>
 <div class="container" style="height: 60px;">
-    <h2>Permisos</h2>
+    <h2>{% trans "Permisos" %}</h2>
 </div>
 
     <div class="container">
         
         <div>
             <button class="btn">
-                <a class="btn btn-primary btn-flat" href= "{% url 'config' %}"> <i class="fa-solid fa-gear"></i>  Configuracion</a>
+                <a class="btn btn-primary btn-flat" href="{% url 'config' %}"> <i class="fa-solid fa-gear"></i>  {% trans "Configuración" %}</a>
             </button>
             <button class="btn">
-                <a class="btn btn-primary btn-flat" href = {% url "permissionform1" %}>
-                <i class="fas fa-plus"></i> Nuevo Permiso </a>
+                <a class="btn btn-primary btn-flat" href="{% url 'permissionform1' %}">
+                <i class="fas fa-plus"></i> {% trans "Nuevo Permiso" %} </a>
             </button>
         </div>
 
@@ -60,12 +57,12 @@
                 <thead class="table-dark">
                     <tr >
                         
-                        <th scope="col">Usuario</th>
-                        <th scope="col">Propietario</th>
-                        <th scope="col">Sección</th>
-                        <th scope="col">Contraseña</th>
-                        <th scope="col">Permiso</th>
-                        <th class="ocultar-columna"  scope="col">Permisos</th>
+                        <th scope="col">{% trans "Usuario" %}</th>
+                        <th scope="col">{% trans "Propietario" %}</th>
+                        <th scope="col">{% trans "Sección" %}</th>
+                        <th scope="col">{% trans "Contraseña" %}</th>
+                        <th scope="col">{% trans "Permiso" %}</th>
+                        <th class="ocultar-columna"  scope="col">{% trans "Permisos" %}</th>
 
                     </tr>
                     

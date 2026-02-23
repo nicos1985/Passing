@@ -9,7 +9,7 @@ from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
 import re
 from cryptography.fernet import Fernet
-
+from django.utils.translation import gettext_lazy as _
 from login.models import CustomUser
 from passbase.crypto import decrypt_data, encrypt_data
 from passing import settings
@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 class SeccionContra(models.Model):
     """Agrupa contraseñas en secciones temáticas y controla su estado."""
 
-    nombre_seccion = models.CharField(max_length=50)
-    active = models.BooleanField(default=True)
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    nombre_seccion = models.CharField(max_length=50, verbose_name=_("Nombre de la sección"))
+    active = models.BooleanField(default=True, verbose_name=_("Activo"))
+    created = models.DateTimeField(auto_now=True, verbose_name=_("Creado"))
+    updated = models.DateTimeField(auto_now_add=True, verbose_name=_("Actualizado"))
     
     class Meta:
-        verbose_name = "Seccion"
-        verbose_name_plural= "Secciones"
+        verbose_name = _("Seccion")
+        verbose_name_plural= _("Secciones")
         
     def __str__(self):
         return self.nombre_seccion
@@ -36,24 +36,24 @@ class SeccionContra(models.Model):
 class Contrasena(models.Model):
     """Registro cifrado de credenciales con metadatos de sección, propietario y hash."""
 
-    nombre_contra = models.CharField(max_length=255, unique=True)
-    seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE)
-    link = models.CharField(max_length=265)
-    usuario = models.CharField(max_length=255)
-    contraseña = models.CharField(max_length=500)
-    actualizacion= models.PositiveSmallIntegerField(default=30) #la contraseña pedirá cambio cada x dias de este campo
-    info = models.CharField(max_length=260)
-    file = models.FileField(blank=True, null=True, upload_to='contra_files/')
-    is_personal = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
-    hash = models.CharField(max_length=64, blank=True, null=True)
+    nombre_contra = models.CharField(max_length=255, unique=True, verbose_name=_('Nombre de la contraseña'))
+    seccion = models.ForeignKey(SeccionContra, on_delete=models.CASCADE, verbose_name=_('Sección'))
+    link = models.CharField(max_length=265, verbose_name=_('Enlace'))
+    usuario = models.CharField(max_length=255, verbose_name=_('Usuario'))
+    contraseña = models.CharField(max_length=500, verbose_name=_('Contraseña'))
+    actualizacion= models.PositiveSmallIntegerField(default=30, verbose_name=_('Actualización')) #la contraseña pedirá cambio cada x dias de este campo
+    info = models.CharField(max_length=260, verbose_name=_('Información'))
+    file = models.FileField(blank=True, null=True, upload_to='contra_files/', verbose_name=_('Archivo'))
+    is_personal = models.BooleanField(default=False, verbose_name=_('Personal'))
+    active = models.BooleanField(default=True, verbose_name=_('Activo'))
+    created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
+    updated = models.DateTimeField(auto_now_add=True, verbose_name=_('Actualizado'))
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True, verbose_name=_('Propietario'))
+    hash = models.CharField(max_length=64, blank=True, null=True, verbose_name=_('Hash'))
 
     class Meta:
-        verbose_name = "Contraseña"
-        verbose_name_plural= "Contraseñas"
+        verbose_name = _("Contraseña")
+        verbose_name_plural= _("Contraseñas")
         
     def __str__(self):
         return str(self.id)
@@ -235,16 +235,17 @@ class Contrasena(models.Model):
         
 class LogData(models.Model):
     """Audita cambios sobre contraseñas y secciones guardando detalles cifrados."""
-    entidad = models.CharField(max_length=50)
-    contraseña = models.IntegerField()
-    password = models.CharField(max_length=500, blank=True)
-    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='')
-    action = models.CharField(max_length=80, blank=True)
-    detail = models.CharField(max_length=2000)
-    created = models.DateTimeField(auto_now=True)
+    entidad = models.CharField(max_length=50, verbose_name=_('Entidad'))
+    contraseña = models.IntegerField(verbose_name=_('Contraseña'))
+    password = models.CharField(max_length=500, blank=True, verbose_name=_('Password'))
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, default='', verbose_name=_('Usuario'))
+    action = models.CharField(max_length=80, blank=True, verbose_name=_('Acción'))
+    detail = models.CharField(max_length=2000, verbose_name=_('Detalle'))
+    created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
     
     class Meta:
-        verbose_name = "Log"
+        verbose_name = _("Log")
+        verbose_name_plural = _("Logs")
         
     def __str__(self):
         return str(self.contraseña)

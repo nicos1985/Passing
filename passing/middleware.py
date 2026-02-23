@@ -96,3 +96,37 @@ class ForceTenantUrlconfMiddleware:
                 request.urlconf = getattr(settings, "TENANT_URLCONF", settings.ROOT_URLCONF)
         return self.get_response(request)
 
+
+from django.utils import translation
+
+
+class UserLanguageMiddleware:
+    """Middleware que aplica la preferencia de idioma almacenada en el perfil del usuario.
+
+    Comportamiento:
+    - Si el usuario está autenticado y tiene `user.language`, activa ese idioma en la request
+      y lo guarda en la sesión (para persistir mientras dure la sesión).
+    - No sobrescribe una preferencia de idioma establecida manualmente por URL o cookie en la misma request.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            if request.user.is_authenticated:
+                lang = getattr(request.user, 'language', None)
+                # Si ya hay lenguaje en la sesión/cookie, no lo sobrescribimos
+                session_key = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
+                session_lang = request.session.get(session_key)
+                if lang and (not session_lang or session_lang != lang):
+                    translation.activate(lang)
+                    request.LANGUAGE_CODE = lang
+                    request.session[session_key] = lang
+        except Exception:
+            # Ningún fallo debe bloquear la request; loguear si es necesario
+            pass
+
+        response = self.get_response(request)
+        return response
+

@@ -4,6 +4,7 @@ from .views import AssetCreateView, AssetListView, AssetUpdateView, AssetDeleteV
 from .views import confirm_asset_action
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
+from . import views
 from .models import ClientCompany, InformationAssets, Threat, Treatment, Vendor, Project, Vulnerability
 from django.urls import path
 
@@ -74,4 +75,6 @@ urlpatterns = [
     path('asset-actions/', AssetActionAllListView.as_view(), name='asset-actions-all'),
     path('asset-actions/user/<int:user_id>/', AssetActionAllListView.as_view(), name='asset-actions-user'),
     path('asset-action-confirm/<uuid:token>/', confirm_asset_action, name='asset-action-confirm'),
+    # i18n demo
+    path('i18n-demo/', views.i18n_demo, name='i18n-demo'),
 ]

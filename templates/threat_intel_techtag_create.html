@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <style>
         .form-container {
@@ -168,18 +168,18 @@
 {% block content %}
     <div class="form-container">
         <a href="{% url 'threat_intel:techtag-list' %}" class="back-button">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Etiquetas
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Etiquetas" %}
         </a>
 
         <div class="mb-4">
-            <h2 style="color: #333; font-weight: 700;">Crear Nueva Etiqueta</h2>
-            <p class="text-muted">Agregar una nueva etiqueta de tecnología para la detección automática</p>
+            <h2 style="color: #333; font-weight: 700;">{% trans "Crear Nueva Etiqueta" %}</h2>
+            <p class="text-muted">{% trans "Agregar una nueva etiqueta de tecnología para la detección automática" %}</p>
         </div>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
                 <div class="card-header">
-                    <h5><i class="fa-solid fa-plus-circle"></i> Nueva Etiqueta</h5>
+                    <h5><i class="fa-solid fa-plus-circle"></i> {% trans "Nueva Etiqueta" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" class="form" novalidate>
@@ -187,7 +187,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="id_name">
-                                <i class="fa-solid fa-tag" style="color: #667eea;"></i> Nombre de la Etiqueta
+                                <i class="fa-solid fa-tag" style="color: #667eea;"></i> {% trans "Nombre de la Etiqueta" %}
                             </label>
                             {% if form.name.errors %}
                                 {{ form.name }}
@@ -197,12 +197,12 @@
                             {% else %}
                                 {{ form.name }}
                             {% endif %}
-                            <small class="form-text">ej: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, etc.</small>
+                            <small class="form-text">{% trans "ej: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, etc." %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_keywords">
-                                <i class="fa-solid fa-key" style="color: #667eea;"></i> Palabras Clave (JSON Array)
+                                <i class="fa-solid fa-key" style="color: #667eea;"></i> {% trans "Palabras Clave (JSON Array)" %}
                             </label>
                             {% if form.keywords.errors %}
                                 {{ form.keywords }}
@@ -213,9 +213,9 @@
                                 {{ form.keywords }}
                             {% endif %}
                             <small class="form-text">
-                                <strong>Formato:</strong> ["palabra1", "palabra2", "palabra3"]
-                                <br><strong>Ejemplo:</strong> ["ubuntu", "jammy", "focal", "bionic", "linux"]
-                                <br>Se usarán para detectar automáticamente CVEs relacionados
+                                <strong>{% trans "Formato:" %}</strong> {% trans "[\"palabra1\", \"palabra2\", \"palabra3\"]" %}
+                                <br><strong>{% trans "Ejemplo:" %}</strong> {% trans "[\"ubuntu\", \"jammy\", \"focal\", \"bionic\", \"linux\"]" %}
+                                <br>{% trans "Se usarán para detectar automáticamente CVEs relacionados" %}
                             </small>
                         </div>
 
@@ -228,17 +228,17 @@
                                     <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
                                 {% endif %}
                                 <label class="form-check-label" for="id_is_active" style="font-weight: 500; margin: 0;">
-                                    <i class="fa-solid fa-toggle-on" style="color: #667eea;"></i> Activa (usar en búsquedas y análisis)
+                                    <i class="fa-solid fa-toggle-on" style="color: #667eea;"></i> {% trans "Activa (usar en búsquedas y análisis)" %}
                                 </label>
                             </div>
                         </div>
 
                         <div class="btn-group-submit">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fa-solid fa-check-circle"></i> Crear Etiqueta
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Crear Etiqueta" %}
                             </button>
                             <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> Limpiar
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>

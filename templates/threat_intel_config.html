@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
     <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -11,14 +11,14 @@
 
 {% block content %}
     <div class="container mt-3">
-        <h2>Configuración de Inteligencia de Amenazas</h2>
-        <p class="text-muted">Gestiona fuentes de datos y etiquetas de tecnología</p>
+        <h2>{% trans "Configuración de Inteligencia de Amenazas" %}</h2>
+        <p class="text-muted">{% trans "Gestiona fuentes de datos y etiquetas de tecnología" %}</p>
     </div>
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3">
             <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:run-list' %}">
-                <i class="fa-solid fa-arrow-left"></i> Volver a Inteligencia
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Inteligencia" %}
             </a>
         </div>
 
@@ -28,16 +28,16 @@
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-header bg-info text-white">
-                            <h5><i class="fa-solid fa-database"></i> Fuentes de Datos</h5>
+                            <h5><i class="fa-solid fa-database"></i> {% trans "Fuentes de Datos" %}</h5>
                         </div>
                         <div class="card-body">
-                            <p><strong>Total:</strong> {{ source_count }} fuentes</p>
-                            <p><strong>Activas:</strong> <span class="badge bg-success">{{ active_sources }}</span></p>
+                            <p><strong>{% trans "Total:" %}</strong> {{ source_count }} {% trans "fuentes" %}</p>
+                            <p><strong>{% trans "Activas:" %}</strong> <span class="badge bg-success">{{ active_sources }}</span></p>
                             <a href="{% url 'threat_intel:source-list' %}" class="btn btn-primary btn-sm">
-                                <i class="fa-solid fa-list"></i> Ver Todas
+                                <i class="fa-solid fa-list"></i> {% trans "Ver Todas" %}
                             </a>
                             <a href="{% url 'threat_intel:source-create' %}" class="btn btn-success btn-sm">
-                                <i class="fa-solid fa-plus"></i> Nueva
+                                <i class="fa-solid fa-plus"></i> {% trans "Nueva" %}
                             </a>
                         </div>
                     </div>
@@ -46,16 +46,16 @@
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-header bg-warning text-white">
-                            <h5><i class="fa-solid fa-tags"></i> Etiquetas de Tecnología</h5>
+                            <h5><i class="fa-solid fa-tags"></i> {% trans "Etiquetas de Tecnología" %}</h5>
                         </div>
                         <div class="card-body">
-                            <p><strong>Total:</strong> {{ techtag_count }} etiquetas</p>
-                            <p><strong>Activas:</strong> <span class="badge bg-success">{{ active_techtags }}</span></p>
+                            <p><strong>{% trans "Total:" %}</strong> {{ techtag_count }} {% trans "etiquetas" %}</p>
+                            <p><strong>{% trans "Activas:" %}</strong> <span class="badge bg-success">{{ active_techtags }}</span></p>
                             <a href="{% url 'threat_intel:techtag-list' %}" class="btn btn-primary btn-sm">
-                                <i class="fa-solid fa-list"></i> Ver Todas
+                                <i class="fa-solid fa-list"></i> {% trans "Ver Todas" %}
                             </a>
                             <a href="{% url 'threat_intel:techtag-create' %}" class="btn btn-success btn-sm">
-                                <i class="fa-solid fa-plus"></i> Nueva
+                                <i class="fa-solid fa-plus"></i> {% trans "Nueva" %}
                             </a>
                         </div>
                     </div>
@@ -64,18 +64,18 @@
 
             <div class="card mt-3">
                 <div class="card-header">
-                    <h5>Fuentes Activas Recientes</h5>
+                    <h5>{% trans "Fuentes Activas Recientes" %}</h5>
                 </div>
                 <div class="card-body">
                     {% if sources %}
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Tipo</th>
-                                <th>Estado</th>
-                                <th>URL Base</th>
+                                <th>{% trans "Código" %}</th>
+                                <th>{% trans "Nombre" %}</th>
+                                <th>{% trans "Tipo" %}</th>
+                                <th>{% trans "Estado" %}</th>
+                                <th>{% trans "URL Base" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,9 +86,9 @@
                                 <td><span class="badge bg-secondary">{{ source.kind }}</span></td>
                                 <td>
                                     {% if source.is_active %}
-                                        <span class="badge bg-success"><i class="fa-solid fa-check"></i> Activo</span>
+                                        <span class="badge bg-success"><i class="fa-solid fa-check"></i> {% trans "Activo" %}</span>
                                     {% else %}
-                                        <span class="badge bg-danger"><i class="fa-solid fa-times"></i> Inactivo</span>
+                                        <span class="badge bg-danger"><i class="fa-solid fa-times"></i> {% trans "Inactivo" %}</span>
                                     {% endif %}
                                 </td>
                                 <td><small>{{ source.base_url|truncatewords:2 }}</small></td>
@@ -97,7 +97,7 @@
                         </tbody>
                     </table>
                     {% else %}
-                        <p class="text-muted">No hay fuentes configuradas</p>
+                        <p class="text-muted">{% trans "No hay fuentes configuradas" %}</p>
                     {% endif %}
                 </div>
             </div>

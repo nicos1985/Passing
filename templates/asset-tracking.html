@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 
@@ -8,10 +9,10 @@
     <div class="col-lg-11 mx-auto">
         <div class="row mb-3">
             <div class="col-12 d-flex justify-content-between align-items-center">
-                <h4>Seguimiento de activos</h4>
+                <h4>{% trans "Seguimiento de activos" %}</h4>
                 <div>
-                    <a class="btn btn-primary" href="{% url 'asset-loan' %}">Registrar préstamo</a>
-                    <a class="btn btn-secondary" href="{% url 'asset-return' %}">Registrar devolución</a>
+                    <a class="btn btn-primary" href="{% url 'asset-loan' %}">{% trans "Registrar préstamo" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'asset-return' %}">{% trans "Registrar devolución" %}</a>
                 </div>
             </div>
         </div>
@@ -21,9 +22,9 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Activo</th>
-                            <th>Titular actual</th>
-                            <th>Historial reciente</th>
+                            <th>{% trans "Activo" %}</th>
+                            <th>{% trans "Titular actual" %}</th>
+                            <th>{% trans "Historial reciente" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,7 +43,7 @@
                                                 {% if act.description %}<div class="small">{{ act.description }}</div>{% endif %}
                                             </li>
                                         {% empty %}
-                                            <li class="text-muted">Sin movimientos recientes</li>
+                                            <li class="text-muted">{% trans "Sin movimientos recientes" %}</li>
                                         {% endfor %}
                                     </ul>
                                 </td>

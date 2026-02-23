@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
     <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -11,17 +11,17 @@
 
 {% block content %}
     <div class="container mt-3">
-        <h2>Etiquetas de Tecnología</h2>
-        <p class="text-muted">Gestiona las etiquetas para clasificar vulnerabilidades por tecnología</p>
+        <h2>{% trans "Etiquetas de Tecnología" %}</h2>
+        <p class="text-muted">{% trans "Gestiona las etiquetas para clasificar vulnerabilidades por tecnología" %}</p>
     </div>
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3">
             <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:config' %}">
-                <i class="fa-solid fa-arrow-left"></i> Volver a Configuración
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Configuración" %}
             </a>
             <a href="{% url 'threat_intel:techtag-create' %}" class="btn btn-success">
-                <i class="fa-solid fa-plus"></i> Nueva Etiqueta
+                <i class="fa-solid fa-plus"></i> {% trans "Nueva Etiqueta" %}
             </a>
             <form method="get" class="d-inline">
                 <div class="input-group" style="max-width: 300px;">
@@ -37,10 +37,10 @@
             <table id="data" class="table table-sm">
                 <thead class="table-dark">
                     <tr>
-                        <th>Nombre</th>
-                        <th>Palabras Clave</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th>{% trans "Nombre" %}</th>
+                        <th>{% trans "Palabras Clave" %}</th>
+                        <th>{% trans "Estado" %}</th>
+                        <th>{% trans "Acciones" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,7 +48,7 @@
                     <tr>
                         <td><strong>{{ techtag.name }}</strong></td>
                         <td>
-                            {% if techtag.keywords %}
+                                {% if techtag.keywords %}
                                 <small>
                                     {% for keyword in techtag.keywords|slice:":3" %}
                                         <span class="badge bg-light text-dark">{{ keyword }}</span>
@@ -57,29 +57,29 @@
                                         <span class="badge bg-secondary">+{{ techtag.keywords|length|add:"-3" }}</span>
                                     {% endif %}
                                 </small>
-                            {% else %}
+                                    {% else %}
                                 <span class="text-muted">—</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if techtag.is_active %}
-                                <span class="badge bg-success"><i class="fa-solid fa-check"></i> Activa</span>
+                                <span class="badge bg-success"><i class="fa-solid fa-check"></i> {% trans "Activa" %}</span>
                             {% else %}
-                                <span class="badge bg-danger"><i class="fa-solid fa-times"></i> Inactiva</span>
+                                <span class="badge bg-danger"><i class="fa-solid fa-times"></i> {% trans "Inactiva" %}</span>
                             {% endif %}
                         </td>
                         <td>
                             <a href="{% url 'threat_intel:techtag-detail' techtag.id %}" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> Ver
+                                <i class="fas fa-eye"></i> {% trans "Ver" %}
                             </a>
                             <a href="{% url 'threat_intel:techtag-update' techtag.id %}" class="btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i> Editar
+                                <i class="fas fa-edit"></i> {% trans "Editar" %}
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted">No hay etiquetas disponibles</td>
+                        <td colspan="4" class="text-center text-muted">{% trans "No hay etiquetas disponibles" %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -90,10 +90,10 @@
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">Primera</a>
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">{% trans "Primera" %}</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">{% trans "Anterior" %}</a>
                         </li>
                     {% endif %}
 
@@ -103,10 +103,10 @@
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">{% trans "Siguiente" %}</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Última</a>
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">{% trans "Última" %}</a>
                         </li>
                     {% endif %}
                 </ul>

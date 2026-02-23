@@ -1,9 +1,8 @@
 
-<!DOCTYPE html>
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 
@@ -20,7 +19,7 @@
 {% block content %}
 
 <div class="container" style="height: 60px;">
-    <h2>{{title}}</h2>
+    <h2>{{ title }}</h2>
 </div>
 
 
@@ -31,10 +30,10 @@
             <table class="table" id="data">
                 <thead class="table-dark">
                     <tr >
-                        <th scope="col">Nombre Seccion</th>
-                        <th scope="col">Activo</th>
-                        <th scope="col">Creado</th>
-                        <th scope="col">Accion</th>
+                        <th scope="col">{% trans "Nombre Sección" %}</th>
+                        <th scope="col">{% trans "Activo" %}</th>
+                        <th scope="col">{% trans "Creado" %}</th>
+                        <th scope="col">{% trans "Acción" %}</th>
                        
             
                     </tr>
@@ -48,9 +47,9 @@
                         <td>{{ section.nombre_seccion}}</td>
                         <td class ="form-check-label" type = "checkbox">
                             {% if section.active == True %}
-                            Activo
+                            {% trans "Activo" %}
                             {% else %}
-                            Inactivo
+                            {% trans "Inactivo" %}
                             {% endif %}
                         </td>
                         <td>{{ section.created }}</td>
@@ -72,8 +71,8 @@
 
             <div>
                 <button class="btn">
-                    <a class="btn btn-primary btn-flat" href = "{% url 'createsection' %}">
-                    <i class="fas fa-plus"></i> Nueva Seccion </a>
+                    <a class="btn btn-primary btn-flat" href="{% url 'createsection' %}">
+                    <i class="fas fa-plus"></i> {% trans "Nueva Sección" %} </a>
                 </button>
             </div>
 

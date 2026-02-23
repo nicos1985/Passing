@@ -1,7 +1,6 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
-
 {% load static %}
+{% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}" />
@@ -17,8 +16,8 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center">
-        <h2>Detalle del Activo</h2>
-        <a class="btn btn-primary" href="{% url 'asset-list' %}"><i class="fa-solid fa-bars"></i> Lista de Activos</a>
+        <h2>{% trans "Detalle del Activo" %}</h2>
+        <a class="btn btn-primary" href="{% url 'asset-list' %}"><i class="fa-solid fa-bars"></i> {% trans "Lista de Activos" %}</a>
     </div>
 
     <div class="card mt-3">
@@ -29,47 +28,47 @@
             <table class="table table-striped">
                 <tbody>
                     <tr>
-                        <th scope="row">Descripción:</th>
+                        <th scope="row">{% trans "Descripción" %}:</th>
                         <td>{{ object.description }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Código:</th>
+                        <th scope="row">{% trans "Código" %}:</th>
                         <td>{{ object.code }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Valor:</th>
+                        <th scope="row">{% trans "Valor" %}:</th>
                         <td>${{ object.value }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Estado:</th>
+                        <th scope="row">{% trans "Estado" %}:</th>
                         <td>{{ object.status }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Ubicación:</th>
+                        <th scope="row">{% trans "Ubicación" %}:</th>
                         <td>{{ object.location }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Categoría:</th>
+                        <th scope="row">{% trans "Categoría" %}:</th>
                         <td>{{ object.category }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Número de Serie:</th>
+                        <th scope="row">{% trans "Número de Serie" %}:</th>
                         <td>{{ object.serial_number }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Clasificación de Información:</th>
+                        <th scope="row">{% trans "Clasificación de Información" %}:</th>
                         <td>{{ object.information_classification }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Propietario:</th>
+                        <th scope="row">{% trans "Propietario" %}:</th>
                         <td><a href="{% url 'detail-user' object.pk %}">{{ object.owner }}</a></td>
                     </tr>
                     <tr>
-                        <th scope="row">Fecha de Creación:</th>
+                        <th scope="row">{% trans "Fecha de Creación" %}:</th>
                         <td>{{ object.created|date:"d/m/Y H:i" }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Última Modificación:</th>
+                        <th scope="row">{% trans "Última Modificación" %}:</th>
                         <td>{{ object.updated|date:"d/m/Y H:i" }}</td>
                     </tr>
                 </tbody>
@@ -79,8 +78,8 @@
 
     {% if request.user.is_authenticated %}
     <div class="mt-3">
-        <a href="{% url 'asset-update' object.pk %}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> Editar</a>
-        <a href="{% url 'asset-delete' object.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Eliminar</a>
+        <a href="{% url 'asset-update' object.pk %}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> {% trans "Editar" %}</a>
+        <a href="{% url 'asset-delete' object.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> {% trans "Eliminar" %}</a>
     </div>
     {% endif %}
 </div>

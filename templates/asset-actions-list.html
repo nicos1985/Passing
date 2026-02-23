@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
@@ -16,9 +17,12 @@
 <div class="container pt-4">
     <div class="col-lg-11 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Historial de acciones - {% if asset %}{{ asset.name }}{% else %}Todos{% endif %}</h4>
+            <h4>
+                {% blocktrans with asset_name=asset.name %}Historial de acciones - {{ asset_name }}{% endblocktrans %}
+                {% if not asset %}{% trans "Todos" %}{% endif %}
+            </h4>
             <div>
-                <a class="btn btn-secondary" href="{% url 'informationassets-list' %}">Volver</a>
+                <a class="btn btn-secondary" href="{% url 'informationassets-list' %}">{% trans "Volver" %}</a>
             </div>
         </div>
 
@@ -27,14 +31,14 @@
                 <table id="data" class="table table-striped" style="width:100%">
                     <thead class="table-dark">
                         <tr>
-                            <th>Acción</th>
-                            <th>Activo</th>
-                            <th>Usuario</th>
-                            <th>Accionado por</th>
-                            <th>Estado</th>
-                            <th>Vto estimado</th>
-                            <th>Fecha / Hora</th>
-                            <th>Descripción</th>
+                            <th>{% trans "Acción" %}</th>
+                            <th>{% trans "Activo" %}</th>
+                            <th>{% trans "Usuario" %}</th>
+                            <th>{% trans "Accionado por" %}</th>
+                            <th>{% trans "Estado" %}</th>
+                            <th>{% trans "Vto estimado" %}</th>
+                            <th>{% trans "Fecha / Hora" %}</th>
+                            <th>{% trans "Descripción" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,11 +71,11 @@
                             </td>
                             <td>
                                 {% if act.status == 'PENDING' %}
-                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                    <span class="badge bg-warning text-dark">{% trans "Pendiente" %}</span>
                                 {% elif act.status == 'CONFIRMED' %}
-                                    <span class="badge bg-success">Confirmado</span>
+                                    <span class="badge bg-success">{% trans "Confirmado" %}</span>
                                 {% elif act.status == 'REJECTED' %}
-                                    <span class="badge bg-danger">Rechazado</span>
+                                    <span class="badge bg-danger">{% trans "Rechazado" %}</span>
                                 {% else %}
                                     {{ act.get_status_display }}
                                 {% endif %}

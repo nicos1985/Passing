@@ -6,11 +6,11 @@
     <div class="card form-card shadow-sm">
       <div class="card-header d-flex align-items-center justify-content-between">
         <div>
-          <h5 class="mb-0"><i class="fa-solid fa-clipboard-list"></i> Crear evaluación de proveedor</h5>
-          <p class="text mb-0">Generá una nueva evaluación tomando la plantilla asignada al proveedor.</p>
+          <h5 class="mb-0"><i class="fa-solid fa-clipboard-list"></i> {% trans "Crear evaluación de proveedor" %}</h5>
+          <p class="text mb-0">{% trans "Generá una nueva evaluación tomando la plantilla asignada al proveedor." %}</p>
         </div>
         <div class="d-flex gap-2">
-          <a class="btn btn-outline-light btn-sm" href="{% url 'vendor-list' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+          <a class="btn btn-outline-light btn-sm" href="{% url 'vendor-list' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
           {% if related_links %}
             {% for link, label in related_links %}
               <a class="btn btn-outline-light btn-sm" href="{{ link }}">{{ label }}</a>
@@ -37,7 +37,7 @@
             {% endfor %}
           </div>
           <div class="d-flex gap-2"> 
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Crear evaluación</button>
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> {% trans "Crear evaluación" %}</button>
             <a class="btn btn-outline-secondary" href="{% url 'vendor-list' %}">Cancelar</a>
           </div>
         </form>

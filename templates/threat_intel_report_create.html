@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link href="{% static 'lib/select2-4.1.0/css/select2.min.css' %}" rel="stylesheet" />
     <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -35,18 +35,18 @@
 {% block content %}
     <div class="form-container">
         <a href="{% url 'threat_intel:run-detail' run.id %}" class="back-button">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Run
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Run" %}
         </a>
 
         <div class="mb-4">
-            <h2 style="color: #333; font-weight: 700;">Crear Nuevo Reporte</h2>
-            <p class="text-muted">Para Run #{{ run.id }} ({{ run.period_start|date:"Y-m-d" }} - {{ run.period_end|date:"Y-m-d" }})</p>
+            <h2 style="color: #333; font-weight: 700;">{% trans "Crear Nuevo Reporte" %}</h2>
+            <p class="text-muted">{% blocktrans with rid=run.id start=run.period_start|date:"Y-m-d" end=run.period_end|date:"Y-m-d" %}Para Run #{{ rid }} ({{ start }} - {{ end }}){% endblocktrans %}</p>
         </div>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
                 <div class="card-header">
-                    <h5><i class="fa-solid fa-file-pdf"></i> Nuevo Reporte</h5>
+                    <h5><i class="fa-solid fa-file-pdf"></i> {% trans "Nuevo Reporte" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" class="form" novalidate>
@@ -54,7 +54,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="id_subject">
-                                <i class="fa-solid fa-heading" style="color: #17a2b8;"></i> Asunto
+                                <i class="fa-solid fa-heading" style="color: #17a2b8;"></i> {% trans "Asunto" %}
                             </label>
                             {% if form.subject.errors %}
                                 {{ form.subject }}
@@ -62,12 +62,12 @@
                             {% else %}
                                 {{ form.subject }}
                             {% endif %}
-                            <small class="form-text">Título descriptivo del reporte</small>
+                            <small class="form-text">{% trans "Título descriptivo del reporte" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_body_md">
-                                <i class="fa-solid fa-file-lines" style="color: #17a2b8;"></i> Contenido (Markdown)
+                                <i class="fa-solid fa-file-lines" style="color: #17a2b8;"></i> {% trans "Contenido (Markdown)" %}
                             </label>
                             {% if form.body_md.errors %}
                                 {{ form.body_md }}
@@ -75,12 +75,12 @@
                             {% else %}
                                 {{ form.body_md }}
                             {% endif %}
-                            <small class="form-text">Puedes usar Markdown para formatear: **negrita**, *cursiva*, `código`, etc.</small>
+                            <small class="form-text">{% trans "Puedes usar Markdown para formatear: **negrita**, *cursiva*, `código`, etc." %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_recipients">
-                                <i class="fa-solid fa-envelope" style="color: #17a2b8;"></i> Destinatarios
+                                <i class="fa-solid fa-envelope" style="color: #17a2b8;"></i> {% trans "Destinatarios" %}
                             </label>
                             {% if form.recipients.errors %}
                                 {{ form.recipients }}
@@ -88,15 +88,15 @@
                             {% else %}
                                 {{ form.recipients }}
                             {% endif %}
-                            <small class="form-text">Correos separados por comas: usuario1@example.com, usuario2@example.com</small>
+                            <small class="form-text">{% trans "Correos separados por comas: usuario1@example.com, usuario2@example.com" %}</small>
                         </div>
 
                         <div class="btn-group-submit">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fa-solid fa-check-circle"></i> Crear Reporte
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Crear Reporte" %}
                             </button>
                             <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> Limpiar
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>
@@ -106,7 +106,7 @@
             <!-- Card de Análisis Disponibles -->
             <div class="card form-card mt-4">
                 <div class="card-header">
-                    <h5><i class="fa-solid fa-microscope"></i> Análisis Disponibles ({{ analyses|length }})</h5>
+                    <h5><i class="fa-solid fa-microscope"></i> {% blocktrans with count=analyses|length %}Análisis Disponibles ({{ count }}){% endblocktrans %}</h5>
                 </div>
                 <div class="card-body">
                     {% if analyses %}
@@ -117,7 +117,7 @@
                                         <div class="cve-id"><i class="fa-solid fa-virus"></i> {{ analysis.item.cve_id }}</div>
                                         <p class="mb-2 mt-2">{{ analysis.summary_es|truncatewords:30 }}</p>
                                         <small class="text-muted">
-                                            Severidad: 
+                                            {% trans "Severidad:" %}
                                             <span class="severity" style="background: 
                                                 {% if analysis.item.severity == 'CRITICAL' %}#dc3545
                                                 {% elif analysis.item.severity == 'HIGH' %}#fd7e14
@@ -133,7 +133,7 @@
                         {% endfor %}
                     {% else %}
                         <div class="alert alert-info">
-                            <i class="fa-solid fa-circle-info"></i> No hay análisis disponibles para este run
+                            <i class="fa-solid fa-circle-info"></i> {% trans "No hay análisis disponibles para este run" %}
                         </div>
                     {% endif %}
                 </div>

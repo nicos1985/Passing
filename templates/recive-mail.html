@@ -1,5 +1,9 @@
 {% extends 'base.html'%}
+{% load static %}
+{% load i18n %}
 
+{% block head %}
+{% endblock %}
 
 {% block content %}
 <div class ='justify-content-sm-center' style="margin-top: 80px;">
@@ -17,7 +21,7 @@
 
                     <div>
                         <div class="d-flex justify-content-center">
-                            <p>No he recibido el correo electronico.</p>
+                            <p>{% trans "No he recibido el correo electronico." %}</p>
                         </div>
                         <div class="d-flex justify-content-center">
                             

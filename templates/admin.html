@@ -1,7 +1,6 @@
-<!DOCTYPE html>
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block head %}
     <style>
@@ -66,10 +65,10 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="alert alert-warning" role="alert">
-                    <h4 class="alert-heading"><i class="fa-solid fa-exclamation-triangle"></i> Acceso Restringido</h4>
-                    <p class="mb-0">Necesitas ingresar con un usuario administrador para acceder a esta sección.</p>
+                    <h4 class="alert-heading"><i class="fa-solid fa-exclamation-triangle"></i> {% trans "Acceso Restringido" %}</h4>
+                    <p class="mb-0">{% trans "Necesitas ingresar con un usuario administrador para acceder a esta sección." %}</p>
                 </div>
-                
+
                 <div class="row row-cols-1 row-cols-md-2 g-3">
                     <div class="col">
                         <a href="{% url 'login' %}" class="admin-link">
@@ -78,7 +77,7 @@
                                     <div class="admin-card-icon">
                                         <i class="fas fa-sign-in-alt"></i>
                                     </div>
-                                    <h5>Iniciar Sesión</h5>
+                                    <h5>{% trans "Iniciar Sesión" %}</h5>
                                 </div>
                             </div>
                         </a>
@@ -90,7 +89,7 @@
                                     <div class="admin-card-icon">
                                         <i class="fa-solid fa-address-card"></i>
                                     </div>
-                                    <h5>Registrarse</h5>
+                                    <h5>{% trans "Registrarse" %}</h5>
                                 </div>
                             </div>
                         </a>
@@ -104,13 +103,13 @@
 
     <div class="container mt-4">
         <div class="mb-4">
-            <h1 class="display-6">Panel de Administración</h1>
-            <p class="text-muted">Bienvenido, <strong>{{ user.username }}</strong></p>
+            <h1 class="display-6">{% trans "Panel de Administración" %}</h1>
+            <p class="text-muted">{% blocktrans %}Bienvenido, <strong>{{ user.username }}</strong>{% endblocktrans %}</p>
         </div>
-        
+
         <!-- Sección Configuración General -->
         <div class="section-header">
-            <h3><i class="fa-solid fa-sliders"></i> Configuración General</h3>
+            <h3><i class="fa-solid fa-sliders"></i> {% trans "Configuración General" %}</h3>
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
@@ -120,8 +119,8 @@
                             <div class="admin-card-icon">
                                 <i class="fa-solid fa-gears"></i>
                             </div>
-                            <h5>Configuración Global</h5>
-                            <small class="text-muted">Parámetros del sistema</small>
+                            <h5>{% trans "Configuración Global" %}</h5>
+                            <small class="text-muted">{% trans "Parámetros del sistema" %}</small>
                         </div>
                     </div>
                 </a>
@@ -133,8 +132,8 @@
                             <div class="admin-card-icon">
                                 <i class="fa-solid fa-envelope"></i>
                             </div>
-                            <h5>Configuración de Email</h5>
-                            <small class="text-muted">SMTP y notificaciones</small>
+                            <h5>{% trans "Configuración de Email" %}</h5>
+                            <small class="text-muted">{% trans "SMTP y notificaciones" %}</small>
                         </div>
                     </div>
                 </a>
@@ -146,8 +145,8 @@
                             <div class="admin-card-icon">
                                 <i class="fa-solid fa-upload"></i>
                             </div>
-                            <h5>Importación Masiva</h5>
-                            <small class="text-muted">CSV y datos</small>
+                            <h5>{% trans "Importación Masiva" %}</h5>
+                            <small class="text-muted">{% trans "CSV y datos" %}</small>
                         </div>
                     </div>
                 </a>
@@ -156,7 +155,7 @@
 
         <!-- Sección Inteligencia de Amenazas -->
         <div class="section-header">
-            <h3><i class="fa-solid fa-brain"></i> Inteligencia de Amenazas</h3>
+            <h3><i class="fa-solid fa-brain"></i> {% trans "Inteligencia de Amenazas" %}</h3>
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
@@ -166,8 +165,8 @@
                             <div class="admin-card-icon" style="color: #17a2b8;">
                                 <i class="fa-solid fa-database"></i>
                             </div>
-                            <h5>Fuentes de Datos</h5>
-                            <small class="text-muted">NVD, CISA, AWS, etc.</small>
+                            <h5>{% trans "Fuentes de Datos" %}</h5>
+                            <small class="text-muted">{% trans "NVD, CISA, AWS, etc." %}</small>
                         </div>
                     </div>
                 </a>
@@ -179,17 +178,17 @@
                             <div class="admin-card-icon" style="color: #ffc107;">
                                 <i class="fa-solid fa-tags"></i>
                             </div>
-                            <h5>Etiquetas de Tecnología</h5>
-                            <small class="text-muted">Ubuntu, MySQL, Laravel, etc.</small>
+                            <h5>{% trans "Etiquetas de Tecnología" %}</h5>
+                            <small class="text-muted">{% trans "Ubuntu, MySQL, Laravel, etc." %}</small>
                         </div>
                     </div>
                 </a>
             </div>
         </div>
-        
+
         <!-- Sección Usuarios -->
         <div class="section-header">
-            <h3><i class="fa-solid fa-users"></i> Usuarios</h3>
+            <h3><i class="fa-solid fa-users"></i> {% trans "Usuarios" %}</h3>
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
@@ -199,8 +198,8 @@
                             <div class="admin-card-icon" style="color: #28a745;">
                                 <i class="fa-solid fa-user"></i>
                             </div>
-                            <h5>Gestionar Usuarios</h5>
-                            <small class="text-muted">Ver y editar usuarios</small>
+                            <h5>{% trans "Gestionar Usuarios" %}</h5>
+                            <small class="text-muted">{% trans "Ver y editar usuarios" %}</small>
                         </div>
                     </div>
                 </a>
@@ -212,18 +211,17 @@
                             <div class="admin-card-icon" style="color: #fd7e14;">
                                 <i class="fa-solid fa-magnifying-glass"></i>
                             </div>
-                            <h5>Auditoría</h5>
-                            <small class="text-muted">Registro de actividades</small>
+                            <h5>{% trans "Auditoría" %}</h5>
+                            <small class="text-muted">{% trans "Registro de actividades" %}</small>
                         </div>
                     </div>
                 </a>
             </div>
         </div>
-        
-        
+
         <!-- Sección Permisos -->
         <div class="section-header">
-            <h3><i class="fa-solid fa-lock"></i> Permisos y Roles</h3>
+            <h3><i class="fa-solid fa-lock"></i> {% trans "Permisos y Roles" %}</h3>
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
@@ -233,8 +231,8 @@
                             <div class="admin-card-icon" style="color: #dc3545;">
                                 <i class="fa-solid fa-key"></i>
                             </div>
-                            <h5>Ver Permisos</h5>
-                            <small class="text-muted">Listar permisos disponibles</small>
+                            <h5>{% trans "Ver Permisos" %}</h5>
+                            <small class="text-muted">{% trans "Listar permisos disponibles" %}</small>
                         </div>
                     </div>
                 </a>
@@ -247,8 +245,8 @@
                             <div class="admin-card-icon" style="color: #dc3545;">
                                 <i class="fa-solid fa-shield"></i>
                             </div>
-                            <h5>Asignar Permisos</h5>
-                            <small class="text-muted">Configurar accesos</small>
+                            <h5>{% trans "Asignar Permisos" %}</h5>
+                            <small class="text-muted">{% trans "Configurar accesos" %}</small>
                         </div>
                     </div>
                 </a>
@@ -261,8 +259,8 @@
                             <div class="admin-card-icon" style="color: #6c757d;">
                                 <i class="fa-solid fa-eye"></i>
                             </div>
-                            <h5>Ver Roles</h5>
-                            <small class="text-muted">Listado de roles</small>
+                            <h5>{% trans "Ver Roles" %}</h5>
+                            <small class="text-muted">{% trans "Listado de roles" %}</small>
                         </div>
                     </div>
                 </a>
@@ -277,8 +275,8 @@
                             <div class="admin-card-icon" style="color: #6c757d;">
                                 <i class="fa-solid fa-scroll"></i>
                             </div>
-                            <h5>Crear un Rol</h5>
-                            <small class="text-muted">Nuevo rol personalizado</small>
+                            <h5>{% trans "Crear un Rol" %}</h5>
+                            <small class="text-muted">{% trans "Nuevo rol personalizado" %}</small>
                         </div>
                     </div>
                 </a>
@@ -290,8 +288,8 @@
                             <div class="admin-card-icon" style="color: #6c757d;">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
-                            <h5>Asignar un Rol</h5>
-                            <small class="text-muted">Usuario → Rol</small>
+                            <h5>{% trans "Asignar un Rol" %}</h5>
+                            <small class="text-muted">{% trans "Usuario → Rol" %}</small>
                         </div>
                     </div>
                 </a>

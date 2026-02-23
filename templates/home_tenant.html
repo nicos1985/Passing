@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-
+{% load i18n %}
 
 {% block content %}
 <div class="container py-4">
   {% with nombre=request.user.get_full_name|default:request.user.username %}
   <div class="mb-4">
-    <h1 class="h3 mb-1">¡Bienvenido, {{ nombre }}!</h1>
-    <p class="text-muted mb-0">Elegí una opción para comenzar.</p>
+    {% blocktrans with nombre=nombre %}¡Bienvenido, {{ nombre }}!{% endblocktrans %}
+    <p class="text-muted mb-0">{% trans "Elegí una opción para comenzar." %}</p>
   </div>
   {% endwith %}
 
@@ -27,9 +27,9 @@
           <a href="{% url 'treatment-list' %}?stage=0" class="text-decoration-none">
           <div class="card text-white bg-danger h-100">
             <div class="card-body">
-              <h6 class="card-title">Pendientes</h6>
+              <h6 class="card-title">{% trans "Pendientes" %}</h6>
               <h2 class="card-text">{{ stage_counts.0|default:0 }}</h2>
-              <small>Tratamientos pendientes</small>
+              <small>{% trans "Tratamientos pendientes" %}</small>
             </div>
           </div>
           </a>
@@ -38,9 +38,9 @@
           <a href="{% url 'treatment-list' %}?stage=1" class="text-decoration-none">
           <div class="card text-dark bg-warning h-100">
             <div class="card-body">
-              <h6 class="card-title">Análisis</h6>
+              <h6 class="card-title">{% trans "Análisis" %}</h6>
               <h2 class="card-text">{{ stage_counts.1|default:0 }}</h2>
-              <small>En análisis</small>
+              <small>{% trans "En análisis" %}</small>
             </div>
           </div>
           </a>
@@ -49,9 +49,9 @@
           <a href="{% url 'treatment-list' %}?stage=2" class="text-decoration-none">
           <div class="card text-white bg-primary h-100">
             <div class="card-body">
-              <h6 class="card-title">En Progreso</h6>
+              <h6 class="card-title">{% trans "En Progreso" %}</h6>
               <h2 class="card-text">{{ stage_counts.2|default:0 }}</h2>
-              <small>En ejecución</small>
+              <small>{% trans "En ejecución" %}</small>
             </div>
           </div>
           </a>
@@ -60,9 +60,9 @@
           <a href="{% url 'treatment-list' %}?stage=3" class="text-decoration-none">
           <div class="card text-white bg-success h-100">
             <div class="card-body">
-              <h6 class="card-title">Implementados</h6>
+              <h6 class="card-title">{% trans "Implementados" %}</h6>
               <h2 class="card-text">{{ stage_counts.3|default:0 }}</h2>
-              <small>Implementados</small>
+              <small>{% trans "Implementados" %}</small>
             </div>
           </div>
           </a>
@@ -85,10 +85,10 @@
                   <div class="card border-0 bg-light">
                     <div class="card-body d-flex justify-content-between align-items-center p-3">
                       <div>
-                        <div class="small text-muted">Con tratamiento no implementado</div>
+                        <div class="small text-muted">{% trans "Con tratamiento no implementado" %}</div>
                         <div class="h3 mb-0"><a href="{% url 'evaluation-list' %}?not_implemented=1" class="text-decoration-none text-danger">{{ evaluations_not_implemented|default:0 }}</a></div>
                       </div>
-                      <div class="text-end small text-muted">Revisa las evaluaciones con tratamiento pendiente</div>
+                      <div class="text-end small text-muted">{% trans "Revisa las evaluaciones con tratamiento pendiente" %}</div>
                     </div>
                   </div>
                 </div>
@@ -96,41 +96,41 @@
 
               <div class="row text-center mb-3">
                 <div class="col-6 col-sm-2">
-                  <div class="small">Muy Bajo</div>
+                  <div class="small">{% trans "Muy Bajo" %}</div>
                   <div class="h4"><a href="{% url 'evaluation-list' %}?risk=0" class="text-decoration-none">{{ risk_map.0|default:0 }}</a></div>
                 </div>
                 <div class="col-6 col-sm-2">
-                  <div class="small">Bajo</div>
+                  <div class="small">{% trans "Bajo" %}</div>
                   <div class="h4"><a href="{% url 'evaluation-list' %}?risk=1" class="text-decoration-none">{{ risk_map.1|default:0 }}</a></div>
                 </div>
                 <div class="col-6 col-sm-2">
-                  <div class="small">Moderado</div>
+                  <div class="small">{% trans "Moderado" %}</div>
                   <div class="h4"><a href="{% url 'evaluation-list' %}?risk=2" class="text-decoration-none">{{ risk_map.2|default:0 }}</a></div>
                 </div>
                 <div class="col-6 col-sm-2">
-                  <div class="small">Alto</div>
+                  <div class="small">{% trans "Alto" %}</div>
                   <div class="h4"><a href="{% url 'evaluation-list' %}?risk=3" class="text-decoration-none">{{ risk_map.3|default:0 }}</a></div>
                 </div>
                 <div class="col-6 col-sm-2">
-                  <div class="small">Muy Alto</div>
+                  <div class="small">{% trans "Muy Alto" %}</div>
                   <div class="h4"><a href="{% url 'evaluation-list' %}?risk=4" class="text-decoration-none">{{ risk_map.4|default:0 }}</a></div>
                 </div>
               </div>
               <hr />
-              <h6>Top críticas recientes</h6>
+              <h6>{% trans "Top críticas recientes" %}</h6>
               <ul class="list-group list-group-flush mt-2">
                 {% for ev in critical_evals %}
                   <li class="list-group-item d-flex justify-content-between align-items-start">
                     <a href="{% url 'evaluation-detail' ev.pk %}" class="text-decoration-none text-reset w-100 d-flex justify-content-between align-items-start">
                       <div>
                         <div class="fw-bold">{{ ev.evaluated_object }}</div>
-                        <div class="small text-muted">{{ ev.threat }} — Nivel: {{ ev.get_risk_level_display }}</div>
+                        <div class="small text-muted">{{ ev.threat }} — {% trans "Nivel" %}: {{ ev.get_risk_level_display }}</div>
                       </div>
                       <div class="text-end small">{{ ev.created|date:"Y-m-d" }}</div>
                     </a>
                   </li>
                 {% empty %}
-                  <li class="list-group-item">No hay evaluaciones críticas recientes.</li>
+                  <li class="list-group-item">{% trans "No hay evaluaciones críticas recientes." %}</li>
                 {% endfor %}
               </ul>
             </div>
@@ -139,7 +139,7 @@
 
         <div class="col-12 col-lg-6">
           <div class="card mb-3">
-            <div class="card-header">Tratamientos próximos / pendientes</div>
+            <div class="card-header">{% trans "Tratamientos próximos / pendientes" %}</div>
             <div class="card-body">
               <ul class="list-group list-group-flush">
                 {% for t in recent_pending %}
@@ -153,7 +153,7 @@
                     </a>
                   </li>
                 {% empty %}
-                  <li class="list-group-item">No hay tratamientos pendientes.</li>
+                  <li class="list-group-item">{% trans "No hay tratamientos pendientes." %}</li>
                 {% endfor %}
               </ul>
             </div>
@@ -165,14 +165,14 @@
       <!-- Threat Intel resumen -->
       <div class="col-12 mb-3">
         <div class="card">
-          <div class="card-header">Threat Intel relevantes</div>
+          <div class="card-header">{% trans "Threat Intel relevantes" %}</div>
           <div class="card-body">
             <div class="row g-2 mb-3">
               <div class="col-6 col-sm-3">
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=critical&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=critical{% endif %}" class="text-decoration-none">
                   <div class="card text-white bg-danger h-100">
                     <div class="card-body p-2 text-center">
-                      <div class="small">Critical</div>
+                      <div class="small">{% trans "Critical" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.critical|default:0 }}</div>
                     </div>
                   </div>
@@ -182,7 +182,7 @@
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=high&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=high{% endif %}" class="text-decoration-none">
                   <div class="card text-white bg-warning h-100">
                     <div class="card-body p-2 text-center text-dark">
-                      <div class="small">High</div>
+                      <div class="small">{% trans "High" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.high|default:0 }}</div>
                     </div>
                   </div>
@@ -192,7 +192,7 @@
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=medium&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=medium{% endif %}" class="text-decoration-none">
                   <div class="card text-white bg-primary h-100">
                     <div class="card-body p-2 text-center">
-                      <div class="small">Medium</div>
+                      <div class="small">{% trans "Medium" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.medium|default:0 }}</div>
                     </div>
                   </div>
@@ -202,7 +202,7 @@
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}{% endif %}" class="text-decoration-none">
                   <div class="card text-white bg-secondary h-100">
                     <div class="card-body p-2 text-center">
-                      <div class="small">Unknown</div>
+                      <div class="small">{% trans "Unknown" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.unknown|default:0 }}</div>
                     </div>
                   </div>
@@ -210,21 +210,21 @@
               </div>
             </div>
 
-            <h6 class="mb-2">Items recientes (relevantes con IA)</h6>
+            <h6 class="mb-2">{% trans "Items recientes (relevantes con IA)" %}</h6>
             <ul class="list-group list-group-flush">
               {% for it in recent_threats %}
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                   <a href="{% url 'threat_intel:item-detail' it.pk %}" class="text-decoration-none text-reset w-100 d-flex justify-content-between align-items-start">
                     <div>
                       <div class="fw-bold">{{ it.canonical_id }} — {{ it.title|truncatechars:60 }}</div>
-                      <div class="small text-muted">Severity: {{ it.get_severity_display }}</div>
+                      <div class="small text-muted">{% trans "Severity" %}: {{ it.get_severity_display }}</div>
                       <div class="small text-muted mt-1">{{ it.description|truncatechars:140 }}</div>
                     </div>
                     <div class="text-end small">{{ it.created_at|date:"Y-m-d" }}</div>
                   </a>
                 </li>
               {% empty %}
-                <li class="list-group-item">No hay items relevantes con análisis IA.</li>
+                <li class="list-group-item">{% trans "No hay items relevantes con análisis IA." %}</li>
               {% endfor %}
             </ul>
           </div>
@@ -235,36 +235,36 @@
         <a class="text-decoration-none" href="{% url 'vendor-evaluations-pending' %}">
         <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
           <div>
-            <div class="medium text"><i class="fa-solid fa-handshake me-2"></i> Evaluaciones de proveedores pendientes</div>
+            <div class="medium text"><i class="fa-solid fa-handshake me-2"></i> {% trans "Evaluaciones de proveedores pendientes" %}</div>
             
           </div>
           <h2 class="card-text">{{ pending_evals_card_count }}</h2>
         </div>
         </a>
         <div class="card-body">
-          <p class="small text-muted mb-3">Pendientes dentro de los próximos {{ pending_evals_window_days }} días (incluye vencidas).</p>
+          <p class="small text-muted mb-3">{% blocktrans %}Pendientes dentro de los próximos {{ pending_evals_window_days }} días (incluye vencidas).{% endblocktrans %}</p>
           <ul class="list-group list-group-flush">
             {% for ev in pending_evals_card_list %}
               <li class="list-group-item d-flex justify-content-between align-items-start">
                 <div>
                   <div class="fw-bold">{{ ev.vendor }}</div>
-                  <div class="small text-muted">Owner: {{ ev.vendor.owner|default:"—" }} · {{ ev.assigned_template_name|default:"Sin plantilla" }}</div>
+                  <div class="small text-muted">{% trans "Owner" %}: {{ ev.vendor.owner|default:"—" }} · {{ ev.assigned_template_name|default:_("Sin plantilla") }}</div>
                 </div>
                 <div class="text-end">
                   <div class="small text-muted">{{ ev.scheduled_date|date:"d/m/Y" }}</div>
                   {% if ev.days_until_scheduled is not None %}
                     {% if ev.days_until_scheduled >= 0 %}
-                      <span class="badge bg-success">Faltan {{ ev.days_until_scheduled }} días</span>
+                      <span class="badge bg-success">{% blocktrans %}Faltan {{ ev.days_until_scheduled }} días{% endblocktrans %}</span>
                     {% else %}
-                      <span class="badge bg-danger">Venció hace {{ ev.days_until_scheduled_abs }} días</span>
+                      <span class="badge bg-danger">{% blocktrans %}Venció hace {{ ev.days_until_scheduled_abs }} días{% endblocktrans %}</span>
                     {% endif %}
                   {% else %}
-                    <span class="badge bg-secondary">Fecha pendiente</span>
+                    <span class="badge bg-secondary">{% trans "Fecha pendiente" %}</span>
                   {% endif %}
                 </div>
               </li>
             {% empty %}
-              <li class="list-group-item text-muted">No hay evaluaciones pendientes dentro del período seleccionado.</li>
+              <li class="list-group-item text-muted">{% trans "No hay evaluaciones pendientes dentro del período seleccionado." %}</li>
             {% endfor %}
           </ul>
         </div>
@@ -280,8 +280,8 @@
               <span class="icon-circle" aria-hidden="true"><i class="fas fa-key" style="color: #FFD43B; font-size: 24px;"></i></span>
             
             <div>
-              <h2 class="h6 mb-1 text-body">Contraseñas</h2>
-              <p class="text-muted mb-0 small">Listado de contraseñas.</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Contraseñas" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Listado de contraseñas." %}  </p>
             </div>
           </div>
         </div>
@@ -294,8 +294,8 @@
           <div class="card-body d-flex align-items-start gap-3">
             <span aria-hidden="true"><i class="fa-solid fa-play" style="color:#e04e4e; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Ejecuciones</h2>
-              <p class="text-muted mb-0 small">Runs de Threat Intel</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Ejecuciones" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Runs de Threat Intel" %}</p>
             </div>
           </div>
         </div>
@@ -308,8 +308,8 @@
           <div class="card-body d-flex align-items-start gap-3">
             <span aria-hidden="true"><i class="fa-solid fa-file-lines" style="color:#0d6efd; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Reportes</h2>
-              <p class="text-muted mb-0 small">Reportes generados</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Reportes" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Reportes generados" %}</p>
             </div>
           </div>
         </div>
@@ -322,8 +322,8 @@
           <div class="card-body d-flex align-items-start gap-3">
             <span aria-hidden="true"><i class="fa-solid fa-magnifying-glass" style="color:#ffc107; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Análisis</h2>
-              <p class="text-muted mb-0 small">Análisis y resultados</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Análisis" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Análisis y resultados" %}</p>
             </div>
           </div>
         </div>
@@ -337,8 +337,8 @@
           <div class="card-body d-flex align-items-start gap-3">
               <span aria-hidden="true"><i class="fa fa-microchip" style="color: #ba0ea6ff; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Activos</h2>
-              <p class="text-muted mb-0 small">Activos de la informacion.</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Activos" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Activos de la informacion." %}</p>
             </div>
           </div>
         </div>
@@ -353,8 +353,8 @@
               <span aria-hidden="true"><i class="fa fa-handshake" style="color: #0d6efd; font-size: 24px;"></i></span>
             
             <div>
-              <h2 class="h6 mb-1 text-body">Proveedores</h2>
-              <p class="text-muted mb-0 small">Listado de proveedores</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Proveedores" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Listado de proveedores" %}</p>
             </div>
           </div>
         </div>
@@ -368,8 +368,8 @@
           <div class="card-body d-flex align-items-start gap-3">
               <span aria-hidden="true"><i class="fa fa-user" style="color: #0d6efd; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Perfil</h2>
-              <p class="text-muted mb-0 small">Mi Perfil</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Perfil" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Mi Perfil" %}</p>
             </div>
           </div>
         </div>
@@ -384,8 +384,8 @@
               <span aria-hidden="true"><i class="fa-solid fa-triangle-exclamation" style="color: #FFD43B; font-size: 24px;"></i></span>
 
             <div>
-              <h2 class="h6 mb-1 text-body">Riesgos</h2>
-              <p class="text-muted mb-0 small">Evaluacion de riesgos</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Riesgos" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Evaluacion de riesgos" %}</p>
             </div>
           </div>
         </div>
@@ -398,8 +398,8 @@
           <div class="card-body d-flex align-items-start gap-3">
               <span aria-hidden="true"><i class="fa fa-syringe" style="color: #92eb6c; font-size: 24px;"></i></span>
             <div>
-              <h2 class="h6 mb-1 text-body">Tratamientos</h2>
-              <p class="text-muted mb-0 small">Listado de tratamientos</p>
+              <h2 class="h6 mb-1 text-body">{% trans "Tratamientos" %}</h2>
+              <p class="text-muted mb-0 small">{% trans "Listado de tratamientos" %}</p>
             </div>
           </div>
         </div>

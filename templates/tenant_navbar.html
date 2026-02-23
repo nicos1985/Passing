@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xml:lang="es">
     {% load static %}
+    {% load i18n %}
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
 <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -83,53 +84,53 @@
                         <ul class="navbar-nav me-auto">
                             <li class="nav-item">
                                 <a class="nav-link active" href="{% url 'listpass' %}">
-                                    <i class="fa-solid fa-house" style="color:white">&nbsp;</i>Inicio
+                                            <i class="fa-solid fa-house" style="color:white">&nbsp;</i>{% trans "Inicio" %}
                                 </a>
                             </li>
                     {% if request.user.is_authenticated %}
                                 {% if request.user.is_superuser or request.user.is_staff %}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{% url 'config' %}">
-                                            <i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin
+                                            <i class="fa-solid fa-book" style="color:white">&nbsp;</i>{% trans "Admin" %}
                                         </a>
                                     </li>
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="#" id="recursosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fa-solid fa-toolbox" style="color:white">&nbsp;</i>Recursos
+                                            <i class="fa-solid fa-toolbox" style="color:white">&nbsp;</i>{% trans "Recursos" %}
                                         </a>
                                         <ul class="dropdown-menu" aria-labelledby="recursosDropdown">
                                             <li>
                                                 <a class="dropdown-item" href="{% url 'informationassets-list' %}">
-                                                    <i class="fa-solid fa-microchip me-1"></i> Activos
+                                                    <i class="fa-solid fa-microchip me-1"></i> {% trans "Activos" %}
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item" href="{% url 'vendor-list' %}">
-                                                    <i class="fa-solid fa-handshake me-1"></i> Proveedores
+                                                    <i class="fa-solid fa-handshake me-1"></i> {% trans "Proveedores" %}
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item" href="{% url 'project-list' %}">
-                                                    <i class="fa-solid fa-bars-progress me-1"></i> Proyectos
+                                                    <i class="fa-solid fa-bars-progress me-1"></i> {% trans "Proyectos" %}
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item" href="{% url 'clientcompany-list' %}">
-                                                    <i class="fa-solid fa-clipboard-user me-1"></i> Clientes
+                                                    <i class="fa-solid fa-clipboard-user me-1"></i> {% trans "Clientes" %}
                                                 </a>
                                             </li>
                                         </ul>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="{% url 'evaluation-list' %}">
-                                            <i class="fa-solid fa-triangle-exclamation" style="color:white">&nbsp;</i>Evaluacion de Riesgo
+                                            <i class="fa-solid fa-triangle-exclamation" style="color:white">&nbsp;</i>{% trans "Evaluación de Riesgo" %}
                                         </a>
                                     </li>
                                 {% endif %}
                             {% else %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'login' %}">
-                                        <i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login
+                                        <i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>{% trans "Login" %}
                                     </a>
                                 </li>
                                 
@@ -157,9 +158,9 @@
                                 
                                 <li class="nav-item" style="margin-top: 5px;">
                                     {% if request.user.avatar %}
-                                        <img class="rounded-circle" src="{{ request.user.avatar.url }}" width="51px" height="51px" borders="45px" alt="Avatar">
+                                        <img class="rounded-circle" src="{{ request.user.avatar.url }}" width="51px" height="51px" borders="45px" alt="{% trans 'Avatar' %}">
                                     {% else %}
-                                        <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px" alt="Default Avatar">
+                                        <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px" alt="{% trans 'Default Avatar' %}">
                                     {% endif %}
                                 </li>
                                 <li class="nav-item">

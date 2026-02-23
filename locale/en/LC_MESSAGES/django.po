@@ -1,0 +1,4949 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-23 12:22-0300\n"
+"PO-Revision-Date: 2026-02-22 16:15-0300\n"
+"Last-Translator: Gemini AI\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\accounts\models.py:32 .\templates\profile.html:25
+#: .\templates\profile.html:67 .\templates\tenant_navbar.html:161
+msgid "Avatar"
+msgstr "Default Avatar"
+
+#: .\accounts\models.py:33 .\templates\detail-cont.html:134
+#: .\templates\profile.html:59
+msgid "Puesto"
+msgstr "Position"
+
+#: .\accounts\models.py:34
+#| msgid "Correo electrónico"
+msgid "Correo Electrónico"
+msgstr "email"
+
+#: .\accounts\models.py:35 .\resources\models.py:58
+#: .\templates\user_list.html:37
+msgid "Documento"
+msgstr "Document"
+
+#: .\accounts\models.py:36
+#| msgid "Fecha de Nacimiento:"
+msgid "Fecha Nacimiento"
+msgstr "Date of Birth:"
+
+#: .\accounts\models.py:37 .\templates\user_list.html:40
+msgid "Domicilio"
+msgstr "Address"
+
+#: .\accounts\models.py:38
+#| msgid "Teléfono:"
+msgid "Nro Telefono"
+msgstr "Phone:"
+
+#: .\accounts\models.py:39
+#| msgid "Fech. Ingreso"
+msgid "Fecha Ingreso"
+msgstr "Joining Date"
+
+#: .\accounts\models.py:40
+#| msgid "Fech. Egreso"
+msgid "Fecha Egreso"
+msgstr "Departure Date"
+
+#: .\accounts\models.py:41
+#| msgid "Motivo de Baja:"
+msgid "Motivo de baja"
+msgstr "Reason for departure:"
+
+#: .\accounts\models.py:42 .\login\models.py:27
+#| msgid "Color del menú"
+msgid "Color de menu"
+msgstr "Menu Color:"
+
+#: .\accounts\models.py:65 .\accounts\models.py:140 .\accounts\models.py:155
+#: .\accounts\models.py:208 .\resources\models.py:536
+#| msgid "Clientes"
+msgid "Cliente"
+msgstr "Clients"
+
+#: .\accounts\models.py:68
+msgid "Secreto OTP"
+msgstr "OTP Secret"
+
+#: .\accounts\models.py:69
+#| msgid "Habilitado"
+msgid "2FA Habilitado"
+msgstr "Enabled"
+
+#: .\accounts\models.py:71 .\templates\profile.html:37
+#: .\templates\profile.html:63
+msgid "Idioma"
+msgstr "Languaje"
+
+#: .\accounts\models.py:139 .\accounts\models.py:206
+#: .\notifications\models.py:13 .\notifications\models.py:34
+#: .\passbase\models.py:42 .\passbase\models.py:241 .\permission\models.py:20
+#: .\permission\models.py:65 .\resources\models.py:774
+#: .\templates\admin-noti-list.html:43 .\templates\asset-actions-list.html:36
+#: .\templates\detail-cont.html:68 .\templates\detail-cont.html:96
+#: .\templates\detail-cont.html:131 .\templates\listpass.html:61
+#: .\templates\listpermission.html:60 .\templates\update-cont.html:66
+#: .\templates\user_list.html:35
+msgid "Usuario"
+msgstr "User"
+
+#: .\accounts\models.py:141 .\accounts\models.py:161 .\login\models.py:30
+#: .\passbase\models.py:24 .\passbase\models.py:48 .\permission\models.py:41
+#: .\resources\models.py:18 .\resources\models.py:765
+#: .\templates\asset-actions-list.html:35 .\templates\asset-tracking.html:25
+#: .\templates\listsection.html:34 .\templates\listsection.html:50
+#: .\templates\threat_intel_config.html:89
+#: .\templates\threat_intel_source_detail.html:36
+#: .\templates\threat_intel_source_list.html:49 .\threat_intel\models.py:14
+#: .\threat_intel\models.py:27
+msgid "Activo"
+msgstr "Asset"
+
+#: .\accounts\models.py:143 .\permission\models.py:66
+#: .\templates\user_list.html:41
+msgid "Rol"
+msgstr "Role"
+
+#: .\accounts\models.py:144
+#| msgid "Fecha de Ingreso:"
+msgid "Fecha de ingreso"
+msgstr "Joining Date:"
+
+#: .\accounts\models.py:157
+msgid "Estado del segundo factor"
+msgstr "State of the second factor"
+
+#: .\accounts\models.py:158
+msgid "Dashboard administrador activo"
+msgstr "Active administrator dashboard"
+
+#: .\accounts\models.py:159 .\templates\profile.html:79
+msgid "Color del menú"
+msgstr "Menu Color:"
+
+#: .\accounts\models.py:160
+#| msgid "Nombre de la Etiqueta"
+msgid "Nombre de la empresa"
+msgstr "Tag Name"
+
+#: .\accounts\models.py:164
+msgid "Días de aviso para evaluaciones"
+msgstr "Notice days for assessments"
+
+#: .\accounts\models.py:165
+msgid "Cuántos días antes del vencimiento se notifica a los owners."
+msgstr "How many days before the expiration date are the owners notified?"
+
+#: .\accounts\models.py:167 .\client\models.py:11 .\login\models.py:31
+#: .\notifications\models.py:17 .\notifications\models.py:41
+#: .\passbase\models.py:25 .\passbase\models.py:49 .\passbase\models.py:244
+#: .\permission\models.py:24 .\permission\models.py:42
+#: .\permission\models.py:67 .\templates\listsection.html:35
+#: .\templates\roles_list.html:47 .\templates\threat_intel_item_detail.html:10
+#: .\templates\threat_intel_report_list.html:34
+msgid "Creado"
+msgstr "Created"
+
+#: .\accounts\models.py:168 .\login\models.py:32 .\passbase\models.py:26
+#: .\passbase\models.py:50 .\permission\models.py:25
+#| msgid "Actualiza"
+msgid "Actualizado"
+msgstr "Update:"
+
+#: .\accounts\models.py:171
+#| msgid "Deshabilitado"
+msgid "SSO Google habilitado"
+msgstr "Disabled"
+
+#: .\accounts\models.py:172
+#| msgid "Enviar por email"
+msgid "Autolink por email"
+msgstr "Send by email"
+
+#: .\accounts\models.py:173
+msgid "SSO Google requiere 2FA"
+msgstr ""
+
+#: .\accounts\models.py:194
+msgid "login_password"
+msgstr "Google SSO requires 2FA"
+
+#: .\accounts\models.py:195
+msgid "login_google"
+msgstr "login_google"
+
+#: .\accounts\models.py:196
+msgid "sso_consume"
+msgstr "sso_consume"
+
+#: .\accounts\models.py:197
+msgid "twofa_verify"
+msgstr "twofa_verify"
+
+#: .\accounts\models.py:200
+msgid "Login (password)"
+msgstr "Login (password)"
+
+#: .\accounts\models.py:201
+msgid "Login (google)"
+msgstr "Login (google)"
+
+#: .\accounts\models.py:202
+#| msgid "SSO con Google"
+msgid "SSO consume"
+msgstr "Continue with Google"
+
+#: .\accounts\models.py:203
+msgid "2FA verify"
+msgstr "2FA verify"
+
+#: .\accounts\models.py:209
+msgid "Evento"
+msgstr "Evento"
+
+#: .\accounts\models.py:210
+msgid "Éxito"
+msgstr "Success"
+
+#: .\accounts\models.py:211
+msgid "IP"
+msgstr "IP"
+
+#: .\accounts\models.py:212
+msgid "User Agent"
+msgstr "User Agent"
+
+#: .\accounts\models.py:213 .\resources\models.py:167 .\resources\models.py:198
+#: .\resources\models.py:424 .\templates\vendor_evaluation_detail.html:10
+msgid "Proveedor"
+msgstr "Vendor"
+
+#: .\accounts\models.py:214 .\templates\threat_intel_analysis_detail.html:122
+msgid "Metadatos"
+msgstr "Metadata"
+
+#: .\accounts\models.py:215 .\resources\models.py:776
+#| msgid "Fecha / Hora"
+msgid "Fecha y hora"
+msgstr "Date / Time"
+
+#: .\client\models.py:6
+#| msgid "Nombre de la Etiqueta"
+msgid "Nombre de la Empresa"
+msgstr "Tag Name"
+
+#: .\client\models.py:7
+msgid "Rubro"
+msgstr "Category"
+
+#: .\client\models.py:8
+
+#| msgid "Nombre descriptivo de la fuente"
+msgid "Correo Principal de la Cuenta"
+msgstr "Descriptive report title"
+
+#: .\client\models.py:9
+#| msgid "Alta de activo"
+msgid "Plan de Servicio"
+msgstr "Register asset"
+
+#: .\client\models.py:10
+#| msgid "Super user"
+msgid "Superuser creado"
+msgstr "Super user"
+
+#: .\login\models.py:10
+#| msgid "2FA desactivado"
+msgid "Desactivado"
+msgstr "2FA deactivated"
+
+#: .\login\models.py:11
+#| msgid "Activa"
+msgid "Activado"
+msgstr "Active"
+
+#: .\login\models.py:12
+#| msgid "Detalle del Usuario"
+msgid "A eleccion del usuario"
+msgstr "User Details"
+
+#: .\login\models.py:25
+#| msgid "2do factor de autenticación"
+msgid "Politica 2do factor autenticacion"
+msgstr "2nd authentication factor"
+
+#: .\login\models.py:26
+msgid "Dashboard administrador"
+msgstr "Administrator Dashboard"
+
+#: .\login\models.py:28
+
+#| msgid "Desactivar usuario"
+msgid "Designar usuarios admin"
+msgstr "Deactivate user"
+
+#: .\login\models.py:29
+
+#| msgid "Nombre Contraseña"
+msgid "Nombre empresa"
+msgstr "Password Name"
+
+#: .\notifications\models.py:12 .\notifications\models.py:33
+#: .\passbase\models.py:43 .\passbase\models.py:55 .\passbase\models.py:239
+#: .\permission\models.py:21 .\templates\create-perm-p2.html:37
+#: .\templates\detail-cont.html:76 .\templates\detail-cont.html:99
+#: .\templates\listpass.html:62 .\templates\listpermission.html:63
+#: .\templates\login.html:28
+msgid "Contraseña"
+msgstr "Password"
+
+#: .\notifications\models.py:14 .\notifications\models.py:36
+#| msgid "Código de verificación"
+msgid "Tipo de notificación"
+msgstr "Verification code"
+
+#: .\notifications\models.py:15 .\notifications\models.py:39
+#: .\permission\models.py:40 .\templates\admin-noti-list.html:45
+#: .\templates\permission_roles_form.html:32 .\templates\update_role.html:33
+msgid "Comentario"
+msgstr "Comment"
+
+#: .\notifications\models.py:16 .\notifications\models.py:40
+msgid "Visto"
+msgstr "Seen"
+
+#: .\notifications\models.py:20
+#| msgid "Notificaciones"
+msgid "Notificaciones a usuario"
+msgstr "Notifications"
+
+#: .\notifications\models.py:26 .\templates\user_list.html:63
+msgid "Staff"
+msgstr "Staff"
+
+#: .\notifications\models.py:27 .\templates\tenant_navbar.html:94
+msgid "Admin"
+msgstr "Admin"
+
+#: .\notifications\models.py:35
+#| msgid "Usuario Activo"
+msgid "Usuario compartido"
+msgstr "Active User"
+
+#: .\notifications\models.py:37
+#| msgid "Cambiar de usuario"
+msgid "Tipo de usuario"
+msgstr "Change user"
+
+#: .\notifications\models.py:38 .\passbase\models.py:242
+#: .\templates\asset-actions-list.html:34 .\templates\detail-cont.html:98
+#: .\templates\listpass.html:63 .\templates\listsection.html:36
+msgid "Acción"
+msgstr "Action"
+
+#: .\notifications\models.py:44
+#| msgid "Notificaciones"
+msgid "Notificaciones a admin"
+msgstr "Notifications"
+
+#: .\passbase\models.py:23
+#| msgid "Nombre Sección"
+msgid "Nombre de la sección"
+msgstr "Section Name"
+
+#: .\passbase\models.py:29
+#| msgid "Sección"
+msgid "Seccion"
+msgstr "Section"
+
+#: .\passbase\models.py:30
+#| msgid "Acciones"
+msgid "Secciones"
+msgstr "Action"
+
+#: .\passbase\models.py:39
+#| msgid "Nombre de Contraseña:"
+msgid "Nombre de la contraseña"
+msgstr "Password Name:"
+
+#: .\passbase\models.py:40 .\templates\create-perm-p2.html:36
+#: .\templates\listpass.html:59 .\templates\listpermission.html:62
+#: .\templates\permission_roles_form.html:42 .\templates\update_role.html:43
+msgid "Sección"
+msgstr "Section"
+
+#: .\passbase\models.py:41
+msgid "Enlace"
+msgstr "Link"
+
+#: .\passbase\models.py:44
+#| msgid "Actualización:"
+msgid "Actualización"
+msgstr "Update:"
+
+#: .\passbase\models.py:45 .\templates\threat_intel_techtag_detail.html:22
+msgid "Información"
+msgstr "Information"
+
+#: .\passbase\models.py:46
+#| msgid "Archivo:"
+msgid "Archivo"
+msgstr "File:"
+
+#: .\passbase\models.py:47 .\resources\models.py:585
+msgid "Personal"
+msgstr "Personal"
+
+#: .\passbase\models.py:51 .\resources\models.py:35
+#: .\templates\create-perm-p2.html:38 .\templates\detail-asset.html:63
+#: .\templates\listpermission.html:61 .\templates\permission_roles_form.html:41
+#: .\templates\update_role.html:42
+msgid "Propietario"
+msgstr "Owner"
+
+#: .\passbase\models.py:52
+msgid "Hash"
+msgstr "Hash"
+
+#: .\passbase\models.py:56 .\permission\models.py:39 .\templates\home.html:67
+#: .\templates\home_tenant.html:283 .\templates\permission_roles_form.html:36
+#: ⁨.\templates\tenant_navbar copy.html⁩:191 .\templates\update_role.html:37
+msgid "Contraseñas"
+msgstr "Password"
+
+#: .\passbase\models.py:238
+msgid "Entidad"
+msgstr "Entity"
+
+#: .\passbase\models.py:240 .\resources\models.py:62
+msgid "Password"
+msgstr "Password"
+
+#: .\passbase\models.py:243 .\templates\detail-cont.html:100
+#: .\templates\list_resource.html:142 .\templates\listpass.html:73
+#: .\templates\listpass.html:78 .\templates\threat_intel_analysis_list.html:91
+#: .\templates\threat_intel_run_list.html:98
+msgid "Detalle"
+msgstr "Detail"
+
+#: .\passbase\models.py:247
+#| msgid "Login"
+msgid "Log"
+msgstr "Login"
+
+#: .\passbase\models.py:248
+msgid "Logs"
+msgstr "Logs"
+
+#: .\permission\models.py:22 .\permission\models.py:28
+#: .\templates\create-perm-p2.html:40 .\templates\listpermission.html:64
+#: .\templates\permission_roles_form.html:43 .\templates\update_role.html:44
+msgid "Permiso"
+msgstr "Permission"
+
+#: .\permission\models.py:23
+#| msgid "Tipo activo"
+msgid "Permiso activo"
+msgstr "Inactive User"
+
+#: .\permission\models.py:29 .\templates\listpermission.html:41
+#: .\templates\listpermission.html:65
+msgid "Permisos"
+msgstr "Permissions"
+
+#: .\permission\models.py:38
+#| msgid "Nombre del Rol"
+msgid "Nombre del rol"
+msgstr "Role Name"
+
+#: .\resources\models.py:19 .\templates\listsection.html:52
+#: .\templates\threat_intel_config.html:91
+#: .\templates\threat_intel_source_detail.html:38
+#: .\templates\threat_intel_source_list.html:51
+msgid "Inactivo"
+msgstr "Inactive"
+
+#: .\resources\models.py:20
+msgid "En Reparacion"
+msgstr "Under Repair"
+
+#: .\resources\models.py:21
+msgid "Back up"
+msgstr "Back up"
+
+#: .\resources\models.py:24
+msgid "Ninguno"
+msgstr "None"
+
+#: .\resources\models.py:25 .\resources\models.py:395 .\resources\models.py:625
+#: .\templates\home_tenant.html:111
+msgid "Alto"
+msgstr "High"
+
+#: .\resources\models.py:26 .\resources\models.py:396
+msgid "Medio"
+msgstr "Medium"
+
+#: .\resources\models.py:27 .\resources\models.py:397 .\resources\models.py:623
+#: .\templates\home_tenant.html:103
+msgid "Bajo"
+msgstr "Low"
+
+#: .\resources\models.py:31 .\resources\models.py:568 .\resources\models.py:594
+#: .\resources\models.py:908 .\templates\checklist_templates_list.html:11
+#: .\templates\detail-cont.html:132 .\templates\list-asset.html:36
+#: .\templates\permission_roles_form.html:40 .\templates\profile.html:47
+#: .\templates\threat_intel_config.html:75
+#: .\templates\threat_intel_source_create.html:63
+#: .\templates\threat_intel_source_list.html:33
+#: .\templates\threat_intel_source_update.html:63
+#: .\templates\threat_intel_techtag_list.html:40
+#: .\templates\update_role.html:41 .\threat_intel\models.py:12
+#: .\threat_intel\models.py:24
+msgid "Nombre"
+msgstr "Name"
+
+#: .\resources\models.py:32 .\resources\models.py:202 .\resources\models.py:772
+#: .\templates\asset-actions-list.html:38 .\templates\detail-asset.html:43
+#: .\templates\detail-resource.html:69 .\templates\list-asset.html:39
+#: .\templates\threat_intel_config.html:77
+#: .\templates\threat_intel_item_detail.html:152
+#: .\templates\threat_intel_report_list.html:36
+#: .\templates\threat_intel_source_list.html:36
+#: .\templates\threat_intel_techtag_list.html:42
+#: .\templates\vendor_evaluation_detail.html:10
+#: .\templates\vendor_evaluation_pending_list.html:33
+#: .\threat_intel\models.py:105
+msgid "Estado"
+msgstr "Status"
+
+#: .\resources\models.py:33 .\resources\models.py:132 .\resources\models.py:570
+#: .\resources\models.py:596 .\resources\models.py:639
+#: .\resources\models.py:910
+msgid "Descripcion"
+msgstr "Description"
+
+#: .\resources\models.py:34
+msgid "Nivel de datos personales"
+msgstr "Risk Level"
+
+#: .\resources\models.py:47
+msgid "Pc o Notebook"
+msgstr "Pc o Notebook"
+
+#: .\resources\models.py:48
+#| msgid "Monitorear"
+msgid "Monitor"
+msgstr "Monitor"
+
+#: .\resources\models.py:49
+#| msgid "Verificar"
+msgid "Perifericos"
+msgstr "Verify"
+
+#: .\resources\models.py:50
+#| msgid "Listado de tratamientos"
+msgid "Unidad de almacenamiento"
+msgstr "Treatment list"
+
+#: .\resources\models.py:51
+msgid "Componentes internos"
+msgstr "Internal components"
+
+#: .\resources\models.py:52
+msgid "Cables y conectores"
+msgstr "Cables and connectors"
+
+#: .\resources\models.py:53
+msgid "Impresoras"
+msgstr "Printers"
+
+#: .\resources\models.py:54
+#| msgid "Proveedores"
+msgid "Servidores"
+msgstr "Vendors"
+
+#: .\resources\models.py:55
+msgid "Switch"
+msgstr "Switch"
+
+#: .\resources\models.py:56
+msgid "Router"
+msgstr "Router"
+
+#: .\resources\models.py:57
+#| msgid "Moderado"
+msgid "Modem"
+msgstr "Moderate"
+
+#: .\resources\models.py:59 .\resources\models.py:583
+msgid "Software"
+msgstr "Software"
+
+#: .\resources\models.py:60
+msgid "Servicio"
+msgstr "Servicio"
+
+#: .\resources\models.py:61 .\resources\models.py:529
+msgid "Email"
+msgstr "Email"
+
+#: .\resources\models.py:63
+msgid "Key"
+msgstr "Key"
+
+#: .\resources\models.py:64
+msgid "Otro"
+msgstr "Otro"
+
+#: .\resources\models.py:67
+msgid "Publica"
+msgstr "Public"
+
+#: .\resources\models.py:68
+msgid "Interna"
+msgstr "Internal"
+
+#: .\resources\models.py:69
+#| msgid "Credenciales"
+msgid "Confidencial"
+msgstr "Credentials"
+
+#: .\resources\models.py:77
+msgid "Valor monetario"
+msgstr "Value"
+
+#: .\resources\models.py:78
+msgid "Fecha de adquisicion"
+msgstr "Created At"
+
+#: .\resources\models.py:79
+msgid "Tipo activo"
+msgstr "Inactive User"
+
+#: .\resources\models.py:80
+msgid "Localizacion"
+msgstr "Location"
+
+#: .\resources\models.py:81
+msgid "Nro serie"
+msgstr "Serial No."
+
+#: .\resources\models.py:82
+msgid "Clasificacion de la informacion"
+msgstr "Information Classification"
+
+#: .\resources\models.py:86
+msgid "Activo de la informacion"
+msgstr "Information assets."
+
+#: .\resources\models.py:87
+msgid "Activos de la informacion"
+msgstr "Information assets."
+
+#: .\resources\models.py:109
+#| msgid "Activos de la información"
+msgid "A.5 Políticas de seguridad de la información"
+msgstr "A.5 Information security policies"
+
+#: .\resources\models.py:110
+msgid "A.6 Organización de la seguridad de la información"
+msgstr "A.6 Information Security Organization"
+
+#: .\resources\models.py:111
+msgid "A.7 Seguridad en los recursos humanos"
+msgstr "A.7 Human Resources Security"
+
+#: .\resources\models.py:112
+#| msgid "Alta de activo"
+msgid "A.8 Gestión de activos"
+msgstr "A.8 Asset Management"
+
+#: .\resources\models.py:113
+msgid "A.9 Control de acceso"
+msgstr "A.9 Access control"
+
+#: .\resources\models.py:114
+msgid "A.10 Criptografía"
+msgstr "A.10 Cryptography"
+
+#: .\resources\models.py:115
+msgid "A.11 Seguridad física y ambiental"
+msgstr "A.11 Physical and environmental security"
+
+#: .\resources\models.py:116
+msgid "A.12 Seguridad en las operaciones"
+msgstr "A.12 Safety in operations"
+
+#: .\resources\models.py:117
+msgid "A.13 Seguridad en las comunicaciones"
+msgstr "A.13 Communications Security"
+
+#: .\resources\models.py:118
+msgid "A.14 Adquisición, desarrollo y mantenimiento de sistemas"
+msgstr "A.14 Acquisition, development and maintenance of systems"
+
+#: .\resources\models.py:119
+msgid "A.15 Relaciones con los proveedores"
+msgstr "A.15 Supplier relations"
+
+#: .\resources\models.py:120
+msgid "A.16 Gestión de incidentes de seguridad de la información"
+msgstr "A.16 Information security incident management"
+
+#: .\resources\models.py:121
+msgid "A.17 Aspectos de seguridad de la información en la continuidad del negocio"
+msgstr "A.17 Information security aspects in business continuity"
+
+#: .\resources\models.py:122
+msgid "A.18 Cumplimiento"
+msgstr "A.18 Compliance"
+
+#: .\resources\models.py:131
+#| msgid "Crear plantilla"
+msgid "Nombre plantilla"
+msgstr "Create template"
+
+#: .\resources\models.py:134 .\templates\checklist_templates_list.html:11
+#: .\templates\threat_intel_techtag_detail.html:30
+#: .\templates\threat_intel_techtag_list.html:66
+msgid "Activa"
+msgstr "Active"
+
+#: .\resources\models.py:139
+#| msgid "Plantillas de checklist"
+msgid "Plantilla de checklist"
+msgstr "Checklist templates"
+
+#: .\resources\models.py:140 .\templates\checklist_templates_list.html:4
+msgid "Plantillas de checklist"
+msgstr "Checklist templates"
+
+#: .\resources\models.py:148 .\resources\models.py:168
+#: .\templates\vendor_evaluation_detail.html:13
+#: .\templates\vendor_evaluation_pending_list.html:40
+msgid "Plantilla"
+msgstr "Template"
+
+#: .\resources\models.py:149 .\templates\checklist_template_detail.html:58
+msgid "Orden"
+msgstr "Order"
+
+#: .\resources\models.py:150
+#| msgid "Pregunta / Texto"
+msgid "Pregunta / Punto a evaluar"
+msgstr "Question / Text"
+
+#: .\resources\models.py:151 .\resources\models.py:337
+#: .\templates\checklist_template_detail.html:60
+msgid "Requerido"
+msgstr "Required"
+
+#: .\resources\models.py:152 .\resources\models.py:338
+msgid "Control relacionado"
+msgstr "Related control"
+
+#: .\resources\models.py:157
+#| msgid "Plantillas de checklist"
+msgid "Item de checklist"
+msgstr "Checklist templates"
+
+#: .\resources\models.py:158
+#| msgid "Plantillas de checklist"
+msgid "Items de checklist"
+msgstr "Checklist templates"
+
+#: .\resources\models.py:169
+#| msgid "Realizada"
+msgid "Personalizada"
+msgstr "Completed"
+
+#: .\resources\models.py:170
+#| msgid "Nuevo rol personalizado"
+msgid "Notas de personalizacion"
+msgstr "New custom role"
+
+#: .\resources\models.py:175
+#| msgid "Asignar checklist a proveedor"
+msgid "Checklist asignada a proveedor"
+msgstr "Assign checklist to vendor"
+
+#: .\resources\models.py:176
+#| msgid "Listado de proveedores"
+msgid "Checklists asignadas a proveedores"
+msgstr "Vendor list"
+
+#: .\resources\models.py:184 .\resources\models.py:768
+#: .\resources\models.py:894 .\resources\models.py:901
+#: .\templates\asset-actions-list.html:74
+#: .\templates\threat_intel_report_list.html:46
+msgid "Pendiente"
+msgstr "Pending"
+
+#: .\resources\models.py:185 .\resources\models.py:895
+#| msgid "En Progreso"
+msgid "En progreso"
+msgstr "In Progress"
+
+#: .\resources\models.py:186
+#| msgid "Implementados"
+msgid "Completada"
+msgstr "Implemented"
+
+#: .\resources\models.py:187
+#| msgid "Cancelar"
+msgid "Cancelada"
+msgstr "Cancel"
+
+#: .\resources\models.py:191
+msgid "Cumple"
+msgstr "It fulfills"
+
+#: .\resources\models.py:192
+msgid "No cumple"
+msgstr "It does not comply"
+
+#: .\resources\models.py:193 .\resources\models.py:866
+#| msgid "No Aplica"
+msgid "No aplica"
+msgstr "Not Applicable"
+
+#: .\resources\models.py:199
+#| msgid "Programada"
+msgid "Fecha programada"
+msgstr "Scheduled"
+
+#: .\resources\models.py:200 .\templates\detail-resource.html:69
+msgid "Evaluado por"
+msgstr "Evaluated by"
+
+#: .\resources\models.py:201
+#| msgid "Fecha de adquisicion"
+msgid "Fecha de evaluacion"
+msgstr "Created At"
+
+#: .\resources\models.py:203
+#| msgid "Observaciones"
+msgid "Observaciones generales"
+msgstr "Observations"
+
+#: .\resources\models.py:206
+msgid "Fecha aviso enviado"
+msgstr "Date notice sent"
+
+#: .\resources\models.py:209
+#| msgid "Evaluaciones del proveedor"
+msgid "Evaluacion de proveedor"
+msgstr "Pending vendor evaluations"
+
+#: .\resources\models.py:210
+#| msgid "Evaluaciones del proveedor"
+msgid "Evaluaciones de proveedores"
+msgstr "Pending vendor evaluations"
+
+#: .\resources\models.py:334
+#| msgid "Evaluaciones"
+msgid "Evaluacion"
+msgstr "Evaluations"
+
+#: .\resources\models.py:335
+#| msgid "Crear plantilla"
+msgid "Item plantilla"
+msgstr "Create template"
+
+#: .\resources\models.py:336
+msgid "Texto de la pregunta (snapshot)"
+msgstr "Question text (snapshot)"
+
+#: .\resources\models.py:339 .\templates\vendor_evaluation_detail.html:43
+msgid "Resultado"
+msgstr "Result"
+
+#: .\resources\models.py:340 .\templates\vendor_evaluation_detail.html:44
+msgid "Observaciones"
+msgstr "Observations"
+
+#: .\resources\models.py:345
+#| msgid "Detalle de Evaluación"
+msgid "Item de evaluacion"
+msgstr "Evaluation Details"
+
+#: .\resources\models.py:346
+#| msgid "Detalle de Evaluación"
+msgid "Items de evaluacion"
+msgstr "Evaluation Details"
+
+#: .\resources\models.py:368
+msgid "Banking and Financial Services"
+msgstr "Banking and Financial Services"
+
+#: .\resources\models.py:369
+msgid "Fuel"
+msgstr "Fuel"
+
+#: .\resources\models.py:370
+msgid "Mail Service"
+msgstr "Mail Service"
+
+#: .\resources\models.py:371
+msgid "Inputs"
+msgstr "Inputs"
+
+#: .\resources\models.py:372
+msgid "Internet"
+msgstr "Internet"
+
+#: .\resources\models.py:373
+msgid "Insurance"
+msgstr "Insurance"
+
+#: .\resources\models.py:374
+msgid "Storage Services"
+msgstr "Storage Services"
+
+#: .\resources\models.py:375
+msgid "Maintenance and Cleaning Services"
+msgstr "Maintenance and Cleaning Services"
+
+#: .\resources\models.py:376
+#| msgid "Nro Serie"
+msgid "Cloud Services"
+msgstr "Serial No."
+
+#: .\resources\models.py:377
+msgid "Installation Services"
+msgstr "Installation Services"
+
+#: .\resources\models.py:378
+msgid "Telephone Services"
+msgstr "Telephone Services"
+
+#: .\resources\models.py:379
+msgid "Business Services"
+msgstr "Business Services"
+
+#: .\resources\models.py:380
+msgid "Essential Services"
+msgstr "Essential Services"
+
+#: .\resources\models.py:381
+msgid "Medical Services"
+msgstr "Medical Services"
+
+#: .\resources\models.py:382
+msgid "Professional Services"
+msgstr "Professional Services"
+
+#: .\resources\models.py:383
+msgid "Technical Services"
+msgstr "Technical Services"
+
+#: .\resources\models.py:384 .\resources\models.py:501
+#: .\resources\models.py:562 .\resources\models.py:590
+#| msgid "Filtros"
+msgid "Otros"
+msgstr "Filter"
+
+#: .\resources\models.py:387
+msgid "No Oneroso"
+msgstr "Not expensive"
+
+#: .\resources\models.py:388
+msgid "Oneroso"
+msgstr "Expensive"
+
+#: .\resources\models.py:391 .\resources\models.py:876
+#| msgid "Pendiente"
+msgid "Permanente"
+msgstr "Pending"
+
+#: .\resources\models.py:392 .\resources\models.py:877
+msgid "Temporal"
+msgstr "Temporal"
+
+#: .\resources\models.py:400
+#| msgid "Critical"
+msgid "Critico"
+msgstr "Critical"
+
+#: .\resources\models.py:401
+msgid "No Crítico"
+msgstr "Not critical"
+
+#: .\resources\models.py:404
+msgid "4 meses"
+msgstr "4 month"
+
+#: .\resources\models.py:405
+msgid "6 meses"
+msgstr "6 month"
+
+#: .\resources\models.py:406
+msgid "Unico"
+msgstr "Unique"
+
+#: .\resources\models.py:412
+#| msgid "Proveedor"
+msgid "Tipo proveedor"
+msgstr "Vendor"
+
+#: .\resources\models.py:413
+msgid "Rango valor"
+msgstr "Value range"
+
+#: .\resources\models.py:414
+#| msgid "Tipo de Fuente"
+msgid "Tiempo de contrato"
+msgstr "Source type:"
+
+#: .\resources\models.py:415
+#| msgid "Activo de la informacion"
+msgid "Acceso a la informacion"
+msgstr "Information assets."
+
+#: .\resources\models.py:416 .\resources\models.py:642
+#| msgid "Impacto disponibilidad"
+msgid "Impacto en disponibilidad"
+msgstr "Availability impact"
+
+#: .\resources\models.py:417
+#| msgid "Critical"
+msgid "Criticidad"
+msgstr "Critical"
+
+#: .\resources\models.py:418
+msgid "Periodo de control"
+msgstr "Control period"
+
+#: .\resources\models.py:420 .\resources\models.py:508
+#: .\resources\models.py:531
+#| msgid "Fecha de adquisicion"
+msgid "Fecha de inicio"
+msgstr "Created At"
+
+#: .\resources\models.py:421 .\resources\models.py:509
+#: .\resources\models.py:532
+#| msgid "Fecha de adquisicion"
+msgid "Fecha de finalizacion"
+msgstr "Created At"
+
+#: .\resources\models.py:425 .\templates\home_tenant.html:356
+#: ⁨.\templates\tenant_navbar copy.html⁩:214 .\templates\tenant_navbar.html:109
+msgid "Proveedores"
+msgstr "Vendors"
+
+#: .\resources\models.py:494
+msgid "Proyectos de Operaciones / Producción"
+msgstr "Operations / Production Projects"
+
+#: .\resources\models.py:495
+#| msgid "Etiquetas de Tecnología"
+msgid "Proyectos de Tecnología / IT"
+msgstr "Technology Tags"
+
+#: .\resources\models.py:496
+msgid "Proyectos de Marketing / Comercial"
+msgstr "Marketing/Sales Projects"
+
+#: .\resources\models.py:497
+msgid "Proyectos de Recursos Humanos"
+msgstr "Human Resources Projects"
+
+#: .\resources\models.py:498
+msgid "Proyectos Estratégicos / Corporativos"
+msgstr "Strategic / Corporate Projects"
+
+#: .\resources\models.py:499
+#| msgid "Panel de Administración"
+msgid "Proyectos de Finanzas / Administración"
+msgstr "Administration Panel"
+
+#: .\resources\models.py:500
+msgid "Proyectos de Innovación / I+D"
+msgstr "Innovation / R&D Projects"
+
+#: .\resources\models.py:507
+#| msgid "Tipo de Fuente"
+msgid "Tipo de proyecto"
+msgstr "Source type:"
+
+#: .\resources\models.py:510
+#| msgid "Puesto"
+msgid "Presupuesto"
+msgstr "Position"
+
+#: .\resources\models.py:514
+#| msgid "Proyectos"
+msgid "Proyecto"
+msgstr "Projects"
+
+#: .\resources\models.py:515 ⁨.\templates\tenant_navbar copy.html⁩:215
+#: .\templates\tenant_navbar.html:114
+msgid "Proyectos"
+msgstr "Projects"
+
+#: .\resources\models.py:526
+msgid "CUIT"
+msgstr "CUIT"
+
+#: .\resources\models.py:527
+#| msgid "Descripcion"
+msgid "Direccion"
+msgstr "Description"
+
+#: .\resources\models.py:528
+#| msgid "Teléfono:"
+msgid "Telefono"
+msgstr "Phone:"
+
+#: .\resources\models.py:530
+msgid "Estandar de Servicio"
+msgstr "Service Standard"
+
+#: .\resources\models.py:537 ⁨.\templates\tenant_navbar copy.html⁩:216
+#: .\templates\tenant_navbar.html:119
+msgid "Clientes"
+msgstr "Clients"
+
+#: .\resources\models.py:546
+msgid "Dano fisico"
+msgstr "Physical damage"
+
+#: .\resources\models.py:547
+msgid "Evento natural"
+msgstr "Natural event"
+
+#: .\resources\models.py:548
+msgid "Perdida de servicios"
+msgstr "Loss of services"
+
+#: .\resources\models.py:549
+#| msgid "Localizacion"
+msgid "Radiacion"
+msgstr "Radiation"
+
+#: .\resources\models.py:550
+msgid "Informacion comprometida"
+msgstr "Compromised information"
+
+#: .\resources\models.py:551
+#| msgid "Acceso Restringido"
+msgid "Acceso no autorizado"
+msgstr "Restricted Access"
+
+#: .\resources\models.py:552
+msgid "Fallo tecnico"
+msgstr "Technical failure"
+
+#: .\resources\models.py:553
+msgid "Fallo funcional"
+msgstr "Functional failure"
+
+#: .\resources\models.py:554 .\resources\models.py:589
+#| msgid "Comentario"
+msgid "Comercial"
+msgstr "Comercial"
+
+#: .\resources\models.py:555
+msgid "Pirateria"
+msgstr "Piracy"
+
+#: .\resources\models.py:556
+msgid "Ingenieria social"
+msgstr "Social engineering"
+
+#: .\resources\models.py:557
+msgid "Error humano"
+msgstr "Human error"
+
+#: .\resources\models.py:558
+msgid "Robo"
+msgstr "Heist"
+
+#: .\resources\models.py:559
+msgid "Espionaje"
+msgstr "Espionage"
+
+#: .\resources\models.py:560
+msgid "Intrusion"
+msgstr "Intrusion"
+
+#: .\resources\models.py:561
+msgid "Terrorismo"
+msgstr "Terrorism"
+
+#: .\resources\models.py:563
+#| msgid "Inteligencia de Amenazas"
+msgid "Inteligencia de amenazas"
+msgstr "Threat Intelligence"
+
+#: .\resources\models.py:569
+#| msgid "Tipo de Fuente"
+msgid "Tipo de amenaza"
+msgstr "threat type:"
+
+#: .\resources\models.py:575 .\resources\models.py:637
+#: .\templates\evaluation_detail.html:52
+msgid "Amenaza"
+msgstr "Threat"
+
+#: .\resources\models.py:576 ⁨.\templates\tenant_navbar copy.html⁩:226
+msgid "Amenazas"
+msgstr "Threats"
+
+#: .\resources\models.py:582
+msgid "Hardware"
+msgstr "Hardware"
+
+#: .\resources\models.py:584
+msgid "Red"
+msgstr "Net"
+
+#: .\resources\models.py:586
+msgid "Lugar"
+msgstr "Place"
+
+#: .\resources\models.py:587
+#| msgid "Localizacion"
+msgid "Organizacion"
+msgstr "Organization"
+
+#: .\resources\models.py:588
+msgid "Procesos"
+msgstr "Procesis"
+
+#: .\resources\models.py:595
+#| msgid "Vulnerabilidad"
+msgid "Tipo de vulnerabilidad"
+msgstr "Vulnerability Type"
+
+#: .\resources\models.py:601 .\resources\models.py:638
+#: .\templates\evaluation_detail.html:53
+msgid "Vulnerabilidad"
+msgstr "Vulnerability"
+
+#: .\resources\models.py:602 ⁨.\templates\tenant_navbar copy.html⁩:227
+msgid "Vulnerabilidades"
+msgstr "Vulnerabilities"
+
+#: .\resources\models.py:608
+msgid "Incidental"
+msgstr "Incidental"
+
+#: .\resources\models.py:609
+msgid "Menor"
+msgstr "Menor"
+
+#: .\resources\models.py:610 .\resources\models.py:617
+#: .\resources\models.py:624 .\templates\home_tenant.html:107
+msgid "Moderado"
+msgstr "Moderate"
+
+#: .\resources\models.py:611
+msgid "Importante"
+msgstr "Important"
+
+#: .\resources\models.py:612
+msgid "Extremo"
+msgstr "Extreme"
+
+#: .\resources\models.py:615
+msgid "Poco probable"
+msgstr "Unlikely"
+
+#: .\resources\models.py:616
+msgid "Posible"
+msgstr "Posible"
+
+#: .\resources\models.py:618
+#| msgid "Probabilidad"
+msgid "Probable"
+msgstr "Probability"
+
+#: .\resources\models.py:619
+msgid "Muy probable"
+msgstr "Very likely"
+
+#: .\resources\models.py:622
+#| msgid "Muy Bajo"
+msgid "Muy bajo"
+msgstr "Very Low"
+
+#: .\resources\models.py:626
+#| msgid "Muy Alto"
+msgid "Muy alto"
+msgstr "Very High"
+
+#: .\resources\models.py:640
+#| msgid "Impacto confidencialidad"
+msgid "Impacto en confidencialidad"
+msgstr "Confidentiality impact"
+
+#: .\resources\models.py:641
+#| msgid "Impacto integridad"
+msgid "Impacto en integridad"
+msgstr "Integrity impact"
+
+#: .\resources\models.py:643
+#| msgid "Valor de Impacto"
+msgid "Valor de impacto"
+msgstr "Impact Value"
+
+#: .\resources\models.py:644 .\templates\evaluation_detail.html:58
+msgid "Probabilidad"
+msgstr "Probability"
+
+#: .\resources\models.py:645
+#| msgid "Valor de Riesgo"
+msgid "Valor de riesgo"
+msgstr "Risk Value"
+
+#: .\resources\models.py:646
+#| msgid "Nivel de Riesgo"
+msgid "Nivel de riesgo"
+msgstr "Risk Level"
+
+#: .\resources\models.py:647 .\templates\evaluation_detail.html:66
+msgid "Tratamiento asociado"
+msgstr "Associated treatment"
+
+#: .\resources\models.py:652
+#| msgid "Evaluacion de riesgos"
+msgid "Evaluacion de riesgo"
+msgstr "Risk evaluation"
+
+#: .\resources\models.py:653
+#| msgid "Evaluacion de riesgos"
+msgid "Evaluaciones de riesgo"
+msgstr "Risk evaluation"
+
+#: .\resources\models.py:766
+#| msgid "Tipo activo"
+msgid "Tipo de accion"
+msgstr "Inactive User"
+
+#: .\resources\models.py:769 .\templates\asset-actions-list.html:76
+msgid "Confirmado"
+msgstr "Confirmed"
+
+#: .\resources\models.py:770 .\templates\asset-actions-list.html:78
+msgid "Rechazado"
+msgstr "Rejected"
+
+#: .\resources\models.py:773
+#| msgid "Acciones pendientes de confirmación"
+msgid "Token de confirmacion"
+msgstr "Information assets"
+
+#: .\resources\models.py:775 .\templates\asset-actions-list.html:37
+msgid "Accionado por"
+msgstr "Actioned by"
+
+#: .\resources\models.py:777
+#| msgid "Descripcion"
+msgid "Motivo / descripcion"
+msgstr "Description"
+
+#: .\resources\models.py:778
+#| msgid "Fecha de adquisicion"
+msgid "Fecha estimada de devolucion"
+msgstr "Created At"
+
+#: .\resources\models.py:781
+#| msgid "Alta de activo"
+msgid "Accion de activo"
+msgstr "Register asset"
+
+#: .\resources\models.py:782
+#| msgid "Acciones Correctivas"
+msgid "Acciones de activos"
+msgstr "Corrective actions:"
+
+#: .\resources\models.py:786
+msgid "N/A"
+msgstr "N/A"
+
+#: .\resources\models.py:791
+#| msgid "Deseleccionar Todos"
+msgid "Debe seleccionar un activo."
+msgstr "Deselect All"
+
+#: .\resources\models.py:800
+msgid "El activo ya está prestado. Debe devolverlo antes de prestarlo nuevamente."
+msgstr "The asset is already loaned out. You must return it before lending it out again."
+
+#: .\resources\models.py:804
+msgid "No existe un préstamo activo para devolver este activo."
+msgstr "There is no active loan to repay this asset."
+
+#: .\resources\models.py:817 .\resources\models.py:946
+#| msgid "Descripcion"
+msgid "Desconocido"
+msgstr "Description"
+
+#: .\resources\models.py:862
+msgid "Reducir"
+msgstr "Reduce"
+
+#: .\resources\models.py:863
+msgid "Asumir"
+msgstr "Assume"
+
+#: .\resources\models.py:864
+msgid "Transferir"
+msgstr "Transfer"
+
+#: .\resources\models.py:865
+#| msgid "Editar"
+msgid "Evitar"
+msgstr "Edit"
+
+#: .\resources\models.py:870
+msgid "Preventivo"
+msgstr "Preventive"
+
+#: .\resources\models.py:871
+#| msgid "Detalle activo"
+msgid "Detectivo"
+msgstr "Asset detail"
+
+#: .\resources\models.py:872
+#| msgid "Correo"
+msgid "Correctivo"
+msgstr "mail"
+
+#: .\resources\models.py:878
+msgid "Ocasional"
+msgstr "Occasional"
+
+#: .\resources\models.py:882
+msgid "Manual"
+msgstr "Manual"
+
+#: .\resources\models.py:883
+msgid "Automatico"
+msgstr "Automatic"
+
+#: .\resources\models.py:884
+msgid "Semi-automatico"
+msgstr "Semiautomatic""
+
+#: .\resources\models.py:888
+#| msgid "Siguiente"
+msgid "Urgente"
+msgstr "Urgent"
+
+#: .\resources\models.py:889
+#| msgid "Propietario"
+msgid "Prioritario"
+msgstr "Owner"
+
+#: .\resources\models.py:890
+#| msgid "Propietario"
+msgid "No prioritario"
+msgstr "Owner"
+
+#: .\resources\models.py:896
+#| msgid "Implementados"
+msgid "Completado"
+msgstr "Implemented"
+
+#: .\resources\models.py:902 .\templates\home_tenant.html:41
+#: .\templates\home_tenant.html:325
+#: .\templates\threat_intel_analysis_list.html:66 .\threat_intel\models.py:171
+msgid "Análisis"
+msgstr "Analysis"
+
+#: .\resources\models.py:903
+msgid "En proceso"
+msgstr "In progress"
+
+#: .\resources\models.py:904
+#| msgid "Implementados"
+msgid "Implementado"
+msgstr "Implemented"
+
+#: .\resources\models.py:909
+#| msgid "Listado de tratamientos"
+msgid "Tipo de tratamiento"
+msgstr "Treatment list"
+
+#: .\resources\models.py:911
+#| msgid "Nuevo rol personalizado"
+msgid "Controles Normalizados"
+msgstr "New custom role"
+
+#: .\resources\models.py:915
+#| msgid "Fecha de Nacimiento:"
+msgid "Fecha de cumplimiento"
+msgstr "Date of Birth:"
+
+#: .\resources\models.py:916
+#| msgid "Ver detalle del tratamiento"
+msgid "Responsable de tratamiento"
+msgstr "View treatment details"
+
+#: .\resources\models.py:917
+#| msgid "Listado de tratamientos"
+msgid "Oportunidad de tratamiento"
+msgstr "Treatment list"
+
+#: .\resources\models.py:918
+msgid "Periodicidad de aplicacion"
+msgstr "Frequency of application"
+
+#: .\resources\models.py:919
+#| msgid "Activación de cuenta"
+msgid "Automatizacion de control"
+msgstr "Account activation"
+
+#: .\resources\models.py:920 .\templates\threat_intel_analysis_list.html:43
+#: .\templates\threat_intel_analysis_list.html:63
+#: .\templates\threat_intel_report_detail.html:82 .\threat_intel\models.py:134
+msgid "Prioridad"
+msgstr "Priority"
+
+#: .\resources\models.py:923
+msgid "Estado de implementacion"
+msgstr "Implementation status"
+
+#: .\resources\models.py:925
+#| msgid "Etapa:"
+msgid "Etapa"
+msgstr "Stage:"
+
+#: .\resources\models.py:926
+#| msgid "Notas de análisis:"
+msgid "Notas de análisis"
+msgstr "Analysis notes:"
+
+#: .\resources\models.py:927
+#| msgid "Acciones inmediatas:"
+msgid "Acciones inmediatas"
+msgstr "Immediate actions:"
+
+#: .\resources\models.py:928
+#| msgid "Acciones correctivas:"
+msgid "Acciones correctivas"
+msgstr "Corrective actions:"
+
+#: .\resources\models.py:929
+msgid "Fecha cambio de etapa"
+msgstr "Stage change date"
+
+#: .\resources\models.py:930
+msgid "Usuario que cambió etapa"
+msgstr "User who changed stage"
+
+#: .\resources\models.py:935
+#| msgid "Tratamientos"
+msgid "Tratamiento"
+msgstr "Treatments"
+
+#: .\resources\models.py:936 .\templates\home_tenant.html:401
+#: ⁨.\templates\tenant_navbar copy.html⁩:229
+msgid "Tratamientos"
+msgstr "Treatments"
+
+#: .\resources\templates\resources\i18n_demo.html:6
+msgid "Demo i18n - Resources"
+msgstr "i18n Demo - Resources"
+
+#: .\resources\templates\resources\i18n_demo.html:9
+msgid "Demo de internacionalización (UI)"
+msgstr "Internationalization Demo (UI)"
+
+#: .\resources\templates\resources\i18n_demo.html:16
+msgid "Puedes cambiar el idioma usando el endpoint /i18n/setlang/"
+msgstr "You can change the language using the /i18n/setlang/ endpoint"
+
+#: .\resources\views.py:1745
+msgid "Bienvenido al demo de internacionalización (UI)"
+msgstr "Welcome to the internationalization demo (UI)"
+
+#: .\resources\views.py:1746
+msgid "Haz clic aquí"
+msgstr "Click here"
+
+#: .\templates\CU-asset-action.html:9
+msgid "Acceso restringido. Necesitas un usuario administrador."
+msgstr "Restricted access. You need an administrator user."
+
+#: .\templates\CU-asset-action.html:12 .\templates\CU-resource.html:15
+#: .\templates\email_config.html:28 .\templates\evaluacion_form.html:29
+#: .\templates\home.html:34 .\templates\listpass.html:152
+#: .\templates\password_reset_complete.html:40
+#: .\templates\tenant_navbar.html:133 .\templates\treatment-create.html:24
+#: .\templates\update-asset.html:27 .\templates\user_form.html:27
+msgid "Login"
+msgstr "Login"
+
+#: .\templates\CU-asset-action.html:23
+msgid "Volver a lista"
+msgstr "Back to list"
+
+#: .\templates\CU-asset-action.html:35 .\templates\CU-resource.html:42
+#: .\templates\asset-actions-list.html:25
+#: .\templates\checklist_template_detail.html:14
+#: .\templates\checklist_template_form.html:14 .\templates\create-sect.html:20
+#: .\templates\detail-resource.html:19 .\templates\evaluacion_form.html:54
+#: .\templates\profile.html:86 .\templates\threat_intel_analysis_detail.html:13
+#: .\templates\threat_intel_analysis_list.html:24
+#: .\templates\threat_intel_run_detail.html:10
+#: .\templates\treatment-create.html:87 .\templates\update-sect.html:25
+#: .\templates\vendor_checklist_form.html:18
+#: .\templates\vendor_evaluation_detail.html:18
+#: .\templates\vendor_evaluation_form.html:13
+msgid "Volver"
+msgstr "Back"
+
+#: .\templates\CU-asset-action.html:64
+msgid "Registrar"
+msgstr "Register"
+
+#: .\templates\CU-asset-action.html:65 .\templates\active-sect.html:34
+#: .\templates\checklist_template_detail.html:109
+#: .\templates\checklist_template_form.html:42 .\templates\create-sect.html:48
+#: .\templates\delete-asset.html:30 .\templates\delete-cont.html:30
+#: .\templates\delete-resource.html:30 .\templates\delete-sect.html:29
+#: .\templates\delete_role.html:30 .\templates\detail-resource.html:130
+#: .\templates\password_reset.html:44
+#: .\templates\password_reset_confirm.html:70
+#: .\templates\threat_intel_link_threat.html:34
+#: .\templates\threat_intel_report_detail.html:218
+#: .\templates\threat_intel_review_update.html:161
+#: .\templates\threat_intel_source_update.html:114
+#: .\templates\threat_intel_techtag_update.html:90
+#: .\templates\vendor_checklist_form.html:46
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: .\templates\CU-resource.html:11 .\templates\email_config.html:23
+#: .\templates\evaluacion_form.html:24 .\templates\treatment-create.html:19
+#: .\templates\update-asset.html:22 .\templates\user_form.html:22
+msgid ""
+"Por favor, necesitas ingresar con un usuario administrador para navegar."
+msgstr "Please, you need to log in with an administrator user to navigate."
+
+#: .\templates\CU-resource.html:12 .\templates\email_config.html:24
+#: .\templates\evaluacion_form.html:25 .\templates\home.html:24
+#: .\templates\listpass.html:149 .\templates\treatment-create.html:20
+#: .\templates\update-asset.html:23 .\templates\user_form.html:23
+msgid "Si no tienes cuenta puedes registrarte."
+msgstr "If you do not have an account you can register."
+
+#: .\templates\CU-resource.html:18 .\templates\admin.html:92
+#: .\templates\client_register.html:25 .\templates\email_config.html:32
+#: .\templates\evaluacion_form.html:33 .\templates\home.html:43
+#: .\templates\listpass.html:156 .\templates\register.html:25
+#: .\templates\treatment-create.html:28 .\templates\update-asset.html:31
+#: .\templates\user_form.html:31
+msgid "Registrarse"
+msgstr "Register"
+
+#: .\templates\CU-resource.html:68 .\templates\profile.html:85
+#: .\templates\treatment-create.html:133 .\templates\update-asset.html:58
+#: .\templates\user_form.html:58 .\templates\vendor_evaluation_detail.html:76
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+#: .\templates\CU-resource.html:71 .\templates\evaluacion_form.html:105
+#: .\templates\threat_intel_report_create.html:99
+#: .\templates\threat_intel_review_create.html:152
+#: .\templates\threat_intel_source_create.html:114
+#: .\templates\threat_intel_techtag_create.html:241
+#: .\templates\treatment-create.html:136
+msgid "Limpiar"
+msgstr "Clear"
+
+#: .\templates\activation_email.html:7
+msgid "Activación de cuenta"
+msgstr "Account activation"
+
+#: .\templates\activation_email.html:10
+#, python-format
+msgid "Hola %(first)s, %(last)s,"
+msgstr "Hello %(first)s, %(last)s,"
+
+#: .\templates\activation_email.html:11
+msgid ""
+"Gracias por registrarte. Por favor, haz clic en el enlace a continuación "
+"para activar tu cuenta de superusuario:"
+msgstr ""
+"Thank you for registering. Please click the link below to activate your "
+"superuser account:"
+
+#: .\templates\activation_email.html:12
+msgid "Activar mi cuenta"
+msgstr "Activate my account"
+
+#: .\templates\activation_email.html:13
+msgid "Este es tu dominio"
+msgstr "This is your domain"
+
+#: .\templates\activation_email.html:15
+msgid "Si no solicitaste esta cuenta, por favor ignora este correo."
+msgstr "If you did not request this account, please ignore this email."
+
+#: .\templates\active-sect.html:20
+#, python-format
+msgid "¿Estás seguro que deseas %(action)s: %(name)s?"
+msgstr "Are you sure you want to %(action)s: %(name)s?"
+
+#: .\templates\admin-noti-list.html:23
+msgid "Notificaciones"
+msgstr "Notifications"
+
+#: .\templates\admin-noti-list.html:32 .\templates\create-cont.html:13
+#: .\templates\create-cont1.html:13 .\templates\create-noti-admin.html:13
+#: .\templates\detail-cont.html:19 ⁨.\templates\tenant_navbar copy.html⁩:198
+#: .\templates\update-cont.html:15
+msgid "Lista"
+msgstr "List"
+
+#: .\templates\admin-noti-list.html:42 .\templates\listpass.html:57
+msgid "Nombre Contraseña"
+msgstr "Password Name"
+
+#: .\templates\admin-noti-list.html:44
+msgid "Usuario a permitir"
+msgstr "User to allow"
+
+#: .\templates\admin-noti-list.html:46 .\templates\detail-cont.html:97
+#: .\templates\detail-resource.html:69
+#: .\templates\threat_intel_review_list.html:45
+msgid "Fecha"
+msgstr "Date"
+
+#: .\templates\admin-noti-list.html:47
+msgid "Accion"
+msgstr "Action"
+
+#: .\templates\admin.html:68
+msgid "Acceso Restringido"
+msgstr "Restricted Access"
+
+#: .\templates\admin.html:69
+msgid ""
+"Necesitas ingresar con un usuario administrador para acceder a esta sección."
+msgstr "You need to log in with an administrator user to access this section."
+
+#: .\templates\admin.html:80
+msgid "Iniciar Sesión"
+msgstr "Login"
+
+#: .\templates\admin.html:106
+msgid "Panel de Administración"
+msgstr "Administration Panel"
+
+#: .\templates\admin.html:107
+#, python-format
+msgid "Bienvenido, <strong>%(user.username)s</strong>"
+msgstr "Welcome, <strong>%(user.username)s</strong>"
+
+#: .\templates\admin.html:112
+msgid "Configuración General"
+msgstr "General Settings"
+
+#: .\templates\admin.html:122 .\templates\global_settings.html:11
+msgid "Configuración Global"
+msgstr "Global Settings"
+
+#: .\templates\admin.html:123
+msgid "Parámetros del sistema"
+msgstr "System parameters"
+
+#: .\templates\admin.html:135
+msgid "Configuración de Email"
+msgstr "Email Settings"
+
+#: .\templates\admin.html:136
+msgid "SMTP y notificaciones"
+msgstr "SMTP and notifications"
+
+#: .\templates\admin.html:148
+msgid "Importación Masiva"
+msgstr "Bulk Import"
+
+#: .\templates\admin.html:149
+msgid "CSV y datos"
+msgstr "CSV and data"
+
+#: .\templates\admin.html:158 ⁨.\templates\tenant_navbar copy.html⁩:234
+msgid "Inteligencia de Amenazas"
+msgstr "Threat Intelligence"
+
+#: .\templates\admin.html:168 .\templates\threat_intel_config.html:31
+#: .\templates\threat_intel_source_list.html:14
+msgid "Fuentes de Datos"
+msgstr "Data Sources"
+
+#: .\templates\admin.html:169
+msgid "NVD, CISA, AWS, etc."
+msgstr "NVD, CISA, AWS, etc."
+
+#: .\templates\admin.html:181 .\templates\threat_intel_config.html:49
+#: .\templates\threat_intel_techtag_list.html:14
+msgid "Etiquetas de Tecnología"
+msgstr "Technology Tags"
+
+#: .\templates\admin.html:182
+msgid "Ubuntu, MySQL, Laravel, etc."
+msgstr "Ubuntu, MySQL, Laravel, etc."
+
+#: .\templates\admin.html:191
+msgid "Usuarios"
+msgstr "Users"
+
+#: .\templates\admin.html:201
+msgid "Gestionar Usuarios"
+msgstr "Manage Users"
+
+#: .\templates\admin.html:202
+msgid "Ver y editar usuarios"
+msgstr "View and edit users"
+
+#: .\templates\admin.html:214
+msgid "Auditoría"
+msgstr "Audit"
+
+#: .\templates\admin.html:215
+msgid "Registro de actividades"
+msgstr "Activity logs"
+
+#: .\templates\admin.html:224
+msgid "Permisos y Roles"
+msgstr "Permissions and Roles"
+
+#: .\templates\admin.html:234
+msgid "Ver Permisos"
+msgstr "View Permissions"
+
+#: .\templates\admin.html:235
+msgid "Listar permisos disponibles"
+msgstr "List available permissions"
+
+#: .\templates\admin.html:248
+msgid "Asignar Permisos"
+msgstr "Assign Permissions"
+
+#: .\templates\admin.html:249
+msgid "Configurar accesos"
+msgstr "Configure access"
+
+#: .\templates\admin.html:262
+msgid "Ver Roles"
+msgstr "View Roles"
+
+#: .\templates\admin.html:263
+msgid "Listado de roles"
+msgstr "Role list"
+
+#: .\templates\admin.html:278
+msgid "Crear un Rol"
+msgstr "Create a Role"
+
+#: .\templates\admin.html:279
+msgid "Nuevo rol personalizado"
+msgstr "New custom role"
+
+#: .\templates\admin.html:291 .\templates\assign_rol.html:25
+msgid "Asignar un Rol"
+msgstr "Assign a Role"
+
+#: .\templates\admin.html:292
+msgid "Usuario → Rol"
+msgstr "User → Role"
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the error below."
+msgstr "Please correct the error below."
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the errors below."
+msgstr "Please correct the errors below."
+
+#: .\templates\admin\login.html:42
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+
+#: .\templates\admin\login.html:62
+msgid "Forgotten your password or username?"
+msgstr "Forgotten your password or username?"
+
+#: .\templates\admin\login.html:67
+msgid "Log in"
+msgstr "Log in"
+
+#: .\templates\asset-actions-list.html:21
+#, python-format
+msgid "Historial de acciones - %(asset_name)s"
+msgstr "Action history - %(asset_name)s"
+
+#: .\templates\asset-actions-list.html:22 .\templates\evaluation_list.html:76
+#: .\templates\list_resource.html:84 .\templates\threat_intel_run_list.html:60
+#: .\templates\threat_intel_runitem_list.html:48
+msgid "Todos"
+msgstr "All"
+
+#: .\templates\asset-actions-list.html:39
+msgid "Vto estimado"
+msgstr "Estimated Exp."
+
+#: .\templates\asset-actions-list.html:40
+msgid "Fecha / Hora"
+msgstr "Date / Time"
+
+#: .\templates\asset-actions-list.html:41 .\templates\detail-asset.html:31
+#: .\templates\evaluation_detail.html:54 .\templates\list-asset.html:37
+#: .\templates\roles_list.html:46 .\threat_intel\models.py:69
+msgid "Descripción"
+msgstr "Description"
+
+#: .\templates\asset-tracking.html:12
+msgid "Seguimiento de activos"
+msgstr "Asset tracking"
+
+#: .\templates\asset-tracking.html:14
+msgid "Registrar préstamo"
+msgstr "Register loan"
+
+#: .\templates\asset-tracking.html:15
+msgid "Registrar devolución"
+msgstr "Register return"
+
+#: .\templates\asset-tracking.html:26
+msgid "Titular actual"
+msgstr "Current holder"
+
+#: .\templates\asset-tracking.html:27
+msgid "Historial reciente"
+msgstr "Recent history"
+
+#: .\templates\asset-tracking.html:46
+msgid "Sin movimientos recientes"
+msgstr "No recent movements"
+
+#: .\templates\assign_rol.html:28 .\templates\create-perm-p1.html:14
+#: .\templates\create-perm-p2.html:21 .\templates\list-asset.html:24
+#: .\templates\listpermission.html:48 .\templates\permission_roles_form.html:22
+#: .\templates\roles_list.html:31 ⁨.\templates\tenant_navbar copy.html⁩:248
+msgid "Configuración"
+msgstr "Configuration"
+
+#: .\templates\assign_rol.html:38 .\templates\roles_list.html:61
+msgid "Asignar Rol"
+msgstr "Assign Role"
+
+#: .\templates\checklist_template_detail.html:10
+#, python-format
+msgid "Plantilla: %(object.name)s"
+msgstr "Template: %(object.name)s"
+
+#: .\templates\checklist_template_detail.html:11
+msgid "Edición de campos principales e ítems del checklist."
+msgstr "Edition of main fields and checklist items."
+
+#: .\templates\checklist_template_detail.html:42
+msgid "Ítems"
+msgstr "Items"
+
+#: .\templates\checklist_template_detail.html:44
+msgid "registros"
+msgstr "records"
+
+#: .\templates\checklist_template_detail.html:46
+msgid "Agregar ítem"
+msgstr "Add item"
+
+#: .\templates\checklist_template_detail.html:59
+msgid "Pregunta / Texto"
+msgstr "Question / Text"
+
+#: .\templates\checklist_template_detail.html:61
+msgid "Control"
+msgstr "Control"
+
+#: .\templates\checklist_template_detail.html:62
+#: .\templates\delete-asset.html:26 .\templates\delete-cont.html:26
+#: .\templates\delete-resource.html:26 .\templates\delete_role.html:26
+#: .\templates\detail-asset.html:82 .\templates\detail-resource.html:54
+#: .\templates\list_resource.html:143 .\templates\listpass.html:134
+msgid "Eliminar"
+msgstr "Delete"
+
+#: .\templates\checklist_template_detail.html:108
+#: .\templates\checklist_template_form.html:41
+msgid "Guardar plantilla"
+msgstr "Save template"
+
+#: .\templates\checklist_template_form.html:10
+#: .\templates\list_resource.html:38
+msgid "Crear plantilla de checklist"
+msgstr "Create checklist template"
+
+#: .\templates\checklist_template_form.html:11
+msgid "Define el contenido general y los controles asociados."
+msgstr "Define the general content and associated controls."
+
+#: .\templates\checklist_templates_list.html:6
+msgid "Crear plantilla"
+msgstr "Create template"
+
+#: .\templates\checklist_templates_list.html:7
+msgid "Asignar plantilla a proveedor"
+msgstr "Assign template to vendor"
+
+#: .\templates\checklist_templates_list.html:8
+#: .\templates\detail-resource.html:63 .\templates\list_resource.html:41
+#: .\templates\list_resource.html:146
+#: .\templates\vendor_evaluation_form.html:40
+msgid "Crear evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\checklist_templates_list.html:11
+#: .\templates\threat_intel_link_threat.html:25
+msgid "ID"
+msgstr "ID"
+
+#: .\templates\checklist_templates_list.html:19
+msgid "Editar plantilla"
+msgstr "Edit template"
+
+#: .\templates\checklist_templates_list.html:20
+msgid "Vincular a proveedor"
+msgstr "Link to vendor"
+
+#: .\templates\checklist_templates_list.html:24
+msgid "No hay plantillas"
+msgstr "No templates available"
+
+#: .\templates\choose_tenant.html:10
+msgid "Elegí a qué cuenta entrar"
+msgstr "Choose which account to enter"
+
+#: .\templates\choose_tenant.html:11
+msgid ""
+"Tu usuario tiene acceso a múltiples cuentas. Seleccioná uno para continuar."
+msgstr "Your user has access to multiple accounts. Select one to continue."
+
+#: .\templates\choose_tenant.html:19
+msgid "cuenta:"
+msgstr "account:"
+
+#: .\templates\choose_tenant.html:21
+msgid "Entrar"
+msgstr "Enter"
+
+#: .\templates\choose_tenant.html:27
+msgid "No se encontraron cuentas."
+msgstr "No accounts were found."
+
+#: .\templates\choose_tenant.html:32
+msgid "Cambiar de usuario"
+msgstr "Change user"
+
+#: .\templates\create-cont.html:27 .\templates\create-cont1.html:27
+msgid "Nombre de Contraseña:"
+msgstr "Password Name:"
+
+#: .\templates\create-cont.html:45 .\templates\create-cont1.html:45
+#: .\templates\detail-cont.html:30
+msgid "Link:"
+msgstr "Link:"
+
+#: .\templates\create-cont.html:48 .\templates\create-cont1.html:48
+#: .\templates\login1.html:19
+msgid "Usuario:"
+msgstr "User:"
+
+#: .\templates\create-cont.html:54 .\templates\update-cont.html:35
+msgid "Genera una Contraseña"
+msgstr "Generate a Password"
+
+#: .\templates\create-cont.html:55 .\templates\update-cont.html:36
+msgid "Opciones"
+msgstr "Options"
+
+#: .\templates\create-cont.html:63 .\templates\create-cont1.html:79
+#: .\templates\update-cont.html:42
+msgid "Longitud:"
+msgstr "Length:"
+
+#: .\templates\create-cont.html:65 .\templates\create-cont1.html:81
+#: ⁨.\templates\tenant_navbar copy.html⁩:295 .\templates\update-cont.html:44
+msgid "Incluir mayúsculas"
+msgstr "Include uppercase"
+
+#: .\templates\create-cont.html:66 .\templates\create-cont1.html:82
+#: ⁨.\templates\tenant_navbar copy.html⁩:289 .\templates\update-cont.html:45
+msgid "Incluir minúsculas"
+msgstr "Include lowercase"
+
+#: .\templates\create-cont.html:67 .\templates\create-cont1.html:83
+#: ⁨.\templates\tenant_navbar copy.html⁩:301 .\templates\update-cont.html:46
+msgid "Incluir números"
+msgstr "Include numbers"
+
+#: .\templates\create-cont.html:68 .\templates\create-cont1.html:84
+#: ⁨.\templates\tenant_navbar copy.html⁩:307 .\templates\update-cont.html:47
+msgid "Incluir símbolos"
+msgstr "Include symbols"
+
+#: .\templates\create-cont.html:69 .\templates\update-cont.html:48
+msgid "Generar contraseña"
+msgstr "Generate password"
+
+#: .\templates\create-cont.html:69 ⁨.\templates\tenant_navbar copy.html⁩:318
+#: .\templates\update-cont.html:48
+msgid "Generar"
+msgstr "Generate"
+
+#: .\templates\create-cont.html:80 .\templates\create-cont1.html:51
+#: .\templates\login1.html:24
+msgid "Contraseña:"
+msgstr "Password:"
+
+#: .\templates\create-cont.html:91 .\templates\create-cont1.html:54
+msgid "Actualización:"
+msgstr "Update:"
+
+#: .\templates\create-cont.html:92
+msgid "Ingrese solo números positivos"
+msgstr "Enter only positive numbers"
+
+#: .\templates\create-cont.html:95 .\templates\create-cont1.html:57
+#: .\templates\detail-cont.html:36
+msgid "Info:"
+msgstr "Info:"
+
+#: .\templates\create-cont.html:100
+msgid "Contraseña Personal"
+msgstr "Personal Password"
+
+#: .\templates\create-cont.html:102 .\templates\create-cont.html:103
+msgid ""
+"Marca esta casilla si esta contraseña es solo de uso personal y no necesitas "
+"compartirla con nadie"
+msgstr ""
+"Check this box if this password is for personal use only and you do not need "
+"to share it with anyone"
+
+#: .\templates\create-cont.html:108 .\templates\create-cont1.html:60
+msgid "Archivo:"
+msgstr "File:"
+
+#: .\templates\create-cont.html:115 .\templates\create-cont1.html:65
+#: .\templates\permission_roles_form.html:62 .\templates\update_role.html:64
+msgid "Guardar registro"
+msgstr "Save record"
+
+#: .\templates\create-cont.html:133
+msgid "Contraseña copiada"
+msgstr "Password copied"
+
+#: .\templates\create-cont.html:133 .\templates\create-cont1.html:88
+msgid "Contraseña generada:"
+msgstr "Generated password:"
+
+#: .\templates\create-cont1.html:31 .\templates\detail-cont.html:29
+msgid "Sección:"
+msgstr "Section:"
+
+#: .\templates\create-cont1.html:35
+msgid "Elija la sección"
+msgstr "Choose section"
+
+#: .\templates\create-noti-admin.html:11
+msgid "Solicitud de permisos"
+msgstr "Permission request"
+
+#: .\templates\create-noti-admin.html:31 .\templates\password_reset.html:43
+#: .\templates\upload_csv.html:25
+msgid "Enviar"
+msgstr "Send"
+
+#: .\templates\create-perm-p1.html:11 .\templates\create-perm-p2.html:20
+msgid "Crear Permiso"
+msgstr "Create Permission"
+
+#: .\templates\create-perm-p1.html:20
+msgid "Elige el usuario a dar permisos"
+msgstr "Choose the user to grant permissions"
+
+#: .\templates\create-perm-p1.html:31
+#: .\templates\threat_intel_analysis_list.html:125
+#: .\templates\threat_intel_report_list.html:84
+#: .\templates\threat_intel_review_list.html:112
+#: .\templates\threat_intel_runitem_list.html:125
+#: .\templates\threat_intel_source_list.html:89
+#: .\templates\threat_intel_techtag_list.html:106
+msgid "Siguiente"
+msgstr "Next"
+
+#: .\templates\create-perm-p2.html:26
+msgid "Estás cambiando los permisos de:"
+msgstr "You are changing the permissions of:"
+
+#: .\templates\create-perm-p2.html:39
+msgid "Info"
+msgstr "Info"
+
+#: .\templates\create-perm-p2.html:60
+msgid "Seleccionar Todos"
+msgstr "Select All"
+
+#: .\templates\create-perm-p2.html:61
+msgid "Deseleccionar Todos"
+msgstr "Deselect All"
+
+#: .\templates\create-perm-p2.html:62
+msgid "Guardar Permisos"
+msgstr "Save Permissions"
+
+#: .\templates\create-sect.html:12
+msgid "Ver secciones"
+msgstr "View sections"
+
+#: .\templates\create-sect.html:45
+msgid "Guardar Seccion"
+msgstr "Save Section"
+
+#: .\templates\delete-asset.html:11 .\templates\delete-resource.html:11
+msgid "Eliminar Activo"
+msgstr "Delete Asset"
+
+#: .\templates\delete-asset.html:20
+msgid "¿Estas Seguro que deseas borrar este Activo?"
+msgstr "Are you sure you want to delete this asset?"
+
+#: .\templates\delete-cont.html:21
+msgid "¿Estas Seguro que deseas borrar esta contraseña de"
+msgstr "Are you sure you want to delete this password from"
+
+#: .\templates\delete-resource.html:20
+msgid "¿Estas Seguro que deseas borrar este"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\delete-sect.html:20
+msgid "¿Estas seguro que deseas"
+msgstr "Are you sure you want to"
+
+#: .\templates\delete_role.html:12 .\templates\roles_list.html:63
+msgid "Eliminar Rol"
+msgstr "Delete Role"
+
+#: .\templates\delete_role.html:21
+msgid "¿Estas Seguro que deseas borrar el rol:"
+msgstr "Are you sure you want to delete the role:"
+
+#: .\templates\departure_user.html:24
+msgid "Baja de Usuario"
+msgstr "User Departure"
+
+#: .\templates\departure_user.html:27 .\templates\update_role.html:23
+msgid "Configurar"
+msgstr "Configure"
+
+#: .\templates\departure_user.html:37
+msgid "Confirmar baja"
+msgstr "Confirm departure"
+
+#: .\templates\detail-asset.html:19
+msgid "Detalle del Activo"
+msgstr "Asset Details"
+
+#: .\templates\detail-asset.html:20 .\templates\update-asset.html:45
+msgid "Lista de Activos"
+msgstr "Assets List"
+
+#: .\templates\detail-asset.html:35 .\templates\threat_intel_config.html:74
+#: .\templates\threat_intel_source_list.html:32 .\templates\verify_2fa.html:26
+#: .\threat_intel\models.py:23
+msgid "Código"
+msgstr "Code"
+
+#: .\templates\detail-asset.html:39 .\templates\list-asset.html:38
+msgid "Valor"
+msgstr "Value"
+
+#: .\templates\detail-asset.html:47
+msgid "Ubicación"
+msgstr "Location"
+
+#: .\templates\detail-asset.html:51 .\templates\list-asset.html:41
+msgid "Categoría"
+msgstr "Category"
+
+#: .\templates\detail-asset.html:55
+msgid "Número de Serie"
+msgstr "Serial Number"
+
+#: .\templates\detail-asset.html:59
+msgid "Clasificación de Información"
+msgstr "Information Classification"
+
+#: .\templates\detail-asset.html:67
+msgid "Fecha de Creación"
+msgstr "Created At"
+
+#: .\templates\detail-asset.html:71
+msgid "Última Modificación"
+msgstr "Last Modified"
+
+#: .\templates\detail-asset.html:81 .\templates\detail-cont.html:49
+#: .\templates\detail-resource.html:51 .\templates\detail-user.html:99
+#: .\templates\list_resource.html:141 .\templates\listpass.html:75
+#: .\templates\threat_intel_review_detail.html:16
+#: .\templates\threat_intel_review_list.html:82
+#: .\templates\threat_intel_source_detail.html:15
+#: .\templates\threat_intel_source_list.html:59
+#: .\templates\threat_intel_techtag_detail.html:15
+#: .\templates\threat_intel_techtag_list.html:76
+msgid "Editar"
+msgstr "Edit"
+
+#: .\templates\detail-cont.html:32
+msgid "Abrir"
+msgstr "Open"
+
+#: .\templates\detail-cont.html:38
+msgid "Adjunto:"
+msgstr "Attachment:"
+
+#: .\templates\detail-cont.html:44
+#: .\templates\threat_intel_analysis_detail.html:127
+msgid "Creado:"
+msgstr "Created:"
+
+#: .\templates\detail-cont.html:47
+#, python-format
+msgid "Hace %(object.last_change)s días"
+msgstr "%(object.last_change)s days ago"
+
+#: .\templates\detail-cont.html:63
+msgid "Credenciales"
+msgstr "Credentials"
+
+#: .\templates\detail-cont.html:70 .\templates\detail-cont.html:78
+#: .\templates\detail-cont.html:110
+msgid "Oculto"
+msgstr "Hidden"
+
+#: .\templates\detail-cont.html:91
+msgid "Detalle de modificaciones"
+msgstr "Modification details"
+
+#: .\templates\detail-cont.html:126
+msgid "Detalle de permisos"
+msgstr "Permission details"
+
+#: .\templates\detail-cont.html:133 .\templates\profile.html:51
+msgid "Apellido"
+msgstr "Last name"
+
+#: .\templates\detail-cont.html:136
+msgid "Denegar"
+msgstr "Deny"
+
+#: .\templates\detail-cont.html:148
+msgid "Denegar permisos"
+msgstr "Deny permissions"
+
+#: .\templates\detail-resource.html:17
+#, python-format
+msgid "Detalle de %(verbose_model_name)s"
+msgstr "Details of %(verbose_model_name)s"
+
+#: .\templates\detail-resource.html:25
+msgid "(Sin nombre)"
+msgstr "(No name)"
+
+#: .\templates\detail-resource.html:62
+msgid "Evaluaciones del proveedor"
+msgstr "Pending vendor evaluations"
+
+#: .\templates\detail-resource.html:69 .\templates\evaluation_list.html:95
+#: .\templates\list-asset.html:45 .\templates\list_resource.html:110
+#: .\templates\roles_list.html:48
+#: .\templates\threat_intel_analysis_detail.html:40
+#: .\templates\threat_intel_analysis_list.html:67
+#: .\templates\threat_intel_report_list.html:37
+#: .\templates\threat_intel_review_list.html:47
+#: .\templates\threat_intel_run_detail.html:39
+#: .\templates\threat_intel_run_detail.html:103
+#: .\templates\threat_intel_run_list.html:81
+#: .\templates\threat_intel_runitem_list.html:67
+#: .\templates\threat_intel_source_list.html:37
+#: .\templates\threat_intel_techtag_list.html:43 .\templates\user_list.html:45
+msgid "Acciones"
+msgstr "Action"
+
+#: .\templates\detail-resource.html:78
+#: .\templates\threat_intel_report_list.html:54
+#: .\templates\threat_intel_review_list.html:79
+#: .\templates\threat_intel_runitem_list.html:90
+#: .\templates\threat_intel_source_list.html:56
+#: .\templates\threat_intel_techtag_list.html:73
+msgid "Ver"
+msgstr "Back"
+
+#: .\templates\detail-resource.html:84
+msgid "No hay evaluaciones registradas para este proveedor."
+msgstr "No recent critical evaluations."
+
+#: .\templates\detail-resource.html:94
+msgid "Crear Re-evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\detail-resource.html:104
+msgid "Cambiar etapa del Tratamiento"
+msgstr "View treatment details"
+
+#: .\templates\detail-resource.html:105 ⁨.\templates\tenant_navbar copy.html⁩:278
+#: ⁨.\templates\tenant_navbar copy.html⁩:320
+msgid "Cerrar"
+msgstr "Close"
+
+#: .\templates\detail-resource.html:109
+msgid "Nueva Etapa"
+msgstr "New Tag"
+
+#: .\templates\detail-resource.html:117
+msgid "Notas de Análisis"
+msgstr "Analysis notes:"
+
+#: .\templates\detail-resource.html:121
+msgid "Acciones Inmediatas"
+msgstr "Immediate actions:"
+
+#: .\templates\detail-resource.html:125
+msgid "Acciones Correctivas"
+msgstr "Corrective actions:"
+
+#: .\templates\detail-resource.html:131
+msgid "Guardar y Cambiar Etapa"
+msgstr "Save Changes"
+
+#: .\templates\detail-resource.html:145
+msgid "Cambiar Etapa"
+msgstr "Change stage"
+
+#: .\templates\detail-user.html:19
+msgid "Detalle del Usuario"
+msgstr "User Details"
+
+#: .\templates\detail-user.html:20 .\templates\user_form.html:45
+msgid "Lista de Usuarios"
+msgstr "Users list"
+
+#: .\templates\detail-user.html:26
+#, python-format
+msgid "Avatar de %(object.email)s"
+msgstr "Avatar for %(object.email)s"
+
+#: .\templates\detail-user.html:28
+msgid "Avatar predeterminado"
+msgstr "Default avatar"
+
+#: .\templates\detail-user.html:36
+msgid "Puesto:"
+msgstr "Position:"
+
+#: .\templates\detail-user.html:40
+msgid "Documento:"
+msgstr "ID Document:"
+
+#: .\templates\detail-user.html:44
+msgid "Fecha de Nacimiento:"
+msgstr "Date of Birth:"
+
+#: .\templates\detail-user.html:48
+msgid "Domicilio:"
+msgstr "Address:"
+
+#: .\templates\detail-user.html:52
+msgid "Teléfono:"
+msgstr "Phone:"
+
+#: .\templates\detail-user.html:56
+msgid "Fecha de Ingreso:"
+msgstr "Joining Date:"
+
+#: .\templates\detail-user.html:60
+msgid "Fecha de Egreso:"
+msgstr "Departure Date:"
+
+#: .\templates\detail-user.html:64
+msgid "Motivo de Baja:"
+msgstr "Reason for departure:"
+
+#: .\templates\detail-user.html:68
+msgid "Color de Menú:"
+msgstr "Menu Color:"
+
+#: .\templates\detail-user.html:74
+msgid "Rol Asignado:"
+msgstr "Assigned Role:"
+
+#: .\templates\detail-user.html:78
+msgid "Cliente Asociado:"
+msgstr "Associated Client:"
+
+#: .\templates\detail-user.html:82
+msgid "Autenticación de Dos Factores:"
+msgstr "Two-Factor Authentication:"
+
+#: .\templates\detail-user.html:85
+msgid "Habilitado"
+msgstr "Enabled"
+
+#: .\templates\detail-user.html:87
+msgid "Deshabilitado"
+msgstr "Disabled"
+
+#: .\templates\email_config.html:40
+msgid "Configurar email"
+msgstr "Configure email"
+
+#: .\templates\email_config.html:57
+msgid "Guardar configuración"
+msgstr "Save configuration"
+
+#: .\templates\evaluacion_form.html:45
+msgid "Crear / Editar Evaluación de Riesgo"
+msgstr "Create / Edit Risk Evaluation"
+
+#: .\templates\evaluacion_form.html:102
+msgid "Guardar Evaluación"
+msgstr "Save Evaluation"
+
+#: .\templates\evaluation_detail.html:12
+msgid "Detalle de Evaluación"
+msgstr "Evaluation Details"
+
+#: .\templates\evaluation_detail.html:14
+#, python-format
+msgid "Objeto evaluado: %(evaluation.evaluated_object)s"
+msgstr "Evaluated object: %(evaluation.evaluated_object)s"
+
+#: .\templates\evaluation_detail.html:19
+msgid "Forzar creación de tratamiento y vincular"
+msgstr "Force treatment creation and link"
+
+#: .\templates\evaluation_detail.html:22
+msgid "Tratamiento asociado:"
+msgstr "Associated treatment:"
+
+#: .\templates\evaluation_detail.html:31
+msgid "Detalles del objeto evaluado"
+msgstr "Details of the evaluated object"
+
+#: .\templates\evaluation_detail.html:55
+msgid "Impacto confidencialidad"
+msgstr "Confidentiality impact"
+
+#: .\templates\evaluation_detail.html:56
+msgid "Impacto integridad"
+msgstr "Integrity impact"
+
+#: .\templates\evaluation_detail.html:57
+msgid "Impacto disponibilidad"
+msgstr "Availability impact"
+
+#: .\templates\evaluation_detail.html:59
+msgid "Valor de Impacto"
+msgstr "Impact Value"
+
+#: .\templates\evaluation_detail.html:60
+msgid "Valor de Riesgo"
+msgstr "Risk Value"
+
+#: .\templates\evaluation_detail.html:61
+msgid "Nivel de Riesgo"
+msgstr "Risk Level"
+
+#: .\templates\evaluation_detail.html:79
+msgid "Responsable:"
+msgstr "Responsible:"
+
+#: .\templates\evaluation_detail.html:81
+#: .\templates\threat_intel_review_create.html:72
+#: .\templates\threat_intel_review_update.html:74
+msgid "Descripción:"
+msgstr "Description"
+
+#: .\templates\evaluation_detail.html:84
+msgid "Acciones inmediatas:"
+msgstr "Immediate actions:"
+
+#: .\templates\evaluation_detail.html:87
+msgid "Acciones correctivas:"
+msgstr "Corrective actions:"
+
+#: .\templates\evaluation_detail.html:90
+msgid "Notas de análisis:"
+msgstr "Analysis notes:"
+
+#: .\templates\evaluation_detail.html:94
+msgid "Ver detalle del tratamiento"
+msgstr "View treatment details"
+
+#: .\templates\evaluation_list.html:33
+#, python-format
+msgid "%(verbose_name_plural)s"
+msgstr "List of %(verbose_name)s"
+
+#: .\templates\evaluation_list.html:40
+#, python-format
+msgid "Alta de %(verbose_name_plural)s"
+msgstr "List of %(verbose_name)s"
+
+#: .\templates\evaluation_list.html:96
+msgid "check"
+msgstr "check"
+
+#: .\templates\evaluation_list.html:106
+msgid "Ver objeto evaluado"
+msgstr "Details of the evaluated object"
+
+#: .\templates\evaluation_list.html:133
+#, python-format
+msgid "Detalle %(verbose_name_plural)s"
+msgstr "Details of %(verbose_model_name)s"
+
+#: .\templates\evaluation_list.html:134
+#, python-format
+msgid "Eliminar %(verbose_name_plural)s"
+msgstr "List of %(verbose_name)s"
+
+#: .\templates\generate-qr-code.html:21
+msgid "Tu Código QR"
+msgstr "2FA QR Code"
+
+#: .\templates\generate-qr-code.html:25
+msgid "Código QR"
+msgstr "2FA QR Code"
+
+#: .\templates\generate-qr-code.html:29
+msgid "Escanea el código QR con \\"
+msgstr "Scan the QR code with \\"
+
+#: .\templates\generate-qr-code.html:29
+msgid "Descargalo aquí"
+msgstr "Download CSV"
+
+#: .\templates\generate-qr-code.html:30
+msgid "Volver al Perfil"
+msgstr "Back to Run"
+
+#: .\templates\global_settings.html:25 .\templates\update-cont.html:90
+#: .\templates\update-sect.html:50
+msgid "Guardar"
+msgstr "Save changes"
+
+#: .\templates\home.html:23
+msgid "Necesitas loguearte."
+msgstr "You need to log in."
+
+#: .\templates\home.html:76 .\templates\home_tenant.html:372
+#: .\templates\profile.html:19
+msgid "Mi Perfil"
+msgstr "Profile"
+
+#: .\templates\home_tenant.html:8
+#, python-format
+msgid "¡Bienvenido, %(nombre)s!"
+msgstr "Welcome, %(nombre)s!"
+
+#: .\templates\home_tenant.html:9
+msgid "Elegí una opción para comenzar."
+msgstr "Choose an option to begin."
+
+#: .\templates\home_tenant.html:30
+msgid "Pendientes"
+msgstr "Pending"
+
+#: .\templates\home_tenant.html:32
+msgid "Tratamientos pendientes"
+msgstr "Pending treatments"
+
+#: .\templates\home_tenant.html:43
+msgid "En análisis"
+msgstr "In analysis"
+
+#: .\templates\home_tenant.html:52
+msgid "En Progreso"
+msgstr "In Progress"
+
+#: .\templates\home_tenant.html:54
+msgid "En ejecución"
+msgstr "In execution"
+
+#: .\templates\home_tenant.html:63 .\templates\home_tenant.html:65
+msgid "Implementados"
+msgstr "Implemented"
+
+#: .\templates\home_tenant.html:88
+msgid "Con tratamiento no implementado"
+msgstr "With non-implemented treatment"
+
+#: .\templates\home_tenant.html:91
+msgid "Revisa las evaluaciones con tratamiento pendiente"
+msgstr "Check evaluations with pending treatment"
+
+#: .\templates\home_tenant.html:99
+msgid "Muy Bajo"
+msgstr "Very Low"
+
+#: .\templates\home_tenant.html:115
+msgid "Muy Alto"
+msgstr "Very High"
+
+#: .\templates\home_tenant.html:120
+msgid "Top críticas recientes"
+msgstr "Top recent criticals"
+
+#: .\templates\home_tenant.html:127
+msgid "Nivel"
+msgstr "Level"
+
+#: .\templates\home_tenant.html:133
+msgid "No hay evaluaciones críticas recientes."
+msgstr "No recent critical evaluations."
+
+#: .\templates\home_tenant.html:142
+msgid "Tratamientos próximos / pendientes"
+msgstr "Upcoming / pending treatments"
+
+#: .\templates\home_tenant.html:156
+msgid "No hay tratamientos pendientes."
+msgstr "No pending treatments."
+
+#: .\templates\home_tenant.html:168
+msgid "Threat Intel relevantes"
+msgstr "Relevant Threat Intel"
+
+#: .\templates\home_tenant.html:175
+#: .\templates\threat_intel_analysis_detail.html:79
+#: .\templates\threat_intel_analysis_list.html:46
+#: .\templates\threat_intel_analysis_list.html:77
+#: .\templates\threat_intel_item_detail.html:116
+#: .\templates\threat_intel_report_detail.html:93
+#: .\templates\threat_intel_runitem_list.html:39
+msgid "Critical"
+msgstr "Critical"
+
+#: .\templates\home_tenant.html:185
+#: .\templates\threat_intel_analysis_detail.html:81
+#: .\templates\threat_intel_analysis_list.html:47
+#: .\templates\threat_intel_analysis_list.html:79
+#: .\templates\threat_intel_item_detail.html:118
+#: .\templates\threat_intel_report_detail.html:95
+#: .\templates\threat_intel_runitem_list.html:40
+msgid "High"
+msgstr "High"
+
+#: .\templates\home_tenant.html:195
+#: .\templates\threat_intel_analysis_detail.html:83
+#: .\templates\threat_intel_analysis_list.html:48
+#: .\templates\threat_intel_analysis_list.html:81
+#: .\templates\threat_intel_item_detail.html:120
+#: .\templates\threat_intel_report_detail.html:97
+#: .\templates\threat_intel_runitem_list.html:41
+msgid "Medium"
+msgstr "Medium"
+
+#: .\templates\home_tenant.html:205
+msgid "Unknown"
+msgstr "Unknown"
+
+#: .\templates\home_tenant.html:213
+msgid "Items recientes (relevantes con IA)"
+msgstr "Recent items (AI-relevant)"
+
+#: .\templates\home_tenant.html:220
+msgid "Severity"
+msgstr "Severity"
+
+#: .\templates\home_tenant.html:227
+msgid "No hay items relevantes con análisis IA."
+msgstr "No relevant items with AI analysis."
+
+#: .\templates\home_tenant.html:238
+msgid "Evaluaciones de proveedores pendientes"
+msgstr "Pending vendor evaluations"
+
+#: .\templates\home_tenant.html:245
+#, python-format
+msgid ""
+"Pendientes dentro de los próximos %(pending_evals_window_days)s días "
+"(incluye vencidas)."
+msgstr ""
+"Pending within the next %(pending_evals_window_days)s days (includes "
+"overdue)."
+
+#: .\templates\home_tenant.html:251
+#: .\templates\vendor_evaluation_pending_list.html:36
+msgid "Owner"
+msgstr "Owner"
+
+#: .\templates\home_tenant.html:251
+msgid "Sin plantilla"
+msgstr "No template"
+
+#: .\templates\home_tenant.html:257
+#, python-format
+msgid "Faltan %(ev.days_until_scheduled)s días"
+msgstr "%(ev.days_until_scheduled)s days left"
+
+#: .\templates\home_tenant.html:259
+#, python-format
+msgid "Venció hace %(ev.days_until_scheduled_abs)s días"
+msgstr "Overdue by %(ev.days_until_scheduled_abs)s days"
+
+#: .\templates\home_tenant.html:262
+msgid "Fecha pendiente"
+msgstr "Pending date"
+
+#: .\templates\home_tenant.html:267
+msgid "No hay evaluaciones pendientes dentro del período seleccionado."
+msgstr "No pending evaluations within the selected period."
+
+#: .\templates\home_tenant.html:284
+msgid "Listado de contraseñas."
+msgstr "Password list."
+
+#: .\templates\home_tenant.html:297 ⁨.\templates\tenant_navbar copy.html⁩:238
+msgid "Ejecuciones"
+msgstr "Runs"
+
+#: .\templates\home_tenant.html:298
+msgid "Runs de Threat Intel"
+msgstr "Threat Intel Runs"
+
+#: .\templates\home_tenant.html:311 ⁨.\templates\tenant_navbar copy.html⁩:240
+#: .\templates\threat_intel_report_list.html:14
+msgid "Reportes"
+msgstr "Reports"
+
+#: .\templates\home_tenant.html:312
+msgid "Reportes generados"
+msgstr "Generated reports"
+
+#: .\templates\home_tenant.html:326
+msgid "Análisis y resultados"
+msgstr "Analysis and results"
+
+#: .\templates\home_tenant.html:340 ⁨.\templates\tenant_navbar copy.html⁩:213
+#: .\templates\tenant_navbar.html:104
+msgid "Activos"
+msgstr "Assets"
+
+#: .\templates\home_tenant.html:341
+msgid "Activos de la informacion."
+msgstr "Information assets."
+
+#: .\templates\home_tenant.html:357
+msgid "Listado de proveedores"
+msgstr "Vendor list"
+
+#: .\templates\home_tenant.html:371
+msgid "Perfil"
+msgstr "Profile"
+
+#: .\templates\home_tenant.html:387 ⁨.\templates\tenant_navbar copy.html⁩:222
+msgid "Riesgos"
+msgstr "Risks"
+
+#: .\templates\home_tenant.html:388
+msgid "Evaluacion de riesgos"
+msgstr "Risk evaluation"
+
+#: .\templates\home_tenant.html:402
+msgid "Listado de tratamientos"
+msgstr "Treatment list"
+
+#: .\templates\landing.html:11
+msgid "Ingresa a"
+msgstr "Enter"
+
+#: .\templates\landing.html:13
+msgid ""
+"Accedé a tu espacio de trabajo con tu usuario y contraseña, o iniciá sesión "
+"con Google."
+msgstr ""
+"Access your workspace with your username and password, or log inwith Google."
+
+#: .\templates\landing.html:18 .\templates\public_navbar.html:42
+msgid "Crear cuenta"
+msgstr "Create Source"
+
+#: .\templates\landing.html:21
+msgid "Iniciar sesión"
+msgstr "Login"
+
+#: .\templates\landing.html:38
+msgid "¿Qué podés hacer acá?"
+msgstr "¿What can you do here?"
+
+#: .\templates\landing.html:42
+msgid "Un único acceso"
+msgstr "Single access"
+
+#: .\templates\landing.html:42
+msgid "para múltiples cuentas."
+msgstr "for multiple accounts."
+
+#: .\templates\landing.html:46
+msgid "SSO con Google"
+msgstr "Continue with Google"
+
+#: .\templates\landing.html:46 .\templates\user_list.html:42
+msgid "2FA"
+msgstr "2FA"
+
+#: .\templates\landing.html:46
+msgid "según políticas de la cuenta."
+msgstr "according to account policies."
+
+#: .\templates\landing.html:50
+msgid "Derivación automática"
+msgstr "Automatic referral"
+
+#: .\templates\landing.html:50
+msgid "si tenés un solo acceso; selector si tenés varios."
+msgstr "If you have only one access point; selector if you have several."
+
+#: .\templates\list-asset.html:18
+msgid "Activos de la información"
+msgstr "Information assets"
+
+#: .\templates\list-asset.html:27
+msgid "Alta de activo"
+msgstr "Register asset"
+
+#: .\templates\list-asset.html:35
+msgid "Id"
+msgstr "ID"
+
+#: .\templates\list-asset.html:40
+msgid "Localización"
+msgstr "Location"
+
+#: .\templates\list-asset.html:42
+msgid "Nro Serie"
+msgstr "Serial No."
+
+#: .\templates\list-asset.html:43
+msgid "Clasif. información"
+msgstr "Info. classification"
+
+#: .\templates\list-asset.html:44
+msgid "Dueño"
+msgstr "Owner"
+
+#: .\templates\list-asset.html:63 .\templates\update-asset.html:41
+msgid "Editar activo"
+msgstr "Delete asset"
+
+#: .\templates\list-asset.html:64
+msgid "Detalle activo"
+msgstr "Asset detail"
+
+#: .\templates\list-asset.html:65
+msgid "Eliminar activo"
+msgstr "Delete asset"
+
+#: .\templates\list_resource.html:33
+msgid "Historial de préstamos"
+msgstr "Register loan"
+
+#: .\templates\list_resource.html:44
+#: .\templates\vendor_evaluation_pending_list.html:15
+msgid "Evaluaciones pendientes"
+msgstr "Pending vendor evaluations"
+
+#: .\templates\list_resource.html:56
+msgid "Filtros"
+msgstr "Filter"
+
+#: .\templates\list_resource.html:145
+msgid "Asignar plantilla"
+msgstr "No template"
+
+#: .\templates\list_resource.html:151
+msgid "Devolver"
+msgstr "Back"
+
+#: .\templates\list_resource.html:153
+msgid "Prestar"
+msgstr "Lend"
+
+#: .\templates\list_resource.html:155
+msgid "Historial"
+msgstr "Recent history"
+
+#: .\templates\list_resource.html:157
+msgid "Acciones pendientes de confirmación"
+msgstr "Information assets"
+
+#: .\templates\listpass.html:39
+msgid "Nueva contraseña"
+msgstr "New Password"
+
+#: .\templates\listpass.html:58
+msgid "Actualiza"
+msgstr "Update:"
+
+#: .\templates\listpass.html:60
+msgid "Link"
+msgstr "Link:"
+
+#: .\templates\listpass.html:71
+msgid "Es de uso personal"
+msgstr "It is for personal use"
+
+#: .\templates\listpass.html:98
+msgid "Contraseña fuerte"
+msgstr "Password"
+
+#: .\templates\listpass.html:100
+msgid "Contraseña moderada"
+msgstr "Generated password"
+
+#: .\templates\listpass.html:102
+msgid "Contraseña débil"
+msgstr "Password"
+
+#: .\templates\listpass.html:105
+msgid "Ver contraseña"
+msgstr "Generate password"
+
+#: .\templates\listpass.html:107
+msgid "Copiar Contraseña"
+msgstr "Password Name"
+
+#: .\templates\listpass.html:124 .\templates\listpass.html:126
+msgid "Descargar adjunto"
+msgstr "Download template"
+
+#: .\templates\listpass.html:129 .\templates\listpass.html:131
+msgid "Compartir"
+msgstr "Share"
+
+#: .\templates\listpass.html:148
+msgid "Por favor, necesitas ingresar con un usuario para navegar."
+msgstr "Please, you need to log in with an administrator user to navigate."
+
+#: .\templates\listpermission.html:52
+msgid "Nuevo Permiso"
+msgstr "New Permission"
+
+#: .\templates\listsection.html:33
+msgid "Nombre Sección"
+msgstr "Section Name"
+
+#: .\templates\listsection.html:75
+msgid "Nueva Sección"
+msgstr "New Section"
+
+#: .\templates\login.html:11
+msgid "Ingresá a tu cuenta"
+msgstr "Log in to your account"
+
+#: .\templates\login.html:23
+msgid "Email o usuario"
+msgstr "Email or username"
+
+#: .\templates\login.html:32 .\templates\login1.html:34
+msgid "Ingresar"
+msgstr "Enter"
+
+#: .\templates\login.html:38
+msgid "o"
+msgstr "or"
+
+#: .\templates\login.html:46
+msgid "Continuar con Google"
+msgstr "Continue with Google"
+
+#: .\templates\login.html:52
+msgid "Si tu usuario pertenece a un solo tenant, te derivamos automáticamente."
+msgstr ""
+"If your user belongs to only one tenant, we will redirect you automatically."
+
+#: .\templates\login1.html:37
+msgid "No recuerdo mi contraseña"
+msgstr "I don't remember my password"
+
+#: .\templates\logout.html:15
+msgid "Has terminado la sesión"
+msgstr "You have logged out"
+
+#: .\templates\password_reset.html:26
+#: .\templates\password_reset_complete.html:26
+#: .\templates\password_reset_confirm.html:26
+#: .\templates\reset_password_done.html:26
+msgid "Restablecer Contraseña"
+msgstr "Reset Password"
+
+#: .\templates\password_reset.html:38
+msgid "Correo electrónico"
+msgstr "email"
+
+#: .\templates\password_reset_complete.html:40
+msgid "Tu contraseña ha sido cambiada correctamente."
+msgstr "Your password has been changed successfully."
+
+#: .\templates\password_reset_confirm.html:69
+msgid "Reestablecer contraseña"
+msgstr "Reset password"
+
+#: .\templates\password_reset_email.html:1
+msgid "Hola"
+msgstr "Hello"
+
+#: .\templates\password_reset_email.html:3
+msgid ""
+"Recibiste este email porque solicitaste un cambio de contraseña en el "
+"dominio:"
+msgstr ""
+"You received this email because you requested a password change in the "
+"domain:"
+
+#: .\templates\password_reset_email.html:5
+msgid ""
+"Por favor sigue el proximo link para continuar con el cambio de contraseña:"
+msgstr "Please follow the next link to continue with the password change:"
+
+#: .\templates\password_reset_email.html:9
+msgid "Gracias"
+msgstr "Thank you"
+
+#: .\templates\password_reset_email.html:10
+msgid "Equipo de Passing"
+msgstr "Passing Team"
+
+#: .\templates\permission_roles_form.html:20
+msgid "Agregar Rol de Permisos"
+msgstr "Add Permission Role"
+
+#: .\templates\permission_roles_form.html:28 .\templates\update_role.html:29
+msgid "Nombre del Rol"
+msgstr "Role Name"
+
+#: .\templates\profile.html:27 .\templates\tenant_navbar.html:163
+msgid "Default Avatar"
+msgstr "Default Avatar"
+
+#: .\templates\profile.html:35 .\templates\profile.html:55
+msgid "Correo"
+msgstr "mail"
+
+#: .\templates\profile.html:36 .\templates\user_list.html:39
+msgid "Posición"
+msgstr "Pagination"
+
+#: .\templates\profile.html:75
+msgid "2do factor de autenticación"
+msgstr "2nd authentication factor"
+
+#: .\templates\profile.html:96
+msgid "Por favor, necesitas ingresar con un usuario para ver el perfil."
+msgstr "Please, you need to log in with a user to view the profile."
+
+#: .\templates\public_navbar.html:8
+msgid "Navbar - Passing"
+msgstr "Navbar - Passing"
+
+#: .\templates\public_navbar.html:37 .\templates\tenant_navbar.html:87
+#: .\threat_intel\models.py:97
+msgid "Inicio"
+msgstr "Start"
+
+#: .\templates\public_navbar.html:47
+msgid "Este es público"
+msgstr "This is public"
+
+#: .\templates\qr_2fa.html:16
+msgid "Activar verificación en dos pasos"
+msgstr "Activate two-step verification"
+
+#: .\templates\qr_2fa.html:20
+#, python-format
+msgid "Hola <strong>%(email)s</strong>."
+msgstr "Hello <strong>%(email)s</strong>."
+
+#: .\templates\qr_2fa.html:21
+msgid ""
+"Escaneá el código QR con tu app de autenticación (Google Authenticator, "
+"Authy, 1Password, etc.) y luego ingresá el código de 6 dígitos para "
+"continuar."
+msgstr ""
+"Scan the QR code with your authentication app (Google Authenticator, Authy, "
+"1Password, etc.) and then enter the 6-digit code to continue."
+
+#: .\templates\qr_2fa.html:28 .\templates\qr_2fa.html:30
+msgid "Código QR 2FA"
+msgstr "2FA QR Code"
+
+#: .\templates\qr_2fa.html:32
+msgid "QR no disponible"
+msgstr "QR not available"
+
+#: .\templates\qr_2fa.html:49
+msgid "Abrí tu app de autenticación y agregá una cuenta nueva."
+msgstr "Open your authentication app and add a new account."
+
+#: .\templates\qr_2fa.html:50
+msgid "Escaneá el QR o ingresá la clave manual."
+msgstr "Scan the QR or enter the manual key."
+
+#: .\templates\qr_2fa.html:51
+msgid "Ingresá abajo el código de 6 dígitos y continuá."
+msgstr "Enter the 6-digit code below and continue."
+
+#: .\templates\qr_2fa.html:61
+msgid "Código de verificación"
+msgstr "Verification code"
+
+#: .\templates\qr_2fa.html:72
+msgid "Son 6 dígitos que cambian cada ~30 segundos."
+msgstr "These are 6 digits that change every ~30 seconds."
+
+#: .\templates\qr_2fa.html:76
+msgid "Verificar y continuar"
+msgstr "Verify and continue"
+
+#: .\templates\qr_2fa.html:78
+msgid "Ya escaneé, verificar"
+msgstr "I already scanned, verify"
+
+#: .\templates\qr_2fa.html:86
+msgid "Destino después de verificar:"
+msgstr "Destination after verification:"
+
+#: .\templates\recive-mail.html:24
+msgid "No he recibido el correo electronico."
+msgstr "I haven't received the email."
+
+#: .\templates\roles_list.html:22
+msgid "Roles"
+msgstr "Roles"
+
+#: .\templates\roles_list.html:34
+msgid "Agregar Rol"
+msgstr "Add Role"
+
+#: .\templates\roles_list.html:44
+msgid "Nombre Rol"
+msgstr "Role Name"
+
+#: .\templates\roles_list.html:45
+msgid "Cantidad de Contraseñas"
+msgstr "Number of Passwords"
+
+#: .\templates\roles_list.html:62
+msgid "Editar Rol"
+msgstr "Edit Role"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:197
+msgid "Nueva Contraseña"
+msgstr "New Password"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:199
+msgid "Generador rápido"
+msgstr "Quick generator"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:207 .\templates\tenant_navbar.html:99
+msgid "Recursos"
+msgstr "Resources"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:228
+msgid "Evaluaciones"
+msgstr "Evaluations"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:239
+#: .\templates\threat_intel_analysis_detail.html:9
+#: .\templates\threat_intel_analysis_list.html:17
+msgid "Análisis IA"
+msgstr "AI Analysis"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:241
+#: .\templates\threat_intel_review_list.html:14
+msgid "Revisiones"
+msgstr "Reviews"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:243
+msgid "Config. Amenazas"
+msgstr "Threat Config."
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:252
+msgid "Salir"
+msgstr "Logout"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:277
+msgid "Generador rápido de contraseñas"
+msgstr "Quick password generator"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:282
+msgid "Longitud"
+msgstr "Length"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:313
+msgid "Contraseña generada"
+msgstr "Generated password"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:314
+msgid "Copiar"
+msgstr "Copy"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:319
+msgid "Crear y abrir formulario"
+msgstr "Create and open form"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:381
+msgid "Generá una contraseña primero."
+msgstr "Generate a password first."
+
+#: .\templates\tenant_navbar.html:126
+msgid "Evaluación de Riesgo"
+msgstr "Risk Evaluation"
+
+#: .\templates\threat_intel_analysis_detail.html:10
+#, python-format
+msgid "Run #%(rid)s | Modelo: %(name)s"
+msgstr "Run #%(rid)s | Model: %(name)s"
+
+#: .\templates\threat_intel_analysis_detail.html:22
+msgid "Item Analizado"
+msgstr "Analyzed Item"
+
+#: .\templates\threat_intel_analysis_detail.html:25
+#: .\templates\threat_intel_review_detail.html:59
+msgid "CVE:"
+msgstr "CVE:"
+
+#: .\templates\threat_intel_analysis_detail.html:26
+#: .\templates\threat_intel_item_detail.html:43
+#: .\templates\threat_intel_report_create.html:120
+#: .\templates\threat_intel_review_detail.html:60
+msgid "Severidad:"
+msgstr "Severity:"
+
+#: .\templates\threat_intel_analysis_detail.html:31
+msgid "CVSS:"
+msgstr "CVSS:"
+
+#: .\templates\threat_intel_analysis_detail.html:33
+msgid "Ver Item Completo"
+msgstr "View Full Item"
+
+#: .\templates\threat_intel_analysis_detail.html:46
+msgid "Re-ejecutar"
+msgstr "Re-run"
+
+#: .\templates\threat_intel_analysis_detail.html:50
+#: .\templates\threat_intel_run_detail.html:55
+msgid "Descargar JSON"
+msgstr "Download JSON"
+
+#: .\templates\threat_intel_analysis_detail.html:60
+msgid "Análisis Generado"
+msgstr "Generated Analysis"
+
+#: .\templates\threat_intel_analysis_detail.html:75
+#: .\templates\threat_intel_item_detail.html:51
+#: .\templates\threat_intel_review_detail.html:64
+msgid "Sí"
+msgstr "Yes"
+
+#: .\templates\threat_intel_analysis_detail.html:75
+#: .\templates\threat_intel_item_detail.html:51
+#: .\templates\threat_intel_review_detail.html:66
+msgid "No"
+msgstr "No"
+
+#: .\templates\threat_intel_analysis_detail.html:85
+#: .\templates\threat_intel_analysis_list.html:49
+#: .\templates\threat_intel_analysis_list.html:83
+#: .\templates\threat_intel_item_detail.html:122
+#: .\templates\threat_intel_report_detail.html:99
+#: .\templates\threat_intel_runitem_list.html:42
+msgid "Low"
+msgstr "Low"
+
+#: .\templates\threat_intel_analysis_detail.html:99
+msgid "JSON Crudo (para referencia)"
+msgstr "Raw JSON (for reference)"
+
+#: .\templates\threat_intel_analysis_detail.html:125
+msgid "Modelo IA:"
+msgstr "IA Model:"
+
+#: .\templates\threat_intel_analysis_detail.html:126
+msgid "Versión de Prompt:"
+msgstr "Prompt Version:"
+
+#: .\templates\threat_intel_analysis_detail.html:128
+#: .\templates\threat_intel_report_detail.html:38
+#: .\templates\threat_intel_review_detail.html:32
+msgid "Run:"
+msgstr "Run:"
+
+#: .\templates\threat_intel_analysis_detail.html:128
+#: .\templates\threat_intel_analysis_list.html:87
+#: .\templates\threat_intel_item_detail.html:159
+#: .\templates\threat_intel_report_list.html:44
+#: .\templates\threat_intel_review_detail.html:32
+#: .\templates\threat_intel_run_detail.html:8
+#, python-format
+msgid "Run #%(rid)s"
+msgstr "Items from Run #%(rid)s"
+
+#: .\templates\threat_intel_analysis_list.html:18
+msgid "Listado de análisis generados por IA para vulnerabilidades"
+msgstr "List of AI-generated analyses for vulnerabilities"
+
+#: .\templates\threat_intel_analysis_list.html:27
+#: .\templates\threat_intel_run_list.html:24
+#: .\templates\threat_intel_runitem_list.html:27
+msgid "Refrescar"
+msgstr "Refresh"
+
+#: .\templates\threat_intel_analysis_list.html:30
+msgid "Ver Runs"
+msgstr "View Runs"
+
+#: .\templates\threat_intel_analysis_list.html:39
+#: .\templates\threat_intel_analysis_list.html:61
+#: .\templates\threat_intel_run_detail.html:99
+#: .\templates\threat_intel_runitem_list.html:62
+msgid "CVE/ID"
+msgstr "CVE/ID"
+
+#: .\templates\threat_intel_analysis_list.html:40
+msgid "Buscar por CVE..."
+msgstr "Search by CVE..."
+
+#: .\templates\threat_intel_analysis_list.html:45
+#: .\templates\threat_intel_runitem_list.html:38
+msgid "Todas"
+msgstr "All"
+
+#: .\templates\threat_intel_analysis_list.html:53
+msgid "Filtrar"
+msgstr "Filter"
+
+#: .\templates\threat_intel_analysis_list.html:62
+#: .\templates\threat_intel_run_detail.html:100
+#: .\templates\threat_intel_runitem_list.html:63 .\threat_intel\models.py:41
+#: .\threat_intel\models.py:68
+msgid "Título"
+msgstr "Title"
+
+#: .\templates\threat_intel_analysis_list.html:64
+msgid "Modelo IA"
+msgstr "IA Model"
+
+#: .\templates\threat_intel_analysis_list.html:65
+#: .\templates\threat_intel_report_list.html:33
+#: .\templates\threat_intel_review_list.html:42
+msgid "Run"
+msgstr "Run"
+
+#: .\templates\threat_intel_analysis_list.html:94
+msgid "JSON"
+msgstr "JSON"
+
+#: .\templates\threat_intel_analysis_list.html:100
+msgid "No hay análisis disponibles"
+msgstr "No analyses available"
+
+#: .\templates\threat_intel_analysis_list.html:112
+#: .\templates\threat_intel_report_list.html:71
+#: .\templates\threat_intel_review_list.html:99
+#: .\templates\threat_intel_runitem_list.html:112
+#: .\templates\threat_intel_source_list.html:76
+#: .\templates\threat_intel_techtag_list.html:93
+msgid "Primera"
+msgstr "First"
+
+#: .\templates\threat_intel_analysis_list.html:115
+#: .\templates\threat_intel_report_list.html:74
+#: .\templates\threat_intel_review_list.html:102
+#: .\templates\threat_intel_runitem_list.html:115
+#: .\templates\threat_intel_source_list.html:79
+#: .\templates\threat_intel_techtag_list.html:96
+msgid "Anterior"
+msgstr "Previous"
+
+#: .\templates\threat_intel_analysis_list.html:128
+#: .\templates\threat_intel_report_list.html:87
+#: .\templates\threat_intel_review_list.html:115
+#: .\templates\threat_intel_runitem_list.html:128
+#: .\templates\threat_intel_source_list.html:92
+#: .\templates\threat_intel_techtag_list.html:109
+msgid "Última"
+msgstr "Last"
+
+#: .\templates\threat_intel_config.html:14
+msgid "Configuración de Inteligencia de Amenazas"
+msgstr "Threat Intelligence Configuration"
+
+#: .\templates\threat_intel_config.html:15
+msgid "Gestiona fuentes de datos y etiquetas de tecnología"
+msgstr "Manage data sources and technology tags"
+
+#: .\templates\threat_intel_config.html:21
+msgid "Volver a Inteligencia"
+msgstr "Back to Intelligence"
+
+#: .\templates\threat_intel_config.html:34
+#: .\templates\threat_intel_config.html:52
+msgid "Total:"
+msgstr "Total:"
+
+#: .\templates\threat_intel_config.html:34
+msgid "fuentes"
+msgstr "sources"
+
+#: .\templates\threat_intel_config.html:35
+#: .\templates\threat_intel_config.html:53
+msgid "Activas:"
+msgstr "Active:"
+
+#: .\templates\threat_intel_config.html:37
+#: .\templates\threat_intel_config.html:55
+msgid "Ver Todas"
+msgstr "View All"
+
+#: .\templates\threat_intel_config.html:40
+#: .\templates\threat_intel_config.html:58
+msgid "Nueva"
+msgstr "New"
+
+#: .\templates\threat_intel_config.html:52
+msgid "etiquetas"
+msgstr "tags"
+
+#: .\templates\threat_intel_config.html:67
+msgid "Fuentes Activas Recientes"
+msgstr "Recent Active Sources"
+
+#: .\templates\threat_intel_config.html:76
+#: .\templates\threat_intel_item_detail.html:10
+#: .\templates\threat_intel_source_list.html:34
+#: .\templates\vendor_evaluation_pending_list.html:33
+#: .\threat_intel\models.py:25 .\threat_intel\models.py:66
+msgid "Tipo"
+msgstr "Type"
+
+#: .\templates\threat_intel_config.html:78
+#: .\templates\threat_intel_source_create.html:89
+#: .\templates\threat_intel_source_update.html:89
+msgid "URL Base"
+msgstr "Base URL:"
+
+#: .\templates\threat_intel_config.html:100
+msgid "No hay fuentes configuradas"
+msgstr "No sources configured"
+
+#: .\templates\threat_intel_item_detail.html:19
+msgid "Detalles"
+msgstr "Details"
+
+#: .\templates\threat_intel_item_detail.html:35
+msgid "Severidad & Evaluación"
+msgstr "Severity & Evaluation"
+
+#: .\templates\threat_intel_item_detail.html:39
+#: .\templates\threat_intel_review_create.html:71
+#: .\templates\threat_intel_review_detail.html:61
+#: .\templates\threat_intel_review_update.html:73
+msgid "CVSS Score:"
+msgstr "CVSS Score:"
+
+#: .\templates\threat_intel_item_detail.html:49
+msgid "Marcado como Relevante:"
+msgstr "Marked as Relevant:"
+
+#: .\templates\threat_intel_item_detail.html:56
+msgid "Análisis IA disponible:"
+msgstr "IA Analysis available:"
+
+#: .\templates\threat_intel_item_detail.html:71
+#, python-format
+msgid "Análisis IA (%(name)s)"
+msgstr "IA Analysis (%(name)s)"
+
+#: .\templates\threat_intel_item_detail.html:76
+#: .\templates\threat_intel_review_create.html:79
+#: .\templates\threat_intel_review_detail.html:93
+msgid "Resumen:"
+msgstr "Summary:"
+
+#: .\templates\threat_intel_item_detail.html:83
+msgid "Impacto Preliminar:"
+msgstr "Preliminary Impact:"
+
+#: .\templates\threat_intel_item_detail.html:90
+msgid "Acciones Recomendadas:"
+msgstr "Recommended Actions:"
+
+#: .\templates\threat_intel_item_detail.html:97
+#: .\templates\threat_intel_review_detail.html:96
+msgid "Tecnologías Afectadas:"
+msgstr "Affected Technologies:"
+
+#: .\templates\threat_intel_item_detail.html:108
+msgid "Deadline Recomendado:"
+msgstr "Recommended Deadline:"
+
+#: .\templates\threat_intel_item_detail.html:114
+#: .\templates\threat_intel_review_create.html:81
+#: .\templates\threat_intel_review_detail.html:94
+msgid "Prioridad:"
+msgstr "Priority:"
+
+#: .\templates\threat_intel_item_detail.html:128
+msgid "Notas:"
+msgstr "Notes:"
+
+#: .\templates\threat_intel_item_detail.html:144
+#, python-format
+msgid "Apariciones en Runs (%(count)s)"
+msgstr "Appearances in Runs (%(count)s)"
+
+#: .\templates\threat_intel_item_detail.html:150
+msgid "Run ID"
+msgstr "Run ID"
+
+#: .\templates\threat_intel_item_detail.html:151
+msgid "Período"
+msgstr "Period"
+
+#: .\templates\threat_intel_item_detail.html:153
+msgid "Detectado"
+msgstr "Detected"
+
+#: .\templates\threat_intel_item_detail.html:178
+#: .\templates\threat_intel_review_create.html:41
+msgid "Volver a Items"
+msgstr "Back to Items"
+
+#: .\templates\threat_intel_item_detail.html:181
+msgid "Crear Review"
+msgstr "Create Review"
+
+#: .\templates\threat_intel_item_detail.html:184
+msgid "Ver Run"
+msgstr "View Run"
+
+#: .\templates\threat_intel_item_detail.html:187
+msgid "Crear Evaluación"
+msgstr "Create Evaluation"
+
+#: .\templates\threat_intel_item_detail.html:191
+#: .\templates\threat_intel_report_list.html:21
+#: .\templates\threat_intel_review_list.html:21
+msgid "Volver a Runs"
+msgstr "Back to Runs"
+
+#: .\templates\threat_intel_item_detail.html:195
+msgid "Ver Análisis"
+msgstr "View Analysis"
+
+#: .\templates\threat_intel_link_threat.html:5
+#, python-format
+msgid "Vincular Amenaza a IntelItem %(cid)s"
+msgstr "Link Threat to IntelItem %(cid)s"
+
+#: .\templates\threat_intel_link_threat.html:10
+msgid "Buscar amenazas..."
+msgstr "Search threats..."
+
+#: .\templates\threat_intel_link_threat.html:11
+msgid "Buscar"
+msgstr "Search"
+
+#: .\templates\threat_intel_link_threat.html:29
+msgid "No se encontraron amenazas."
+msgstr "No threats found."
+
+#: .\templates\threat_intel_link_threat.html:35
+msgid "Vincular"
+msgstr "Link"
+
+#: .\templates\threat_intel_report_create.html:38
+msgid "Volver a Run"
+msgstr "Back to Run"
+
+#: .\templates\threat_intel_report_create.html:42
+msgid "Crear Nuevo Reporte"
+msgstr "Create New Report"
+
+#: .\templates\threat_intel_report_create.html:43
+#, python-format
+msgid "Para Run #%(rid)s (%(start)s - %(end)s)"
+msgstr "For Run #%(rid)s (%(start)s - %(end)s)"
+
+#: .\templates\threat_intel_report_create.html:49
+msgid "Nuevo Reporte"
+msgstr "New Report"
+
+#: .\templates\threat_intel_report_create.html:57
+#: .\templates\threat_intel_report_list.html:32 .\threat_intel\models.py:152
+msgid "Asunto"
+msgstr "Subject"
+
+#: .\templates\threat_intel_report_create.html:65
+msgid "Título descriptivo del reporte"
+msgstr "Descriptive report title"
+
+#: .\templates\threat_intel_report_create.html:70
+msgid "Contenido (Markdown)"
+msgstr "Content (Markdown)"
+
+#: .\templates\threat_intel_report_create.html:78
+msgid ""
+"Puedes usar Markdown para formatear: **negrita**, *cursiva*, `código`, etc."
+msgstr "You can use Markdown for formatting: **bold**, *italic*, `code`, etc."
+
+#: .\templates\threat_intel_report_create.html:83 .\threat_intel\models.py:155
+msgid "Destinatarios"
+msgstr "Recipients"
+
+#: .\templates\threat_intel_report_create.html:91
+msgid "Correos separados por comas: usuario1@example.com, usuario2@example.com"
+msgstr "Emails separated by commas: user1@example.com, user2@example.com"
+
+#: .\templates\threat_intel_report_create.html:96
+#: .\templates\threat_intel_run_detail.html:49
+msgid "Crear Reporte"
+msgstr "Create Report"
+
+#: .\templates\threat_intel_report_create.html:109
+#, python-format
+msgid "Análisis Disponibles (%(count)s)"
+msgstr "Available Analyses (%(count)s)"
+
+#: .\templates\threat_intel_report_create.html:136
+msgid "No hay análisis disponibles para este run"
+msgstr "No analyses available for this run"
+
+#: .\templates\threat_intel_report_detail.html:13
+#, python-format
+msgid "Reporte para Run #%(rid)s"
+msgstr "Report for Run #%(rid)s"
+
+#: .\templates\threat_intel_report_detail.html:19
+msgid "Volver a Reportes"
+msgstr "Back to Reports"
+
+#: .\templates\threat_intel_report_detail.html:22
+msgid "Ir al Run"
+msgstr "Go to Run"
+
+#: .\templates\threat_intel_report_detail.html:26
+msgid "Enviar por Email"
+msgstr "Send by Email"
+
+#: .\templates\threat_intel_report_detail.html:34
+msgid "Información del Reporte"
+msgstr "Report Information"
+
+#: .\templates\threat_intel_report_detail.html:37
+msgid "Asunto:"
+msgstr "Subject:"
+
+#: .\templates\threat_intel_report_detail.html:39
+msgid "Período:"
+msgstr "Period:"
+
+#: .\templates\threat_intel_report_detail.html:40
+#: .\templates\threat_intel_run_detail.html:72
+#: .\templates\threat_intel_source_detail.html:34
+#: .\templates\threat_intel_techtag_detail.html:28
+msgid "Estado:"
+msgstr "Status:"
+
+#: .\templates\threat_intel_report_detail.html:42
+#: .\templates\threat_intel_report_list.html:35
+#: .\templates\threat_intel_report_list.html:49
+msgid "Enviado"
+msgstr "Sent"
+
+#: .\templates\threat_intel_report_detail.html:42
+#: .\templates\threat_intel_report_list.html:49
+msgid "Borrador"
+msgstr "Draft"
+
+#: .\templates\threat_intel_report_detail.html:46
+msgid "Enviado:"
+msgstr "Sent:"
+
+#: .\templates\threat_intel_report_detail.html:49
+#: .\templates\threat_intel_report_detail.html:129
+msgid "Destinatarios:"
+msgstr "Recipients:"
+
+#: .\templates\threat_intel_report_detail.html:56
+msgid "Contenido del Reporte"
+msgstr "Report Content"
+
+#: .\templates\threat_intel_report_detail.html:66
+msgid "No hay contenido generado"
+msgstr "No generated content"
+
+#: .\templates\threat_intel_report_detail.html:73
+msgid "Análisis Incluidos"
+msgstr "Included Analyses"
+
+#: .\templates\threat_intel_report_detail.html:80
+#: .\templates\threat_intel_review_create.html:54
+#: .\templates\threat_intel_review_list.html:41
+#: .\templates\threat_intel_review_update.html:56
+msgid "CVE"
+msgstr "CVE"
+
+#: .\templates\threat_intel_report_detail.html:81
+#: .\templates\threat_intel_review_create.html:58
+#: .\templates\threat_intel_review_update.html:60
+#: .\templates\threat_intel_run_detail.html:101
+#: .\templates\threat_intel_runitem_list.html:36
+#: .\templates\threat_intel_runitem_list.html:64 .\threat_intel\models.py:73
+msgid "Severidad"
+msgstr "Severity"
+
+#: .\templates\threat_intel_report_detail.html:83
+#: .\templates\threat_intel_run_detail.html:68
+msgid "Resumen"
+msgstr "Summary"
+
+#: .\templates\threat_intel_report_detail.html:108
+msgid "No hay análisis disponibles para este reporte"
+msgstr "No analyses available for this report"
+
+#: .\templates\threat_intel_report_detail.html:120
+msgid "Enviar Reporte por Email"
+msgstr "Send Report by Email"
+
+#: .\templates\threat_intel_report_detail.html:133
+msgid "No hay destinatarios configurados"
+msgstr "No recipients configured"
+
+#: .\templates\threat_intel_report_detail.html:147
+msgid "Enviar por email"
+msgstr "Send by email"
+
+#: .\templates\threat_intel_report_detail.html:148
+msgid "Enviar a los destinatarios configurados"
+msgstr "Send to configured recipients"
+
+#: .\templates\threat_intel_report_detail.html:161
+msgid "Incluir PDF como adjunto"
+msgstr "Include PDF as attachment"
+
+#: .\templates\threat_intel_report_detail.html:162
+msgid "Requiere: pip install weasyprint"
+msgstr "Requires: pip install weasyprint"
+
+#: .\templates\threat_intel_report_detail.html:171
+msgid "Backend de Email"
+msgstr "Email Backend"
+
+#: .\templates\threat_intel_report_detail.html:185
+msgid "SMTP (Gmail)"
+msgstr "SMTP (Gmail)"
+
+#: .\templates\threat_intel_report_detail.html:186
+msgid "Configurado en settings.py"
+msgstr "Configured in settings.py"
+
+#: .\templates\threat_intel_report_detail.html:199
+msgid "Brevo (SendinBlue)"
+msgstr "Brevo (SendinBlue)"
+
+#: .\templates\threat_intel_report_detail.html:201
+msgid "Requiere: BREVO_API_KEY en settings"
+msgstr "Requires: BREVO_API_KEY in settings"
+
+#: .\templates\threat_intel_report_detail.html:202
+msgid "Ver guía de configuración"
+msgstr "View setup guide"
+
+#: .\templates\threat_intel_report_detail.html:211
+msgid "Nota:"
+msgstr "Note:"
+
+#: .\templates\threat_intel_report_detail.html:211
+msgid "La generación de PDF requiere la librería WeasyPrint."
+msgstr "PDF generation requires the WeasyPrint library."
+
+#: .\templates\threat_intel_report_detail.html:221
+msgid "Enviar Reporte"
+msgstr "Send Report"
+
+#: .\templates\threat_intel_report_list.html:15
+msgid "Listado de reportes generados"
+msgstr "List of generated reports"
+
+#: .\templates\threat_intel_report_list.html:24
+msgid "Crear Reporte (desde Run)"
+msgstr "Create Report (from Run)"
+
+#: .\templates\threat_intel_report_list.html:60
+msgid "No hay reportes disponibles"
+msgstr "No reports available"
+
+#: .\templates\threat_intel_report_list.html:79
+#: .\templates\threat_intel_runitem_list.html:120
+#: .\templates\threat_intel_source_list.html:84
+msgid "de"
+msgstr "of"
+
+#: .\templates\threat_intel_review_create.html:45
+msgid "Crear Revisión de Seguridad"
+msgstr "Create Security Review"
+
+#: .\templates\threat_intel_review_create.html:46
+#: .\templates\threat_intel_review_update.html:48
+#, python-format
+msgid "Para %(cve)s en Run #%(rid)s"
+msgstr "For %(cve)s in Run #%(rid)s"
+
+#: .\templates\threat_intel_review_create.html:78
+msgid "Análisis Disponible"
+msgstr "Analysis Available"
+
+#: .\templates\threat_intel_review_create.html:84
+#: .\templates\threat_intel_review_detail.html:95
+msgid "Acción Recomendada:"
+msgstr "Recommended Action:"
+
+#: .\templates\threat_intel_review_create.html:91
+msgid "Nueva Revisión"
+msgstr "New Review"
+
+#: .\templates\threat_intel_review_create.html:99
+#: .\templates\threat_intel_review_list.html:43
+#: .\templates\threat_intel_review_update.html:108 .\threat_intel\models.py:173
+msgid "Decisión"
+msgstr "Decision"
+
+#: .\templates\threat_intel_review_create.html:107
+#: .\templates\threat_intel_review_update.html:116
+msgid "Selecciona la acción que se debe tomar para este CVE"
+msgstr "Select the action to be taken for this CVE"
+
+#: .\templates\threat_intel_review_create.html:112
+#: .\templates\threat_intel_review_update.html:121
+msgid "Guía de Decisiones:"
+msgstr "Decision Guide:"
+
+#: .\templates\threat_intel_review_create.html:114
+#: .\templates\threat_intel_review_update.html:123
+msgid "Crear Ticket:"
+msgstr "Create Ticket:"
+
+#: .\templates\threat_intel_review_create.html:114
+#: .\templates\threat_intel_review_update.html:123
+msgid "Se requiere acción inmediata en nuestra infraestructura"
+msgstr "Immediate action required in our infrastructure"
+
+#: .\templates\threat_intel_review_create.html:115
+#: .\templates\threat_intel_review_update.html:124
+msgid "Monitorear:"
+msgstr "Monitor:"
+
+#: .\templates\threat_intel_review_create.html:115
+#: .\templates\threat_intel_review_update.html:124
+msgid "Observar y evaluar el impacto en futuro"
+msgstr "Observe and evaluate impact in the future"
+
+#: .\templates\threat_intel_review_create.html:116
+#: .\templates\threat_intel_review_update.html:125
+msgid "No Aplica:"
+msgstr "Not Applicable:"
+
+#: .\templates\threat_intel_review_create.html:116
+#: .\templates\threat_intel_review_update.html:125
+msgid "No es relevante para nuestra infraestructura"
+msgstr "Not relevant to our infrastructure"
+
+#: .\templates\threat_intel_review_create.html:117
+#: .\templates\threat_intel_review_update.html:126
+msgid "Postergar:"
+msgstr "Postpone:"
+
+#: .\templates\threat_intel_review_create.html:117
+#: .\templates\threat_intel_review_update.html:126
+msgid "Decidir más adelante"
+msgstr "Decide later"
+
+#: .\templates\threat_intel_review_create.html:123
+#: .\templates\threat_intel_review_detail.html:76
+#: .\templates\threat_intel_review_update.html:132
+msgid "Notas de la Revisión"
+msgstr "Review Notes"
+
+#: .\templates\threat_intel_review_create.html:131
+#: .\templates\threat_intel_review_update.html:140
+msgid "Comentarios adicionales sobre la decisión tomada"
+msgstr "Additional comments on the decision made"
+
+#: .\templates\threat_intel_review_create.html:136
+#: .\templates\threat_intel_review_update.html:145
+msgid "Referencia de Ticket (Opcional)"
+msgstr "Ticket Reference (Optional)"
+
+#: .\templates\threat_intel_review_create.html:144
+#: .\templates\threat_intel_review_update.html:153
+msgid "ej: BITRIX-1234 o URL del ticket de seguimiento"
+msgstr "e.g.: BITRIX-1234 or tracking ticket URL"
+
+#: .\templates\threat_intel_review_create.html:149
+msgid "Guardar Revisión"
+msgstr "Save Review"
+
+#: .\templates\threat_intel_review_detail.html:6
+#, python-format
+msgid "Revisión: %(cve)s"
+msgstr "Review: %(cve)s"
+
+#: .\templates\threat_intel_review_detail.html:7
+#, python-format
+msgid "Decisión en Run #%(rid)s"
+msgstr "Decision in Run #%(rid)s"
+
+#: .\templates\threat_intel_review_detail.html:13
+msgid "Revisiones del Run"
+msgstr "Run Reviews"
+
+#: .\templates\threat_intel_review_detail.html:19
+msgid "Todas las Revisiones"
+msgstr "All Reviews"
+
+#: .\templates\threat_intel_review_detail.html:28
+msgid "Información de la Revisión"
+msgstr "Review Information"
+
+#: .\templates\threat_intel_review_detail.html:31
+msgid "Item:"
+msgstr "Item:"
+
+#: .\templates\threat_intel_review_detail.html:33
+msgid "Decisión:"
+msgstr "Decision:"
+
+#: .\templates\threat_intel_review_detail.html:35
+#: .\templates\threat_intel_review_list.html:57
+msgid "Crear Ticket"
+msgstr "Create Ticket"
+
+#: .\templates\threat_intel_review_detail.html:37
+#: .\templates\threat_intel_review_list.html:59
+msgid "Monitorear"
+msgstr "Monitor"
+
+#: .\templates\threat_intel_review_detail.html:39
+#: .\templates\threat_intel_review_list.html:61
+msgid "No Aplica"
+msgstr "Not Applicable"
+
+#: .\templates\threat_intel_review_detail.html:41
+#: .\templates\threat_intel_review_list.html:63
+msgid "Postergar"
+msgstr "Postpone"
+
+#: .\templates\threat_intel_review_detail.html:44
+#: .\templates\threat_intel_review_update.html:82
+msgid "Decidido por:"
+msgstr "Decided by:"
+
+#: .\templates\threat_intel_review_detail.html:45
+msgid "Fecha:"
+msgstr "Date:"
+
+#: .\templates\threat_intel_review_detail.html:47
+msgid "Ticket:"
+msgstr "Ticket:"
+
+#: .\templates\threat_intel_review_detail.html:56
+msgid "Información del Item"
+msgstr "Item Information"
+
+#: .\templates\threat_intel_review_detail.html:62
+msgid "Es Relevante:"
+msgstr "Is Relevant:"
+
+#: .\templates\threat_intel_review_detail.html:82
+msgid "Sin notas"
+msgstr "No notes"
+
+#: .\templates\threat_intel_review_detail.html:90
+msgid "Análisis Asociado"
+msgstr "Associated Analysis"
+
+#: .\templates\threat_intel_review_detail.html:99
+msgid "Ver Análisis Completo"
+msgstr "View Full Analysis"
+
+#: .\templates\threat_intel_review_list.html:15
+msgid "Listado de decisiones y revisiones de items"
+msgstr "List of decisions and item reviews"
+
+#: .\templates\threat_intel_review_list.html:25
+msgid "Crear Review (desde Run)"
+msgstr "Create Review (from Run)"
+
+#: .\templates\threat_intel_review_list.html:33
+#, python-format
+msgid "Mostrando revisiones para <strong>Run #%(rp)s</strong>"
+msgstr "Showing reviews for <strong>Run #%(rp)s</strong>"
+
+#: .\templates\threat_intel_review_list.html:34
+msgid "Ver todas las revisiones"
+msgstr "View all reviews"
+
+#: .\templates\threat_intel_review_list.html:44 .\threat_intel\models.py:176
+msgid "Decidido por"
+msgstr "Decided by"
+
+#: .\templates\threat_intel_review_list.html:46
+msgid "Ticket"
+msgstr "Ticket"
+
+#: .\templates\threat_intel_review_list.html:88
+msgid "No hay revisiones disponibles"
+msgstr "No reviews available"
+
+#: .\templates\threat_intel_review_update.html:43
+msgid "Volver a Revisión"
+msgstr "Back to Review"
+
+#: .\templates\threat_intel_review_update.html:47
+#: .\templates\threat_intel_review_update.html:100
+msgid "Editar Revisión"
+msgstr "Edit Review"
+
+#: .\templates\threat_intel_review_update.html:79
+msgid "Información de la Revisión Original"
+msgstr "Original Review Information"
+
+#: .\templates\threat_intel_review_update.html:86
+msgid "Fecha Original:"
+msgstr "Original Date:"
+
+#: .\templates\threat_intel_review_update.html:92
+msgid "Análisis:"
+msgstr "Analysis:"
+
+#: .\templates\threat_intel_review_update.html:158
+#: .\templates\threat_intel_source_update.html:111
+#: .\templates\threat_intel_techtag_update.html:87
+msgid "Guardar Cambios"
+msgstr "Save Changes"
+
+#: .\templates\threat_intel_run_detail.html:19
+msgid "Información General"
+msgstr "General Information"
+
+#: .\templates\threat_intel_run_detail.html:43
+msgid "Ver Items"
+msgstr "View Items"
+
+#: .\templates\threat_intel_run_detail.html:46
+msgid "Ver Revisiones"
+msgstr "View Reviews"
+
+#: .\templates\threat_intel_run_detail.html:52
+#: .\templates\threat_intel_run_list.html:99
+msgid "Descargar CSV"
+msgstr "Download CSV"
+
+#: .\templates\threat_intel_run_detail.html:71
+msgid "Items encontrados:"
+msgstr "Items found:"
+
+#: .\templates\threat_intel_run_detail.html:92
+msgid "Items Detectados (primeros 10)"
+msgstr "Detected Items (first 10)"
+
+#: .\templates\threat_intel_run_detail.html:93
+msgid "Ver todos"
+msgstr "View all"
+
+#: .\templates\threat_intel_run_detail.html:102
+#: .\templates\threat_intel_runitem_list.html:65 .\threat_intel\models.py:72
+msgid "CVSS"
+msgstr "CVSS"
+
+#: .\templates\threat_intel_runitem_list.html:17
+#, python-format
+msgid "Items del Run #%(rid)s"
+msgstr "Items from Run #%(rid)s"
+
+#: .\templates\threat_intel_runitem_list.html:18
+#, python-format
+msgid "Período: %(ps)s a %(pe)s"
+msgstr "Period: %(ps)s to %(pe)s"
+
+#: .\templates\threat_intel_runitem_list.html:24
+msgid "Volver al Run"
+msgstr "Back to Run"
+
+#: .\templates\threat_intel_runitem_list.html:46
+msgid "Relevancia"
+msgstr "Relevance"
+
+#: .\templates\threat_intel_runitem_list.html:49
+msgid "Relevantes"
+msgstr "Relevant"
+
+#: .\templates\threat_intel_runitem_list.html:50
+msgid "No relevantes"
+msgstr "Not relevant"
+
+#: .\templates\threat_intel_runitem_list.html:66
+msgid "Relevante"
+msgstr "Relevant"
+
+#: .\templates\threat_intel_runitem_list.html:93
+msgid "Review"
+msgstr "Review"
+
+#: .\templates\threat_intel_runitem_list.html:100
+msgid "No hay items para este run"
+msgstr "No items for this run"
+
+#: .\templates\threat_intel_runitem_list.html:108
+msgid "Paginación"
+msgstr "Pagination"
+
+#: .\templates\threat_intel_source_create.html:31
+#: .\templates\threat_intel_source_detail.html:12
+msgid "Volver a Fuentes"
+msgstr "Back to Sources"
+
+#: .\templates\threat_intel_source_create.html:35
+msgid "Crear Nueva Fuente"
+msgstr "Create New Source"
+
+#: .\templates\threat_intel_source_create.html:36
+msgid ""
+"Agregar una nueva fuente de inteligencia de amenazas (NVD, CISA, AWS, etc.)"
+msgstr "Add a new threat intelligence source (NVD, CISA, AWS, etc.)"
+
+#: .\templates\threat_intel_source_create.html:42
+msgid "Nueva Fuente de Datos"
+msgstr "New Data Source"
+
+#: .\templates\threat_intel_source_create.html:50
+#: .\templates\threat_intel_source_update.html:50
+msgid "Código (Único)"
+msgstr "Code"
+
+#: .\templates\threat_intel_source_create.html:58
+#: .\templates\threat_intel_source_update.html:58
+msgid "ej: NVD, CISA, AWS, MSRC, GITHUB"
+msgstr "NVD, CISA, AWS, etc."
+
+#: .\templates\threat_intel_source_create.html:71
+#: .\templates\threat_intel_source_update.html:71
+msgid "Nombre descriptivo de la fuente"
+msgstr "Descriptive report title"
+
+#: .\templates\threat_intel_source_create.html:76
+#: .\templates\threat_intel_source_update.html:76
+msgid "Tipo de Fuente"
+msgstr "Source type:"
+
+#: .\templates\threat_intel_source_create.html:84
+#: .\templates\threat_intel_source_update.html:84
+msgid "Método de obtención: API REST, RSS Feed, o Web Scraping"
+msgstr "Data acquisition method: REST API, RSS Feed, or Web Scraping"
+
+#: .\templates\threat_intel_source_create.html:97
+#: .\templates\threat_intel_source_update.html:97
+msgid "ej: https://services.nvd.nist.gov/rest/json/"
+msgstr "ej: https://services.nvd.nist.gov/rest/json/"
+
+#: .\templates\threat_intel_source_create.html:104
+#: .\templates\threat_intel_source_update.html:104
+msgid "Activa (usar en próximos scans)"
+msgstr "Active (use in analysis)"
+
+#: .\templates\threat_intel_source_create.html:111
+msgid "Crear Fuente"
+msgstr "Create Source"
+
+#: .\templates\threat_intel_source_detail.html:6
+#, python-format
+msgid "Fuente: %(code)s"
+msgstr "Source: %(code)s"
+
+#: .\templates\threat_intel_source_detail.html:22
+msgid "Información de la Fuente"
+msgstr "Source Information"
+
+#: .\templates\threat_intel_source_detail.html:27
+msgid "Código:"
+msgstr "Code:"
+
+#: .\templates\threat_intel_source_detail.html:28
+#: .\templates\threat_intel_techtag_detail.html:27
+msgid "Nombre:"
+msgstr "Name:"
+
+#: .\templates\threat_intel_source_detail.html:29
+msgid "Tipo:"
+msgstr "Type:"
+
+#: .\templates\threat_intel_source_detail.html:32
+msgid "URL Base:"
+msgstr "Base URL:"
+
+#: .\templates\threat_intel_source_detail.html:48
+msgid "Descripción del Tipo"
+msgstr "Type Description"
+
+#: .\templates\threat_intel_source_detail.html:52
+msgid "API:"
+msgstr "API:"
+
+#: .\templates\threat_intel_source_detail.html:52
+msgid "Esta fuente se obtiene mediante llamadas a API REST."
+msgstr "This source is obtained via REST API calls."
+
+#: .\templates\threat_intel_source_detail.html:54
+msgid "RSS:"
+msgstr "RSS:"
+
+#: .\templates\threat_intel_source_detail.html:54
+msgid "Esta fuente se obtiene mediante feeds RSS."
+msgstr "This source is obtained via RSS feeds."
+
+#: .\templates\threat_intel_source_detail.html:56
+msgid "HTML:"
+msgstr "HTML:"
+
+#: .\templates\threat_intel_source_detail.html:56
+msgid "Esta fuente se obtiene mediante web scraping de contenido HTML."
+msgstr "This source is obtained via web scraping of HTML content."
+
+#: .\templates\threat_intel_source_detail.html:58
+msgid "Tipo de fuente:"
+msgstr "Source type:"
+
+#: .\templates\threat_intel_source_list.html:15
+msgid "Gestiona las fuentes de inteligencia de amenazas (NVD, CISA, AWS, etc.)"
+msgstr "Manage threat intelligence sources (NVD, CISA, AWS, etc.)"
+
+#: .\templates\threat_intel_source_list.html:21
+#: .\templates\threat_intel_techtag_list.html:21
+msgid "Volver a Configuración"
+msgstr "Back to Configuration"
+
+#: .\templates\threat_intel_source_list.html:24
+msgid "Nueva Fuente"
+msgstr "New Source"
+
+#: .\templates\threat_intel_source_list.html:35
+msgid "Base URL"
+msgstr "Base URL"
+
+#: .\templates\threat_intel_source_list.html:65
+msgid "No hay fuentes disponibles"
+msgstr "No sources available"
+
+#: .\templates\threat_intel_source_update.html:31
+#: .\templates\threat_intel_techtag_update.html:33
+msgid "Volver a Detalles"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_source_update.html:35
+#: .\templates\threat_intel_source_update.html:42
+msgid "Editar Fuente"
+msgstr "Edit Source"
+
+#: .\templates\threat_intel_source_update.html:36
+msgid "Actualizar parámetros de"
+msgstr "Update parameters for"
+
+#: .\templates\threat_intel_techtag_create.html:171
+#: .\templates\threat_intel_techtag_detail.html:12
+msgid "Volver a Etiquetas"
+msgstr "Back to Tags"
+
+#: .\templates\threat_intel_techtag_create.html:175
+msgid "Crear Nueva Etiqueta"
+msgstr "Create New Tag"
+
+#: .\templates\threat_intel_techtag_create.html:176
+msgid "Agregar una nueva etiqueta de tecnología para la detección automática"
+msgstr "Add a new technology tag for automatic detection"
+
+#: .\templates\threat_intel_techtag_create.html:182
+#: .\templates\threat_intel_techtag_list.html:24
+msgid "Nueva Etiqueta"
+msgstr "New Tag"
+
+#: .\templates\threat_intel_techtag_create.html:190
+#: .\templates\threat_intel_techtag_update.html:52
+msgid "Nombre de la Etiqueta"
+msgstr "Tag Name"
+
+#: .\templates\threat_intel_techtag_create.html:200
+msgid ""
+"ej: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, "
+"etc."
+msgstr ""
+"e.g.: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, "
+"etc."
+
+#: .\templates\threat_intel_techtag_create.html:205
+#: .\templates\threat_intel_techtag_update.html:65
+msgid "Palabras Clave (JSON Array)"
+msgstr "Keywords (JSON Array)"
+
+#: .\templates\threat_intel_techtag_create.html:216
+msgid "Formato:"
+msgstr "Format:"
+
+#: .\templates\threat_intel_techtag_create.html:216
+#: .\templates\threat_intel_techtag_create.html:217
+msgid "[\\"
+msgstr "[\\"
+
+#: .\templates\threat_intel_techtag_create.html:217
+msgid "Ejemplo:"
+msgstr "Example:"
+
+#: .\templates\threat_intel_techtag_create.html:218
+msgid "Se usarán para detectar automáticamente CVEs relacionados"
+msgstr "Will be used to automatically detect related CVEs"
+
+#: .\templates\threat_intel_techtag_create.html:231
+msgid "Activa (usar en búsquedas y análisis)"
+msgstr "Active (use in searches and analysis)"
+
+#: .\templates\threat_intel_techtag_create.html:238
+msgid "Crear Etiqueta"
+msgstr "Create Tag"
+
+#: .\templates\threat_intel_techtag_detail.html:6
+msgid "Etiqueta de tecnología"
+msgstr "Technology tag"
+
+#: .\templates\threat_intel_techtag_detail.html:32
+#: .\templates\threat_intel_techtag_list.html:68
+msgid "Inactiva"
+msgstr "Inactive"
+
+#: .\templates\threat_intel_techtag_detail.html:42
+msgid "Palabras Clave para Búsqueda"
+msgstr "Search Keywords"
+
+#: .\templates\threat_intel_techtag_detail.html:46
+#, python-format
+msgid ""
+"Se usarán estas palabras para detectar automáticamente vulnerabilidades "
+"relacionadas con <strong>%(name)s</strong>:"
+msgstr ""
+"These keywords will be used to automatically detect vulnerabilities related "
+"to <strong>%(name)s</strong>:"
+
+#: .\templates\threat_intel_techtag_detail.html:55
+msgid "No hay palabras clave definidas"
+msgstr "No keywords defined"
+
+#: .\templates\threat_intel_techtag_list.html:15
+msgid "Gestiona las etiquetas para clasificar vulnerabilidades por tecnología"
+msgstr "Manage tags to classify vulnerabilities by technology"
+
+#: .\templates\threat_intel_techtag_list.html:41
+msgid "Palabras Clave"
+msgstr "Keywords"
+
+#: .\templates\threat_intel_techtag_list.html:82
+msgid "No hay etiquetas disponibles"
+msgstr "No tags available"
+
+#: .\templates\threat_intel_techtag_update.html:37
+#, python-format
+msgid "Editar Etiqueta: %(name)s"
+msgstr "Edit Tag: %(name)s"
+
+#: .\templates\threat_intel_techtag_update.html:38
+msgid "Actualizar palabras clave y parámetros de detección"
+msgstr "Update keywords and detection parameters"
+
+#: .\templates\threat_intel_techtag_update.html:44
+msgid "Editar Etiqueta"
+msgstr "Edit Tag"
+
+#: .\templates\threat_intel_techtag_update.html:60
+msgid "ej: Ransomware, Malware, Vulnerabilidad Crítica"
+msgstr "e.g.: Ransomware, Malware, Critical Vulnerability"
+
+#: .\templates\threat_intel_techtag_update.html:73
+msgid "Formato JSON: [\\"
+msgstr "JSON Format: [\\"
+
+#: .\templates\threat_intel_techtag_update.html:73
+msgid "Estas palabras se usarán para detección automática en reportes"
+msgstr "These words will be used for automatic detection in reports"
+
+#: .\templates\threat_intel_techtag_update.html:80
+msgid "Activa (usar en análisis)"
+msgstr "Active (use in analysis)"
+
+#: .\templates\threat_intel_techtag_update.html:101
+msgid "Palabras Clave Actuales"
+msgstr "Current Keywords"
+
+#: .\templates\treatment-create.html:39
+#, python-format
+msgid "Lista de %(verbose_name)s"
+msgstr "List of %(verbose_name)s"
+
+#: .\templates\treatment-create.html:66
+msgid "Etapa actual:"
+msgstr "Current stage:"
+
+#: .\templates\treatment-create.html:69
+msgid "Etapa:"
+msgstr "Stage:"
+
+#: .\templates\treatment-create.html:70
+msgid "Seleccione una etapa"
+msgstr "Select a stage"
+
+#: .\templates\treatment-create.html:74
+msgid "Cambiar etapa"
+msgstr "Change stage"
+
+#: .\templates\treatment-create.html:171
+msgid "Seleccione un recurso"
+msgstr "Select a resource"
+
+#: .\templates\treatment-create.html:216
+msgid ""
+"Marcar como \"Implementado\" creará una re-evaluación asociada. ¿Desea "
+"continuar?"
+msgstr ""
+"Marking as \"Implemented\" will create an associated re-evaluation. Do you "
+"wish to continue?"
+
+#: .\templates\update-cont.html:58
+msgid "Ingrese la contraseña"
+msgstr "Enter the password"
+
+#: .\templates\update-cont.html:67
+msgid "Ingrese el usuario de ingreso"
+msgstr "Enter the login username"
+
+#: .\templates\update-sect.html:17
+msgid "Ver Secciones"
+msgstr "View Sections"
+
+#: .\templates\update_role.html:21
+msgid "Modificar Roles de Permiso"
+msgstr "Modify Permission Roles"
+
+#: .\templates\upload_contrasenas.html:10
+msgid "Subir contraseñas desde CSV"
+msgstr "Upload passwords from CSV"
+
+#: .\templates\upload_contrasenas.html:21
+msgid "Subir"
+msgstr "Upload"
+
+#: .\templates\upload_contrasenas.html:24
+msgid "Formato del CSV"
+msgstr "CSV Format"
+
+#: .\templates\upload_csv.html:37
+msgid "Descargar plantilla"
+msgstr "Download template"
+
+#: .\templates\user_form.html:41
+msgid "Editar Usuario"
+msgstr "Edit User"
+
+#: .\templates\user_list.html:36
+msgid "Nombre y apellido"
+msgstr "First and last name"
+
+#: .\templates\user_list.html:38
+msgid "eMail"
+msgstr "Email"
+
+#: .\templates\user_list.html:43
+msgid "Fech. Ingreso"
+msgstr "Joining Date"
+
+#: .\templates\user_list.html:44
+msgid "Fech. Egreso"
+msgstr "Departure Date"
+
+#: .\templates\user_list.html:53
+msgid "Usuario Activo"
+msgstr "Active User"
+
+#: .\templates\user_list.html:55
+msgid "Usuario Inactivo"
+msgstr "Inactive User"
+
+#: .\templates\user_list.html:61
+msgid "Super user"
+msgstr "Super user"
+
+#: .\templates\user_list.html:75
+msgid "2FA activado"
+msgstr "2FA activated"
+
+#: .\templates\user_list.html:77 .\templates\user_list.html:88
+msgid "2FA desactivado"
+msgstr "2FA deactivated"
+
+#: .\templates\user_list.html:83
+msgid "Editar usuario"
+msgstr "Edit user"
+
+#: .\templates\user_list.html:86
+msgid "Enviar QR"
+msgstr "Send QR"
+
+#: .\templates\user_list.html:91
+msgid "Desactivar usuario"
+msgstr "Deactivate user"
+
+#: .\templates\user_list.html:93
+msgid "Activar usuario"
+msgstr "Activate user"
+
+#: .\templates\user_list.html:95
+msgid "Detalle usuario"
+msgstr "User detail"
+
+#: .\templates\vendor_checklist_form.html:14
+msgid "Asignar checklist a proveedor"
+msgstr "Assign checklist to vendor"
+
+#: .\templates\vendor_checklist_form.html:15
+msgid "Relaciona rápidamente una plantilla con el proveedor seleccionado."
+msgstr "Quickly link a template with the selected vendor."
+
+#: .\templates\vendor_checklist_form.html:45
+msgid "Guardar asignación"
+msgstr "Save assignment"
+
+#: .\templates\vendor_evaluation_detail.html:9
+msgid "Evaluación"
+msgstr "Evaluation"
+
+#: .\templates\vendor_evaluation_detail.html:28
+msgid "Programada"
+msgstr "Scheduled"
+
+#: .\templates\vendor_evaluation_detail.html:29
+msgid "Realizada"
+msgstr "Completed"
+
+#: .\templates\vendor_evaluation_detail.html:30
+msgid "Responsable"
+msgstr "Responsible"
+
+#: .\templates\vendor_evaluation_detail.html:42
+msgid "Pregunta"
+msgstr "Question"
+
+#: .\templates\vendor_evaluation_detail.html:75
+msgid "Guardar y completar"
+msgstr "Save and complete"
+
+#: .\templates\vendor_evaluation_form.html:9
+msgid "Crear evaluación de proveedor"
+msgstr "Create vendor evaluation"
+
+#: .\templates\vendor_evaluation_form.html:10
+msgid "Generá una nueva evaluación tomando la plantilla asignada al proveedor."
+msgstr "Generate a new evaluation using the template assigned to the vendor."
+
+#: .\templates\vendor_evaluation_pending_list.html:17
+#, python-format
+msgid ""
+"Tus evaluaciones se habilitan %(reminder_lead_days)s días antes de la fecha "
+"programada."
+msgstr ""
+"Your evaluations are enabled %(reminder_lead_days)s days before the "
+"scheduled date."
+
+#: .\templates\vendor_evaluation_pending_list.html:21
+msgid "Volver a proveedores"
+msgstr "Back to vendors"
+
+#: .\templates\vendor_evaluation_pending_list.html:44
+msgid "Programada para"
+msgstr "Scheduled for"
+
+#: .\templates\vendor_evaluation_pending_list.html:48
+#, python-format
+msgid "Faltan %(evaluation.days_until_scheduled)s días"
+msgstr "%(evaluation.days_until_scheduled)s days left"
+
+#: .\templates\vendor_evaluation_pending_list.html:50
+#, python-format
+msgid "Venció hace %(evaluation.days_until_scheduled_abs)s días"
+msgstr "Expired %(evaluation.days_until_scheduled_abs)s days ago"
+
+#: .\templates\vendor_evaluation_pending_list.html:56
+msgid "Abrir evaluación"
+msgstr "Open evaluation"
+
+#: .\templates\vendor_evaluation_pending_list.html:60
+#, python-format
+msgid "Disponible en %(evaluation.days_until_scheduled)s días"
+msgstr "Available in %(evaluation.days_until_scheduled)s days"
+
+#: .\templates\vendor_evaluation_pending_list.html:62
+msgid "Disponible próximamente"
+msgstr "Available soon"
+
+#: .\templates\vendor_evaluation_pending_list.html:72
+msgid "No tenés evaluaciones pendientes por el momento."
+msgstr "You have no pending evaluations at the moment."
+
+#: .\templates\verify_2fa.html:16
+msgid "Autenticación en 2 pasos"
+msgstr "2-step authentication"
+
+#: .\templates\verify_2fa.html:30
+msgid "Verificar"
+msgstr "Verify"
+
+#: .\threat_intel\models.py:13
+#| msgid "Palabras Clave"
+msgid "Palabras clave"
+msgstr "Keywords"
+
+#: .\threat_intel\models.py:26
+#| msgid "URL Base"
+msgid "URL base"
+msgstr "Base URL:"
+
+#: .\threat_intel\models.py:36 .\threat_intel\models.py:213
+#| msgid "fuentes"
+msgid "Fuente"
+msgstr "sources"
+
+#: .\threat_intel\models.py:37
+msgid "ID externo"
+msgstr ""
+
+#: .\threat_intel\models.py:38 .\threat_intel\models.py:75
+#| msgid "Fecha de Creación"
+msgid "Fecha de publicación"
+msgstr "Created At"
+
+#: .\threat_intel\models.py:39
+#| msgid "Fecha de Creación"
+msgid "Fecha de obtención"
+msgstr "Created At"
+
+#: .\threat_intel\models.py:40
+msgid "URL"
+msgstr "URL"
+
+#: .\threat_intel\models.py:42
+msgid "Payload crudo"
+msgstr "Raw Payload"
+
+#: .\threat_intel\models.py:65
+msgid "ID canónico"
+msgstr "ID canónico"
+
+#: .\threat_intel\models.py:76
+msgid "URL principal"
+msgstr "URL principal"
+
+#: .\threat_intel\models.py:79
+#| msgid "Etiqueta de tecnología"
+msgid "Etiquetas tecnológicas"
+msgstr "Technology tag"
+
+#: .\threat_intel\models.py:80
+#| msgid "Es Relevante:"
+msgid "Es relevante"
+msgstr "Is Relevant:"
+
+#: .\threat_intel\models.py:83
+#| msgid "Relevancia"
+msgid "Referencias"
+msgstr "Relevance"
+
+#: .\threat_intel\models.py:84
+#| msgid "fuentes"
+msgid "Fuentes"
+msgstr "sources"
+
+#: .\threat_intel\models.py:94
+msgid "Tipo de corrida"
+msgstr "Type of run"
+
+#: .\threat_intel\models.py:95
+#| msgid "Solicitud de permisos"
+msgid "Inicio del periodo"
+msgstr "Permission request"
+
+#: .\threat_intel\models.py:96
+msgid "Fin del periodo"
+msgstr "End of period"
+
+#: .\threat_intel\models.py:98
+msgid "Fin"
+msgstr "End"
+
+#: .\threat_intel\models.py:101
+msgid "Ítems obtenidos"
+msgstr "Ítems obtenidos"
+
+#: .\threat_intel\models.py:102
+#| msgid "Item Analizado"
+msgid "Ítems normalizados"
+msgstr "Analyzed Item"
+
+#: .\threat_intel\models.py:103
+#| msgid "No relevantes"
+msgid "Ítems relevantes"
+msgstr "Not relevant"
+
+#: .\threat_intel\models.py:106
+msgid "Error"
+msgstr "Error"
+
+#: .\threat_intel\models.py:112 .\threat_intel\models.py:124
+#: .\threat_intel\models.py:151 .\threat_intel\models.py:170
+#| msgid "Prioridad"
+msgid "Corrida"
+msgstr "Priority"
+
+#: .\threat_intel\models.py:113 .\threat_intel\models.py:123
+#: .\threat_intel\models.py:169
+#| msgid "Ítems"
+msgid "Ítem"
+msgstr "Items"
+
+#: .\threat_intel\models.py:114
+#| msgid "Fecha de Creación"
+msgid "Fecha de detección"
+msgstr "Created At"
+
+#: .\threat_intel\models.py:126
+#| msgid "Resumen"
+msgid "Resumen (ES)"
+msgstr "Summary"
+
+#: .\threat_intel\models.py:127
+msgid "Aplica al stack"
+msgstr "Applies to the stack"
+
+#: .\threat_intel\models.py:128
+#| msgid "Tecnologías Afectadas:"
+msgid "Tecnologías afectadas"
+msgstr "Affected Technologies:"
+
+#: .\threat_intel\models.py:132
+#| msgid "Deadline Recomendado:"
+msgid "Fecha límite recomendada"
+msgstr "Recommended Deadline:"
+
+#: .\threat_intel\models.py:135
+msgid "Requiere gestión"
+msgstr "It requires management"
+
+#: .\threat_intel\models.py:136 .\threat_intel\models.py:174
+#: .\threat_intel\models.py:198
+#| msgid "Notas:"
+msgid "Notas"
+msgstr "Notes:"
+
+#: .\threat_intel\models.py:138
+#| msgid "Nombre del Rol"
+msgid "Nombre del modelo"
+msgstr "Role Name"
+
+#: .\threat_intel\models.py:139
+#| msgid "Versión de Prompt:"
+msgid "Versión del prompt"
+msgstr "Prompt Version:"
+
+#: .\threat_intel\models.py:153
+msgid "Cuerpo (MD)"
+msgstr "Body (MD)"
+
+#: .\threat_intel\models.py:154
+msgid "Cuerpo (HTML)"
+msgstr "Body (HTML)"
+
+#: .\threat_intel\models.py:156
+#| msgid "Enviado"
+msgid "Enviado en"
+msgstr "Sent"
+
+#: .\threat_intel\models.py:177
+#| msgid "Fecha de Creación"
+msgid "Fecha de decisión"
+msgstr "Created At"
+
+#: .\threat_intel\models.py:179
+#| msgid "Referencia de Ticket (Opcional)"
+msgid "Referencia del ticket"
+msgstr "Ticket Reference (Optional)"
+
+#: .\threat_intel\models.py:195
+msgid "Tipo de coincidencia"
+msgstr "Match type"
+
+#: .\threat_intel\models.py:196
+#| msgid "Config. Amenazas"
+msgid "Confianza"
+msgstr "Threat Config."
+
+#: .\threat_intel\models.py:197
+#| msgid "Creado"
+msgid "Creado por"
+msgstr "Created"
+
+#: .\threat_intel\models.py:214
+msgid "Última corrida exitosa"
+msgstr "Last successful run"
+
+#: .\threat_intel\models.py:215
+msgid "Cursor"
+msgstr "Cursor"

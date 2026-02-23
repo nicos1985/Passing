@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <style>
         .form-container { max-width: 700px; margin: 0 auto; }
@@ -30,18 +30,18 @@
 {% block content %}
     <div class="form-container">
         <a href="{% url 'threat_intel:techtag-detail' techtag.id %}" class="back-button">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Detalles
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Detalles" %}
         </a>
 
         <div class="mb-4">
-            <h2 style="color: #333; font-weight: 700;">Editar Etiqueta: {{ techtag.name }}</h2>
-            <p class="text-muted">Actualizar palabras clave y parámetros de detección</p>
+            <h2 style="color: #333; font-weight: 700;">{% blocktrans with name=techtag.name %}Editar Etiqueta: {{ name }}{% endblocktrans %}</h2>
+            <p class="text-muted">{% trans "Actualizar palabras clave y parámetros de detección" %}</p>
         </div>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
-                <div class="card-header">
-                    <h5><i class="fa-solid fa-pen-to-square"></i> Editar Etiqueta</h5>
+                    <div class="card-header">
+                    <h5><i class="fa-solid fa-pen-to-square"></i> {% trans "Editar Etiqueta" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" class="form" novalidate>
@@ -49,7 +49,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="id_name">
-                                <i class="fa-solid fa-tag" style="color: #667eea;"></i> Nombre de la Etiqueta
+                                <i class="fa-solid fa-tag" style="color: #667eea;"></i> {% trans "Nombre de la Etiqueta" %}
                             </label>
                             {% if form.name.errors %}
                                 {{ form.name }}
@@ -57,12 +57,12 @@
                             {% else %}
                                 {{ form.name }}
                             {% endif %}
-                            <small class="form-text">ej: Ransomware, Malware, Vulnerabilidad Crítica</small>
+                            <small class="form-text">{% trans "ej: Ransomware, Malware, Vulnerabilidad Crítica" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_keywords">
-                                <i class="fa-solid fa-list" style="color: #667eea;"></i> Palabras Clave (JSON Array)
+                                <i class="fa-solid fa-list" style="color: #667eea;"></i> {% trans "Palabras Clave (JSON Array)" %}
                             </label>
                             {% if form.keywords.errors %}
                                 {{ form.keywords }}
@@ -70,27 +70,24 @@
                             {% else %}
                                 {{ form.keywords }}
                             {% endif %}
-                            <small class="form-text">
-                                Formato JSON: ["palabra1", "palabra2", "palabra3"]<br>
-                                Estas palabras se usarán para detección automática en reportes
-                            </small>
+                            <small class="form-text">{% trans "Formato JSON: [\"palabra1\", \"palabra2\", \"palabra3\"]" %}<br>{% trans "Estas palabras se usarán para detección automática en reportes" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <div class="form-check" style="padding-left: 0;">
                                 <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
                                 <label class="form-check-label" for="id_is_active" style="font-weight: 500; margin: 0;">
-                                    <i class="fa-solid fa-toggle-on" style="color: #667eea;"></i> Activa (usar en análisis)
+                                    <i class="fa-solid fa-toggle-on" style="color: #667eea;"></i> {% trans "Activa (usar en análisis)" %}
                                 </label>
                             </div>
                         </div>
 
                         <div class="btn-group-submit">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fa-solid fa-check-circle"></i> Guardar Cambios
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Guardar Cambios" %}
                             </button>
                             <a href="{% url 'threat_intel:techtag-detail' techtag.id %}" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-x"></i> Cancelar
+                                <i class="fa-solid fa-x"></i> {% trans "Cancelar" %}
                             </a>
                         </div>
                     </form>
@@ -101,7 +98,7 @@
             {% if techtag.keywords %}
                 <div class="card form-card mt-4">
                     <div class="card-header">
-                        <h5><i class="fa-solid fa-circle-info"></i> Palabras Clave Actuales</h5>
+                        <h5><i class="fa-solid fa-circle-info"></i> {% trans "Palabras Clave Actuales" %}</h5>
                     </div>
                     <div class="card-body">
                         <div>

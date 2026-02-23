@@ -1,7 +1,9 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
+{% block head %}
+{% endblock %}
 {% block content %}
 
 <div class="container" style="height: 60px;">
@@ -14,15 +16,15 @@
             <div class="col-md-8">
                 <div class="form-card card shadow-sm">
                     <div class="card-header">
-                        <h5>Mi Perfil</h5>
+                        <h5>{% trans "Mi Perfil" %}</h5>
                     </div>
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-4">
                             <div class="position-relative">
                                 {% if user_profile.avatar %}
-                                    <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
+                                    <img src="{{ user_profile.avatar.url }}" alt="{% trans 'Avatar' %}" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
                                 {% else %}
-                                    <img src="{% static 'default-avatar.jpg' %}" alt="Default Avatar" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
+                                    <img src="{% static 'default-avatar.jpg' %}" alt="{% trans 'Default Avatar' %}" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
                                 {% endif %}
                                 <div style="position:absolute; bottom:0; right:0;">
                                     <label for="id_avatar" class="btn btn-sm btn-light border"><i class="fa fa-camera"></i></label>
@@ -30,8 +32,10 @@
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h4 class="mb-0">{{ user_profile.get_full_name }}</h4>
-                                <p class="text-muted mb-0">{{ user_profile.email }}</p>
-                                <p class="text-muted small">{{ user_profile.position }}</p>
+                                <p class="text-muted mb-0">{% trans "Correo" %}: {{ user_profile.email }}</p>
+                                <p class="text-muted mb-0">{% trans "Posición" %}: {{ user_profile.position }}</p>
+                                <p class="text-muted mb-0">{% trans "Idioma" %}: {% if user_profile.language == 'es' %} <img src="{% static 'img/spain.png' %}" alt="Español" width="20" height="20">{% else %} <img src="{% static 'img/united-kingdom.png' %}" alt="English" width="20" height="20">{% endif %}</p>
+                                
                             </div>
                         </div>
 
@@ -40,23 +44,27 @@
                             {{ profile_form.non_field_errors }}
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Nombre</label>
+                                    <label class="form-label">{% trans "Nombre" %}</label>
                                     {{ profile_form.first_name }}
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Apellido</label>
+                                    <label class="form-label">{% trans "Apellido" %}</label>
                                     {{ profile_form.last_name }}
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Correo</label>
+                                    <label class="form-label">{% trans "Correo" %}</label>
                                     {{ profile_form.email }}
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Puesto</label>
+                                    <label class="form-label">{% trans "Puesto" %}</label>
                                     {{ profile_form.position }}
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Avatar</label>
+                                    <label class="form-label">{% trans "Idioma" %}</label>
+                                    {{ profile_form.language }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{% trans "Avatar" %}</label>
                                     {{ profile_form.avatar }}
                                 </div>
                                 <div class="col-12 d-flex align-items-center">
@@ -64,18 +72,18 @@
                                         {{ profile_form.is_2fa_enabled }}
                                     </div>
                                     <div>
-                                        <label class="form-check-label">2do factor de autenticación</label>
+                                        <label class="form-check-label">{% trans "2do factor de autenticación" %}</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Color del menú</label>
+                                    <label class="form-label">{% trans "Color del menú" %}</label>
                                     {{ profile_form.menu_color }}
                                 </div>
                             </div>
 
                             <div class="btn-group-submit mt-4">
-                                <button type="submit" class="btn btn-submit btn-submit-primary">Guardar cambios</button>
-                                <a href="/" class="btn btn-submit btn-submit-secondary">Volver</a>
+                                <button type="submit" class="btn btn-submit btn-submit-primary">{% trans "Guardar cambios" %}</button>
+                                <a href="/" class="btn btn-submit btn-submit-secondary">{% trans "Volver" %}</a>
                             </div>
                         </form>
                     </div>
@@ -85,7 +93,7 @@
     </div>
 {% else %}
     <div class="container text-center">
-        <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para ver el perfil.</h5>
+        <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario para ver el perfil." %}</h5>
     </div>
 {% endif %}
 

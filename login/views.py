@@ -1,4 +1,6 @@
 from django.contrib.auth.decorators import login_required
+from django.utils import translation
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.decorators import method_decorator
@@ -436,6 +438,27 @@ def profile_view(request):
                 user.refresh_from_db()
                 logger.debug("After save: user.avatar.name=%s", getattr(user.avatar, 'name', None))
                 messages.success(request, f"Avatar guardado: {getattr(user.avatar, 'name', None)}")
+
+                # Aplicar preferencia de idioma guardada en el perfil del usuario
+                new_lang = profile_form.cleaned_data.get('language')
+                if new_lang:
+                    session_key = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
+                    request.session[session_key] = new_lang
+                    translation.activate(new_lang)
+
+                # Construir la respuesta real y setear la cookie en ella
+                if qr_generate:
+                    response = render(request, 'generate-qr-code.html')
+                else:
+                    response = render(request, 'listpass.html')
+
+                try:
+                    response.set_cookie(getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language'), new_lang or '')
+                except Exception:
+                    pass
+
+                return response
+
             except Exception as exc:
                 logger.exception("Error saving profile form/avatar: %s", exc)
                 messages.error(request, f"Excepción al guardar avatar: {str(exc)}")

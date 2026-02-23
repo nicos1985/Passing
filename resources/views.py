@@ -49,6 +49,8 @@ from django.conf import settings
 from django.forms import inlineformset_factory
 from .models import ChecklistTemplate, ChecklistItem, VendorChecklist
 from .forms import ChecklistTemplateForm, ChecklistItemForm, VendorChecklistForm
+from django.utils.translation import gettext as _
+from django.utils import translation
 
 # Optional imports to support mapping from threat_intel -> resources
 try:
@@ -1736,3 +1738,12 @@ class VendorChecklistCreateView(LoginRequiredMixin, CreateView):
         except Exception:
             ctx['related_links'] = []
         return ctx
+
+
+def i18n_demo(request):
+    """Vista de demostración para i18n: muestra textos marcados para traducción."""
+    message = _("Bienvenido al demo de internacionalización (UI)")
+    button = _("Haz clic aquí")
+    # idioma activo para mostrar en la plantilla (útil para debugging)
+    current_lang = translation.get_language()
+    return render(request, 'resources/i18n_demo.html', {'message': message, 'button': button, 'current_lang': current_lang})

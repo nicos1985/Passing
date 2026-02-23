@@ -1,9 +1,8 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<body>
-<div class="container pt-5" >
+<div class="container pt-5">
     <div class="row">
         <div class="col-md-5 mx-auto"> 
     
@@ -11,7 +10,7 @@
                 <div class="container" style="height: 105px; padding-top: 20px;"style="background-color: #F7F7F7 ;">
                     <h2><i class="fas fa-plus" ></i>{{title}}</h2>
                     <button class="btn">
-                        <a class="btn btn-primary btn-flat" href= {% url 'listpass' %}> <i class="fa-solid fa-bars"></i>  Lista</a>
+                        <a class="btn btn-primary btn-flat" href="{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i> {% trans "Lista" %}</a>
                     </button>
                 </div>
             </div>
@@ -25,7 +24,7 @@
 
                         <div class="form-group">
 
-                            <label for="nombre_contra" style="margin-top:20px;">Nombre de Contraseña: </label>
+                            <label for="nombre_contra" style="margin-top:20px;"> {% trans "Nombre de Contraseña:" %} </label>
                             <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" style="margin-top:5px;" required>
                             
 
@@ -43,17 +42,17 @@
 
                             </div>
 
-                            <label for="link" style="margin-top:20px;">Link: </label>
+                            <label for="link" style="margin-top:20px;">{% trans "Link:" %}</label>
                             <input id="link" type="text" class='form-control' name="link" maxlength="100" style="margin-top:5px;" required>
 
-                            <label for="usuario" style="margin-top:20px;">Usuario: </label>
+                            <label for="usuario" style="margin-top:20px;">{% trans "Usuario:" %}</label>
                             <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" style="margin-top:5px;" required autocomplete="username">
 
                            <!-- Aqui está el generador de contraseñas -->
                             <div class="card text-bg-light" style="margin-top:10px;">
 
-                                <div class="card-header" style="display:flex; justify-content: space-between;">Genera una Contraseña
-                                    <button type="button" class="btn btn-flat" id="toggleParamsBtn" title="Opciones" ><i class="fa-solid fa-circle-chevron-down" style="color:rgb(11, 094, 215)"></i></button>
+                                <div class="card-header" style="display:flex; justify-content: space-between;">{% trans "Genera una Contraseña" %}
+                                    <button type="button" class="btn btn-flat" id="toggleParamsBtn" title="{% trans "Opciones" %}"><i class="fa-solid fa-circle-chevron-down" style="color:rgb(11, 094, 215)"></i></button>
                                 </div>
 
                                 <div class="card-body">
@@ -61,13 +60,13 @@
                                     
                                         <div id="parametrosInputs" style="display:none; justify-content: flex;">
                                             
-                                            <label for="longitud">Longitud:</label>
+                                            <label for="longitud">{% trans "Longitud:" %}</label>
                                             <input class="form-control" type="number" id="longitud" name="longitud" value="12" min="6" max="32"><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> Incluir mayúsculas</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> Incluir minúsculas</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> Incluir números</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirSimbolos" name="incluirSimbolos"> Incluir símbolos</label><br>
-                                            <button type="button" class="btn btn-primary btn-flat" style="margin-top:10px;" title="Generar contraseña" id="generarContrasenaBtn">Generar
+                                            <label><input class="form-check-input" type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> {% trans "Incluir mayúsculas" %}</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> {% trans "Incluir minúsculas" %}</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> {% trans "Incluir números" %}</label><br>
+                                            <label><input class="form-check-input" type="checkbox" id="incluirSimbolos" name="incluirSimbolos"> {% trans "Incluir símbolos" %}</label><br>
+                                            <button type="button" class="btn btn-primary btn-flat" style="margin-top:10px;" title="{% trans "Generar contraseña" %}" id="generarContrasenaBtn">{% trans "Generar" %}
                                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                                             </button>
                                         </div>
@@ -78,7 +77,7 @@
                             </div>
                             <!-- Aqui termina el generador de contraseñas -->
                             <div class= 'input group'>
-                                <label for="contraseña" style="margin-top:7px;">Contraseña: </label>
+                                <label for="contraseña" style="margin-top:7px;"> {% trans "Contraseña:" %} </label>
                                 
 
                                 <div class="input-group mb-3">
@@ -89,31 +88,31 @@
                                 </div>
                             </div>
 
-                            <label for="actualizacion" style="margin-top:20px;">Actualizacion: </label>
-                            <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="Ingrese solo números positivos" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
+                            <label for="actualizacion" style="margin-top:20px;">{% trans "Actualización:" %}</label>
+                            <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="{% trans "Ingrese solo números positivos" %}" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
 
                             <div class="form-group">
-                                <label for="info" style="margin-top: 20px;">Info</label>
+                                <label for="info" style="margin-top: 20px;">{% trans "Info:" %}</label>
                                 <input id="info" type="text" class="form-control" name="info" maxlength="100" style="margin-top: 5px;" required>
                             </div>
                             <div class="form-check form-check-inline" style="margin-top: 20px;">
                                 <label class="form-check-label" for="is_personal">
-                                    Contraseña Personal
+                                    {% trans "Contraseña Personal" %}
                                 </label>
-                                <input class="form-check-input" type="checkbox" title="Marca esta casilla si esta cintraseña es solo de uso personal y no necesitas compartirla con nadie" id="is_personal" name="is_personal">
-                                <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie"></i>
+                                <input class="form-check-input" type="checkbox" title="{% trans "Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie" %}" id="is_personal" name="is_personal">
+                                <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="{% trans "Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie" %}"></i>
                                 
                             </div>
 
                             <div class="form-group" style="margin-top: 20px;">
-                                <label for="file">Archivo</label>
+                                <label for="file">{% trans "Archivo:" %}</label>
                                 <input id="file" type="file" class="form-control-file" name="file">
                             </div>
 
                         </div>
                             
                             <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-                                <i class="fas fa-save"></i> Guardar registro
+                                <i class="fas fa-save"></i> {% trans "Guardar registro" %}
                             </button>
 
                         </div> 
@@ -129,11 +128,13 @@
         
         
 </div>
-</body>
+</div>
+
+<div id="msgTemplates" style="display:none;" data-copied="{% trans "Contraseña copiada" %}" data-generated="{% trans "Contraseña generada:" %}"></div>
 
 <script>
-    document.getElementById('toggleParamsBtn').addEventListener('click', function() {
-        event.preventDefault(); // Prevenir el envío del formulario interno
+    document.getElementById('toggleParamsBtn').addEventListener('click', function(e) {
+        e.preventDefault(); // Prevenir el envío del formulario interno
         var parametrosInputs = document.getElementById('parametrosInputs');
         parametrosInputs.style.display = parametrosInputs.style.display === 'none' ? 'block' : 'none';
     });
@@ -166,7 +167,9 @@
         navigator.clipboard.writeText(contrasenaGenerada)
         .then(() => {
             console.log('Contraseña copiada al portapapeles.');
-            mostrarMensajeTemporal('Contraseña copiada', 2000);
+            const tpl = document.getElementById('msgTemplates');
+            const msg = tpl ? tpl.dataset.copied : 'Contraseña copiada';
+            mostrarMensajeTemporal(msg, 2000);
         })
         .catch(err => {
             console.error('Error al copiar la contraseña al portapapeles:', err);

@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
 {% load static %}
 
 
@@ -21,16 +21,16 @@
     
 {% if not request.user.is_superuser and not request.user.is_staff %}
 <div class="container-fluid text-center">
-    <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario administrador para navegar. 
-        <br>Si no tienes cuenta puedes registrarte.</h5>
+    <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
+        <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
     <div class="row justify-content-center mt-4">
         
         <div class="col-sm-12 d-flex justify-content-center">
-            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>{% trans "Login" %}</a>
         </div>
         <span></span>
         <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>Registrarse</a>
+            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>{% trans "Registrarse" %}</a>
         </div>
     
     </div>
@@ -42,7 +42,7 @@
 <div class="form-container" style="margin-top:20px;">
   <div class="card form-card">
     <div class="card-header">
-      <h5><i class="fa-solid fa-triangle-exclamation"></i> Crear / Editar Evaluación de Riesgo</h5>
+      <h5><i class="fa-solid fa-triangle-exclamation me-2"></i> {% trans "Crear / Editar Evaluación de Riesgo" %}</h5>
     </div>
     <div class="card-body">
       <form method="post" id="risk-form">
@@ -51,7 +51,7 @@
 
       <div class="mb-3 d-flex justify-content-between align-items-center">
         <div>
-          <a class="btn btn-outline-secondary" href="{% url 'risk-list' %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+          <a class="btn btn-outline-secondary" href="{% url 'risk-list' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
         </div>
         <div>
           {% if related_links %}
@@ -99,10 +99,10 @@
 
         <div class="btn-group-submit">
           <button type="submit" class="btn btn-submit btn-submit-primary">
-            <i class="fa-solid fa-check-circle"></i> Guardar Evaluación
+            <i class="fa-solid fa-check-circle me-2"></i> {% trans "Guardar Evaluación" %}
           </button>
           <button type="reset" class="btn btn-submit btn-submit-secondary">
-            <i class="fa-solid fa-redo"></i> Limpiar
+            <i class="fa-solid fa-redo me-2"></i> {% trans "Limpiar" %}
           </button>
         </div>
       </form>

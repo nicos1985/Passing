@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}" />
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}" />
@@ -14,16 +14,16 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center">
-        <h2>Detalle de {{ verbose_model_name }}</h2>
+            <h2>{% blocktrans %}Detalle de {{ verbose_model_name }}{% endblocktrans %}</h2>
         <a class="btn btn-primary" href="{{ back_url|default:'#' }}">
-            <i class="fa-solid fa-arrow-left"></i> Volver
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}
         </a>
     </div>
 
     <div class="card mt-3">
         <div class="card-header bg-dark text-white">
-            <h3 class="mb-0">{{ object.nombre|default:object.name|default:"(Sin nombre)" }}</h3>
-        </div>
+            <h3 class="mb-0">{{ object.nombre|default:object.name|default:_("(Sin nombre)") }}</h3>
+        </div>  
         <div class="card-body">
             <table class="table table-striped">
                 <tbody>
@@ -48,10 +48,10 @@
     {% if request.user.is_authenticated %}
     <div class="mt-3">
         {% if edit_url %}
-            <a href="{{ edit_url }}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> Editar</a>
+            <a href="{{ edit_url }}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> {% trans "Editar" %}</a>
         {% endif %}
         {% if delete_url %}
-            <a href="{{ delete_url }}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Eliminar</a>
+            <a href="{{ delete_url }}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> {% trans "Eliminar" %}</a>
         {% endif %}
     </div>
     {% endif %}
@@ -59,14 +59,14 @@
     {% if model_name == 'vendor' %}
     <div class="card mt-4">
         <div class="card-header">
-            <h5 class="mb-0">Evaluaciones del proveedor</h5>
-            <a class="btn btn-sm btn-primary float-end" href="{{ create_evaluation_url }}">Crear evaluación</a>
+            <h5 class="mb-0">{% trans "Evaluaciones del proveedor" %}</h5>
+            <a class="btn btn-sm btn-primary float-end" href="{{ create_evaluation_url }}">{% trans "Crear evaluación" %}</a>
         </div>
         <div class="card-body">
             {% if evaluations %}
             <table class="table table-sm">
                 <thead>
-                    <tr><th>ID</th><th>Fecha</th><th>Estado</th><th>Evaluado por</th><th>Acciones</th></tr>
+                    <tr><th>ID</th><th>{% trans "Fecha" %}</th><th>{% trans "Estado" %}</th><th>{% trans "Evaluado por" %}</th><th>{% trans "Acciones" %}</th></tr>
                 </thead>
                 <tbody>
                     {% for ev in evaluations %}
@@ -75,13 +75,13 @@
                             <td>{{ ev.scheduled_date }}</td>
                             <td>{{ ev.get_status_display }}</td>
                             <td>{% if ev.performed_by %}{{ ev.performed_by }}{% else %}-{% endif %}</td>
-                            <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'vendor-evaluation-detail' ev.pk %}">Ver</a></td>
+                            <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'vendor-evaluation-detail' ev.pk %}">{% trans "Ver" %}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-                <p>No hay evaluaciones registradas para este proveedor.</p>
+                <p>{% trans "No hay evaluaciones registradas para este proveedor." %}</p>
             {% endif %}
         </div>
     </div>
@@ -91,7 +91,7 @@
 {% if model_name == 'treatment' and request.user.is_authenticated %}
 <div class="container mt-2">
     <a href="{% url 'evaluation-create' %}?type_id={{ object.content_type.pk }}&object_id={{ object.object_id }}&from_treatment={{ object.pk }}" class="btn btn-primary">
-        <i class="fa-solid fa-arrow-rotate-left"></i> Crear Re-evaluación
+        <i class="fa-solid fa-arrow-rotate-left"></i> {% trans "Crear Re-evaluación" %}
     </a>
 </div>
 <!-- Treatment quick actions/modal -->
@@ -101,12 +101,12 @@
             <form method="post" action="{% url 'treatment-advance' object.pk %}">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title">Cambiar etapa del Tratamiento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <h5 class="modal-title">{% trans "Cambiar etapa del Tratamiento" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans "Cerrar" %}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nueva Etapa</label>
+                        <label class="form-label">{% trans "Nueva Etapa" %}</label>
                         <select name="stage" class="form-select">
                             {% for key, label in stage_choices %}
                                 <option value="{{ key }}" {% if key == object.stage %}selected{% endif %}>{{ label }}</option>
@@ -114,21 +114,21 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Notas de Análisis</label>
+                        <label class="form-label">{% trans "Notas de Análisis" %}</label>
                         <textarea name="analysis_notes" class="form-control" rows="4">{{ object.analysis_notes }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Acciones Inmediatas</label>
+                        <label class="form-label">{% trans "Acciones Inmediatas" %}</label>
                         <textarea name="immediate_actions" class="form-control" rows="3">{{ object.immediate_actions }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Acciones Correctivas</label>
+                        <label class="form-label">{% trans "Acciones Correctivas" %}</label>
                         <textarea name="corrective_actions" class="form-control" rows="3">{{ object.corrective_actions }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar y Cambiar Etapa</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancelar" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Guardar y Cambiar Etapa" %}</button>
                 </div>
             </form>
         </div>
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function(){
     btn.href = '#';
     btn.dataset.bsToggle = 'modal';
     btn.dataset.bsTarget = '#advanceStageModal';
-    btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Cambiar Etapa';
+    btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> {% trans "Cambiar Etapa" %}';
     const container = document.querySelector('.mt-3');
     if (container) container.appendChild(btn);
 });

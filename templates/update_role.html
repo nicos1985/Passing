@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
@@ -17,30 +18,30 @@
 
 
     <div class="container mt-5">
-        <h1>Modificar Roles de Permiso</h1>
+        <h1>{% trans "Modificar Roles de Permiso" %}</h1>
         <button class="btn">
-            <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-book"></i> Configurar</a>
+            <a class="btn btn-primary btn-flat" href= {% url 'config' %}> <i class="fa-solid fa-book"></i> {% trans "Configurar" %}</a>
         </button>
         <div class="card-body" style="background-color: #F7F7F7;">
         <form class="form-control" method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label class="h5" for="{{ form.rol_name.id_for_label }}">Nombre del Rol</label>
+                <label class="h5" for="{{ form.rol_name.id_for_label }}">{% trans "Nombre del Rol" %}</label>
                 {{ form.rol_name }}
             </div>
             <div class="form-group">
-                <label class="h5" for="{{ form.comment.id_for_label }}">Comentario</label>
+                <label class="h5" for="{{ form.comment.id_for_label }}">{% trans "Comentario" %}</label>
                 {{ form.comment }}
             </div>
             <div class="form-group">
-                <label class="h5" style="margin-top: 20px;" for="contrasenas">Contraseñas</label>
+                <label class="h5" style="margin-top: 20px;" for="contrasenas">{% trans "Contraseñas" %}</label>
                 <table class="table table-striped table-hover" id="contrasenas-table">
                     <thead>
                         <tr class="table-dark">
-                            <th class="col">Nombre</th>
-                            <th class="col">Propietario</th>
-                            <th class="col">Sección</th>
-                            <th class="col">Permiso</th>
+                            <th class="col">{% trans "Nombre" %}</th>
+                            <th class="col">{% trans "Propietario" %}</th>
+                            <th class="col">{% trans "Sección" %}</th>
+                            <th class="col">{% trans "Permiso" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,7 +61,7 @@
             </div>
            
             <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-                <i class="fas fa-save"></i> Guardar registro
+                <i class="fas fa-save"></i> {% trans "Guardar registro" %}  
             </button>
         </form>
     </div>

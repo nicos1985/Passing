@@ -1,5 +1,5 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class ='justify-content-sm-center'>
@@ -22,7 +22,7 @@
                         {{form.as_p}}
                         
                         <button type="submit" class="btn btn-primary btn-flat">
-                            <i class="fas fa-address-card"></i> Registrarse
+                            <i class="fas fa-address-card"></i> {% trans "Registrarse" %}
                         </button>
                             
                      

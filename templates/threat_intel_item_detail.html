@@ -1,13 +1,13 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block content %}
     <div class="container mt-4">
         <div class="row">
             <div class="col-12">
                 <h2>{{ item.canonical_id }} - {{ item.title }}</h2>
-                <p class="text-muted">Tipo: {{ item.get_kind_display }} | Creado: {{ item.created_at|date:"Y-m-d H:i" }}</p>
+                <p class="text-muted">{% trans "Tipo" %}: {{ item.get_kind_display }} | {% trans "Creado" %}: {{ item.created_at|date:"Y-m-d H:i" }}</p>
             </div>
         </div>
 
@@ -16,7 +16,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Detalles</h5>
+                        <h5 class="mb-0">{% trans "Detalles" %}</h5>
                     </div>
                     <div class="card-body">
                         {% for field in fields %}
@@ -32,28 +32,28 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Severidad & Evaluación</h5>
+                        <h5 class="mb-0">{% trans "Severidad & Evaluación" %}</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <strong>CVSS Score:</strong>
+                            <strong>{% trans "CVSS Score:" %}</strong>
                             <h3>{{ item.cvss|default:"N/A" }}</h3>
                         </div>
                         <div class="mb-3">
-                            <strong>Severidad:</strong>
+                            <strong>{% trans "Severidad:" %}</strong>
                             <span class="badge bg-{% if item.severity == 'critical' %}danger{% elif item.severity == 'high' %}warning{% elif item.severity == 'medium' %}info{% else %}secondary{% endif %} fs-6">
                                 {{ item.get_severity_display }}
                             </span>
                         </div>
                         <div class="mb-3">
-                            <strong>Marcado como Relevante:</strong>
+                            <strong>{% trans "Marcado como Relevante:" %}</strong>
                             <span class="badge {% if item.is_relevant %}bg-success{% else %}bg-secondary{% endif %}">
-                                {% if item.is_relevant %}Sí{% else %}No{% endif %}
+                                {% if item.is_relevant %}{% trans "Sí" %}{% else %}{% trans "No" %}{% endif %}
                             </span>
                         </div>
                         {% if analysis %}
                         <div class="mb-3">
-                            <strong>Análisis IA disponible:</strong>
+                            <strong>{% trans "Análisis IA disponible:" %}</strong>
                             <span class="badge bg-info">{{ analysis.model_name }}</span>
                         </div>
                         {% endif %}
@@ -68,33 +68,33 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Análisis IA ({{ analysis.model_name }})</h5>
+                        <h5 class="mb-0">{% blocktrans with name=analysis.model_name %}Análisis IA ({{ name }}){% endblocktrans %}</h5>
                     </div>
                     <div class="card-body">
                         {% if analysis.summary_es %}
                         <div class="mb-3">
-                            <strong>Resumen:</strong>
+                            <strong>{% trans "Resumen:" %}</strong>
                             <p>{{ analysis.summary_es }}</p>
                         </div>
                         {% endif %}
 
                         {% if analysis.impact_previ %}
                         <div class="mb-3">
-                            <strong>Impacto Preliminar:</strong>
+                            <strong>{% trans "Impacto Preliminar:" %}</strong>
                             <p>{{ analysis.impact_previ }}</p>
                         </div>
                         {% endif %}
 
                         {% if analysis.recommended_action %}
                         <div class="mb-3">
-                            <strong>Acciones Recomendadas:</strong>
+                            <strong>{% trans "Acciones Recomendadas:" %}</strong>
                             <p>{{ analysis.recommended_action }}</p>
                         </div>
                         {% endif %}
 
                         {% if analysis.affected_tech %}
                         <div class="mb-3">
-                            <strong>Tecnologías Afectadas:</strong>
+                            <strong>{% trans "Tecnologías Afectadas:" %}</strong>
                             <div>
                             {% for tech in analysis.affected_tech %}
                                 <span class="badge bg-warning text-dark">{{ tech }}</span>
@@ -105,21 +105,27 @@
 
                         {% if analysis.recommended_deadline %}
                         <div class="mb-3">
-                            <strong>Deadline Recomendado:</strong>
+                            <strong>{% trans "Deadline Recomendado:" %}</strong>
                             <p>{{ analysis.recommended_deadline }}</p>
                         </div>
                         {% endif %}
 
                         <div class="mb-3">
-                            <strong>Prioridad:</strong>
-                            <span class="badge bg-{% if analysis.priority == 'critical' %}danger{% elif analysis.priority == 'high' %}warning{% elif analysis.priority == 'medium' %}info{% else %}secondary{% endif %}">
-                                {{ analysis.priority|upper }}
-                            </span>
+                            <strong>{% trans "Prioridad:" %}</strong>
+                            {% if analysis.priority == 'critical' %}
+                                <span class="badge bg-danger">{% trans "Critical" %}</span>
+                            {% elif analysis.priority == 'high' %}
+                                <span class="badge bg-warning">{% trans "High" %}</span>
+                            {% elif analysis.priority == 'medium' %}
+                                <span class="badge bg-info">{% trans "Medium" %}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{% trans "Low" %}</span>
+                            {% endif %}
                         </div>
 
                         {% if analysis.notes %}
                         <div class="mb-3">
-                            <strong>Notas:</strong>
+                            <strong>{% trans "Notas:" %}</strong>
                             <p>{{ analysis.notes }}</p>
                         </div>
                         {% endif %}
@@ -135,22 +141,22 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Apariciones en Runs ({{ run_items|length }})</h5>
+                        <h5 class="mb-0">{% blocktrans with count=run_items|length %}Apariciones en Runs ({{ count }}){% endblocktrans %}</h5>
                     </div>
                     <div class="card-body">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Run ID</th>
-                                    <th>Período</th>
-                                    <th>Estado</th>
-                                    <th>Detectado</th>
+                                    <th>{% trans "Run ID" %}</th>
+                                    <th>{% trans "Período" %}</th>
+                                    <th>{% trans "Estado" %}</th>
+                                    <th>{% trans "Detectado" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for ri in run_items %}
                                 <tr>
-                                    <td><a href="{% url 'threat_intel:run-detail' ri.run.id %}">Run #{{ ri.run.id }}</a></td>
+                                    <td><a href="{% url 'threat_intel:run-detail' ri.run.id %}">{% blocktrans with rid=ri.run.id %}Run #{{ rid }}{% endblocktrans %}</a></td>
                                     <td>{{ ri.run.period_start|date:"Y-m-d" }} a {{ ri.run.period_end|date:"Y-m-d" }}</td>
                                     <td><span class="badge bg-info">{{ ri.run.status }}</span></td>
                                     <td>{{ ri.detected_at|date:"Y-m-d H:i" }}</td>
@@ -169,24 +175,24 @@
             <div class="col-12 d-flex gap-2">
                 {% if run %}
                 <a href="{{ back_url }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Volver a Items
+                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Items" %}
                 </a>
                 <a href="{% url 'threat_intel:review-create' run.id item.id %}" class="btn btn-success">
-                    <i class="fas fa-check-circle"></i> Crear Review
+                    <i class="fas fa-check-circle"></i> {% trans "Crear Review" %}
                 </a>
                 <a href="{% url 'threat_intel:run-detail' run.id %}" class="btn btn-info">
-                    <i class="fas fa-link"></i> Ver Run
+                    <i class="fas fa-link"></i> {% trans "Ver Run" %}
                 </a>
                 <a href="{% url 'evaluation-create' %}?intel_item_id={{ item.id }}" class="btn btn-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Crear Evaluación
+                    <i class="fas fa-exclamation-triangle"></i> {% trans "Crear Evaluación" %}
                 </a>
                 {% else %}
                 <a href="{% url 'threat_intel:run-list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Volver a Runs
+                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Runs" %}
                 </a>
                 {% if analysis %}
                 <a href="{% url 'threat_intel:analysis-detail' analysis.id %}" class="btn btn-info">
-                    <i class="fas fa-microscope"></i> Ver Análisis
+                    <i class="fas fa-microscope"></i> {% trans "Ver Análisis" %}
                 </a>
                 {% endif %}
                 {% endif %}

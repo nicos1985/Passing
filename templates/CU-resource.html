@@ -1,25 +1,28 @@
 {% extends 'base.html' %}
 
 {% load static %}
-
+{% load i18n %}
 {% block head %}{% endblock %}
 
 {% block content %}
 
 {% if not request.user.is_superuser and not request.user.is_staff %}
 <div class="container-fluid text-center">
-    <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario administrador para navegar. 
-        <br>Si no tienes cuenta puedes registrarte.</h5>
+    <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
+        <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
     <div class="row justify-content-center mt-4">
         <div class="col-sm-12 d-flex justify-content-center">
-            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>Login</a>
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>{% trans "Login" %}</a>
         </div>
         <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-            <a class="btn btn-primary" href="{% url 'register' %}" style = 'margin-top: 20px;'>Registrarse</a>
+            <a class="btn btn-primary" href="{% url 'register' %}" style = 'margin-top: 20px;'>{% trans "Registrarse" %}</a>
         </div>
     </div>
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
+<p>LANGUAGE_CODE = {{ LANGUAGE_CODE }}</p>
+{% get_current_language as LANG %}
+<p>get_current_language = {{ LANG }}</p>
 <div class="container pt-5">
     <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
         <div class="container-fluid">
@@ -36,14 +39,16 @@
                 <div class="card-body">
                     <div class="mb-3 d-flex justify-content-between align-items-center">
                         <div>
-                            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+                            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
                         </div>
                     </div>
 
                     <form method="post" novalidate>
                         {% csrf_token %}
                         {% if form %}
+                        
                             {% for field in form.visible_fields %}
+                            
                                 <div class="mb-3">
                                     {{ field.label_tag }}
                                     {{ field }}
@@ -56,13 +61,14 @@
                                 </div>
                             {% endfor %}
                         {% endif %}
+                        
 
                         <div class="btn-group-submit mt-3">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fas fa-save"></i> Guardar cambios
+                                <i class="fas fa-save"></i> {% trans "Guardar cambios" %}
                             </button>
                             <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> Limpiar
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>

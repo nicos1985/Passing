@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link href="{% static 'lib/select2-4.1.0/css/select2.min.css' %}" rel="stylesheet" />
     <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
@@ -38,12 +38,12 @@
 {% block content %}
     <div class="form-container">
         <a href="{% url 'threat_intel:runitem-list' run.id %}" class="back-button">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Items
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Items" %}
         </a>
 
         <div class="mb-4">
-            <h2 style="color: #333; font-weight: 700;">Crear Revisión de Seguridad</h2>
-            <p class="text-muted">Para {{ item.cve_id }} en Run #{{ run.id }}</p>
+            <h2 style="color: #333; font-weight: 700;">{% trans "Crear Revisión de Seguridad" %}</h2>
+            <p class="text-muted">{% blocktrans with cve=item.cve_id rid=run.id %}Para {{ cve }} en Run #{{ rid }}{% endblocktrans %}</p>
         </div>
 
         {% if request.user.is_authenticated %}
@@ -51,11 +51,11 @@
             <div class="info-card">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i class="fa-solid fa-virus"></i> CVE</h6>
+                        <h6><i class="fa-solid fa-virus"></i> {% trans "CVE" %}</h6>
                         <p style="font-size: 1.1rem; color: #dc3545; font-weight: 600;">{{ item.cve_id }}</p>
                     </div>
                     <div class="col-md-6">
-                        <h6><i class="fa-solid fa-chart-line"></i> Severidad</h6>
+                        <h6><i class="fa-solid fa-chart-line"></i> {% trans "Severidad" %}</h6>
                         <p>
                             <span class="badge" style="background: 
                                 {% if item.severity == 'CRITICAL' %}#dc3545
@@ -68,27 +68,27 @@
                         </p>
                     </div>
                 </div>
-                <p><strong>CVSS Score:</strong> {{ item.cvss_score }}</p>
-                <p><strong>Descripción:</strong> {{ item.description|truncatewords:40 }}</p>
+                <p><strong>{% trans "CVSS Score:" %}</strong> {{ item.cvss_score }}</p>
+                <p><strong>{% trans "Descripción:" %}</strong> {{ item.description|truncatewords:40 }}</p>
             </div>
 
             <!-- Análisis Disponible -->
             {% if analysis %}
                 <div class="info-card">
-                    <h6><i class="fa-solid fa-microscope"></i> Análisis Disponible</h6>
-                    <p><strong>Resumen:</strong> {{ analysis.summary_es|truncatewords:30 }}</p>
+                    <h6><i class="fa-solid fa-microscope"></i> {% trans "Análisis Disponible" %}</h6>
+                    <p><strong>{% trans "Resumen:" %}</strong> {{ analysis.summary_es|truncatewords:30 }}</p>
                     <p>
-                        <strong>Prioridad:</strong>
+                        <strong>{% trans "Prioridad:" %}</strong>
                         <span class="badge bg-info">{{ analysis.priority }}</span>
                     </p>
-                    <p><strong>Acción Recomendada:</strong> {{ analysis.recommended_action }}</p>
+                    <p><strong>{% trans "Acción Recomendada:" %}</strong> {{ analysis.recommended_action }}</p>
                 </div>
             {% endif %}
 
             <!-- Formulario de Revisión -->
             <div class="card form-card">
                 <div class="card-header">
-                    <h5><i class="fa-solid fa-check-double"></i> Nueva Revisión</h5>
+                    <h5><i class="fa-solid fa-check-double"></i> {% trans "Nueva Revisión" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" class="form" novalidate>
@@ -96,7 +96,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="id_decision">
-                                <i class="fa-solid fa-gavel" style="color: #28a745;"></i> Decisión
+                                <i class="fa-solid fa-gavel" style="color: #28a745;"></i> {% trans "Decisión" %}
                             </label>
                             {% if form.decision.errors %}
                                 {{ form.decision }}
@@ -104,23 +104,23 @@
                             {% else %}
                                 {{ form.decision }}
                             {% endif %}
-                            <small class="form-text">Selecciona la acción que se debe tomar para este CVE</small>
+                            <small class="form-text">{% trans "Selecciona la acción que se debe tomar para este CVE" %}</small>
                         </div>
 
                         <!-- Guía de Decisiones -->
                         <div class="decision-guide">
-                            <strong><i class="fa-solid fa-lightbulb"></i> Guía de Decisiones:</strong>
+                            <strong><i class="fa-solid fa-lightbulb"></i> {% trans "Guía de Decisiones:" %}</strong>
                             <ul class="mt-2 mb-0" style="font-size: 0.95rem;">
-                                <li><strong>Crear Ticket:</strong> Se requiere acción inmediata en nuestra infraestructura</li>
-                                <li><strong>Monitorear:</strong> Observar y evaluar el impacto en futuro</li>
-                                <li><strong>No Aplica:</strong> No es relevante para nuestra infraestructura</li>
-                                <li><strong>Postergar:</strong> Decidir más adelante</li>
+                                <li><strong>{% trans "Crear Ticket:" %}</strong> {% trans "Se requiere acción inmediata en nuestra infraestructura" %}</li>
+                                <li><strong>{% trans "Monitorear:" %}</strong> {% trans "Observar y evaluar el impacto en futuro" %}</li>
+                                <li><strong>{% trans "No Aplica:" %}</strong> {% trans "No es relevante para nuestra infraestructura" %}</li>
+                                <li><strong>{% trans "Postergar:" %}</strong> {% trans "Decidir más adelante" %}</li>
                             </ul>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_notes">
-                                <i class="fa-solid fa-note-sticky" style="color: #28a745;"></i> Notas de la Revisión
+                                <i class="fa-solid fa-note-sticky" style="color: #28a745;"></i> {% trans "Notas de la Revisión" %}
                             </label>
                             {% if form.notes.errors %}
                                 {{ form.notes }}
@@ -128,12 +128,12 @@
                             {% else %}
                                 {{ form.notes }}
                             {% endif %}
-                            <small class="form-text">Comentarios adicionales sobre la decisión tomada</small>
+                            <small class="form-text">{% trans "Comentarios adicionales sobre la decisión tomada" %}</small>
                         </div>
 
                         <div class="form-group mb-4">
                             <label for="id_ticket_ref">
-                                <i class="fa-solid fa-link" style="color: #28a745;"></i> Referencia de Ticket (Opcional)
+                                <i class="fa-solid fa-link" style="color: #28a745;"></i> {% trans "Referencia de Ticket (Opcional)" %}
                             </label>
                             {% if form.ticket_ref.errors %}
                                 {{ form.ticket_ref }}
@@ -141,15 +141,15 @@
                             {% else %}
                                 {{ form.ticket_ref }}
                             {% endif %}
-                            <small class="form-text">ej: BITRIX-1234 o URL del ticket de seguimiento</small>
+                            <small class="form-text">{% trans "ej: BITRIX-1234 o URL del ticket de seguimiento" %}</small>
                         </div>
 
                         <div class="btn-group-submit">
                             <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fa-solid fa-check-circle"></i> Guardar Revisión
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Guardar Revisión" %}
                             </button>
                             <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> Limpiar
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>

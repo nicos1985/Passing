@@ -1,31 +1,21 @@
 $(document).ready(function () {
-  console.log('🟢 [DT] init-datatable.js CARGADO - document.ready ejecutado');
-  
+  console.log('🟢 [DT] init-datatable.js cargado');
   // ========== PERSISTENCIA DE BÚSQUEDA CON localStorage ==========
   var STORAGE_KEY = 'dt_listpass_state';
-  
-  // Test inmediato de localStorage
-  console.log('🔍 [DT] Probando localStorage...');
-  console.log('🔍 [DT] localStorage disponible:', typeof localStorage !== 'undefined');
-  console.log('🔍 [DT] Valor actual en storage:', localStorage.getItem(STORAGE_KEY));
 
   function saveState(search, length, page) {
     try {
       var state = { search: search || '', length: length || 10, page: page || 0, ts: Date.now() };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      console.log('💾 [DT] Estado GUARDADO:', state);
-      // Verificar que se guardó
-      console.log('💾 [DT] Verificación post-guardado:', localStorage.getItem(STORAGE_KEY));
+      console.log('💾 [DT] Estado guardado');
     } catch (e) { console.error('❌ [DT] Error guardando estado:', e); }
   }
 
   function loadState() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      console.log('📂 [DT] Raw desde localStorage:', raw);
       if (raw) {
         var state = JSON.parse(raw);
-        console.log('📂 [DT] Estado parseado:', state);
         return state;
       }
     } catch (e) { console.error('❌ [DT] Error cargando estado:', e); }
@@ -34,44 +24,100 @@ $(document).ready(function () {
 
   var statusColIndex = null;
   var colIndexMap = {};
+  var table = null;
 
-  var table = $('#data').DataTable({
-    responsive: false,
-    colReorder: true,
-    order: [],
-    ordering: false,
-    // State persistence handled manually (minimal payload in cookie)
-    scrollX: true,
-    dom: 'Rlfrtip',
-    autoWidth: false,
-    lengthMenu: [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
-    language: {
-      url: '/static/lib/DataTables-1.13.1/spanish.txt'
-    },
-    createdRow: function (row, data, dataIndex) {
-      if (statusColIndex !== null) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = data[statusColIndex];
-        const statusText = tempDiv.textContent.toLowerCase();
+  // determine DataTables language file from cookie (django_language) or browser
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? decodeURIComponent(v.pop()) : null;
+  }
 
-        $(row).removeClass('table-warning table-primary table-success');
+  const userLang = (getCookie('django_language') || navigator.language || 'en').toLowerCase();
+  let dtLangUrl = '/static/lib/DataTables-1.13.1/english.txt'; // fallback
+  console.log('🌐 [DT] Idioma detectado:', userLang);
+  if (userLang.startsWith('es')) {
+    dtLangUrl = '/static/lib/DataTables-1.13.1/spanish.txt';
+  } else if (userLang.startsWith('en')) {
+    dtLangUrl = '/static/lib/DataTables-1.13.1/english.txt';
+  } else {
+    // try a file based on language code (e.g. 'fr' -> 'french.txt')
+    const code = userLang.split('-')[0];
+    dtLangUrl = '/static/lib/DataTables-1.13.1/' + code + '.txt';
+  }
+  console.log('🌐 [DT] Usando fichero de idioma:', dtLangUrl);
 
-        // Map stage text to row color: pendiente -> danger, análisis -> warning, en proceso -> primary, implementado -> success
-        if (statusText.includes("pendiente")) {
-          $(row).addClass('table-danger');
-        } else if (statusText.includes("análisis") || statusText.includes("analisis")) {
-          $(row).addClass('table-warning');
-        } else if (statusText.includes("en proceso")) {
-          $(row).addClass('table-primary');
-        } else if (statusText.includes("implementado")) {
-          $(row).addClass('table-success');
+  function createTableWithLanguage(languageOption) {
+    table = $('#data').DataTable({
+      responsive: false,
+      colReorder: true,
+      order: [],
+      ordering: false,
+      // State persistence handled manually (minimal payload in cookie)
+      scrollX: true,
+      dom: 'Rlfrtip',
+      autoWidth: false,
+      lengthMenu: [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
+      language: languageOption,
+      createdRow: function (row, data, dataIndex) {
+        if (statusColIndex !== null) {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = data[statusColIndex];
+          const statusText = tempDiv.textContent.toLowerCase();
+
+          $(row).removeClass('table-warning table-primary table-success');
+
+          // Map stage text to row color: pendiente -> danger, análisis -> warning, en proceso -> primary, implementado -> success
+          if (statusText.includes("pendiente")) {
+            $(row).addClass('table-danger');
+          } else if (statusText.includes("análisis") || statusText.includes("analisis")) {
+            $(row).addClass('table-warning');
+          } else if (statusText.includes("en proceso")) {
+            $(row).addClass('table-primary');
+          } else if (statusText.includes("implementado")) {
+            $(row).addClass('table-success');
+          }
         }
       }
-    }
-  });
+    });
 
-  // expose table for external adjustments and ensure columns recalc on draw
-  window.passTable = table;
+    // expose table for external adjustments and ensure columns recalc on draw
+    window.passTable = table;
+
+    // attach previous listeners that rely on `table`
+    table.on('draw', function () {
+      try { table.columns.adjust(); } catch (e) { console.warn('passTable adjust failed', e); }
+    });
+
+    // Guardar en cada cambio de búsqueda, paginación o longitud
+    table.on('search.dt length.dt page.dt', function (e) {
+      saveCurrentState();
+    });
+
+    // Restaurar estado después de que DataTables termine de inicializarse
+    table.on('init.dt', function () {
+      console.log('🚀 [DT] init.dt disparado - llamando restoreState()');
+      restoreState();
+    });
+
+    return table;
+  }
+
+  // Fetch language file first to debug failures and avoid silent network errors
+  fetch(dtLangUrl, { cache: 'no-cache' })
+    .then(function (resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    })
+    .then(function (langObj) {
+      console.log('🌐 [DT] Archivo de idioma cargado');
+      // pass the object directly so DataTables doesn't re-fetch
+      window.passTable = createTableWithLanguage(langObj);
+    })
+    .catch(function (err) {
+      console.warn('⚠️ [DT] No se pudo cargar el fichero de idioma', dtLangUrl);
+      // fallback: initialize table with empty language (DataTables will use defaults)
+      window.passTable = createTableWithLanguage({});
+    });
 
   // ========== RESTAURAR ESTADO AL INICIAR ==========
   function restoreState() {
@@ -106,27 +152,11 @@ $(document).ready(function () {
     } catch (e) { console.error('❌ [DT] Error en saveCurrentState:', e); }
   }
 
-  table.on('draw', function () {
-    try { table.columns.adjust(); } catch (e) { console.warn('passTable adjust failed', e); }
-  });
-
-  // Guardar en cada cambio de búsqueda, paginación o longitud
-  table.on('search.dt length.dt page.dt', function (e) {
-    console.log('🎯 [DT] Evento capturado:', e.type);
-    saveCurrentState();
-  });
-
-  // Restaurar estado después de que DataTables termine de inicializarse
-  table.on('init.dt', function () {
-    console.log('🚀 [DT] init.dt disparado - llamando restoreState()');
-    restoreState();
-  });
+  // (event bindings are attached when the table is created)
 
   // ========== MANEJAR BOTÓN ATRÁS (BFCache) ==========
   window.addEventListener('pageshow', function (ev) {
-    console.log('📄 [DT] pageshow - persisted:', ev.persisted);
     if (ev.persisted) {
-      console.log('📄 [DT] Página desde BFCache - restaurando');
       restoreState();
     }
   });
@@ -150,8 +180,6 @@ $(document).ready(function () {
     var colname = $(this).data('colname');
     var value = $(this).val();
     var colIndex = colIndexMap[colname];
-
-    console.log(`🟨 Filtro aplicado → Campo: ${colname}, Valor: "${value}", Columna #: ${colIndex}`);
 
     if (colIndex !== undefined) {
       table.column(colIndex).search(value).draw();
@@ -218,6 +246,6 @@ function resetTime(date) {
 
 
 
-    table.draw();
+    if (table) table.draw();
   });
 

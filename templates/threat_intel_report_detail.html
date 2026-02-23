@@ -1,7 +1,7 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 
 {% load static %}
+{% load i18n %}
 {% block head %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
@@ -10,20 +10,20 @@
 {% block content %}
     <div class="container mt-3">
         <h2>{{ report.subject }}</h2>
-        <p class="text-muted">Reporte para Run #{{ report.run.id }}</p>
+        <p class="text-muted">{% blocktrans with rid=report.run.id %}Reporte para Run #{{ rid }}{% endblocktrans %}</p>
     </div>
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
             <a class="btn btn-secondary" href="{% url 'threat_intel:report-list' %}">
-                <i class="fa-solid fa-arrow-left"></i> Volver a Reportes
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Reportes" %}
             </a>
             <a class="btn btn-info" href="{% url 'threat_intel:run-detail' report.run.id %}">
-                <i class="fa-solid fa-link"></i> Ir al Run
+                <i class="fa-solid fa-link"></i> {% trans "Ir al Run" %}
             </a>
             {% if not report.sent_at %}
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendReportModal">
-                <i class="fa-solid fa-paper-plane"></i> Enviar por Email
+                <i class="fa-solid fa-paper-plane"></i> {% trans "Enviar por Email" %}
             </button>
             {% endif %}
         </div>
@@ -31,29 +31,29 @@
         <div class="container">
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5>Información del Reporte</h5>
+                    <h5>{% trans "Información del Reporte" %}</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Asunto:</strong> {{ report.subject }}</p>
-                    <p><strong>Run:</strong> <a href="{% url 'threat_intel:run-detail' report.run.id %}">#{{ report.run.id }}</a></p>
-                    <p><strong>Período:</strong> {{ report.run.period_start|date:"Y-m-d" }} - {{ report.run.period_end|date:"Y-m-d" }}</p>
-                    <p><strong>Estado:</strong>
+                    <p><strong>{% trans "Asunto:" %}</strong> {{ report.subject }}</p>
+                    <p><strong>{% trans "Run:" %}</strong> <a href="{% url 'threat_intel:run-detail' report.run.id %}">#{{ report.run.id }}</a></p>
+                    <p><strong>{% trans "Período:" %}</strong> {{ report.run.period_start|date:"Y-m-d" }} - {{ report.run.period_end|date:"Y-m-d" }}</p>
+                    <p><strong>{% trans "Estado:" %}</strong>
                         <span class="badge {% if report.sent_at %}bg-success{% else %}bg-warning{% endif %}">
-                            {% if report.sent_at %}Enviado {% else %}Borrador{% endif %}
+                            {% if report.sent_at %}{% trans "Enviado" %}{% else %}{% trans "Borrador" %}{% endif %}
                         </span>
                     </p>
                     {% if report.sent_at %}
-                    <p><strong>Enviado:</strong> {{ report.sent_at|date:"Y-m-d H:i:s" }}</p>
+                    <p><strong>{% trans "Enviado:" %}</strong> {{ report.sent_at|date:"Y-m-d H:i:s" }}</p>
                     {% endif %}
                     {% if report.recipients %}
-                    <p><strong>Destinatarios:</strong> {{ report.recipients|join:", " }}</p>
+                    <p><strong>{% trans "Destinatarios:" %}</strong> {{ report.recipients|join:", " }}</p>
                     {% endif %}
                 </div>
             </div>
 
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5>Contenido del Reporte</h5>
+                    <h5>{% trans "Contenido del Reporte" %}</h5>
                 </div>
                 <div class="card-body">
                     {% if report.body_html %}
@@ -63,24 +63,24 @@
                     {% elif report.body_md %}
                         <pre><code>{{ report.body_md }}</code></pre>
                     {% else %}
-                        <p class="text-muted">No hay contenido generado</p>
+                        <p class="text-muted">{% trans "No hay contenido generado" %}</p>
                     {% endif %}
                 </div>
             </div>
 
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5>Análisis Incluidos</h5>
+                    <h5>{% trans "Análisis Incluidos" %}</h5>
                 </div>
                 <div class="card-body">
                     {% if analyses %}
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>CVE</th>
-                                    <th>Severidad</th>
-                                    <th>Prioridad</th>
-                                    <th>Resumen</th>
+                                    <th>{% trans "CVE" %}</th>
+                                    <th>{% trans "Severidad" %}</th>
+                                    <th>{% trans "Prioridad" %}</th>
+                                    <th>{% trans "Resumen" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -88,14 +88,24 @@
                                 <tr>
                                     <td><a href="{% url 'threat_intel:analysis-detail' analysis.id %}">{{ analysis.item.cve_id }}</a></td>
                                     <td>{{ analysis.item.severity }}</td>
-                                    <td>{{ analysis.priority }}</td>
+                                    <td>
+                                        {% if analysis.priority == 'critical' %}
+                                            <span class="badge bg-danger">{% trans "Critical" %}</span>
+                                        {% elif analysis.priority == 'high' %}
+                                            <span class="badge bg-warning">{% trans "High" %}</span>
+                                        {% elif analysis.priority == 'medium' %}
+                                            <span class="badge bg-info">{% trans "Medium" %}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{% trans "Low" %}</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ analysis.summary_es|truncatewords:15 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                    {% else %}
-                        <p class="text-muted">No hay análisis disponibles para este reporte</p>
+                        {% else %}
+                        <p class="text-muted">{% trans "No hay análisis disponibles para este reporte" %}</p>
                     {% endif %}
                 </div>
             </div>
@@ -107,7 +117,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-paper-plane"></i> Enviar Reporte por Email</h5>
+                    <h5 class="modal-title"><i class="fa-solid fa-paper-plane"></i> {% trans "Enviar Reporte por Email" %}</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="post" action="{% url 'threat_intel:report-send' report.id %}">
@@ -116,11 +126,11 @@
                     <div class="modal-body">
                         <div class="alert alert-info mb-3">
                             <i class="fa-solid fa-info-circle"></i>
-                            <strong>Destinatarios:</strong><br>
+                            <strong>{% trans "Destinatarios:" %}</strong><br>
                             {% if report.recipients %}
                                 {{ report.recipients|join:", " }}
                             {% else %}
-                                <span class="text-danger">No hay destinatarios configurados</span>
+                                <span class="text-danger">{% trans "No hay destinatarios configurados" %}</span>
                             {% endif %}
                         </div>
 
@@ -134,8 +144,8 @@
                                 checked
                             >
                             <label class="form-check-label" for="sendEmailCheck">
-                                <strong>Enviar por email</strong>
-                                <small class="text-muted d-block">Enviar a los destinatarios configurados</small>
+                                <strong>{% trans "Enviar por email" %}</strong>
+                                <small class="text-muted d-block">{% trans "Enviar a los destinatarios configurados" %}</small>
                             </label>
                         </div>
 
@@ -148,8 +158,8 @@
                                 id="includePdfCheck"
                             >
                             <label class="form-check-label" for="includePdfCheck">
-                                <strong>Incluir PDF como adjunto</strong>
-                                <small class="text-muted d-block">Requiere: pip install weasyprint</small>
+                                <strong>{% trans "Incluir PDF como adjunto" %}</strong>
+                                <small class="text-muted d-block">{% trans "Requiere: pip install weasyprint" %}</small>
                             </label>
                         </div>
 
@@ -158,7 +168,7 @@
                         <div class="card border-primary mb-3">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">
-                                    <i class="fa-solid fa-envelope"></i> Backend de Email
+                                    <i class="fa-solid fa-envelope"></i> {% trans "Backend de Email" %}
                                 </h6>
                             </div>
                             <div class="card-body">
@@ -171,9 +181,9 @@
                                         value="smtp"
                                         checked
                                     >
-                                    <label class="form-check-label" for="smtpBackend">
-                                        <strong>SMTP (Gmail)</strong>
-                                        <small class="text-muted d-block">Configurado en settings.py</small>
+                                        <label class="form-check-label" for="smtpBackend">
+                                        <strong>{% trans "SMTP (Gmail)" %}</strong>
+                                        <small class="text-muted d-block">{% trans "Configurado en settings.py" %}</small>
                                     </label>
                                 </div>
 
@@ -186,10 +196,10 @@
                                         value="brevo"
                                     >
                                     <label class="form-check-label" for="brevoBackend">
-                                        <strong>Brevo (SendinBlue)</strong>
+                                        <strong>{% trans "Brevo (SendinBlue)" %}</strong>
                                         <small class="text-muted d-block">
-                                            Requiere: BREVO_API_KEY en settings
-                                            <a href="#" title="Ver guía de configuración">(?)</a>
+                                            {% trans "Requiere: BREVO_API_KEY en settings" %}
+                                            <a href="#" title="{% trans 'Ver guía de configuración' %}">(?)</a>
                                         </small>
                                     </label>
                                 </div>
@@ -198,17 +208,17 @@
 
                         <div class="alert alert-warning">
                             <i class="fa-solid fa-triangle-exclamation"></i>
-                            <strong>Nota:</strong> La generación de PDF requiere la librería WeasyPrint.
+                            <strong>{% trans "Nota:" %}</strong> {% trans "La generación de PDF requiere la librería WeasyPrint." %}
                             <br><code>pip install weasyprint</code>
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-xmark"></i> Cancelar
+                            <i class="fa-solid fa-xmark"></i> {% trans "Cancelar" %}
                         </button>
                         <button type="submit" class="btn btn-success">
-                            <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+                            <i class="fa-solid fa-paper-plane"></i> {% trans "Enviar Reporte" %}
                         </button>
                     </div>
                 </form>

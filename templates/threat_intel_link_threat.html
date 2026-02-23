@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 {% block content %}
 <div class="container mt-4">
-  <h3>Vincular Amenaza a IntelItem {{ item.canonical_id }}</h3>
+  <h3>{% blocktrans with cid=item.canonical_id %}Vincular Amenaza a IntelItem {{ cid }}{% endblocktrans %}</h3>
   <p class="text-muted">{{ item.title }}</p>
 
   <form method="get" class="mb-3">
     <div class="input-group">
-      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar amenazas...">
-      <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="{% trans 'Buscar amenazas...' %}">
+      <button class="btn btn-outline-secondary" type="submit">{% trans "Buscar" %}</button>
     </div>
   </form>
 
@@ -22,17 +22,17 @@
             <div class="small text-muted">{{ t.description|truncatechars:120 }}</div>
           </div>
           <div class="text-end">
-            <span class="badge bg-secondary">ID {{ t.pk }}</span>
+            <span class="badge bg-secondary">{% trans "ID" %} {{ t.pk }}</span>
           </div>
         </label>
       {% empty %}
-        <div class="list-group-item">No se encontraron amenazas.</div>
+        <div class="list-group-item">{% trans "No se encontraron amenazas." %}</div>
       {% endfor %}
     </div>
 
     <div class="mt-3 d-flex gap-2">
-      <a href="{{ back_url }}" class="btn btn-secondary">Cancelar</a>
-      <button class="btn btn-primary" type="submit">Vincular</button>
+      <a href="{{ back_url }}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+      <button class="btn btn-primary" type="submit">{% trans "Vincular" %}</button>
     </div>
   </form>
 </div>

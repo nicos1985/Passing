@@ -9,29 +9,30 @@ from django.utils import timezone
 import uuid
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
 ################################# MODELOS DE RECURSOS ###############################
 class AssetStatus(models.IntegerChoices):
-    ACTIVE = 0, 'Activo'
-    INACTIVE = 1, 'Inactivo'
-    UNDER_REPAIR = 2, 'En Reparacion'
-    BACK_UP = 3, 'Back up'
+    ACTIVE = 0, _('Activo')
+    INACTIVE = 1, _('Inactivo')
+    UNDER_REPAIR = 2, _('En Reparacion')
+    BACK_UP = 3, _('Back up')
 
 class PersonalDataLevelChoice(models.IntegerChoices):
-    NONE = 0, 'Ninguno'
-    HIGH = 1, 'Alto'
-    MEDIUM = 2, 'Medio'
-    LOW = 3, 'Bajo'
+    NONE = 0, _('Ninguno')
+    HIGH = 1, _('Alto')
+    MEDIUM = 2, _('Medio')
+    LOW = 3, _('Bajo')
 
 class RiskEvaluableObject(models.Model):
     """Base común para objetos que pueden ser evaluados en el módulo de riesgos."""
-    name = models.CharField(max_length=255, verbose_name="Nombre")
-    status = models.IntegerField(choices=AssetStatus.choices, default=AssetStatus.ACTIVE, verbose_name='Estado')
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
-    personal_data_level = models.IntegerField(choices=PersonalDataLevelChoice.choices, default=PersonalDataLevelChoice.NONE, verbose_name='Nivel de datos personales')
-    owner = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='owned_%(class)s', related_query_name='owned_%(class)s', verbose_name='Propietario')
+    name = models.CharField(max_length=255, verbose_name=_("Nombre"))
+    status = models.IntegerField(choices=AssetStatus.choices, default=AssetStatus.ACTIVE, verbose_name=_('Estado'))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
+    personal_data_level = models.IntegerField(choices=PersonalDataLevelChoice.choices, default=PersonalDataLevelChoice.NONE, verbose_name=_('Nivel de datos personales'))
+    owner = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='owned_%(class)s', related_query_name='owned_%(class)s', verbose_name=_('Propietario'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
@@ -43,29 +44,29 @@ class RiskEvaluableObject(models.Model):
 
     
 class AssetType(models.IntegerChoices):
-    PC_OR_NOTEBOOK = 0, 'Pc o Notebook'
-    MONITOR = 1, 'Monitor'
-    PERIFERICAL = 2, 'Perifericos'
-    STORAGE_UNIT = 3, 'Unidad de almacenamiento'
-    INTERNAL_COMPONENTS = 4, 'Componentes internos'
-    WIRE_AND_CONNECTORS = 5, 'Cables y conectores'
-    PRINTER = 6, 'Impresoras'
-    SERVER = 7, 'Servidores'
-    SWITCH = 8, 'Switch'
-    ROUTER = 9, 'Router'
-    MODEM = 10, 'Modem'
-    DOCUMENT = 11, 'Documento'
-    SOFTWARE = 12, 'Software'
-    SERVICE = 13, 'Servicio'
-    MAIL = 14, 'Email'
-    PASSWORD = 15, 'Password'
-    KEY = 16, 'Key'
-    OTHER = 17, 'Otro'
+    PC_OR_NOTEBOOK = 0, _('Pc o Notebook')
+    MONITOR = 1, _('Monitor')
+    PERIFERICAL = 2, _('Perifericos')
+    STORAGE_UNIT = 3, _('Unidad de almacenamiento')
+    INTERNAL_COMPONENTS = 4, _('Componentes internos')
+    WIRE_AND_CONNECTORS = 5, _('Cables y conectores')
+    PRINTER = 6, _('Impresoras')
+    SERVER = 7, _('Servidores')
+    SWITCH = 8, _('Switch')
+    ROUTER = 9, _('Router')
+    MODEM = 10, _('Modem')
+    DOCUMENT = 11, _('Documento')
+    SOFTWARE = 12, _('Software')
+    SERVICE = 13, _('Servicio')
+    MAIL = 14, _('Email')
+    PASSWORD = 15, _('Password')
+    KEY = 16, _('Key')
+    OTHER = 17, _('Otro')
 
 class Info_Class(models.IntegerChoices):
-    PUBLIC = 0, 'Publica'
-    INTERN = 1, 'Interna'
-    CONFIDENTIAL = 2, 'Confidencial'
+    PUBLIC = 0, _('Publica')
+    INTERN = 1, _('Interna')
+    CONFIDENTIAL = 2, _('Confidencial')
 
 
 
@@ -73,37 +74,52 @@ class Info_Class(models.IntegerChoices):
 class InformationAssets(RiskEvaluableObject):
     """Representa un activo de información y hereda campos comunes de `RiskEvaluableObject`."""
 
-    value = models.FloatField(blank=True, null=True, verbose_name='Valor monetario')
-    acquisition_date = models.DateField(auto_now=True, verbose_name='Fecha de adquisicion')
-    asset_type = models.IntegerField(choices=AssetType, verbose_name='Tipo activo')
-    location = models.CharField(max_length=255, blank=True, null=True ,verbose_name="Localizacion")
-    serial_number = models.CharField(max_length=200, blank=True, null=True, verbose_name='Nro serie')
-    information_classification = models.IntegerField(choices=Info_Class, default=Info_Class.CONFIDENTIAL, verbose_name='Clasificacion de la informacion')
+    value = models.FloatField(blank=True, null=True, verbose_name=_('Valor monetario'))
+    acquisition_date = models.DateField(auto_now=True, verbose_name=_('Fecha de adquisicion'))
+    asset_type = models.IntegerField(choices=AssetType, verbose_name=_('Tipo activo'))
+    location = models.CharField(max_length=255, blank=True, null=True ,verbose_name=_("Localizacion"))
+    serial_number = models.CharField(max_length=200, blank=True, null=True, verbose_name=_('Nro serie'))
+    information_classification = models.IntegerField(choices=Info_Class, default=Info_Class.CONFIDENTIAL, verbose_name=_('Clasificacion de la informacion'))
     
 
     class Meta():
-        verbose_name = 'Activo de la informacion'
-        verbose_name_plural = 'Activos de la informacion'
+        verbose_name = _('Activo de la informacion')
+        verbose_name_plural = _('Activos de la informacion')
 
     def __str__(self):
         return self.name
+    
+    def get_current_holder(self):
+        """Devuelve el usuario que actualmente tiene el activo (si está prestado), o None."""
+        try:
+            # Only consider confirmed actions when determining current holder
+            last_action = self.actions.filter(status='CONFIRMED').order_by('-timestamp').first()
+            if last_action and last_action.action_type == AssetActionType.LOAN:
+                return last_action.user
+        except Exception:
+            return None
+        return None
+
+    @property
+    def is_loaned(self):
+        return self.get_current_holder() is not None
 
 # Controles normalizados (utilizados por checklist y tratamientos)
 class Controls(models.IntegerChoices):
-    A5_INFORMATION_SECURITY_POLICIES = 0, 'A.5 Políticas de seguridad de la información'
-    A6_ORGANIZATION_OF_INFORMATION_SECURITY = 1, 'A.6 Organización de la seguridad de la información'
-    A7_HUMAN_RESOURCE_SECURITY = 2, 'A.7 Seguridad en los recursos humanos'
-    A8_ASSET_MANAGEMENT = 3, 'A.8 Gestión de activos'
-    A9_ACCESS_CONTROL = 4, 'A.9 Control de acceso'
-    A10_CRYPTOGRAPHY = 5, 'A.10 Criptografía'
-    A11_PHYSICAL_AND_ENVIRONMENTAL_SECURITY = 6, 'A.11 Seguridad física y ambiental'
-    A12_OPERATIONS_SECURITY = 7, 'A.12 Seguridad en las operaciones'
-    A13_COMMUNICATION_SECURITY = 8, 'A.13 Seguridad en las comunicaciones'
-    A14_SYSTEM_ACQUISITION_DEVELOPMENT_AND_MAINTENANCE = 9, 'A.14 Adquisición, desarrollo y mantenimiento de sistemas'
-    A15_SUPPLIER_RELATIONSHIPS = 10, 'A.15 Relaciones con los proveedores'
-    A16_INFORMATION_SECURITY_INCIDENT_MANAGEMENT = 11, 'A.16 Gestión de incidentes de seguridad de la información'
-    A17_INFORMATION_SECURITY_ASPECTS_OF_BUSINESS_CONTINUITY = 12, 'A.17 Aspectos de seguridad de la información en la continuidad del negocio'
-    A18_COMPLIANCE = 13, 'A.18 Cumplimiento'
+    A5_INFORMATION_SECURITY_POLICIES = 0, _('A.5 Políticas de seguridad de la información')
+    A6_ORGANIZATION_OF_INFORMATION_SECURITY = 1, _('A.6 Organización de la seguridad de la información')
+    A7_HUMAN_RESOURCE_SECURITY = 2, _('A.7 Seguridad en los recursos humanos')
+    A8_ASSET_MANAGEMENT = 3, _('A.8 Gestión de activos')
+    A9_ACCESS_CONTROL = 4, _('A.9 Control de acceso')
+    A10_CRYPTOGRAPHY = 5, _('A.10 Criptografía')
+    A11_PHYSICAL_AND_ENVIRONMENTAL_SECURITY = 6, _('A.11 Seguridad física y ambiental')
+    A12_OPERATIONS_SECURITY = 7, _('A.12 Seguridad en las operaciones')
+    A13_COMMUNICATION_SECURITY = 8, _('A.13 Seguridad en las comunicaciones')
+    A14_SYSTEM_ACQUISITION_DEVELOPMENT_AND_MAINTENANCE = 9, _('A.14 Adquisición, desarrollo y mantenimiento de sistemas')
+    A15_SUPPLIER_RELATIONSHIPS = 10, _('A.15 Relaciones con los proveedores')
+    A16_INFORMATION_SECURITY_INCIDENT_MANAGEMENT = 11, _('A.16 Gestión de incidentes de seguridad de la información')
+    A17_INFORMATION_SECURITY_ASPECTS_OF_BUSINESS_CONTINUITY = 12, _('A.17 Aspectos de seguridad de la información en la continuidad del negocio')
+    A18_COMPLIANCE = 13, _('A.18 Cumplimiento')
 
 
 ##########################################################################
@@ -112,16 +128,16 @@ class Controls(models.IntegerChoices):
 
 class ChecklistTemplate(models.Model):
     """Plantilla reutilizable que agrupa preguntas para evaluaciones a proveedores."""
-    name = models.CharField(max_length=255, verbose_name='Nombre plantilla')
-    description = models.TextField(blank=True, null=True, verbose_name='Descripcion')
+    name = models.CharField(max_length=255, verbose_name=_('Nombre plantilla'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Descripcion'))
     created_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='created_checklist_templates')
-    active = models.BooleanField(default=True, verbose_name='Activa')
+    active = models.BooleanField(default=True, verbose_name=_('Activa'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Plantilla de checklist'
-        verbose_name_plural = 'Plantillas de checklist'
+        verbose_name = _('Plantilla de checklist')
+        verbose_name_plural = _('Plantillas de checklist')
 
     def __str__(self):
         return self.name
@@ -129,17 +145,17 @@ class ChecklistTemplate(models.Model):
 
 class ChecklistItem(models.Model):
     """Pregunta individual perteneciente a una plantilla y ordenada por su posición deseada."""
-    template = models.ForeignKey(ChecklistTemplate, on_delete=models.CASCADE, related_name='items', verbose_name='Plantilla')
-    order = models.PositiveIntegerField(default=0, verbose_name='Orden')
-    text = models.TextField(verbose_name='Pregunta / Punto a evaluar')
-    required = models.BooleanField(default=True, verbose_name='Requerido')
-    controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name='Control relacionado')
+    template = models.ForeignKey(ChecklistTemplate, on_delete=models.CASCADE, related_name='items', verbose_name=_('Plantilla'))
+    order = models.PositiveIntegerField(default=0, verbose_name=_('Orden'))
+    text = models.TextField(verbose_name=_('Pregunta / Punto a evaluar'))
+    required = models.BooleanField(default=True, verbose_name=_('Requerido'))
+    controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name=_('Control relacionado'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Item de checklist'
-        verbose_name_plural = 'Items de checklist'
+        verbose_name = _('Item de checklist')
+        verbose_name_plural = _('Items de checklist')
         ordering = ['order']
 
     def __str__(self):
@@ -148,16 +164,16 @@ class ChecklistItem(models.Model):
 
 class VendorChecklist(models.Model):
     """Asigna una plantilla a un proveedor; permite marcar si fue personalizada."""
-    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='checklist_assignments')
-    template = models.ForeignKey(ChecklistTemplate, on_delete=models.CASCADE, related_name='vendor_assignments')
-    customized = models.BooleanField(default=False, verbose_name='Personalizada')
-    notes = models.TextField(blank=True, null=True, verbose_name='Notas de personalizacion')
+    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='checklist_assignments', verbose_name=_('Proveedor'))
+    template = models.ForeignKey(ChecklistTemplate, on_delete=models.CASCADE, related_name='vendor_assignments', verbose_name=_('Plantilla'))
+    customized = models.BooleanField(default=False, verbose_name=_('Personalizada'))
+    notes = models.TextField(blank=True, null=True, verbose_name=_('Notas de personalizacion'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Checklist asignada a proveedor'
-        verbose_name_plural = 'Checklists asignadas a proveedores'
+        verbose_name = _('Checklist asignada a proveedor')
+        verbose_name_plural = _('Checklists asignadas a proveedores')
         unique_together = ('vendor', 'template')
 
     def __str__(self):
@@ -165,33 +181,33 @@ class VendorChecklist(models.Model):
 
 
 class VendorEvaluationStatus(models.TextChoices):
-    PENDING = 'PENDING', 'Pendiente'
-    IN_PROGRESS = 'IN_PROGRESS', 'En progreso'
-    COMPLETED = 'COMPLETED', 'Completada'
-    CANCELLED = 'CANCELLED', 'Cancelada'
+    PENDING = 'PENDING', _('Pendiente')
+    IN_PROGRESS = 'IN_PROGRESS', _('En progreso')
+    COMPLETED = 'COMPLETED', _('Completada')
+    CANCELLED = 'CANCELLED', _('Cancelada')
 
 
 class EvaluationResult(models.IntegerChoices):
-    COMPLIES = 0, 'Cumple'
-    DOES_NOT_COMPLY = 1, 'No cumple'
-    NOT_APPLICABLE = 2, 'No aplica'
+    COMPLIES = 0, _('Cumple')
+    DOES_NOT_COMPLY = 1, _('No cumple')
+    NOT_APPLICABLE = 2, _('No aplica')
 
 
 class VendorEvaluation(models.Model):
     """Almacena el ciclo de vida y estado de la evaluación de un proveedor."""
-    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='evaluations', verbose_name='Proveedor')
-    scheduled_date = models.DateField(blank=True, null=True, verbose_name='Fecha programada')
-    performed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='performed_vendor_evaluations', verbose_name='Evaluado por')
-    performed_at = models.DateTimeField(blank=True, null=True, verbose_name='Fecha de evaluacion')
-    status = models.CharField(max_length=20, choices=VendorEvaluationStatus.choices, default=VendorEvaluationStatus.PENDING, verbose_name='Estado')
-    notes = models.TextField(blank=True, null=True, verbose_name='Observaciones generales')
+    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='evaluations', verbose_name=_('Proveedor'))
+    scheduled_date = models.DateField(blank=True, null=True, verbose_name=_('Fecha programada'))
+    performed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='performed_vendor_evaluations', verbose_name=_('Evaluado por'))
+    performed_at = models.DateTimeField(blank=True, null=True, verbose_name=_('Fecha de evaluacion'))
+    status = models.CharField(max_length=20, choices=VendorEvaluationStatus.choices, default=VendorEvaluationStatus.PENDING, verbose_name=_('Estado'))
+    notes = models.TextField(blank=True, null=True, verbose_name=_('Observaciones generales'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
-    reminder_sent_at = models.DateTimeField(blank=True, null=True, verbose_name='Fecha aviso enviado')
+    reminder_sent_at = models.DateTimeField(blank=True, null=True, verbose_name=_('Fecha aviso enviado'))
 
     class Meta:
-        verbose_name = 'Evaluacion de proveedor'
-        verbose_name_plural = 'Evaluaciones de proveedores'
+        verbose_name = _('Evaluacion de proveedor')
+        verbose_name_plural = _('Evaluaciones de proveedores')
 
     def __str__(self):
         return f'Evaluacion {self.vendor} - {self.scheduled_date or "-"} ({self.get_status_display()})'
@@ -315,19 +331,19 @@ class VendorEvaluation(models.Model):
 
 class VendorEvaluationItem(models.Model):
     """Snapshot de una pregunta del checklist para cada evaluación de proveedor."""
-    evaluation = models.ForeignKey(VendorEvaluation, on_delete=models.CASCADE, related_name='items', verbose_name='Evaluacion')
-    checklist_item = models.ForeignKey(ChecklistItem, on_delete=models.SET_NULL, blank=True, null=True, related_name='+', verbose_name='Item plantilla')
-    question_text = models.TextField(verbose_name='Texto de la pregunta (snapshot)')
-    required = models.BooleanField(default=True, verbose_name='Requerido')
-    controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name='Control relacionado')
-    result = models.IntegerField(choices=EvaluationResult.choices, default=EvaluationResult.COMPLIES, verbose_name='Resultado')
-    observations = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    evaluation = models.ForeignKey(VendorEvaluation, on_delete=models.CASCADE, related_name='items', verbose_name=_('Evaluacion'))
+    checklist_item = models.ForeignKey(ChecklistItem, on_delete=models.SET_NULL, blank=True, null=True, related_name='+', verbose_name=_('Item plantilla'))
+    question_text = models.TextField(verbose_name=_('Texto de la pregunta (snapshot)'))
+    required = models.BooleanField(default=True, verbose_name=_('Requerido'))
+    controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name=_('Control relacionado'))
+    result = models.IntegerField(choices=EvaluationResult.choices, default=EvaluationResult.COMPLIES, verbose_name=_('Resultado'))
+    observations = models.TextField(blank=True, null=True, verbose_name=_('Observaciones'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Item de evaluacion'
-        verbose_name_plural = 'Items de evaluacion'
+        verbose_name = _('Item de evaluacion')
+        verbose_name_plural = _('Items de evaluacion')
 
     def __str__(self):
         return f'{self.evaluation} - {self.question_text[:60]} -> {self.get_result_display()}'
@@ -349,64 +365,64 @@ class VendorEvaluationItem(models.Model):
         
 
 class VendorType(models.IntegerChoices):
-    BANKING_AND_FINANCIAL_SERVICES = 0, 'Banking and Financial Services'
-    FUEL = 1, 'Fuel'
-    MAIL_SERVICE = 2, 'Mail Service'
-    INPUTS = 3, 'Inputs'
-    INTERNET = 4, 'Internet'
-    INSURANCE = 5, 'Insurance'
-    STORAGE_SERVICES = 6, 'Storage Services'
-    MAINTENANCE_AND_CLEANING_SERVICES = 7, 'Maintenance and Cleaning Services'
-    CLOUD_SERVICES = 8, 'Cloud Services'
-    INSTALLATION_SERVICES = 9, 'Installation Services'
-    TELEPHONE_SERVICES = 10, 'Telephone Services'
-    BUSINESS_SERVICES = 11, 'Business Services'
-    ESSENTIAL_SERVICES = 12, 'Essential Services'
-    MEDICAL_SERVICES = 13, 'Medical Services'
-    PROFESSIONAL_SERVICES = 14, 'Professional Services'
-    TECHNICAL_SERVICES = 15, 'Technical Services'
-    OTHERS = 16, 'Otros'
+    BANKING_AND_FINANCIAL_SERVICES = 0, _('Banking and Financial Services')
+    FUEL = 1, _('Fuel')
+    MAIL_SERVICE = 2, _('Mail Service')
+    INPUTS = 3, _('Inputs')
+    INTERNET = 4, _('Internet')
+    INSURANCE = 5, _('Insurance')
+    STORAGE_SERVICES = 6, _('Storage Services')
+    MAINTENANCE_AND_CLEANING_SERVICES = 7, _('Maintenance and Cleaning Services')
+    CLOUD_SERVICES = 8, _('Cloud Services')
+    INSTALLATION_SERVICES = 9, _('Installation Services')
+    TELEPHONE_SERVICES = 10, _('Telephone Services')
+    BUSINESS_SERVICES = 11, _('Business Services')
+    ESSENTIAL_SERVICES = 12, _('Essential Services')
+    MEDICAL_SERVICES = 13, _('Medical Services')
+    PROFESSIONAL_SERVICES = 14, _('Professional Services')
+    TECHNICAL_SERVICES = 15, _('Technical Services')
+    OTHERS = 16, _('Otros')
 
 class ValueRange(models.IntegerChoices):
-    NO_ONEROUS = 0, 'No Oneroso'
-    ONEROUS = 1, 'Oneroso'
+    NO_ONEROUS = 0, _('No Oneroso')
+    ONEROUS = 1, _('Oneroso')
 
 class ContractTime(models.IntegerChoices):
-    PERMANENT = 0, 'Permanente'
-    TEMPORAL = 1, 'Temporal'
+    PERMANENT = 0, _('Permanente')
+    TEMPORAL = 1, _('Temporal')
 
 class DisponibilityImpact(models.IntegerChoices):
-    HIGH = 0, 'Alto'
-    MEDIUM = 1, 'Medio'
-    LOW = 2, 'Bajo'
+    HIGH = 0, _('Alto')
+    MEDIUM = 1, _('Medio')
+    LOW = 2, _('Bajo')
 
 class Criticality(models.IntegerChoices):
-    CRITICAL = 0, 'Critico'
-    NON_CRITICAL = 1, 'No Crítico'
+    CRITICAL = 0, _('Critico')
+    NON_CRITICAL = 1, _('No Crítico')
 
 class ControlPeriod(models.IntegerChoices):
-    MONTH_4 = 0, '4 meses'
-    MONTH_6 = 1, '6 meses'
-    UNIQUE = 2, 'Unico'
+    MONTH_4 = 0, _('4 meses')
+    MONTH_6 = 1, _('6 meses')
+    UNIQUE = 2, _('Unico')
 
 
 class Vendor(RiskEvaluableObject):
     """Proveedor interno con métricas de riesgo y evaluaciones periódicas."""
 
-    vendor_type = models.IntegerField(choices=VendorType, default=VendorType.OTHERS, verbose_name='Tipo proveedor')
-    value_range = models.IntegerField(choices=ValueRange, default=ValueRange.NO_ONEROUS, verbose_name='Rango valor')
-    contract_time = models.IntegerField(choices=ContractTime, default=ContractTime.PERMANENT, verbose_name='Tiempo de contrato')
-    access_information = models.IntegerField(choices=Info_Class, default=Info_Class.INTERN, verbose_name='Acceso a la informacion')
-    disponibility_impact = models.IntegerField(choices=DisponibilityImpact, default=DisponibilityImpact.MEDIUM, verbose_name='Impacto en disponibilidad')
-    criticality = models.IntegerField(choices=Criticality, default=Criticality.NON_CRITICAL, verbose_name='Criticidad')
-    control_period = models.IntegerField(choices=ControlPeriod, default=ControlPeriod.MONTH_4, verbose_name='Periodo de control')
+    vendor_type = models.IntegerField(choices=VendorType, default=VendorType.OTHERS, verbose_name=_('Tipo proveedor'))
+    value_range = models.IntegerField(choices=ValueRange, default=ValueRange.NO_ONEROUS, verbose_name=_('Rango valor'))
+    contract_time = models.IntegerField(choices=ContractTime, default=ContractTime.PERMANENT, verbose_name=_('Tiempo de contrato'))
+    access_information = models.IntegerField(choices=Info_Class, default=Info_Class.INTERN, verbose_name=_('Acceso a la informacion'))
+    disponibility_impact = models.IntegerField(choices=DisponibilityImpact, default=DisponibilityImpact.MEDIUM, verbose_name=_('Impacto en disponibilidad'))
+    criticality = models.IntegerField(choices=Criticality, default=Criticality.NON_CRITICAL, verbose_name=_('Criticidad'))
+    control_period = models.IntegerField(choices=ControlPeriod, default=ControlPeriod.MONTH_4, verbose_name=_('Periodo de control'))
     # service_standard removed: not used anymore
-    start_date = models.DateField(verbose_name='Fecha de inicio')
-    finish_date = models.DateField(blank=True, null=True, verbose_name='Fecha de finalizacion')
+    start_date = models.DateField(verbose_name=_('Fecha de inicio'))
+    finish_date = models.DateField(blank=True, null=True, verbose_name=_('Fecha de finalizacion'))
 
     class Meta():
-        verbose_name = 'Proveedor'
-        verbose_name_plural = 'Proveedores'
+        verbose_name = _('Proveedor')
+        verbose_name_plural = _('Proveedores')
     
 
     def __str__(self):
@@ -475,28 +491,28 @@ class Vendor(RiskEvaluableObject):
 
 
 class ProjectType(models.IntegerChoices):
-    OPERATIONS = 0, 'Proyectos de Operaciones / Producción'
-    TECNOLOGY = 1, 'Proyectos de Tecnología / IT'
-    MARKETING = 2, 'Proyectos de Marketing / Comercial'
-    HUMAN_RESOURCES = 3, 'Proyectos de Recursos Humanos'
-    COPORATE = 4, 'Proyectos Estratégicos / Corporativos'
-    FINANCE = 5, 'Proyectos de Finanzas / Administración'
-    INNOVATION = 6, 'Proyectos de Innovación / I+D'
-    OTHERS = 7, 'Otros'
+    OPERATIONS = 0, _('Proyectos de Operaciones / Producción')
+    TECNOLOGY = 1, _('Proyectos de Tecnología / IT')
+    MARKETING = 2, _('Proyectos de Marketing / Comercial')
+    HUMAN_RESOURCES = 3, _('Proyectos de Recursos Humanos')
+    COPORATE = 4, _('Proyectos Estratégicos / Corporativos')
+    FINANCE = 5, _('Proyectos de Finanzas / Administración')
+    INNOVATION = 6, _('Proyectos de Innovación / I+D')
+    OTHERS = 7, _('Otros')
 
 
 class Project(RiskEvaluableObject):
     """Proyecto que puede ser evaluado y vinculado a múltiples usuarios responsables."""
 
-    proyect_type = models.IntegerField(choices=ProjectType, verbose_name='Tipo de proyecto')
-    start_date = models.DateField(verbose_name='Fecha de inicio')
-    finish_date = models.DateField(blank=True, null=True, verbose_name='Fecha de finalizacion')
-    budget = models.FloatField(blank=True, null=True, verbose_name='Presupuesto')
+    proyect_type = models.IntegerField(choices=ProjectType, verbose_name=_('Tipo de proyecto'))
+    start_date = models.DateField(verbose_name=_('Fecha de inicio'))
+    finish_date = models.DateField(blank=True, null=True, verbose_name=_('Fecha de finalizacion'))
+    budget = models.FloatField(blank=True, null=True, verbose_name=_('Presupuesto'))
     associated_users = models.ManyToManyField(CustomUser, related_name='Proyectos')
 
     class Meta():
-        verbose_name = 'Proyecto'
-        verbose_name_plural = 'Proyectos'
+        verbose_name = _('Proyecto')
+        verbose_name_plural = _('Proyectos')
     
     def __str__(self):
         return self.name
@@ -507,18 +523,18 @@ class ClientCompany(RiskEvaluableObject):
     """Cliente externo cuyo contrato se evalúa y rastrea en el módulo de riesgos."""
 
     
-    cuit = models.CharField(max_length=255, verbose_name="CUIT")
-    address = models.CharField(max_length=255, verbose_name="Direccion")
-    phone = models.CharField(max_length=255, verbose_name="Telefono")
-    email = models.EmailField(max_length=255, verbose_name="Email")
-    service_standard = models.TextField(blank=True, null=True, verbose_name="Estandar de Servicio")
-    start_date = models.DateField(verbose_name='Fecha de inicio')
-    finish_date = models.DateField(blank=True, null=True, verbose_name='Fecha de finalizacion')
+    cuit = models.CharField(max_length=255, verbose_name=_("CUIT"))
+    address = models.CharField(max_length=255, verbose_name=_("Direccion"))
+    phone = models.CharField(max_length=255, verbose_name=_("Telefono"))
+    email = models.EmailField(max_length=255, verbose_name=_("Email"))
+    service_standard = models.TextField(blank=True, null=True, verbose_name=_("Estandar de Servicio"))
+    start_date = models.DateField(verbose_name=_('Fecha de inicio'))
+    finish_date = models.DateField(blank=True, null=True, verbose_name=_('Fecha de finalizacion'))
 
 
     class Meta():
-        verbose_name = 'Cliente'
-        verbose_name_plural = 'Clientes'
+        verbose_name = _('Cliente')
+        verbose_name_plural = _('Clientes')
 
     def __str__(self):
         return self.name
@@ -527,87 +543,87 @@ class ClientCompany(RiskEvaluableObject):
 
 class TypeThreat(models.IntegerChoices):
     
-    PHYSICAL_DAMAGE = 0, 'Dano fisico'
-    NATUAL_EVENT = 1, 'Evento natural'
-    SERVICES_LOST = 2, 'Perdida de servicios'
-    RADIATION = 3, 'Radiacion'
-    INFORMATION_COMPROMISED = 4, 'Informacion comprometida'
-    UNAUTHORIZED_ACCESS = 5, 'Acceso no autorizado'
-    TECNICAL_FAILURE = 6, 'Fallo tecnico'
-    FUNCTIONAL_FAILURE = 7, 'Fallo funcional'
-    COMERCIAL = 8, 'Comercial'
-    PIRATERY = 9, 'Pirateria'
-    SOCIAL_ENGINEERING = 10, 'Ingenieria social'
-    HUMAN_ERROR = 11, 'Error humano'
-    THEFT = 12, 'Robo'
-    SPYING = 13, 'Espionaje'
-    INTRUSION = 14, 'Intrusion'
-    TERRORISM = 15, 'Terrorismo'
-    OTHERS = 16, 'Otros'
-    THREAT_INTEL = 17, 'Inteligencia de amenazas'
+    PHYSICAL_DAMAGE = 0, _('Dano fisico')
+    NATUAL_EVENT = 1, _('Evento natural')
+    SERVICES_LOST = 2, _('Perdida de servicios')
+    RADIATION = 3, _('Radiacion')
+    INFORMATION_COMPROMISED = 4, _('Informacion comprometida')
+    UNAUTHORIZED_ACCESS = 5, _('Acceso no autorizado')
+    TECNICAL_FAILURE = 6, _('Fallo tecnico')
+    FUNCTIONAL_FAILURE = 7, _('Fallo funcional')
+    COMERCIAL = 8, _('Comercial')
+    PIRATERY = 9, _('Pirateria')
+    SOCIAL_ENGINEERING = 10, _('Ingenieria social')
+    HUMAN_ERROR = 11, _('Error humano')
+    THEFT = 12, _('Robo')
+    SPYING = 13, _('Espionaje')
+    INTRUSION = 14, _('Intrusion')
+    TERRORISM = 15, _('Terrorismo')
+    OTHERS = 16, _('Otros')
+    THREAT_INTEL = 17, _('Inteligencia de amenazas')
     
 
 class Threat(models.Model):
     """Catalogo de amenazas que alimentan las evaluaciones de riesgo."""
-    name = models.CharField(max_length=255, verbose_name="Nombre")
-    type_threat = models.IntegerField(choices=TypeThreat.choices, default=TypeThreat.OTHERS, verbose_name='Tipo de amenaza')
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    name = models.CharField(max_length=255, verbose_name=_("Nombre"))
+    type_threat = models.IntegerField(choices=TypeThreat.choices, default=TypeThreat.OTHERS, verbose_name=_('Tipo de amenaza'))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Amenaza'
-        verbose_name_plural = 'Amenazas'
+        verbose_name = _('Amenaza')
+        verbose_name_plural = _('Amenazas')
     
     def __str__(self):
         return self.name
 
 class TypeVulnerability(models.IntegerChoices):
-    HARDWARE = 0, 'Hardware'
-    SOFTWARE = 1, 'Software'
-    RED = 2, 'Red'
-    PERSONAL = 3, 'Personal'
-    PLACE = 4, 'Lugar'
-    ORGANIZACION = 5, 'Organizacion'
-    PROCESS = 6, 'Procesos'
-    COMERCIAL = 7, 'Comercial'
-    OTHERS = 8, 'Otros'
+    HARDWARE = 0, _('Hardware')
+    SOFTWARE = 1, _('Software')
+    RED = 2, _('Red')
+    PERSONAL = 3, _('Personal')
+    PLACE = 4, _('Lugar')
+    ORGANIZACION = 5, _('Organizacion')
+    PROCESS = 6, _('Procesos')
+    COMERCIAL = 7, _('Comercial')
+    OTHERS = 8, _('Otros')
 
 class Vulnerability(models.Model):
     """Catalogo de vulnerabilidades detectables sobre los recursos."""
-    name = models.CharField(max_length=255, verbose_name="Nombre")
-    type_vulnerability = models.IntegerField(choices=TypeVulnerability.choices, default=TypeThreat.OTHERS, verbose_name='Tipo de vulnerabilidad')
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    name = models.CharField(max_length=255, verbose_name=_("Nombre"))
+    type_vulnerability = models.IntegerField(choices=TypeVulnerability.choices, default=TypeThreat.OTHERS, verbose_name=_('Tipo de vulnerabilidad'))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Vulnerabilidad'
-        verbose_name_plural = 'Vulnerabilidades'
+        verbose_name = _('Vulnerabilidad')
+        verbose_name_plural = _('Vulnerabilidades')
 
     def __str__(self):
         return self.name
 
 class LevelOfImpact(models.IntegerChoices):
-    INCIDENTAL = 1, 'Incidental'
-    MINOR = 2, 'Menor'
-    MODERATE = 3, 'Moderado'
-    IMPORTANT = 4, 'Importante'
-    EXTREME = 5, 'Extremo'
+    INCIDENTAL = 1, _('Incidental')
+    MINOR = 2, _('Menor')
+    MODERATE = 3, _('Moderado')
+    IMPORTANT = 4, _('Importante')
+    EXTREME = 5, _('Extremo')
 
 class LevelOfProbability(models.IntegerChoices):
-    UNLIKELY = 1, 'Poco probable'
-    POSSIBLE = 2, 'Posible'
-    MODERATE = 3, 'Moderado'
-    LIKELY = 4, 'Probable'
-    VERY_LIKELY = 5, 'Muy probable'
+    UNLIKELY = 1, _('Poco probable')
+    POSSIBLE = 2, _('Posible')
+    MODERATE = 3, _('Moderado')
+    LIKELY = 4, _('Probable')
+    VERY_LIKELY = 5, _('Muy probable')
 
 class LevelOfRisk(models.IntegerChoices):
-    VERY_LOW = 0, 'Muy bajo'
-    LOW = 1, 'Bajo'
-    MODERATE = 2, 'Moderado'
-    HIGH = 3, 'Alto'
-    VERY_HIGH = 4, 'Muy alto'
+    VERY_LOW = 0, _('Muy bajo')
+    LOW = 1, _('Bajo')
+    MODERATE = 2, _('Moderado')
+    HIGH = 3, _('Alto')
+    VERY_HIGH = 4, _('Muy alto')
 
 
 
@@ -618,23 +634,23 @@ class RiskEvaluation(models.Model):
     evaluated_object = GenericForeignKey('evaluated_type', 'evaluated_id')
     evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     #Aca los campos de evaluacion de riesgo
-    threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name='Amenaza')
-    vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name='Vulnerabilidad')
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
-    confidenciality_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en confidencialidad')
-    integrity_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en integridad')
-    availability_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name='Impacto en disponibilidad')
-    impact_value = models.FloatField(blank=True, null=True, verbose_name='Valor de impacto')
-    probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name='Probabilidad')
-    risk_value = models.FloatField(blank=True, null=True, verbose_name='Valor de riesgo')
-    risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name='Nivel de riesgo')
-    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tratamiento asociado', related_name='risk_evaluation',)
+    threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name=_('Amenaza'))
+    vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name=_('Vulnerabilidad'))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
+    confidenciality_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name=_('Impacto en confidencialidad'))
+    integrity_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name=_('Impacto en integridad'))
+    availability_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name=_('Impacto en disponibilidad'))
+    impact_value = models.FloatField(blank=True, null=True, verbose_name=_('Valor de impacto'))
+    probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name=_('Probabilidad'))
+    risk_value = models.FloatField(blank=True, null=True, verbose_name=_('Valor de riesgo'))
+    risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name=_('Nivel de riesgo'))
+    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name=_('Tratamiento asociado'), related_name='risk_evaluation',)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Evaluacion de riesgo'
-        verbose_name_plural = 'Evaluaciones de riesgo'
+        verbose_name = _('Evaluacion de riesgo')
+        verbose_name_plural = _('Evaluaciones de riesgo')
     
     def __str__(self):
         return f'{self.evaluated_object} - {self.threat}'
@@ -746,33 +762,33 @@ class AssetActionType(models.IntegerChoices):
 
 class AssetAction(models.Model):
     """Registra préstamos y devoluciones asociando el activo, solicitante y estado."""
-    asset = models.ForeignKey(InformationAssets, on_delete=models.CASCADE, related_name='actions', verbose_name='Activo')
-    action_type = models.IntegerField(choices=AssetActionType.choices, verbose_name='Tipo de accion')
+    asset = models.ForeignKey(InformationAssets, on_delete=models.CASCADE, related_name='actions', verbose_name=_('Activo'))
+    action_type = models.IntegerField(choices=AssetActionType.choices, verbose_name=_('Tipo de accion'))
     class AssetActionStatus(models.TextChoices):
-        PENDING = 'PENDING', 'Pendiente'
-        CONFIRMED = 'CONFIRMED', 'Confirmado'
-        REJECTED = 'REJECTED', 'Rechazado'
+        PENDING = 'PENDING', _('Pendiente')
+        CONFIRMED = 'CONFIRMED', _('Confirmado')
+        REJECTED = 'REJECTED', _('Rechazado')
 
-    status = models.CharField(max_length=20, choices=AssetActionStatus.choices, default=AssetActionStatus.PENDING, verbose_name='Estado')
-    confirmation_token = models.UUIDField(default=uuid.uuid4, unique=True, null=True, blank=True, verbose_name='Token de confirmacion')
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='asset_actions', verbose_name='Usuario')
-    performed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='performed_asset_actions', verbose_name='Accionado por')
-    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Fecha y hora')
-    description = models.TextField(blank=True, null=True, verbose_name='Motivo / descripcion')
-    due_date = models.DateField(blank=True, null=True, verbose_name='Fecha estimada de devolucion')
+    status = models.CharField(max_length=20, choices=AssetActionStatus.choices, default=AssetActionStatus.PENDING, verbose_name=_('Estado'))
+    confirmation_token = models.UUIDField(default=uuid.uuid4, unique=True, null=True, blank=True, verbose_name=_('Token de confirmacion'))
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='asset_actions', verbose_name=_('Usuario'))
+    performed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='performed_asset_actions', verbose_name=_('Accionado por'))
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name=_('Fecha y hora'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Motivo / descripcion'))
+    due_date = models.DateField(blank=True, null=True, verbose_name=_('Fecha estimada de devolucion'))
 
     class Meta:
-        verbose_name = 'Accion de activo'
-        verbose_name_plural = 'Acciones de activos'
+        verbose_name = _('Accion de activo')
+        verbose_name_plural = _('Acciones de activos')
         ordering = ['-timestamp']
 
     def __str__(self):
-        return f"{self.get_action_type_display()} - {self.asset} -> {self.user or 'N/A'} @ {self.timestamp}"
+        return f"{self.get_action_type_display()} - {self.asset} -> {self.user or _('N/A')} @ {self.timestamp}"
 
     def clean(self):
         """Valida reglas de negocio al guardar: evita préstamos dobles y devoluciones inválidas."""
         if not getattr(self, 'asset_id', None):
-            raise ValidationError({'asset': 'Debe seleccionar un activo.'})
+            raise ValidationError({'asset': _('Debe seleccionar un activo.')})
 
         # Determine current holder by looking at latest action excluding this instance (if editing)
         # Only consider confirmed actions when deciding current state
@@ -781,11 +797,11 @@ class AssetAction(models.Model):
 
         if self.action_type == AssetActionType.LOAN:
             if last and last.action_type == AssetActionType.LOAN:
-                raise ValidationError('El activo ya está prestado. Debe devolverlo antes de prestarlo nuevamente.')
+                raise ValidationError(_('El activo ya está prestado. Debe devolverlo antes de prestarlo nuevamente.'))
 
         if self.action_type == AssetActionType.RETURN:
             if not last or last.action_type != AssetActionType.LOAN:
-                raise ValidationError('No existe un préstamo activo para devolver este activo.')
+                raise ValidationError(_('No existe un préstamo activo para devolver este activo.'))
 
     def save(self, *args, **kwargs):
         """Ejecuta validaciones y guarda la acción, asegurando consistencia del flujo."""
@@ -798,7 +814,7 @@ class AssetAction(models.Model):
     def get_impact_badge(self, field_name):
         """Construye un badge HTML que representa visualmente el impacto de un campo."""
         value = getattr(self, field_name)
-        label = dict(LevelOfImpact.choices).get(value, 'Desconocido')
+        label = dict(LevelOfImpact.choices).get(value, _('Desconocido'))
 
         # Mapping color_class o inline style
         if value == 4:  # Importante (naranja)
@@ -843,81 +859,81 @@ class AssetAction(models.Model):
 
 class TypeTreatment(models.IntegerChoices):
     """Define los modos de tratamiento de riesgo disponibles."""
-    REDUCE = 0, 'Reducir'
-    ASUME = 1, 'Asumir'
-    TRANSFER = 2, 'Transferir'
-    AVOID = 3, 'Evitar'
-    NOT_APPLICABLE = 4, 'No aplica'
+    REDUCE = 0, _('Reducir')
+    ASUME = 1, _('Asumir')
+    TRANSFER = 2, _('Transferir')
+    AVOID = 3, _('Evitar')
+    NOT_APPLICABLE = 4, _('No aplica')
     
 class TreatmentOportunity(models.IntegerChoices):
     """Describe la oportunidad en la que se aplica el tratamiento."""
-    PREVENTIVE = 0, 'Preventivo'
-    DETECTIVE = 1, 'Detectivo'
-    CORRECTIVE = 2, 'Correctivo'
+    PREVENTIVE = 0, _('Preventivo')
+    DETECTIVE = 1, _('Detectivo')
+    CORRECTIVE = 2, _('Correctivo')
 
 class ApplicationPeriodicity(models.IntegerChoices):
     """Clasifica la periodicidad de aplicación del tratamiento."""
-    PERMANENT = 0, 'Permanente'
-    TEMPORAL = 1, 'Temporal'
-    OCASIONAL = 2, 'Ocasional'
+    PERMANENT = 0, _('Permanente')
+    TEMPORAL = 1, _('Temporal')
+    OCASIONAL = 2, _('Ocasional')
 
 class ControlAutomation(models.IntegerChoices):
     """Indica si el control es manual, automático o semi-automático."""
-    MANUAL = 0, 'Manual'
-    AUTOMATIC = 1, 'Automatico'
-    SEMIAUTOMATIC = 2, 'Semi-automatico'
+    MANUAL = 0, _('Manual')
+    AUTOMATIC = 1, _('Automatico')
+    SEMIAUTOMATIC = 2, _('Semi-automatico')
 
 class Priority(models.IntegerChoices):
     """Prioriza los tratamientos según urgencia o impacto."""
-    URGENT = 0, 'Urgente'
-    PRIORITY = 1, 'Prioritario'
-    NO_PRIORITY = 2, 'No prioritario'
+    URGENT = 0, _('Urgente')
+    PRIORITY = 1, _('Prioritario')
+    NO_PRIORITY = 2, _('No prioritario')
 
 class ImplementationStatus(models.IntegerChoices):
     """Estados heredados para compatibilidad con tablas previas."""
-    PENDING = 0, 'Pendiente'
-    IN_PROGRESS = 1, 'En progreso'
-    COMPLETED = 2, 'Completado'
+    PENDING = 0, _('Pendiente')
+    IN_PROGRESS = 1, _('En progreso')
+    COMPLETED = 2, _('Completado')
 
 
 class TreatmentStage(models.IntegerChoices):
     """Etapas definidas para el ciclo de vida de un tratamiento."""
-    PENDING = 0, 'Pendiente'
-    ANALYSIS = 1, 'Análisis'
-    IN_PROGRESS = 2, 'En proceso'
-    IMPLEMENTED = 3, 'Implementado'
+    PENDING = 0, _('Pendiente')
+    ANALYSIS = 1, _('Análisis')
+    IN_PROGRESS = 2, _('En proceso')
+    IMPLEMENTED = 3, _('Implementado')
 
 class Treatment(models.Model):
     """Registro principal que agrupa datos de implementación de mitigaciones."""
-    name = models.CharField(max_length=255, verbose_name="Nombre")
-    treatment_type = models.IntegerField(choices=TypeTreatment.choices, default=TypeTreatment.REDUCE, verbose_name='Tipo de tratamiento')
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
-    controls = models.IntegerField(choices=Controls.choices, default=Controls.A5_INFORMATION_SECURITY_POLICIES, verbose_name='Controles Normalizados')
+    name = models.CharField(max_length=255, verbose_name=_("Nombre"))
+    treatment_type = models.IntegerField(choices=TypeTreatment.choices, default=TypeTreatment.REDUCE, verbose_name=_('Tipo de tratamiento'))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
+    controls = models.IntegerField(choices=Controls.choices, default=Controls.A5_INFORMATION_SECURITY_POLICIES, verbose_name=_('Controles Normalizados'))
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    deadline = models.DateField(verbose_name='Fecha de cumplimiento')
-    treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Responsable de tratamiento')
-    treatment_oportunity = models.IntegerField(choices=TreatmentOportunity.choices, default=TreatmentOportunity.PREVENTIVE, verbose_name='Oportunidad de tratamiento')
-    application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name='Periodicidad de aplicacion')
-    control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name='Automatizacion de control')
-    priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name='Prioridad')
+    deadline = models.DateField(verbose_name=_('Fecha de cumplimiento'))
+    treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Responsable de tratamiento'))
+    treatment_oportunity = models.IntegerField(choices=TreatmentOportunity.choices, default=TreatmentOportunity.PREVENTIVE, verbose_name=_('Oportunidad de tratamiento'))
+    application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name=_('Periodicidad de aplicacion'))
+    control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name=_('Automatizacion de control'))
+    priority = models.IntegerField(choices=Priority.choices, default=Priority.NO_PRIORITY, verbose_name=_('Prioridad'))
     # Compatibility column: some DBs/migrations still expect `implementation_status`.
     # Keep this field mapped to the legacy DB column so ORM writes a safe default during creates.
-    implementation_status = models.IntegerField(choices=ImplementationStatus.choices, default=ImplementationStatus.PENDING, verbose_name='Estado de implementacion', db_column='implementation_status')
+    implementation_status = models.IntegerField(choices=ImplementationStatus.choices, default=ImplementationStatus.PENDING, verbose_name=_('Estado de implementacion'), db_column='implementation_status')
     # New lifecycle stage and activity fields
-    stage = models.IntegerField(choices=TreatmentStage.choices, default=TreatmentStage.PENDING, verbose_name='Etapa')
-    analysis_notes = models.TextField(blank=True, null=True, verbose_name='Notas de análisis')
-    immediate_actions = models.TextField(blank=True, null=True, verbose_name='Acciones inmediatas')
-    corrective_actions = models.TextField(blank=True, null=True, verbose_name='Acciones correctivas')
-    stage_changed_at = models.DateTimeField(blank=True, null=True, editable=False, verbose_name='Fecha cambio de etapa')
-    stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', editable=False, verbose_name='Usuario que cambió etapa')
+    stage = models.IntegerField(choices=TreatmentStage.choices, default=TreatmentStage.PENDING, verbose_name=_('Etapa'))
+    analysis_notes = models.TextField(blank=True, null=True, verbose_name=_('Notas de análisis'))
+    immediate_actions = models.TextField(blank=True, null=True, verbose_name=_('Acciones inmediatas'))
+    corrective_actions = models.TextField(blank=True, null=True, verbose_name=_('Acciones correctivas'))
+    stage_changed_at = models.DateTimeField(blank=True, null=True, editable=False, verbose_name=_('Fecha cambio de etapa'))
+    stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', editable=False, verbose_name=_('Usuario que cambió etapa'))
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Tratamiento'
-        verbose_name_plural = 'Tratamientos'
+        verbose_name = _('Tratamiento')
+        verbose_name_plural = _('Tratamientos')
     
     def __str__(self):
         return self.name
@@ -927,7 +943,7 @@ class Treatment(models.Model):
     def get_stage_badge(self):
         """Genera un badge HTML para representar visualmente la etapa actual."""
         value = self.stage
-        label = dict(TreatmentStage.choices).get(value, 'Desconocido')
+        label = dict(TreatmentStage.choices).get(value, _('Desconocido'))
 
         # Map lifecycle stages to badge colors:
         # PENDING -> red, ANALYSIS -> yellow, IN_PROGRESS -> blue, IMPLEMENTED -> green
