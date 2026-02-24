@@ -113,7 +113,7 @@
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
-                <a href="{% url 'configuracion-global' 1 %}" class="admin-link">
+                <a href="{% url 'configuracion-global' %}" class="admin-link">
                     <div class="card admin-card">
                         <div class="card-body">
                             <div class="admin-card-icon">
@@ -125,19 +125,7 @@
                     </div>
                 </a>
             </div>
-            <div class="col">
-                <a href="{% url 'update_email_config' %}" class="admin-link">
-                    <div class="card admin-card">
-                        <div class="card-body">
-                            <div class="admin-card-icon">
-                                <i class="fa-solid fa-envelope"></i>
-                            </div>
-                            <h5>{% trans "Configuración de Email" %}</h5>
-                            <small class="text-muted">{% trans "SMTP y notificaciones" %}</small>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            
             <div class="col">
                 <a href="{% url 'upload-csv' %}" class="admin-link">
                     <div class="card admin-card">

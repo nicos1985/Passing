@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.urls import path
-from .views import CustomPasswordResetConfirmView, DepartureUser, GlobalSettingsUpdateView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso, home_tenant, login_alias_to_home
+from .views import CustomPasswordResetConfirmView, DepartureUser, TenantSettingsUpdateView, LogoutFormView, CustomPasswordResetView ,UserListView, UserUpdateView, activate_superuser, activate_user, create_superuser, deactivate_user, resend_mail, recive_mail, UserDetailView, sso_consume, verify_2fa_sso, home_tenant, login_alias_to_home
 from . import views 
 from django.contrib.auth.views import  LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.conf import settings
@@ -16,7 +16,7 @@ urlpatterns = [
     path('show-qr-code-2fa/', views.show_qr_code_2fa, name='show-qr-code-2fa'),
     path('send-qr-email-for-user-ondemand/<int:pk>', views.send_qr_email_for_user_ondemand, name='send-qr-email-for-user-ondemand'),
     path('register/', views.register , name='register'),
-    path('configuracion-global/<int:pk>', GlobalSettingsUpdateView.as_view() , name='configuracion-global'),
+    path('configuracion-global/', TenantSettingsUpdateView.as_view(), name='configuracion-global'),
     path('<str:schema_name>/create-superuser/', create_superuser, name='create-superuser'),
     path('recive-mail/', recive_mail, name='recive-mail'),
     path('resend-mail/', resend_mail, name='resend-mail'),

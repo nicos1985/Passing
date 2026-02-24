@@ -20,12 +20,12 @@ class AdminAccessMiddleware:
     def __call__(self, request):
         if request.path.startswith("/admin/"):  # Solo intercepta la URL del admin
             try:
-                from login.models import GlobalSettings
+                from accounts.models import TenantSettings
                 # Asegúrate de que no estamos en el esquema 'public'
                 if connection.schema_name != 'public':
-                    settings = GlobalSettings.objects.filter(is_active=True).last()
-                    if not settings or not settings.is_admin_dash_active:
-                        # Opciones: redirigir o devolver un error 403
+                    tenant = getattr(connection, 'tenant', None)
+                    ts = TenantSettings.for_client(tenant)
+                    if not ts or not ts.is_admin_dash_active:
                         return HttpResponseForbidden("El acceso al panel de administración está deshabilitado.")
                 else:
                     return HttpResponseForbidden("El acceso al panel de administración está deshabilitado error 403.")

@@ -171,9 +171,13 @@
 
   <!-- SIDEBAR -->
   <div id="sidebar" class="offcanvas-md offcanvas-start d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" tabindex="-1">
-    <a href="{% url 'listpass' %}" class="d-flex align-items-center mb-3 mb-md-0 text-white text-decoration-none">
-      <span class="fs-5">{{ company|default:"Passing" }}</span>
-    </a>
+    <a href="{% url 'listpass' %}" class="d-flex align-items-center mb-3 mb-md-0 text-white text-decoration-none justify-content-center" style="width:100%;">
+        {% if company_logo %}
+          <img src="{{ company_logo }}" alt="Logo" style="height:36px; width:auto;"/>
+        {% else %}
+          <span class="fs-5">{{ company|default:"Passing" }}</span>
+        {% endif %}
+      </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
         <li>

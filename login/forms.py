@@ -3,7 +3,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
-from .models import CustomUser, GlobalSettings
+from accounts.models import TenantSettings, CustomUser
+from django_tenants.utils import get_tenant
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
 from django.conf import settings
@@ -129,20 +130,61 @@ class AdminLoginForm(AuthenticationForm):
     )
 )    
 
-class GlobalSettingsForm(forms.ModelForm):
-    """Edita los parámetros globales del tenant como SSO y recordatorios."""
+# class GlobalSettingsForm(forms.ModelForm):
+#     """Edita los parámetros globales del tenant como SSO y recordatorios."""
+#     menu_color = forms.CharField(
+#         max_length=7,
+#         widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
+#     )
+    
+#     class Meta:
+#         model = GlobalSettings
+#         fields = ['company_name','multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+#         widgets = {
+#             'company_name': forms.TextInput(attrs={'class':'form-control'}),
+#             'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
+#             'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#             'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),
+#             'set_admins': forms.SelectMultiple(attrs={'class': 'form-control'})
+#         }
+
+
+class TenantSettingsForm(forms.ModelForm):
+    """Form para editar `TenantSettings` (reemplaza gradualmente a `GlobalSettingsForm`)."""
     menu_color = forms.CharField(
         max_length=7,
         widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
     )
-    
+
+    def __init__(self, *args, **kwargs):
+        # Accept `request` to scope `set_admins` to current tenant
+        request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+        client = None
+        if request is not None:
+            try:
+                tenant = get_tenant(request)
+                client = tenant
+            except Exception:
+                client = getattr(request.user, 'client', None)
+
+        # Scope the set_admins queryset to users of this client/tenant
+        if 'set_admins' in self.fields:
+            if client is not None:
+                self.fields['set_admins'].queryset = CustomUser.for_client(client)
+            else:
+                self.fields['set_admins'].queryset = CustomUser.objects.none()
+
     class Meta:
-        model = GlobalSettings
-        fields = ['company_name','multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+        model = TenantSettings
+        fields = ['company_name', 'company_logo', 'multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
         widgets = {
-            'company_name': forms.TextInput(attrs={'class':'form-control'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'company_logo': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
             'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
             'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),
             'set_admins': forms.SelectMultiple(attrs={'class': 'form-control'})
         }
+

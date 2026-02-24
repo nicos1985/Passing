@@ -6,3 +6,10 @@ class AccountsConfig(AppConfig):
 
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'accounts'
+    def ready(self):
+        # Import signals to register post/pre save hooks
+        try:
+            from . import signals  # noqa: F401
+        except Exception:
+            # Avoid crashing on import during manage.py commands if migrations not applied
+            pass

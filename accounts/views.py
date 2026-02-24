@@ -85,7 +85,7 @@ def choose_tenant_view(request):
     next_path = request.session.get("tenant_select_next", DEFAULT_NEXT_PATH)
     mems = TenantMembership.objects.select_related("client")\
                                    .filter(user=user, is_active=True)\
-                                   .order_by("client__name", "client__schema_name")
+                                   .order_by("client__client_name", "client__schema_name")
     if request.method == "POST":
         client_slug = request.POST.get("client_slug")
         m = mems.filter(client__schema_name=client_slug).first()

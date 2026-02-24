@@ -16,10 +16,18 @@
             <div class="card-body "style="background-color: #F7F7F7; width: 35rem;">
 
 
-                    <form class = 'form' method="POST" action="{% url 'configuracion-global' object.pk %}">
+                    <form class = 'form' method="POST" action="{% url 'configuracion-global'%}" enctype="multipart/form-data">
                         {% csrf_token %}
+                    {% if form.company_logo.value and form.instance and form.instance.company_logo %}
+                        <div class="mb-2">
+                            <label class="form-label">{% trans "Logo actual" %}</label><br>
+                            <img src="{{ form.instance.company_logo.url }}" style="height:64px; width:auto;" alt="Logo" />
+                        </div>
+                    {% endif %}
 
-                    {{form.as_p}}
+                    {% for field in form %}
+                        <div class="mb-2">{{ field.label_tag }} {{ field }}</div>
+                    {% endfor %}
 
                         <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
                             <i class="fas fa-save"></i> {% trans "Guardar" %}

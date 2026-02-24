@@ -11,7 +11,9 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from login.models import CustomUser, GlobalSettings
+from login.models import CustomUser
+from accounts.models import TenantSettings
+from django_tenants.utils import get_tenant
 from notifications.models import UserNotifications
 from passbase.crypto import decrypt_data, encrypt_data
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm, CSVUploadForm
@@ -171,9 +173,14 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
             if not contrasena.is_personal:
                 
-                global_settings = GlobalSettings.objects.filter(id=1).first()
-                if global_settings:
-                    grant_permission_user_ids = global_settings.set_admins.values_list('id', flat=True)
+                # Obtener TenantSettings asociado al cliente/tenant actual
+                client = getattr(self.request.user, 'client', None)
+                if client is None:
+                    client = get_tenant(self.request)
+
+                tenant_settings = TenantSettings.for_client(client) if client else None
+                if tenant_settings:
+                    grant_permission_user_ids = tenant_settings.set_admins.values_list('id', flat=True)
                     logger.debug('grant_permission_user_ids: %s', list(grant_permission_user_ids))
                 else:
                     grant_permission_user_ids = []

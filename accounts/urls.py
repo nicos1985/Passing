@@ -3,6 +3,7 @@
 from django.urls import path
 from .views import google_start, google_start_auto, post_login_redirect, login_view, logout_view, choose_tenant_view
 
+app_name = 'accounts'
 
 urlpatterns = [
     path('', login_view, name='login'),

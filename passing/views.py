@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.views import View
 from django.contrib import messages
 from client.models import Client, Domain
+from accounts.models import TenantSettings
 from .config import EMAIL_SETTINGS
 from .forms import ClientRegisterForm, EmailConfigForm
 from django.contrib.auth.decorators import user_passes_test
@@ -175,6 +176,12 @@ def client_register(request):
                 messages.error(request, f'Error al crear el cliente: {e}')
                 return redirect('client_register')
             instance.save()
+            # Crear TenantSettings inmediatamente para evitar accesos intermedios sin settings
+            try:
+                TenantSettings.objects.get_or_create(client=instance)
+            except Exception:
+                # No fatal: continuar y loguear si se desea
+                pass
             
             base_domain = urlparse(request.build_absolute_uri()).hostname  # Obtiene solo el dominio base
             

@@ -67,13 +67,15 @@
             
             <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style = "background-color: {{color}}; position: fixed; top: 0; width: 100%; z-index: 1000;">
                 <div class="container-fluid">
-                    <a class="navbar-brand" href="{% url 'listpass' %}">
-                        {% if company %}
-                            <h3 class="text-white mb-1">{{ company }}</h3>
-                            <hr class="w-100 my-1 border-light">
-                            <img src="{% static 'Passing3.png' %}" style='height:22px; width:auto'; alt="Logo">
+                    <a class="navbar-brand d-flex align-items-center justify-content-center" href="{% url 'listpass' %}" style="gap:8px; width:100%;">
+                        {% if company_logo %}
+                            <img src="{{ company_logo }}" alt="Logo" style="height:32px; width:auto; display:block; margin:0 auto;" />
                         {% else %}
-                            <img src="{% static 'Passing3.png' %}" alt="Logo">
+                            {% if company %}
+                                <h3 class="text-white mb-1">{{ company }}</h3>
+                            {% else %}
+                                <img src="{% static 'Passing3.png' %}" alt="Logo">
+                            {% endif %}
                         {% endif %}
                     </a>
                     

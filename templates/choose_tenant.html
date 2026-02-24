@@ -15,7 +15,7 @@
               {% for m in memberships %}
                 <div class="col-12 col-md-6">
                   <div class="border rounded p-3 h-100">
-                    <h2 class="h6 mb-1">{{ m.client.name|default:m.client.schema_name }}</h2>
+                    <h2 class="h6 mb-1">{{ m.client.client_name|default:m.client.schema_name }}</h2>
                     <p class="text-muted mb-2"><small>{% trans "cuenta:" %} {{ m.client.schema_name }}</small></p>
                     <button name="client_slug" value="{{ m.client.schema_name }}" class="btn btn-primary btn-sm">
                       {% trans "Entrar" %}

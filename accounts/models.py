@@ -25,6 +25,18 @@ def avatar_upload_to(instance, filename):
         return f"public/avatars/{filename}"
 
 
+def logo_upload_to(instance, filename):
+    """Guarda logos por tenant: <schema>/logos/filename"""
+    try:
+        tenant = getattr(connection, "tenant", None)
+        schema_name = getattr(tenant, "schema_name", None) if tenant is not None else getattr(connection, "schema_name", None)
+        if not schema_name:
+            schema_name = "public"
+        return f"{schema_name}/logos/{filename}"
+    except Exception:
+        return f"public/logos/{filename}"
+
+
 CLIENT_FK = 'client.Client'   
 
 class CustomUser(AbstractUser):
@@ -149,15 +161,22 @@ class TenantMembership(models.Model):
     def __str__(self):
         return f"{self.user.username} @ {self.client.schema_name} ({'activo' if self.is_active else 'inactivo'})"
 
+class MultiFactorStatus(models.IntegerChoices):
+    """Enum para el estado del segundo factor (2FA) a nivel de tenant."""
+    DISABLED = 0, _('Deshabilitado')
+    OPTIONAL = 1, _('Opcional')
+    REQUIRED = 2, _('Requerido')
+
 
 class TenantSettings(models.Model):
     """Configuraciones por cliente que controlan SSO, recordatorios y presencia del dash."""
     client = models.OneToOneField(CLIENT_FK, on_delete=models.CASCADE, related_name="settings", verbose_name=_('Cliente'))
     # Migrados/compatibles con tu GlobalSettings (por ahora solo los creamos; migraremos luego)
-    multifactor_status = models.PositiveSmallIntegerField(default=0, verbose_name=_('Estado del segundo factor'))  # usaremos tus choices luego
+    multifactor_status = models.PositiveSmallIntegerField(choices=MultiFactorStatus.choices, default=MultiFactorStatus.DISABLED, verbose_name=_('Estado del segundo factor'))
     is_admin_dash_active = models.BooleanField(default=False, verbose_name=_('Dashboard administrador activo'))
     menu_color = models.CharField(max_length=7, blank=True, null=True, default="#212629", verbose_name=_('Color del menú'))
     company_name = models.CharField(max_length=50, blank=True, null=True, verbose_name=_('Nombre de la empresa'))
+    company_logo = models.ImageField(blank=True, null=True, upload_to=logo_upload_to, verbose_name=_('Logo de la empresa'))
     is_active = models.BooleanField(default=True, verbose_name=_('Activo'))
     evaluation_reminder_days = models.PositiveSmallIntegerField(
         default=14,
@@ -171,6 +190,8 @@ class TenantSettings(models.Model):
     sso_google_enabled = models.BooleanField(default=True, verbose_name=_('SSO Google habilitado'))
     sso_autolink_by_email = models.BooleanField(default=True, verbose_name=_('Autolink por email'))
     sso_google_requires_2fa = models.BooleanField(default=False, verbose_name=_('SSO Google requiere 2FA'))
+    # Administradores designados por tenant (equivalente a `GlobalSettings.set_admins`)
+    set_admins = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='tenant_set_admins', verbose_name=_('Designar usuarios admin'))
 
     def __str__(self):
         return f"Settings({self.client.schema_name})"
@@ -218,3 +239,25 @@ class AuthEvent(models.Model):
         who = self.user.email if self.user else "anon"
         cli = getattr(self.client, "schema_name", "—")
         return f"{self.event} [{ 'OK' if self.success else 'FAIL' }] {who} @ {cli}"
+
+
+class TwoFAChange(models.Model):
+    """Auditoría de cambios en `CustomUser.is_2fa_enabled`.
+
+    Se registra cuándo cambia el flag, el valor anterior y el nuevo, y opcionalmente
+    quién lo provocó (cuando esté disponible).
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, verbose_name=_('Usuario'))
+    old_value = models.BooleanField(null=True, blank=True, verbose_name=_('Valor anterior'))
+    new_value = models.BooleanField(null=True, blank=True, verbose_name=_('Valor nuevo'))
+    changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='+', on_delete=models.SET_NULL, verbose_name=_('Cambiado por'))
+    source = models.CharField(max_length=120, blank=True, null=True, verbose_name=_('Fuente'))
+    meta = models.JSONField(default=dict, blank=True, verbose_name=_('Metadatos'))
+    at = models.DateTimeField(default=timezone.now, verbose_name=_('Fecha y hora'))
+
+    class Meta:
+        ordering = ['-at']
+
+    def __str__(self):
+        who = self.user.email if self.user else 'anon'
+        return f"TwoFAChange {who} {self.old_value} -> {self.new_value} @ {self.at.isoformat()}"

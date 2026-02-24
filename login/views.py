@@ -7,12 +7,12 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import SetPasswordForm
 from client.models import Client
 from permission.models import PermissionRoles
-from .forms import CustomLoginForm, GlobalSettingsForm, UserRegisterForm, UserDepartureForm, ProfileForm, UserForm
+from .forms import CustomLoginForm, TenantSettingsForm, UserRegisterForm, UserDepartureForm, ProfileForm, UserForm
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .models import CustomUser, GlobalSettings, MultifactorChoices
+from accounts.models import CustomUser, MultiFactorStatus
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import ListView, UpdateView, DetailView
 from django.contrib.auth.decorators import user_passes_test
@@ -439,6 +439,7 @@ def profile_view(request):
                 logger.debug("After save: user.avatar.name=%s", getattr(user.avatar, 'name', None))
                 messages.success(request, f"Avatar guardado: {getattr(user.avatar, 'name', None)}")
 
+
                 # Aplicar preferencia de idioma guardada en el perfil del usuario
                 new_lang = profile_form.cleaned_data.get('language')
                 if new_lang:
@@ -836,42 +837,53 @@ def send_qr_email_for_user_ondemand(request, pk):
     return redirect('userlist')
 
 
-class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """
-    Vista para update las configuraciones globales a nivel de cuenta.
-    """
-    model = GlobalSettings
+class TenantSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Vista para editar `TenantSettings` por cliente (reemplaza GlobalSettings)."""
+    model = TenantSettings
     template_name = 'global_settings.html'
-    form_class = GlobalSettingsForm
+    form_class = TenantSettingsForm
     success_url = reverse_lazy('config')
 
     def test_func(self):
         return is_administrator(self.request.user)
-    
+
     def handle_no_permission(self):
-        messages.error(self.request, "No tienes permiso para acceder a Configuraciones Globales")
-        return redirect('listpass')  # Redirigir a la página de inicio u otra página adecuada
+        messages.error(request, "No tienes permiso para acceder a Configuraciones Globales")
+        return redirect('listpass')
 
-    def get_queryset(self):
-        
-        return super().get_queryset()
-    
-    
-    
+    def get_object(self):
+        # Retornar o crear el TenantSettings asociado al cliente/tenant actual
+        try:
+            tenant = get_tenant(self.request)
+            client = tenant
+        except Exception:
+            client = getattr(self.request.user, 'client', None)
+
+        obj = TenantSettings.for_client(client)
+        if obj is None and client is not None:
+            obj = TenantSettings.objects.create(client=client)
+        return obj
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Pass request so the form can scope `set_admins` to tenant users
+        kwargs['request'] = self.request
+        return kwargs
+
     def form_valid(self, form):
-        """Intercepta la validación antes de guardar"""
-        instance = form.save(commit=False)  # Obtiene el objeto sin guardarlo aún
+        instance = form.save(commit=False)
 
-        if instance.multifactor_status == MultifactorChoices.ACTIVADO:
-            # Ejecuta una función si el campo `multifactor_status` está activado
-            logger.info('GlobalSettings: multifactor_status ACTIVADO')
+        if instance.multifactor_status == MultiFactorStatus.REQUIRED:
+            logger.info('TenantSettings: multifactor_status ACTIVADO')
             self.activate_multifactor_for_all()
-        elif instance.multifactor_status == MultifactorChoices.DESACTIVADO:
-            logger.info('GlobalSettings: multifactor_status DESACTIVADO')
+        elif instance.multifactor_status == MultiFactorStatus.DISABLED:
+            logger.info('TenantSettings: multifactor_status DESACTIVADO')
             self.deactivate_multifactor_for_all()
+        elif instance.multifactor_status == MultiFactorStatus.OPTIONAL:
+            logger.info('TenantSettings: multifactor_status OPCIONAL - no se hacen cambios masivos')
 
-        instance.save()  # Guarda el objeto en la base de datos
-        form.save_m2m()  # Guarda las relaciones ManyToMany si existen
+        instance.save()
+        form.save_m2m()
 
         return super().form_valid(form)
     
@@ -885,13 +897,18 @@ class GlobalSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
         
 
         for user in users:
-            
             if user.is_2fa_enabled:
-                pass
+                logger.debug("activate_multifactor_for_all: skipping user %s already has 2FA", user.pk)
             else:
+                # Log intent to enable and send QR. We keep existing behavior for now
+                # but emit audit logs so we can trace who/when changed the flag.
+                logger.info("activate_multifactor_for_all: enabling 2FA for user=%s", user.pk)
                 user.is_2fa_enabled = True
                 user.save()
-                send_qr_code_email_cid(user)
+                try:
+                    send_qr_code_email_cid(user)
+                except Exception:
+                    logger.exception("Failed to send QR email for user=%s during global activation", user.pk)
 
 
     def deactivate_multifactor_for_all(self):
@@ -1020,9 +1037,20 @@ def verify_2fa_sso(request):
         ok = False
 
     if ok:
-        if not user.is_2fa_enabled:
-            user.is_2fa_enabled = True
-            user.save(update_fields=["is_2fa_enabled"])
+        # Do NOT toggle the persistent `is_2fa_enabled` flag automatically.
+        # Keep the verification for this session only and ensure the user has
+        # an `otp_secret` stored so they can enroll later if needed.
+        request.session["is_2fa_verified"] = True
+
+        if not user.otp_secret:
+            # ensure a secret exists, but do not enable 2FA persistently
+            user.otp_secret = pyotp.random_base32()
+            try:
+                user.save(update_fields=["otp_secret"])
+            except Exception:
+                logger.exception("verify_2fa_sso: failed to save otp_secret for user=%s", user.pk)
+
+        logger.info("verify_2fa_sso: session verified for user=%s (no persistent toggle)", user.pk)
 
         # limpiar sesión sso-2fa
         for k in ("twofa_pending_uid", "twofa_next", "twofa_client_id"):

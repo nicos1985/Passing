@@ -27,6 +27,7 @@ def counter_admin_notifications(request):
 def menu_color(request):
     color = DEFAULT_MENU_COLOR
     company = None
+    company_logo = None
 
     try:
         tenant = getattr(request, "tenant", None)
@@ -39,11 +40,17 @@ def menu_color(request):
             if ts:
                 color = ts.menu_color or DEFAULT_MENU_COLOR
                 company = ts.company_name or None
+                company_logo = None
+                try:
+                    if getattr(ts, 'company_logo', None):
+                        company_logo = ts.company_logo.url
+                except Exception:
+                    company_logo = None
     except Exception:
         # podés loguear si querés
         pass
 
-    return {"color": color, "company": company}
+    return {"color": color, "company": company, "company_logo": company_logo}
 
 
 def tenant_context(request):

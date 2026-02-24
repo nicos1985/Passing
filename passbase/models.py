@@ -198,6 +198,11 @@ class Contrasena(models.Model):
     def password_strength(self):
         """Clasifica la fortaleza de la contraseña descifrada."""
         password = decrypt_data(self.contraseña)
+
+        # If decryption failed or returned None/empty, treat as weak to avoid errors
+        if not password:
+            return 'weak'
+
         length = len(password)
 
         # Check for presence of different character types
