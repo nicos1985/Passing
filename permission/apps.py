@@ -1,3 +1,8 @@
+"""Configuración de la app `permission`.
+
+Contiene permisos por usuario y roles de permiso que agrupan contraseñas.
+"""
+
 from django.apps import AppConfig
 
 

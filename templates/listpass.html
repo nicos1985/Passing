@@ -1,26 +1,34 @@
-<!DOCTYPE html>
 {% extends 'base.html'%}
 
 {% load static %}
-
+{% load i18n %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-<!-- colReorder -->
-<script src="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css"></script>
-<script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+    
+
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Allow dropdown menus to overflow the responsive table container */
+.table-responsive { overflow: visible; }
+.dropdown-menu { z-index: 2050; }
+
+/* Inline action icons layout */
+.action-icons { display: inline-flex; gap: 8px; align-items: center; margin-left: 8px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease-in-out, visibility .12s linear; }
+.table tbody tr:hover .action-icons { opacity: 1; visibility: visible; pointer-events: auto; }
+.row-actions { display:flex; align-items:center; justify-content:space-between; gap:8px; white-space: nowrap; min-width: 120px; }
+.row-actions > div { display:flex; gap:8px; align-items:center; }
+.row-actions .right { margin-left: auto; display:flex; gap:8px; align-items:center; }
+.action-btn { background: transparent; border: none; padding: 4px; cursor: pointer; color: inherit; display:inline-flex; width:28px; height:28px; align-items:center; justify-content:center; font-size:13px; }
+.action-btn.disabled { opacity: .35; pointer-events: none; }
+.action-btn i { line-height:1; }
+</style>
+{% endblock %}
+
+
 {% block content %}
-<div class="container" style="height: 60px;">
+<div class="container" style="height: 40px; margin-top: 20px;">
     <h2>{{title}}</h2>
 </div>
 
@@ -28,21 +36,31 @@
     <div class="container" >
         <div>
             <a class="btn btn-primary btn-flat" style="margin-bottom: 20px;" href="{% url 'createpass' %}">
-                <i class="fas fa-plus"></i> Nueva contraseña
+                <i class="fas fa-plus"></i> {% trans "Nueva contraseña" %}
             </a>
+          
         </div>
 
         <div class="table-responsive">
             <table class="table table-striped table-hover" id="data">
+                <colgroup>
+                    <col style="width: 260px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col style="width: 320px;" />
+                    <col style="width: 160px;" />
+                </colgroup>
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Nombre Contraseña</th>
-                        <th scope="col">Actualiza</th>
-                        <th scope="col">Sección</th>
-                        <th scope="col">Link</th>
-                        <th scope="col">Usuario</th>
-                        <th scope="col">Contraseña</th>
-                        <th scope="col">Acción</th>
+                        <th scope="col">{% trans "Nombre Contraseña" %}</th>
+                        <th scope="col">{% trans "Actualiza" %}</th>
+                        <th scope="col">{% trans "Sección" %}</th>
+                        <th scope="col">{% trans "Link" %}</th>
+                        <th scope="col">{% trans "Usuario" %}</th>
+                        <th scope="col">{% trans "Contraseña" %}</th>
+                        <th scope="col">{% trans "Acción" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,9 +68,17 @@
                     <tr>
                         <td>
                             {% if contra.is_personal %}
-                            <i class="fa-solid fa-user" title="Es de uso personal"></i>
+                            <i class="fa-solid fa-user" title="{% trans "Es de uso personal" %}"></i>
                             {% endif %}
-                            <a href="{% url 'detailpass' contra.id %}" style="text-decoration: none;" title="Detalle"><b>{{ contra.nombre_contra }}</b></a>
+                            <a href="{% url 'detailpass' contra.id %}" style="text-decoration: none;" title="{% trans "Detalle" %}"><b>{{ contra.nombre_contra }}</b></a>
+                            <span class="action-icons">
+                                <a href="{% url 'updatepass' contra.id %}" class="action-btn" title="{% trans "Editar" %}">
+                                    <i class="fas fa-pen me-2" style="color: #EFA400;"></i>
+                                </a>
+                                <a href="{% url 'detailpass' contra.id %}" class="action-btn" title="{% trans "Detalle" %}">
+                                    <i class="fas fa-eye me-2" style="color: #1C31A7;"></i>
+                                </a>
+                            </span>
                         </td>
                         
                         <td>
@@ -69,60 +95,47 @@
                                 <input type='password' id="passwordField{{ contra.id }}" style="flex: 1; border: none;" disabled>
                                 {% else %}
                                 {% if contra.password_strength == 'strong' %}
-                                    <i class="fas fa-shield-halved" style="color:#7CFF6D" title="Contraseña fuerte" ></i>
+                                    <i class="fas fa-shield-halved" style="color:#7CFF6D" title="{% trans "Contraseña fuerte" %}" ></i>
                                 {% elif contra.password_strength == 'moderate' %}
-                                    <i class="fas fa-shield-halved" style="color:#FFE682" title="Contraseña moderada"  ></i>
+                                    <i class="fas fa-shield-halved" style="color:#FFE682" title="{% trans "Contraseña moderada" %}"  ></i>
                                 {% else %}
-                                    <i class="fas fa-shield-halved" style="color:#FF7367" title="Contraseña débil" ></i>
+                                    <i class="fas fa-shield-halved" style="color:#FF7367" title="{% trans "Contraseña débil" %}" ></i>
                                 {% endif %}
                                 <input type='password' id="passwordField{{ contra.id }}" value="{{ contra.decrypted_password }}" style="flex: 1; border: none;" disabled>
-                                <i class="fas fa-eye toggle-password-icon" data-password-field="passwordField{{ contra.id }}" title="Ver contraseña" style="cursor: pointer; color: rgb(68, 94, 200);"></i>
+                                <i class="fas fa-eye toggle-password-icon" data-password-field="passwordField{{ contra.id }}" title="{% trans "Ver contraseña" %}" style="cursor: pointer; color: rgb(68, 94, 200);"></i>
                                 <span>&nbsp&nbsp</span>
-                                <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" title="Copiar Contraseña" style="cursor: pointer;"></i>
+                                <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" title="{% trans "Copiar Contraseña" %}" style="cursor: pointer;"></i>
                                 <span>&nbsp&nbsp</span>
                                 <i class="fa-solid fa-check" id="globoDeTextopasswordField{{ contra.id }}" style="display: none; color: green;"></i>
                                 {% endif %}
                             </div>
                         </td>
                         <td>
-                            
-                                <div class="dropdown">
-                                    <button class="btn btn-transparent dropdown-toggle"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" href="{% url 'updatepass' contra.id %}">
-                                            <i class='fas fa-pen' title='Editar Contraseña' style='color: #EFA400;'></i> Editar
-                                        </a>
-                                        <a class="dropdown-item" href="{% url 'deletepass' contra.id %}">
-                                            <i class='fas fa-trash' title='Eliminar contraseña' style='color: #D4320F;'></i> Eliminar
-                                        </a>
-                                        <a class="dropdown-item" href="{% url 'detailpass' contra.id %}">
-                                            <i class='fas fa-circle-info' title='Detalle' style='color: #1C31A7;'></i> Detalle
-                                        </a>
-                                        {% if contra.file %}
-                                        <a class="dropdown-item" href="{% url 'downloadfile' contra.id %}">
-                                            <i class='fas fa-download' title='Descargar adjunto' style='color: #070A1A;'></i> Descargar adjunto
-                                        </a>
-                                        <a class="dropdown-item" href="{% url 'createnotiadmin' contrasena=contra.id %}">
-                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #1C31A7;'></i> Compartir
-                                        </a>
-                                        {% else %}
-                                        <a class="dropdown-item disabled" href="#">
-                                            <i class='fas fa-download' title='Descargar adjunto' style='color: #CCC;'></i> Descargar adjunto
-                                        </a>
-                                        {% if contra.is_personal %}
-                                        <a class="dropdown-item disabled" href="#">
-                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #A9A9A9;'></i> Compartir
-                                        </a>
-                                        {% else %}
-                                        <a class="dropdown-item" href="{% url 'createnotiadmin' contrasena=contra.id %}">
-                                            <i class='fas fa-share-nodes' title='Compartir contraseña' style='color: #1C31A7;'></i> Compartir
-                                        </a>
-                                        {% endif %}
-                                        {% endif %}
+                            <div class="row-actions">
+                                <div></div>
+
+                                <div class="right">
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="rowMenuBtn{{ contra.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="rowMenuBtn{{ contra.id }}">
+                                            {% if contra.file %}
+                                            <li><a class="dropdown-item" href="{% url 'downloadfile' contra.id %}"><i class="fas fa-download me-2"></i> {% trans "Descargar adjunto" %}</a></li>
+                                            {% else %}
+                                            <li><a class="dropdown-item disabled" href="#"><i class="fas fa-download me-2"></i> {% trans "Descargar adjunto" %}</a></li>
+                                            {% endif %}
+                                            {% if contra.is_personal %}
+                                            <li><a class="dropdown-item disabled" href="#"><i class="fas fa-share-nodes me-2"></i> {% trans "Compartir" %}</a></li>
+                                            {% else %}
+                                            <li><a class="dropdown-item" href="{% url 'createnotiadmin' contrasena=contra.id %}"><i class="fas fa-share-nodes me-2"></i> {% trans "Compartir" %}</a></li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'deletepass' contra.id %}"><i class="fas fa-trash me-2"></i> {% trans "Eliminar" %}</a></li>
+                                        </ul>
                                     </div>
-                                
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -132,15 +145,15 @@
     </div>
 {% else %}
     <div class="container-fluid text-center">
-        <h5 style="color: darkgrey">Por favor, necesitas ingresar con un usuario para navegar.
-            <br>Si no tienes cuenta puedes registrarte.</h5>
-        <div class="row justify-content-center mt-4">
+        <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario para navegar." %}
+             <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
+        <div class="row justify-content-center mt-4">   
             <div class="col-sm-12 d-flex justify-content-center">
-                <a class="btn btn-primary" href="{% url 'login' %}" style="margin-top: 20px;">Login</a>
+                <a class="btn btn-primary" href="{% url 'login' %}" style="margin-top: 20px;">{% trans "Login" %}</a>
             </div>
             <span></span>
             <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
-                <a class="btn btn-primary" href="{% url 'register' %}" style="margin-top: 20px;">Registrarse</a>
+                <a class="btn btn-primary" href="{% url 'register' %}" style="margin-top: 20px;">{% trans "Registrarse" %}</a>
             </div>
         </div>
     </div>
@@ -148,59 +161,64 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="application/javascript">
-    $(document).ready(function () {
-        $('#data').DataTable({
-            responsive: true,
-            colReorder: true,
-            "lengthMenu": [[10, 25, 50, 100, 250, 500, -1], [10, 25, 50, 100, 250, 500, "All"]],
-            autoWidth: false,
-            "language": {
-                url: "{% static 'lib/DataTables-1.13.1/spanish.txt' %}"
-            }
-        });
+
+<script src="{% static 'js/init-datatable.js' %}"></script>
+
+<script>
+    // Delegated handlers so they survive DataTables redraws
+    $(document).on('click', '.toggle-password-icon', function () {
+        var $icon = $(this);
+        var fieldId = $icon.data('passwordField');
+        var field = document.getElementById(fieldId);
+        if (!field) return;
+        field.type = (field.type === 'password') ? 'text' : 'password';
+        $icon.toggleClass('fa-eye fa-eye-slash');
+    });
+
+    $(document).on('click', '.copy-icon', function () {
+        var $icon = $(this);
+        var targetId = $icon.data('copyTarget');
+        var input = document.getElementById(targetId);
+        var balloon = document.getElementById('globoDeTexto' + targetId);
+        if (!input) return;
+        input.disabled = false;
+        input.type = 'text';
+        input.select();
+        document.execCommand('copy');
+        if (balloon) {
+            balloon.style.display = 'inline-block';
+            setTimeout(function () { balloon.style.display = 'none'; }, 3000);
+        }
+        input.type = 'password';
+        input.disabled = true;
+        input.blur();
     });
 </script>
 
 <script>
-    document.querySelectorAll('.toggle-password-icon').forEach(function(icon) {
-        icon.addEventListener('click', function() {
-            const passwordFieldId = icon.getAttribute('data-password-field');
-            const passwordField = document.getElementById(passwordFieldId);
-
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordField.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
+    // Move dropdown menus out of scrolling containers so they're not clipped
+    $(document).on('show.bs.dropdown', '.dropdown', function (e) {
+        var $dropdown = $(this);
+        var $btn = $dropdown.find('[data-bs-toggle="dropdown"]').first();
+        var $menu = $dropdown.find('.dropdown-menu').first();
+        if (!$btn.length || !$menu.length) return;
+        var rect = $btn[0].getBoundingClientRect();
+        $menu.data('__originalParent', $menu.parent());
+        $menu.data('__originalNext', $menu[0].nextSibling);
+        $menu.css({ position: 'absolute', top: (rect.bottom + window.scrollY) + 'px', left: (rect.left + window.scrollX) + 'px', minWidth: rect.width + 'px', zIndex: 3000 });
+        $menu.appendTo(document.body);
     });
 
-    document.querySelectorAll('.copy-icon').forEach(function(icon) {
-        icon.addEventListener('click', function() {
-            var copyTargetId = icon.getAttribute('data-copy-target');
-            var copyTarget = document.getElementById(copyTargetId);
-            var balloon = document.getElementById('globoDeTexto'+copyTargetId);
-
-            copyTarget.disabled = false;
-            copyTarget.type = 'text';
-            copyTarget.select();
-
-            document.execCommand('copy');
-            
-            balloon.style.display = 'inline-block';
-            setTimeout(function() {
-                balloon.style.display = 'none';
-            }, 3000);
-            
-            copyTarget.type = 'password';
-            copyTarget.disabled = true;
-            copyTarget.blur();
-        });
+    $(document).on('hidden.bs.dropdown', '.dropdown', function (e) {
+        var $dropdown = $(this);
+        var $menu = $dropdown.find('.dropdown-menu').first();
+        var $origParent = $menu.data('__originalParent');
+        var origNext = $menu.data('__originalNext');
+        if ($origParent && $origParent.length) {
+            $menu.css({ position: '', top: '', left: '', minWidth: '', zIndex: '' });
+            if (origNext) $origParent[0].insertBefore($menu[0], origNext);
+            else $origParent.append($menu);
+        }
     });
 
 {% endblock %}

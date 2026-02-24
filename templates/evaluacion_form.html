@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load static %}
+
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+    
+{% if not request.user.is_superuser and not request.user.is_staff %}
+<div class="container-fluid text-center">
+    <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
+        <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
+    <div class="row justify-content-center mt-4">
+        
+        <div class="col-sm-12 d-flex justify-content-center">
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>{% trans "Login" %}</a>
+        </div>
+        <span></span>
+        <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
+            <a class="btn btn-primary" href="{% url 'register' %}"style = 'margin-top: 20px;'>{% trans "Registrarse" %}</a>
+        </div>
+    
+    </div>
+</div>
+{%endif%}
+
+<body>
+
+<div class="form-container" style="margin-top:20px;">
+  <div class="card form-card">
+    <div class="card-header">
+      <h5><i class="fa-solid fa-triangle-exclamation me-2"></i> {% trans "Crear / Editar Evaluación de Riesgo" %}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" id="risk-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <div>
+          <a class="btn btn-outline-secondary" href="{% url 'risk-list' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+        </div>
+        <div>
+          {% if related_links %}
+            {% for rl in related_links %}
+              <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+        <div class="row mb-3">
+                {% for field in form.visible_fields %}
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                  {% if field.name == 'model_type' %}
+                    <i class="fa-solid fa-cubes" style="color: #667eea;"></i>
+                  {% elif field.name == 'object_id' %}
+                    <i class="fa-solid fa-hashtag" style="color: #667eea;"></i>
+                  {% elif field.name == 'threat' %}
+                    <i class="fa-solid fa-exclamation-triangle" style="color: #667eea;"></i>
+                  {% elif field.name == 'vulnerability' %}
+                    <i class="fa-solid fa-bug" style="color: #667eea;"></i>
+                  {% elif field.name == 'description' %}
+                    <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
+                  {% elif field.name == 'confidenciality_impact' or field.name == 'integrity_impact' or field.name == 'availability_impact' %}
+                    <i class="fa-solid fa-chart-bar" style="color: #667eea;"></i>
+                  {% elif field.name == 'probability' %}
+                    <i class="fa-solid fa-chart-line" style="color: #667eea;"></i>
+                  {% else %}
+                    <i class="fa-solid fa-square" style="color: #667eea;"></i>
+                  {% endif %}
+                  &nbsp;{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="btn-group-submit">
+          <button type="submit" class="btn btn-submit btn-submit-primary">
+            <i class="fa-solid fa-check-circle me-2"></i> {% trans "Guardar Evaluación" %}
+          </button>
+          <button type="reset" class="btn btn-submit btn-submit-secondary">
+            <i class="fa-solid fa-redo me-2"></i> {% trans "Limpiar" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modelSelect = document.getElementById('id_model_type') || document.getElementById('model_type');
+    const objectSelect = document.getElementById('id_object_id') || document.getElementById('object_id');
+    const fetchUrl = "{% url 'ajax-get-objects' %}";
+
+    if (!modelSelect || !objectSelect) return;
+
+    // Ensure dataset.url is available for other handlers
+    try { modelSelect.dataset.url = fetchUrl; } catch (e) {}
+
+    modelSelect.addEventListener('change', function () {
+      const typeId = this.value;
+      objectSelect.innerHTML = '<option value="">Cargando...</option>';
+
+      if (typeId) {
+        fetch(`${fetchUrl}?type_id=${typeId}`)
+          .then(response => response.json())
+          .then(data => {
+            objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+            data.objects.forEach(function (obj) {
+              const option = document.createElement('option');
+              option.value = obj.id;
+              option.text = obj.name;
+              objectSelect.appendChild(option);
+            });
+          })
+          .catch(() => {
+            objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+          });
+      } else {
+        objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
+      }
+    });
+  });
+  </script>
+    {%endblock%}

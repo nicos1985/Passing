@@ -1,0 +1,3850 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-22 16:07-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\resources\templates\resources\i18n_demo.html:6
+msgid "Demo i18n - Resources"
+msgstr "i18n Demo - Resources"
+
+#: .\resources\templates\resources\i18n_demo.html:9
+msgid "Demo de internacionalización (UI)"
+msgstr "Internationalization Demo (UI)"
+
+#: .\resources\templates\resources\i18n_demo.html:16
+msgid "Puedes cambiar el idioma usando el endpoint /i18n/setlang/"
+msgstr "You can change the language using the /i18n/setlang/ endpoint"
+
+#: .\resources\views.py:1745
+msgid "Bienvenido al demo de internacionalización (UI)"
+msgstr "Welcome to the internationalization demo (UI)"
+
+#: .\resources\views.py:1746
+msgid "Haz clic aquí"
+msgstr "Click here"
+
+#: .\templates\CU-asset-action.html:9
+msgid "Acceso restringido. Necesitas un usuario administrador."
+msgstr ""
+
+#: .\templates\CU-asset-action.html:12 .\templates\CU-resource.html:15
+#: .\templates\email_config.html:28 .\templates\evaluacion_form.html:29
+#: .\templates\home.html:34 .\templates\listpass.html:152
+#: .\templates\password_reset_complete.html:40
+#: .\templates\tenant_navbar.html:133 .\templates\treatment-create.html:24
+#: .\templates\update-asset.html:27 .\templates\user_form.html:27
+msgid "Login"
+msgstr "Login"
+
+#: .\templates\CU-asset-action.html:23
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a lista"
+msgstr "Back to Details"
+
+#: .\templates\CU-asset-action.html:35 .\templates\CU-resource.html:39
+#: .\templates\asset-actions-list.html:25
+#: .\templates\checklist_template_detail.html:14
+#: .\templates\checklist_template_form.html:14 .\templates\create-sect.html:20
+#: .\templates\detail-resource.html:19 .\templates\evaluacion_form.html:54
+#: .\templates\profile.html:86 .\templates\threat_intel_analysis_detail.html:13
+#: .\templates\threat_intel_analysis_list.html:24
+#: .\templates\threat_intel_run_detail.html:10
+#: .\templates\treatment-create.html:87 .\templates\update-sect.html:25
+#: .\templates\vendor_checklist_form.html:18
+#: .\templates\vendor_evaluation_detail.html:18
+#: .\templates\vendor_evaluation_form.html:13
+msgid "Volver"
+msgstr "Back"
+
+#: .\templates\CU-asset-action.html:64
+#, fuzzy
+#| msgid "Registrarse"
+msgid "Registrar"
+msgstr "Register"
+
+#: .\templates\CU-asset-action.html:65 .\templates\active-sect.html:34
+#: .\templates\checklist_template_detail.html:109
+#: .\templates\checklist_template_form.html:42 .\templates\create-sect.html:48
+#: .\templates\delete-asset.html:30 .\templates\delete-cont.html:30
+#: .\templates\delete-resource.html:30 .\templates\delete-sect.html:29
+#: .\templates\delete_role.html:30 .\templates\detail-resource.html:130
+#: .\templates\password_reset.html:44
+#: .\templates\password_reset_confirm.html:70
+#: .\templates\threat_intel_link_threat.html:34
+#: .\templates\threat_intel_report_detail.html:218
+#: .\templates\threat_intel_review_update.html:161
+#: .\templates\threat_intel_source_update.html:114
+#: .\templates\threat_intel_techtag_update.html:90
+#: .\templates\vendor_checklist_form.html:46
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: .\templates\CU-resource.html:11 .\templates\email_config.html:23
+#: .\templates\evaluacion_form.html:24 .\templates\treatment-create.html:19
+#: .\templates\update-asset.html:22 .\templates\user_form.html:22
+msgid ""
+"Por favor, necesitas ingresar con un usuario administrador para navegar."
+msgstr "Please, you need to log in with an administrator user to navigate."
+
+#: .\templates\CU-resource.html:12 .\templates\email_config.html:24
+#: .\templates\evaluacion_form.html:25 .\templates\home.html:24
+#: .\templates\listpass.html:149 .\templates\treatment-create.html:20
+#: .\templates\update-asset.html:23 .\templates\user_form.html:23
+msgid "Si no tienes cuenta puedes registrarte."
+msgstr "If you do not have an account you can register."
+
+#: .\templates\CU-resource.html:18 .\templates\admin.html:92
+#: .\templates\client_register.html:25 .\templates\email_config.html:32
+#: .\templates\evaluacion_form.html:33 .\templates\home.html:43
+#: .\templates\listpass.html:156 .\templates\register.html:25
+#: .\templates\treatment-create.html:28 .\templates\update-asset.html:31
+#: .\templates\user_form.html:31
+msgid "Registrarse"
+msgstr "Register"
+
+#: .\templates\CU-resource.html:62 .\templates\profile.html:85
+#: .\templates\treatment-create.html:133 .\templates\update-asset.html:58
+#: .\templates\user_form.html:58 .\templates\vendor_evaluation_detail.html:76
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+#: .\templates\CU-resource.html:65 .\templates\evaluacion_form.html:105
+#: .\templates\threat_intel_report_create.html:99
+#: .\templates\threat_intel_review_create.html:152
+#: .\templates\threat_intel_source_create.html:114
+#: .\templates\threat_intel_techtag_create.html:241
+#: .\templates\treatment-create.html:136
+msgid "Limpiar"
+msgstr ""
+
+#: .\templates\activation_email.html:7
+msgid "Activación de cuenta"
+msgstr ""
+
+#: .\templates\activation_email.html:10
+#, python-format
+msgid "Hola %(first)s, %(last)s,"
+msgstr ""
+
+#: .\templates\activation_email.html:11
+msgid ""
+"Gracias por registrarte. Por favor, haz clic en el enlace a continuación "
+"para activar tu cuenta de superusuario:"
+msgstr ""
+
+#: .\templates\activation_email.html:12
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Activar mi cuenta"
+msgstr "Create account"
+
+#: .\templates\activation_email.html:13
+msgid "Este es tu dominio"
+msgstr ""
+
+#: .\templates\activation_email.html:15
+msgid "Si no solicitaste esta cuenta, por favor ignora este correo."
+msgstr ""
+
+#: .\templates\active-sect.html:20
+#, fuzzy, python-format
+#| msgid "¿Estas Seguro que deseas borrar este"
+msgid "¿Estás seguro que deseas %(action)s: %(name)s?"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\admin-noti-list.html:23
+#, fuzzy
+#| msgid "Acciones"
+msgid "Notificaciones"
+msgstr "Actions"
+
+#: .\templates\admin-noti-list.html:32 .\templates\create-cont.html:13
+#: .\templates\create-cont1.html:13 .\templates\create-noti-admin.html:13
+#: .\templates\detail-cont.html:19 ⁨.\templates\tenant_navbar copy.html⁩:198
+#: .\templates\update-cont.html:10
+msgid "Lista"
+msgstr "List"
+
+#: .\templates\admin-noti-list.html:42 .\templates\listpass.html:57
+msgid "Nombre Contraseña"
+msgstr "Password Name"
+
+#: .\templates\admin-noti-list.html:43 .\templates\asset-actions-list.html:36
+#: .\templates\detail-cont.html:68 .\templates\detail-cont.html:96
+#: .\templates\detail-cont.html:131 .\templates\listpass.html:61
+#: .\templates\listpermission.html:60 .\templates\update-cont.html:61
+#: .\templates\user_list.html:35
+msgid "Usuario"
+msgstr "User"
+
+#: .\templates\admin-noti-list.html:44
+msgid "Usuario a permitir"
+msgstr ""
+
+#: .\templates\admin-noti-list.html:45
+#: .\templates\permission_roles_form.html:32 .\templates\update_role.html:33
+#, fuzzy
+#| msgid "Propietario"
+msgid "Comentario"
+msgstr "Owner"
+
+#: .\templates\admin-noti-list.html:46 .\templates\detail-cont.html:97
+#: .\templates\detail-resource.html:69
+#: .\templates\threat_intel_review_list.html:45
+msgid "Fecha"
+msgstr "Date"
+
+#: .\templates\admin-noti-list.html:47
+#, fuzzy
+#| msgid "Acciones"
+msgid "Accion"
+msgstr "Actions"
+
+#: .\templates\admin.html:68
+msgid "Acceso Restringido"
+msgstr ""
+
+#: .\templates\admin.html:69
+#, fuzzy
+#| msgid ""
+#| "Por favor, necesitas ingresar con un usuario administrador para navegar."
+msgid ""
+"Necesitas ingresar con un usuario administrador para acceder a esta sección."
+msgstr "Please, you need to log in with an administrator user to navigate."
+
+#: .\templates\admin.html:80
+#, fuzzy
+#| msgid "Iniciar sesión"
+msgid "Iniciar Sesión"
+msgstr "Sign in"
+
+#: .\templates\admin.html:106
+msgid "Panel de Administración"
+msgstr ""
+
+#: .\templates\admin.html:107
+#, python-format
+msgid "Bienvenido, <strong>%(user.username)s</strong>"
+msgstr ""
+
+#: .\templates\admin.html:112
+msgid "Configuración General"
+msgstr ""
+
+#: .\templates\admin.html:122 .\templates\global_settings.html:11
+msgid "Configuración Global"
+msgstr ""
+
+#: .\templates\admin.html:123
+msgid "Parámetros del sistema"
+msgstr ""
+
+#: .\templates\admin.html:135
+#, fuzzy
+#| msgid "Clasificación de Información"
+msgid "Configuración de Email"
+msgstr "Information Classification"
+
+#: .\templates\admin.html:136
+msgid "SMTP y notificaciones"
+msgstr ""
+
+#: .\templates\admin.html:148
+msgid "Importación Masiva"
+msgstr ""
+
+#: .\templates\admin.html:149
+msgid "CSV y datos"
+msgstr ""
+
+#: .\templates\admin.html:158 ⁨.\templates\tenant_navbar copy.html⁩:234
+msgid "Inteligencia de Amenazas"
+msgstr ""
+
+#: .\templates\admin.html:168 .\templates\threat_intel_config.html:31
+#: .\templates\threat_intel_source_list.html:14
+msgid "Fuentes de Datos"
+msgstr ""
+
+#: .\templates\admin.html:169
+#, fuzzy
+#| msgid "ej: NVD, CISA, AWS, MSRC, GITHUB"
+msgid "NVD, CISA, AWS, etc."
+msgstr "e.g.: NVD, CISA, AWS, MSRC, GITHUB"
+
+#: .\templates\admin.html:181 .\templates\threat_intel_config.html:49
+#: .\templates\threat_intel_techtag_list.html:14
+msgid "Etiquetas de Tecnología"
+msgstr ""
+
+#: .\templates\admin.html:182
+msgid "Ubuntu, MySQL, Laravel, etc."
+msgstr ""
+
+#: .\templates\admin.html:191
+#, fuzzy
+#| msgid "Usuario"
+msgid "Usuarios"
+msgstr "User"
+
+#: .\templates\admin.html:201
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Gestionar Usuarios"
+msgstr "Edit user"
+
+#: .\templates\admin.html:202
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Ver y editar usuarios"
+msgstr "Edit user"
+
+#: .\templates\admin.html:214
+#, fuzzy
+#| msgid "Categoría"
+msgid "Auditoría"
+msgstr "Category"
+
+#: .\templates\admin.html:215
+#, fuzzy
+#| msgid "Lista de Activos"
+msgid "Registro de actividades"
+msgstr "Assets List"
+
+#: .\templates\admin.html:224
+msgid "Permisos y Roles"
+msgstr ""
+
+#: .\templates\admin.html:234
+#, fuzzy
+#| msgid "Ver secciones"
+msgid "Ver Permisos"
+msgstr "View sections"
+
+#: .\templates\admin.html:235
+msgid "Listar permisos disponibles"
+msgstr ""
+
+#: .\templates\admin.html:248
+msgid "Asignar Permisos"
+msgstr ""
+
+#: .\templates\admin.html:249
+msgid "Configurar accesos"
+msgstr ""
+
+#: .\templates\admin.html:262
+#, fuzzy
+#| msgid "Ver secciones"
+msgid "Ver Roles"
+msgstr "View sections"
+
+#: .\templates\admin.html:263
+#, fuzzy
+#| msgid "Lista de Usuarios"
+msgid "Listado de roles"
+msgstr "Users list"
+
+#: .\templates\admin.html:278
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear un Rol"
+msgstr "Create account"
+
+#: .\templates\admin.html:279
+msgid "Nuevo rol personalizado"
+msgstr ""
+
+#: .\templates\admin.html:291 .\templates\assign_rol.html:25
+#, fuzzy
+#| msgid "Asignar plantilla"
+msgid "Asignar un Rol"
+msgstr "Assign template"
+
+#: .\templates\admin.html:292
+#, fuzzy
+#| msgid "Usuario"
+msgid "Usuario → Rol"
+msgstr "User"
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the error below."
+msgstr "Please correct the error below."
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the errors below."
+msgstr "Please correct the errors below."
+
+#: .\templates\admin\login.html:42
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+
+#: .\templates\admin\login.html:62
+msgid "Forgotten your password or username?"
+msgstr "Forgotten your password or username?"
+
+#: .\templates\admin\login.html:67
+msgid "Log in"
+msgstr "Log in"
+
+#: .\templates\asset-actions-list.html:21
+#, python-format
+msgid "Historial de acciones - %(asset_name)s"
+msgstr ""
+
+#: .\templates\asset-actions-list.html:22 .\templates\evaluation_list.html:76
+#: .\templates\list_resource.html:84 .\templates\threat_intel_run_list.html:60
+#: .\templates\threat_intel_runitem_list.html:48
+msgid "Todos"
+msgstr "All"
+
+#: .\templates\asset-actions-list.html:34 .\templates\detail-cont.html:98
+#: .\templates\listpass.html:63 .\templates\listsection.html:36
+msgid "Acción"
+msgstr "Action"
+
+#: .\templates\asset-actions-list.html:35 .\templates\asset-tracking.html:25
+#: .\templates\listsection.html:34 .\templates\listsection.html:50
+#: .\templates\threat_intel_config.html:89
+#: .\templates\threat_intel_source_detail.html:36
+#: .\templates\threat_intel_source_list.html:49
+#, fuzzy
+#| msgid "Activa"
+msgid "Activo"
+msgstr "Active"
+
+#: .\templates\asset-actions-list.html:37
+msgid "Accionado por"
+msgstr ""
+
+#: .\templates\asset-actions-list.html:38 .\templates\detail-asset.html:43
+#: .\templates\detail-resource.html:69 .\templates\list-asset.html:39
+#: .\templates\threat_intel_config.html:77
+#: .\templates\threat_intel_item_detail.html:152
+#: .\templates\threat_intel_report_list.html:36
+#: .\templates\threat_intel_source_list.html:36
+#: .\templates\threat_intel_techtag_list.html:42
+#: .\templates\vendor_evaluation_detail.html:10
+#: .\templates\vendor_evaluation_pending_list.html:33
+msgid "Estado"
+msgstr "Status"
+
+#: .\templates\asset-actions-list.html:39
+msgid "Vto estimado"
+msgstr ""
+
+#: .\templates\asset-actions-list.html:40
+#, fuzzy
+#| msgid "Fecha de Creación"
+msgid "Fecha / Hora"
+msgstr "Created At"
+
+#: .\templates\asset-actions-list.html:41 .\templates\detail-asset.html:31
+#: .\templates\evaluation_detail.html:54 .\templates\list-asset.html:37
+#: .\templates\roles_list.html:46
+msgid "Descripción"
+msgstr "Description"
+
+#: .\templates\asset-actions-list.html:74
+#: .\templates\threat_intel_report_list.html:46
+msgid "Pendiente"
+msgstr ""
+
+#: .\templates\asset-actions-list.html:76
+msgid "Confirmado"
+msgstr ""
+
+#: .\templates\asset-actions-list.html:78
+msgid "Rechazado"
+msgstr ""
+
+#: .\templates\asset-tracking.html:12
+#, fuzzy
+#| msgid "Lista de Activos"
+msgid "Seguimiento de activos"
+msgstr "Assets List"
+
+#: .\templates\asset-tracking.html:14
+#, fuzzy
+#| msgid "Historial de préstamos"
+msgid "Registrar préstamo"
+msgstr "Loan history"
+
+#: .\templates\asset-tracking.html:15
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Registrar devolución"
+msgstr "Create evaluation"
+
+#: .\templates\asset-tracking.html:26
+msgid "Titular actual"
+msgstr ""
+
+#: .\templates\asset-tracking.html:27
+#, fuzzy
+#| msgid "Historial"
+msgid "Historial reciente"
+msgstr "History"
+
+#: .\templates\asset-tracking.html:46
+msgid "Sin movimientos recientes"
+msgstr ""
+
+#: .\templates\assign_rol.html:28 .\templates\create-perm-p1.html:14
+#: .\templates\create-perm-p2.html:21 .\templates\list-asset.html:24
+#: .\templates\listpermission.html:48 .\templates\permission_roles_form.html:22
+#: .\templates\roles_list.html:31 ⁨.\templates\tenant_navbar copy.html⁩:248
+#, fuzzy
+#| msgid "Posición"
+msgid "Configuración"
+msgstr "Position"
+
+#: .\templates\assign_rol.html:38 .\templates\roles_list.html:61
+#, fuzzy
+#| msgid "Asignar plantilla"
+msgid "Asignar Rol"
+msgstr "Assign template"
+
+#: .\templates\checklist_template_detail.html:10
+#, python-format
+msgid "Plantilla: %(object.name)s"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:11
+msgid "Edición de campos principales e ítems del checklist."
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:42
+msgid "Ítems"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:44
+#, fuzzy
+#| msgid "Registrarse"
+msgid "registros"
+msgstr "Register"
+
+#: .\templates\checklist_template_detail.html:46
+msgid "Agregar ítem"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:58
+msgid "Orden"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:59
+#, fuzzy
+#| msgid "Pregunta"
+msgid "Pregunta / Texto"
+msgstr "Question"
+
+#: .\templates\checklist_template_detail.html:60
+msgid "Requerido"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:61
+msgid "Control"
+msgstr ""
+
+#: .\templates\checklist_template_detail.html:62
+#: .\templates\delete-asset.html:26 .\templates\delete-cont.html:26
+#: .\templates\delete-resource.html:26 .\templates\delete_role.html:26
+#: .\templates\detail-asset.html:82 .\templates\detail-resource.html:54
+#: .\templates\list_resource.html:141 .\templates\listpass.html:134
+msgid "Eliminar"
+msgstr "Delete"
+
+#: .\templates\checklist_template_detail.html:108
+#: .\templates\checklist_template_form.html:41
+msgid "Guardar plantilla"
+msgstr "Save template"
+
+#: .\templates\checklist_template_form.html:10
+#: .\templates\list_resource.html:38
+msgid "Crear plantilla de checklist"
+msgstr "Create checklist template"
+
+#: .\templates\checklist_template_form.html:11
+msgid "Define el contenido general y los controles asociados."
+msgstr ""
+
+#: .\templates\checklist_templates_list.html:4
+#, fuzzy
+#| msgid "Crear plantilla de checklist"
+msgid "Plantillas de checklist"
+msgstr "Create checklist template"
+
+#: .\templates\checklist_templates_list.html:6
+msgid "Crear plantilla"
+msgstr "Create template"
+
+#: .\templates\checklist_templates_list.html:7
+msgid "Asignar plantilla a proveedor"
+msgstr "Assign template to vendor"
+
+#: .\templates\checklist_templates_list.html:8
+#: .\templates\detail-resource.html:63 .\templates\list_resource.html:41
+#: .\templates\list_resource.html:144
+#: .\templates\vendor_evaluation_form.html:40
+msgid "Crear evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\checklist_templates_list.html:11
+#: .\templates\threat_intel_link_threat.html:25
+msgid "ID"
+msgstr "ID"
+
+#: .\templates\checklist_templates_list.html:11
+#: .\templates\detail-cont.html:132 .\templates\list-asset.html:36
+#: .\templates\permission_roles_form.html:40 .\templates\profile.html:47
+#: .\templates\threat_intel_config.html:75
+#: .\templates\threat_intel_source_create.html:63
+#: .\templates\threat_intel_source_list.html:33
+#: .\templates\threat_intel_source_update.html:63
+#: .\templates\threat_intel_techtag_list.html:40
+#: .\templates\update_role.html:41
+msgid "Nombre"
+msgstr "Name"
+
+#: .\templates\checklist_templates_list.html:11
+#: .\templates\threat_intel_techtag_detail.html:30
+#: .\templates\threat_intel_techtag_list.html:66
+msgid "Activa"
+msgstr "Active"
+
+#: .\templates\checklist_templates_list.html:19
+msgid "Editar plantilla"
+msgstr "Edit template"
+
+#: .\templates\checklist_templates_list.html:20
+msgid "Vincular a proveedor"
+msgstr "Link to vendor"
+
+#: .\templates\checklist_templates_list.html:24
+msgid "No hay plantillas"
+msgstr "No templates available"
+
+#: .\templates\choose_tenant.html:10
+msgid "Elegí a qué cuenta entrar"
+msgstr ""
+
+#: .\templates\choose_tenant.html:11
+msgid ""
+"Tu usuario tiene acceso a múltiples cuentas. Seleccioná uno para continuar."
+msgstr ""
+
+#: .\templates\choose_tenant.html:19
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "cuenta:"
+msgstr "Create account"
+
+#: .\templates\choose_tenant.html:21
+msgid "Entrar"
+msgstr ""
+
+#: .\templates\choose_tenant.html:27
+msgid "No se encontraron cuentas."
+msgstr ""
+
+#: .\templates\choose_tenant.html:32
+#, fuzzy
+#| msgid "Lista de Usuarios"
+msgid "Cambiar de usuario"
+msgstr "Users list"
+
+#: .\templates\create-cont.html:27 .\templates\create-cont1.html:27
+#, fuzzy
+#| msgid "Nombre Contraseña"
+msgid "Nombre de Contraseña:"
+msgstr "Password Name"
+
+#: .\templates\create-cont.html:45 .\templates\create-cont1.html:45
+#: .\templates\detail-cont.html:30
+#, fuzzy
+#| msgid "Link"
+msgid "Link:"
+msgstr "Link"
+
+#: .\templates\create-cont.html:48 .\templates\create-cont1.html:48
+#: .\templates\login1.html:19
+#, fuzzy
+#| msgid "Usuario"
+msgid "Usuario:"
+msgstr "User"
+
+#: .\templates\create-cont.html:54 .\templates\update-cont.html:30
+msgid "Genera una Contraseña"
+msgstr "Generate a Password"
+
+#: .\templates\create-cont.html:55 .\templates\update-cont.html:31
+msgid "Opciones"
+msgstr "Options"
+
+#: .\templates\create-cont.html:63 .\templates\create-cont1.html:79
+#: .\templates\update-cont.html:37
+msgid "Longitud:"
+msgstr "Length:"
+
+#: .\templates\create-cont.html:65 .\templates\create-cont1.html:81
+#: ⁨.\templates\tenant_navbar copy.html⁩:295 .\templates\update-cont.html:39
+msgid "Incluir mayúsculas"
+msgstr "Include uppercase"
+
+#: .\templates\create-cont.html:66 .\templates\create-cont1.html:82
+#: ⁨.\templates\tenant_navbar copy.html⁩:289 .\templates\update-cont.html:40
+msgid "Incluir minúsculas"
+msgstr "Include lowercase"
+
+#: .\templates\create-cont.html:67 .\templates\create-cont1.html:83
+#: ⁨.\templates\tenant_navbar copy.html⁩:301 .\templates\update-cont.html:41
+msgid "Incluir números"
+msgstr "Include numbers"
+
+#: .\templates\create-cont.html:68 .\templates\create-cont1.html:84
+#: ⁨.\templates\tenant_navbar copy.html⁩:307 .\templates\update-cont.html:42
+msgid "Incluir símbolos"
+msgstr "Include symbols"
+
+#: .\templates\create-cont.html:69 .\templates\update-cont.html:43
+msgid "Generar contraseña"
+msgstr "Generate password"
+
+#: .\templates\create-cont.html:69 ⁨.\templates\tenant_navbar copy.html⁩:318
+#: .\templates\update-cont.html:43
+msgid "Generar"
+msgstr "Generate"
+
+#: .\templates\create-cont.html:80 .\templates\create-cont1.html:51
+#: .\templates\login1.html:24
+#, fuzzy
+#| msgid "Contraseña"
+msgid "Contraseña:"
+msgstr "Password"
+
+#: .\templates\create-cont.html:91 .\templates\create-cont1.html:54
+#, fuzzy
+#| msgid "Actualiza"
+msgid "Actualización:"
+msgstr "Update"
+
+#: .\templates\create-cont.html:92
+msgid "Ingrese solo números positivos"
+msgstr ""
+
+#: .\templates\create-cont.html:95 .\templates\create-cont1.html:57
+#: .\templates\detail-cont.html:36
+msgid "Info:"
+msgstr ""
+
+#: .\templates\create-cont.html:100
+#, fuzzy
+#| msgid "Contraseña moderada"
+msgid "Contraseña Personal"
+msgstr "Moderate password"
+
+#: .\templates\create-cont.html:102 .\templates\create-cont.html:103
+msgid ""
+"Marca esta casilla si esta contraseña es solo de uso personal y no necesitas "
+"compartirla con nadie"
+msgstr ""
+
+#: .\templates\create-cont.html:108 .\templates\create-cont1.html:60
+msgid "Archivo:"
+msgstr ""
+
+#: .\templates\create-cont.html:115 .\templates\create-cont1.html:65
+#: .\templates\permission_roles_form.html:62 .\templates\update_role.html:64
+#, fuzzy
+#| msgid "Guardar Seccion"
+msgid "Guardar registro"
+msgstr "Save Section"
+
+#: .\templates\create-cont.html:133
+#, fuzzy
+#| msgid "Contraseña moderada"
+msgid "Contraseña copiada"
+msgstr "Moderate password"
+
+#: .\templates\create-cont.html:133 .\templates\create-cont1.html:88
+#, fuzzy
+#| msgid "Contraseña moderada"
+msgid "Contraseña generada:"
+msgstr "Moderate password"
+
+#: .\templates\create-cont1.html:31 .\templates\detail-cont.html:29
+#, fuzzy
+#| msgid "Sección"
+msgid "Sección:"
+msgstr "Section"
+
+#: .\templates\create-cont1.html:35
+#, fuzzy
+#| msgid "Evaluación"
+msgid "Elija la sección"
+msgstr "Evaluation"
+
+#: .\templates\create-noti-admin.html:11
+msgid "Solicitud de permisos"
+msgstr ""
+
+#: .\templates\create-noti-admin.html:31 .\templates\password_reset.html:43
+#: .\templates\upload_csv.html:25
+msgid "Enviar"
+msgstr "Send"
+
+#: .\templates\create-perm-p1.html:11 .\templates\create-perm-p2.html:20
+msgid "Crear Permiso"
+msgstr ""
+
+#: .\templates\create-perm-p1.html:20
+#, fuzzy
+#| msgid "Ingrese el usuario de ingreso"
+msgid "Elige el usuario a dar permisos"
+msgstr "Enter the login username"
+
+#: .\templates\create-perm-p1.html:31
+#: .\templates\threat_intel_analysis_list.html:125
+#: .\templates\threat_intel_report_list.html:84
+#: .\templates\threat_intel_review_list.html:112
+#: .\templates\threat_intel_runitem_list.html:125
+#: .\templates\threat_intel_source_list.html:89
+#: .\templates\threat_intel_techtag_list.html:106
+msgid "Siguiente"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:26
+msgid "Estás cambiando los permisos de:"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:36 .\templates\listpass.html:59
+#: .\templates\listpermission.html:62 .\templates\permission_roles_form.html:42
+#: .\templates\update_role.html:43
+msgid "Sección"
+msgstr "Section"
+
+#: .\templates\create-perm-p2.html:37 .\templates\detail-cont.html:76
+#: .\templates\detail-cont.html:99 .\templates\listpass.html:62
+#: .\templates\listpermission.html:63 .\templates\login.html:28
+msgid "Contraseña"
+msgstr "Password"
+
+#: .\templates\create-perm-p2.html:38 .\templates\detail-asset.html:63
+#: .\templates\listpermission.html:61 .\templates\permission_roles_form.html:41
+#: .\templates\update_role.html:42
+msgid "Propietario"
+msgstr "Owner"
+
+#: .\templates\create-perm-p2.html:39
+msgid "Info"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:40 .\templates\listpermission.html:64
+#: .\templates\permission_roles_form.html:43 .\templates\update_role.html:44
+msgid "Permiso"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:60
+msgid "Seleccionar Todos"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:61
+msgid "Deseleccionar Todos"
+msgstr ""
+
+#: .\templates\create-perm-p2.html:62
+#, fuzzy
+#| msgid "Guardar cambios"
+msgid "Guardar Permisos"
+msgstr "Save changes"
+
+#: .\templates\create-sect.html:12
+msgid "Ver secciones"
+msgstr "View sections"
+
+#: .\templates\create-sect.html:45
+msgid "Guardar Seccion"
+msgstr "Save Section"
+
+#: .\templates\delete-asset.html:11 .\templates\delete-resource.html:11
+msgid "Eliminar Activo"
+msgstr "Delete Asset"
+
+#: .\templates\delete-asset.html:20
+msgid "¿Estas Seguro que deseas borrar este Activo?"
+msgstr "Are you sure you want to delete this asset?"
+
+#: .\templates\delete-cont.html:21
+#, fuzzy
+#| msgid "¿Estas Seguro que deseas borrar este"
+msgid "¿Estas Seguro que deseas borrar esta contraseña de"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\delete-resource.html:20
+msgid "¿Estas Seguro que deseas borrar este"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\delete-sect.html:20
+#, fuzzy
+#| msgid "¿Estas Seguro que deseas borrar este"
+msgid "¿Estas seguro que deseas"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\delete_role.html:12 .\templates\roles_list.html:63
+#, fuzzy
+#| msgid "Eliminar"
+msgid "Eliminar Rol"
+msgstr "Delete"
+
+#: .\templates\delete_role.html:21
+#, fuzzy
+#| msgid "¿Estas Seguro que deseas borrar este"
+msgid "¿Estas Seguro que deseas borrar el rol:"
+msgstr "Are you sure you want to delete this"
+
+#: .\templates\departure_user.html:24
+#, fuzzy
+#| msgid "Lista de Usuarios"
+msgid "Baja de Usuario"
+msgstr "Users list"
+
+#: .\templates\departure_user.html:27 .\templates\update_role.html:23
+msgid "Configurar"
+msgstr ""
+
+#: .\templates\departure_user.html:37
+msgid "Confirmar baja"
+msgstr ""
+
+#: .\templates\detail-asset.html:19
+msgid "Detalle del Activo"
+msgstr "Asset Details"
+
+#: .\templates\detail-asset.html:20 .\templates\update-asset.html:45
+msgid "Lista de Activos"
+msgstr "Assets List"
+
+#: .\templates\detail-asset.html:35 .\templates\threat_intel_config.html:74
+#: .\templates\threat_intel_source_list.html:32 .\templates\verify_2fa.html:26
+msgid "Código"
+msgstr "Code"
+
+#: .\templates\detail-asset.html:39 .\templates\list-asset.html:38
+msgid "Valor"
+msgstr "Value"
+
+#: .\templates\detail-asset.html:47
+msgid "Ubicación"
+msgstr "Location"
+
+#: .\templates\detail-asset.html:51 .\templates\list-asset.html:41
+msgid "Categoría"
+msgstr "Category"
+
+#: .\templates\detail-asset.html:55
+msgid "Número de Serie"
+msgstr "Serial Number"
+
+#: .\templates\detail-asset.html:59
+msgid "Clasificación de Información"
+msgstr "Information Classification"
+
+#: .\templates\detail-asset.html:67
+msgid "Fecha de Creación"
+msgstr "Created At"
+
+#: .\templates\detail-asset.html:71
+msgid "Última Modificación"
+msgstr "Last Modified"
+
+#: .\templates\detail-asset.html:81 .\templates\detail-cont.html:49
+#: .\templates\detail-resource.html:51 .\templates\detail-user.html:99
+#: .\templates\list_resource.html:139 .\templates\listpass.html:75
+#: .\templates\threat_intel_review_detail.html:16
+#: .\templates\threat_intel_review_list.html:82
+#: .\templates\threat_intel_source_detail.html:15
+#: .\templates\threat_intel_source_list.html:59
+#: .\templates\threat_intel_techtag_detail.html:15
+#: .\templates\threat_intel_techtag_list.html:76
+msgid "Editar"
+msgstr "Edit"
+
+#: .\templates\detail-cont.html:32
+msgid "Abrir"
+msgstr ""
+
+#: .\templates\detail-cont.html:38
+msgid "Adjunto:"
+msgstr ""
+
+#: .\templates\detail-cont.html:44
+#: .\templates\threat_intel_analysis_detail.html:127
+msgid "Creado:"
+msgstr ""
+
+#: .\templates\detail-cont.html:47
+#, python-format
+msgid "Hace %(object.last_change)s días"
+msgstr ""
+
+#: .\templates\detail-cont.html:63
+msgid "Credenciales"
+msgstr ""
+
+#: .\templates\detail-cont.html:70 .\templates\detail-cont.html:78
+#: .\templates\detail-cont.html:110
+msgid "Oculto"
+msgstr ""
+
+#: .\templates\detail-cont.html:91
+#, fuzzy
+#| msgid "Detalle del Activo"
+msgid "Detalle de modificaciones"
+msgstr "Asset Details"
+
+#: .\templates\detail-cont.html:100 .\templates\list_resource.html:140
+#: .\templates\listpass.html:73 .\templates\listpass.html:78
+#: .\templates\threat_intel_analysis_list.html:91
+#: .\templates\threat_intel_run_list.html:98
+msgid "Detalle"
+msgstr "Detail"
+
+#: .\templates\detail-cont.html:126
+#, fuzzy
+#| msgid "Detalle del Activo"
+msgid "Detalle de permisos"
+msgstr "Asset Details"
+
+#: .\templates\detail-cont.html:133 .\templates\profile.html:51
+msgid "Apellido"
+msgstr "Last name"
+
+#: .\templates\detail-cont.html:134 .\templates\profile.html:59
+msgid "Puesto"
+msgstr "Position"
+
+#: .\templates\detail-cont.html:136
+msgid "Denegar"
+msgstr ""
+
+#: .\templates\detail-cont.html:148
+msgid "Denegar permisos"
+msgstr ""
+
+#: .\templates\detail-resource.html:17
+#, python-format
+msgid "Detalle de %(verbose_model_name)s"
+msgstr ""
+
+#: .\templates\detail-resource.html:25
+msgid "(Sin nombre)"
+msgstr ""
+
+#: .\templates\detail-resource.html:62
+#, fuzzy
+#| msgid "Crear evaluación de proveedor"
+msgid "Evaluaciones del proveedor"
+msgstr "Create vendor evaluation"
+
+#: .\templates\detail-resource.html:69
+msgid "Evaluado por"
+msgstr "Evaluated by"
+
+#: .\templates\detail-resource.html:69 .\templates\evaluation_list.html:95
+#: .\templates\list-asset.html:45 .\templates\list_resource.html:108
+#: .\templates\roles_list.html:48
+#: .\templates\threat_intel_analysis_detail.html:40
+#: .\templates\threat_intel_analysis_list.html:67
+#: .\templates\threat_intel_report_list.html:37
+#: .\templates\threat_intel_review_list.html:47
+#: .\templates\threat_intel_run_detail.html:39
+#: .\templates\threat_intel_run_detail.html:103
+#: .\templates\threat_intel_run_list.html:81
+#: .\templates\threat_intel_runitem_list.html:67
+#: .\templates\threat_intel_source_list.html:37
+#: .\templates\threat_intel_techtag_list.html:43 .\templates\user_list.html:45
+msgid "Acciones"
+msgstr "Actions"
+
+#: .\templates\detail-resource.html:78
+#: .\templates\threat_intel_report_list.html:54
+#: .\templates\threat_intel_review_list.html:79
+#: .\templates\threat_intel_runitem_list.html:90
+#: .\templates\threat_intel_source_list.html:56
+#: .\templates\threat_intel_techtag_list.html:73
+msgid "Ver"
+msgstr "View"
+
+#: .\templates\detail-resource.html:84
+msgid "No hay evaluaciones registradas para este proveedor."
+msgstr "No evaluations registered for this vendor."
+
+#: .\templates\detail-resource.html:94
+msgid "Crear Re-evaluación"
+msgstr "Create Re-evaluation"
+
+#: .\templates\detail-resource.html:104
+msgid "Cambiar etapa del Tratamiento"
+msgstr "Change treatment stage"
+
+#: .\templates\detail-resource.html:105 ⁨.\templates\tenant_navbar copy.html⁩:278
+#: ⁨.\templates\tenant_navbar copy.html⁩:320
+msgid "Cerrar"
+msgstr "Close"
+
+#: .\templates\detail-resource.html:109
+msgid "Nueva Etapa"
+msgstr "New Stage"
+
+#: .\templates\detail-resource.html:117
+msgid "Notas de Análisis"
+msgstr "Analysis Notes"
+
+#: .\templates\detail-resource.html:121
+msgid "Acciones Inmediatas"
+msgstr "Immediate Actions"
+
+#: .\templates\detail-resource.html:125
+msgid "Acciones Correctivas"
+msgstr "Corrective Actions"
+
+#: .\templates\detail-resource.html:131
+msgid "Guardar y Cambiar Etapa"
+msgstr "Save and Change Stage"
+
+#: .\templates\detail-resource.html:145
+msgid "Cambiar Etapa"
+msgstr "Change Stage"
+
+#: .\templates\detail-user.html:19
+#, fuzzy
+#| msgid "Detalle del Activo"
+msgid "Detalle del Usuario"
+msgstr "Asset Details"
+
+#: .\templates\detail-user.html:20 .\templates\user_form.html:45
+msgid "Lista de Usuarios"
+msgstr "Users list"
+
+#: .\templates\detail-user.html:26
+#, python-format
+msgid "Avatar de %(object.email)s"
+msgstr ""
+
+#: .\templates\detail-user.html:28
+msgid "Avatar predeterminado"
+msgstr ""
+
+#: .\templates\detail-user.html:36
+#, fuzzy
+#| msgid "Puesto"
+msgid "Puesto:"
+msgstr "Position"
+
+#: .\templates\detail-user.html:40
+msgid "Documento:"
+msgstr ""
+
+#: .\templates\detail-user.html:44
+#, fuzzy
+#| msgid "Fecha de Creación"
+msgid "Fecha de Nacimiento:"
+msgstr "Created At"
+
+#: .\templates\detail-user.html:48
+msgid "Domicilio:"
+msgstr ""
+
+#: .\templates\detail-user.html:52
+msgid "Teléfono:"
+msgstr ""
+
+#: .\templates\detail-user.html:56
+#, fuzzy
+#| msgid "Fecha de Creación"
+msgid "Fecha de Ingreso:"
+msgstr "Created At"
+
+#: .\templates\detail-user.html:60
+#, fuzzy
+#| msgid "Fecha de Creación"
+msgid "Fecha de Egreso:"
+msgstr "Created At"
+
+#: .\templates\detail-user.html:64
+msgid "Motivo de Baja:"
+msgstr ""
+
+#: .\templates\detail-user.html:68
+#, fuzzy
+#| msgid "Color del menú"
+msgid "Color de Menú:"
+msgstr "Menu color"
+
+#: .\templates\detail-user.html:74
+msgid "Rol Asignado:"
+msgstr ""
+
+#: .\templates\detail-user.html:78
+msgid "Cliente Asociado:"
+msgstr ""
+
+#: .\templates\detail-user.html:82
+msgid "Autenticación de Dos Factores:"
+msgstr ""
+
+#: .\templates\detail-user.html:85
+msgid "Habilitado"
+msgstr ""
+
+#: .\templates\detail-user.html:87
+#, fuzzy
+#| msgid "Resultado"
+msgid "Deshabilitado"
+msgstr "Result"
+
+#: .\templates\email_config.html:40
+msgid "Configurar email"
+msgstr ""
+
+#: .\templates\email_config.html:57
+#, fuzzy
+#| msgid "Guardar Seccion"
+msgid "Guardar configuración"
+msgstr "Save Section"
+
+#: .\templates\evaluacion_form.html:45
+#, fuzzy
+#| msgid "Crear evaluación de proveedor"
+msgid "Crear / Editar Evaluación de Riesgo"
+msgstr "Create vendor evaluation"
+
+#: .\templates\evaluacion_form.html:102
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Guardar Evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\evaluation_detail.html:12
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Detalle de Evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\evaluation_detail.html:14
+#, python-format
+msgid "Objeto evaluado: %(evaluation.evaluated_object)s"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:19
+msgid "Forzar creación de tratamiento y vincular"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:22
+msgid "Tratamiento asociado:"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:31
+#, fuzzy
+#| msgid "Detalle del Activo"
+msgid "Detalles del objeto evaluado"
+msgstr "Asset Details"
+
+#: .\templates\evaluation_detail.html:52
+msgid "Amenaza"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:53
+msgid "Vulnerabilidad"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:55
+msgid "Impacto confidencialidad"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:56
+msgid "Impacto integridad"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:57
+msgid "Impacto disponibilidad"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:58
+msgid "Probabilidad"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:59
+msgid "Valor de Impacto"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:60
+msgid "Valor de Riesgo"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:61
+msgid "Nivel de Riesgo"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:66
+msgid "Tratamiento asociado"
+msgstr ""
+
+#: .\templates\evaluation_detail.html:79
+#, fuzzy
+#| msgid "Responsable"
+msgid "Responsable:"
+msgstr "Responsible"
+
+#: .\templates\evaluation_detail.html:81
+#: .\templates\threat_intel_review_create.html:72
+#: .\templates\threat_intel_review_update.html:74
+#, fuzzy
+#| msgid "Descripción"
+msgid "Descripción:"
+msgstr "Description"
+
+#: .\templates\evaluation_detail.html:84
+#, fuzzy
+#| msgid "Acciones Inmediatas"
+msgid "Acciones inmediatas:"
+msgstr "Immediate Actions"
+
+#: .\templates\evaluation_detail.html:87
+#, fuzzy
+#| msgid "Acciones Correctivas"
+msgid "Acciones correctivas:"
+msgstr "Corrective Actions"
+
+#: .\templates\evaluation_detail.html:90
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Notas de análisis:"
+msgstr "Analysis Notes"
+
+#: .\templates\evaluation_detail.html:94
+#, fuzzy
+#| msgid "Cambiar etapa del Tratamiento"
+msgid "Ver detalle del tratamiento"
+msgstr "Change treatment stage"
+
+#: .\templates\evaluation_list.html:33
+#, python-format
+msgid "%(verbose_name_plural)s"
+msgstr ""
+
+#: .\templates\evaluation_list.html:40
+#, python-format
+msgid "Alta de %(verbose_name_plural)s"
+msgstr ""
+
+#: .\templates\evaluation_list.html:96
+msgid "check"
+msgstr ""
+
+#: .\templates\evaluation_list.html:106
+msgid "Ver objeto evaluado"
+msgstr ""
+
+#: .\templates\evaluation_list.html:133
+#, python-format
+msgid "Detalle %(verbose_name_plural)s"
+msgstr ""
+
+#: .\templates\evaluation_list.html:134
+#, python-format
+msgid "Eliminar %(verbose_name_plural)s"
+msgstr ""
+
+#: .\templates\generate-qr-code.html:21
+#, fuzzy
+#| msgid "Código"
+msgid "Tu Código QR"
+msgstr "Code"
+
+#: .\templates\generate-qr-code.html:25
+#, fuzzy
+#| msgid "Código"
+msgid "Código QR"
+msgstr "Code"
+
+#: .\templates\generate-qr-code.html:29
+msgid "Escanea el código QR con \\"
+msgstr ""
+
+#: .\templates\generate-qr-code.html:29
+#, fuzzy
+#| msgid "Descargar adjunto"
+msgid "Descargalo aquí"
+msgstr "Download attachment"
+
+#: .\templates\generate-qr-code.html:30
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver al Perfil"
+msgstr "Back to Details"
+
+#: .\templates\global_settings.html:25 .\templates\update-cont.html:85
+#: .\templates\update-sect.html:50
+msgid "Guardar"
+msgstr "Save"
+
+#: .\templates\home.html:23
+msgid "Necesitas loguearte."
+msgstr ""
+
+#: .\templates\home.html:67 .\templates\home_tenant.html:283
+#: .\templates\permission_roles_form.html:36
+#: ⁨.\templates\tenant_navbar copy.html⁩:191 .\templates\update_role.html:37
+#, fuzzy
+#| msgid "Contraseña"
+msgid "Contraseñas"
+msgstr "Password"
+
+#: .\templates\home.html:76 .\templates\home_tenant.html:372
+#: .\templates\profile.html:19
+msgid "Mi Perfil"
+msgstr "My Profile"
+
+#: .\templates\home_tenant.html:8
+#, python-format
+msgid "¡Bienvenido, %(nombre)s!"
+msgstr ""
+
+#: .\templates\home_tenant.html:9
+msgid "Elegí una opción para comenzar."
+msgstr ""
+
+#: .\templates\home_tenant.html:30
+msgid "Pendientes"
+msgstr ""
+
+#: .\templates\home_tenant.html:32
+#, fuzzy
+#| msgid "Evaluaciones pendientes"
+msgid "Tratamientos pendientes"
+msgstr "Pending evaluations"
+
+#: .\templates\home_tenant.html:41 .\templates\home_tenant.html:325
+#: .\templates\threat_intel_analysis_list.html:66
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Análisis"
+msgstr "Analysis Notes"
+
+#: .\templates\home_tenant.html:43
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "En análisis"
+msgstr "Analysis Notes"
+
+#: .\templates\home_tenant.html:52
+msgid "En Progreso"
+msgstr ""
+
+#: .\templates\home_tenant.html:54
+#, fuzzy
+#| msgid "Sección"
+msgid "En ejecución"
+msgstr "Section"
+
+#: .\templates\home_tenant.html:63 .\templates\home_tenant.html:65
+msgid "Implementados"
+msgstr ""
+
+#: .\templates\home_tenant.html:88
+msgid "Con tratamiento no implementado"
+msgstr ""
+
+#: .\templates\home_tenant.html:91
+msgid "Revisa las evaluaciones con tratamiento pendiente"
+msgstr ""
+
+#: .\templates\home_tenant.html:99
+msgid "Muy Bajo"
+msgstr ""
+
+#: .\templates\home_tenant.html:103
+msgid "Bajo"
+msgstr ""
+
+#: .\templates\home_tenant.html:107
+msgid "Moderado"
+msgstr ""
+
+#: .\templates\home_tenant.html:111
+msgid "Alto"
+msgstr ""
+
+#: .\templates\home_tenant.html:115
+msgid "Muy Alto"
+msgstr ""
+
+#: .\templates\home_tenant.html:120
+msgid "Top críticas recientes"
+msgstr ""
+
+#: .\templates\home_tenant.html:127
+msgid "Nivel"
+msgstr ""
+
+#: .\templates\home_tenant.html:133
+#, fuzzy
+#| msgid "No hay evaluaciones registradas para este proveedor."
+msgid "No hay evaluaciones críticas recientes."
+msgstr "No evaluations registered for this vendor."
+
+#: .\templates\home_tenant.html:142
+msgid "Tratamientos próximos / pendientes"
+msgstr ""
+
+#: .\templates\home_tenant.html:156
+msgid "No hay tratamientos pendientes."
+msgstr ""
+
+#: .\templates\home_tenant.html:168
+msgid "Threat Intel relevantes"
+msgstr ""
+
+#: .\templates\home_tenant.html:175
+#: .\templates\threat_intel_analysis_detail.html:79
+#: .\templates\threat_intel_analysis_list.html:46
+#: .\templates\threat_intel_analysis_list.html:77
+#: .\templates\threat_intel_item_detail.html:116
+#: .\templates\threat_intel_report_detail.html:93
+#: .\templates\threat_intel_runitem_list.html:39
+msgid "Critical"
+msgstr ""
+
+#: .\templates\home_tenant.html:185
+#: .\templates\threat_intel_analysis_detail.html:81
+#: .\templates\threat_intel_analysis_list.html:47
+#: .\templates\threat_intel_analysis_list.html:79
+#: .\templates\threat_intel_item_detail.html:118
+#: .\templates\threat_intel_report_detail.html:95
+#: .\templates\threat_intel_runitem_list.html:40
+msgid "High"
+msgstr ""
+
+#: .\templates\home_tenant.html:195
+#: .\templates\threat_intel_analysis_detail.html:83
+#: .\templates\threat_intel_analysis_list.html:48
+#: .\templates\threat_intel_analysis_list.html:81
+#: .\templates\threat_intel_item_detail.html:120
+#: .\templates\threat_intel_report_detail.html:97
+#: .\templates\threat_intel_runitem_list.html:41
+msgid "Medium"
+msgstr ""
+
+#: .\templates\home_tenant.html:205
+msgid "Unknown"
+msgstr ""
+
+#: .\templates\home_tenant.html:213
+msgid "Items recientes (relevantes con IA)"
+msgstr ""
+
+#: .\templates\home_tenant.html:220
+msgid "Severity"
+msgstr ""
+
+#: .\templates\home_tenant.html:227
+msgid "No hay items relevantes con análisis IA."
+msgstr ""
+
+#: .\templates\home_tenant.html:238
+#, fuzzy
+#| msgid "Evaluaciones pendientes"
+msgid "Evaluaciones de proveedores pendientes"
+msgstr "Pending evaluations"
+
+#: .\templates\home_tenant.html:245
+#, python-format
+msgid ""
+"Pendientes dentro de los próximos %(pending_evals_window_days)s días "
+"(incluye vencidas)."
+msgstr ""
+
+#: .\templates\home_tenant.html:251
+#: .\templates\vendor_evaluation_pending_list.html:36
+msgid "Owner"
+msgstr ""
+
+#: .\templates\home_tenant.html:251
+#, fuzzy
+#| msgid "Asignar plantilla"
+msgid "Sin plantilla"
+msgstr "Assign template"
+
+#: .\templates\home_tenant.html:257
+#, python-format
+msgid "Faltan %(ev.days_until_scheduled)s días"
+msgstr ""
+
+#: .\templates\home_tenant.html:259
+#, python-format
+msgid "Venció hace %(ev.days_until_scheduled_abs)s días"
+msgstr ""
+
+#: .\templates\home_tenant.html:262
+msgid "Fecha pendiente"
+msgstr ""
+
+#: .\templates\home_tenant.html:267
+#, fuzzy
+#| msgid "No hay evaluaciones registradas para este proveedor."
+msgid "No hay evaluaciones pendientes dentro del período seleccionado."
+msgstr "No evaluations registered for this vendor."
+
+#: .\templates\home_tenant.html:284
+#, fuzzy
+#| msgid "Ver contraseña"
+msgid "Listado de contraseñas."
+msgstr "View password"
+
+#: .\templates\home_tenant.html:297 ⁨.\templates\tenant_navbar copy.html⁩:238
+#, fuzzy
+#| msgid "Acciones"
+msgid "Ejecuciones"
+msgstr "Actions"
+
+#: .\templates\home_tenant.html:298
+msgid "Runs de Threat Intel"
+msgstr ""
+
+#: .\templates\home_tenant.html:311 ⁨.\templates\tenant_navbar copy.html⁩:240
+#: .\templates\threat_intel_report_list.html:14
+msgid "Reportes"
+msgstr ""
+
+#: .\templates\home_tenant.html:312
+msgid "Reportes generados"
+msgstr ""
+
+#: .\templates\home_tenant.html:326
+msgid "Análisis y resultados"
+msgstr ""
+
+#: .\templates\home_tenant.html:340 ⁨.\templates\tenant_navbar copy.html⁩:213
+#: .\templates\tenant_navbar.html:104
+#, fuzzy
+#| msgid "Activa"
+msgid "Activos"
+msgstr "Active"
+
+#: .\templates\home_tenant.html:341
+msgid "Activos de la informacion."
+msgstr ""
+
+#: .\templates\home_tenant.html:356 ⁨.\templates\tenant_navbar copy.html⁩:214
+#: .\templates\tenant_navbar.html:109
+#, fuzzy
+#| msgid "Proveedor"
+msgid "Proveedores"
+msgstr "Vendor"
+
+#: .\templates\home_tenant.html:357
+#, fuzzy
+#| msgid "Lista de Activos"
+msgid "Listado de proveedores"
+msgstr "Assets List"
+
+#: .\templates\home_tenant.html:371
+#, fuzzy
+#| msgid "Mi Perfil"
+msgid "Perfil"
+msgstr "My Profile"
+
+#: .\templates\home_tenant.html:387 ⁨.\templates\tenant_navbar copy.html⁩:222
+msgid "Riesgos"
+msgstr ""
+
+#: .\templates\home_tenant.html:388
+#, fuzzy
+#| msgid "Evaluaciones pendientes"
+msgid "Evaluacion de riesgos"
+msgstr "Pending evaluations"
+
+#: .\templates\home_tenant.html:401 ⁨.\templates\tenant_navbar copy.html⁩:229
+msgid "Tratamientos"
+msgstr ""
+
+#: .\templates\home_tenant.html:402
+#, fuzzy
+#| msgid "Lista de Activos"
+msgid "Listado de tratamientos"
+msgstr "Assets List"
+
+#: .\templates\landing.html:11
+msgid "Ingresa a"
+msgstr "Log in to"
+
+#: .\templates\landing.html:13
+msgid ""
+"Accedé a tu espacio de trabajo con tu usuario y contraseña, o iniciá sesión "
+"con Google."
+msgstr ""
+"Access your workspace with your username and password, or sign in with "
+"Google."
+
+#: .\templates\landing.html:18 .\templates\public_navbar.html:42
+msgid "Crear cuenta"
+msgstr "Create account"
+
+#: .\templates\landing.html:21
+msgid "Iniciar sesión"
+msgstr "Sign in"
+
+#: .\templates\landing.html:38
+msgid "¿Qué podés hacer acá?"
+msgstr "What can you do here?"
+
+#: .\templates\landing.html:42
+msgid "Un único acceso"
+msgstr "A single access"
+
+#: .\templates\landing.html:42
+msgid "para múltiples cuentas."
+msgstr "for multiple accounts."
+
+#: .\templates\landing.html:46
+msgid "SSO con Google"
+msgstr "SSO with Google"
+
+#: .\templates\landing.html:46 .\templates\user_list.html:42
+msgid "2FA"
+msgstr "2FA"
+
+#: .\templates\landing.html:46
+msgid "según políticas de la cuenta."
+msgstr "according to account policies."
+
+#: .\templates\landing.html:50
+msgid "Derivación automática"
+msgstr "Automatic redirection"
+
+#: .\templates\landing.html:50
+msgid "si tenés un solo acceso; selector si tenés varios."
+msgstr "if you have a single access; selector if you have several."
+
+#: .\templates\list-asset.html:18
+#, fuzzy
+#| msgid "Acciones pendientes de confirmación"
+msgid "Activos de la información"
+msgstr "Actions pending confirmation"
+
+#: .\templates\list-asset.html:27
+#, fuzzy
+#| msgid "Lista de Activos"
+msgid "Alta de activo"
+msgstr "Assets List"
+
+#: .\templates\list-asset.html:35
+msgid "Id"
+msgstr ""
+
+#: .\templates\list-asset.html:40
+#, fuzzy
+#| msgid "Evaluación"
+msgid "Localización"
+msgstr "Evaluation"
+
+#: .\templates\list-asset.html:42
+#, fuzzy
+#| msgid "Número de Serie"
+msgid "Nro Serie"
+msgstr "Serial Number"
+
+#: .\templates\list-asset.html:43
+#, fuzzy
+#| msgid "Clasificación de Información"
+msgid "Clasif. información"
+msgstr "Information Classification"
+
+#: .\templates\list-asset.html:44
+msgid "Dueño"
+msgstr ""
+
+#: .\templates\list-asset.html:63 .\templates\update-asset.html:41
+msgid "Editar activo"
+msgstr "Edit asset"
+
+#: .\templates\list-asset.html:64
+#, fuzzy
+#| msgid "Detalle del Activo"
+msgid "Detalle activo"
+msgstr "Asset Details"
+
+#: .\templates\list-asset.html:65
+#, fuzzy
+#| msgid "Eliminar Activo"
+msgid "Eliminar activo"
+msgstr "Delete Asset"
+
+#: .\templates\list_resource.html:33
+msgid "Historial de préstamos"
+msgstr "Loan history"
+
+#: .\templates\list_resource.html:44
+#: .\templates\vendor_evaluation_pending_list.html:15
+msgid "Evaluaciones pendientes"
+msgstr "Pending evaluations"
+
+#: .\templates\list_resource.html:56
+msgid "Filtros"
+msgstr "Filters"
+
+#: .\templates\list_resource.html:143
+msgid "Asignar plantilla"
+msgstr "Assign template"
+
+#: .\templates\list_resource.html:149
+msgid "Devolver"
+msgstr "Return"
+
+#: .\templates\list_resource.html:151
+msgid "Prestar"
+msgstr "Lend"
+
+#: .\templates\list_resource.html:153
+msgid "Historial"
+msgstr "History"
+
+#: .\templates\list_resource.html:155
+msgid "Acciones pendientes de confirmación"
+msgstr "Actions pending confirmation"
+
+#: .\templates\listpass.html:39
+msgid "Nueva contraseña"
+msgstr "New password"
+
+#: .\templates\listpass.html:58
+msgid "Actualiza"
+msgstr "Update"
+
+#: .\templates\listpass.html:60
+msgid "Link"
+msgstr "Link"
+
+#: .\templates\listpass.html:71
+msgid "Es de uso personal"
+msgstr "For personal use"
+
+#: .\templates\listpass.html:98
+msgid "Contraseña fuerte"
+msgstr "Strong password"
+
+#: .\templates\listpass.html:100
+msgid "Contraseña moderada"
+msgstr "Moderate password"
+
+#: .\templates\listpass.html:102
+msgid "Contraseña débil"
+msgstr "Weak password"
+
+#: .\templates\listpass.html:105
+msgid "Ver contraseña"
+msgstr "View password"
+
+#: .\templates\listpass.html:107
+msgid "Copiar Contraseña"
+msgstr "Copy Password"
+
+#: .\templates\listpass.html:124 .\templates\listpass.html:126
+msgid "Descargar adjunto"
+msgstr "Download attachment"
+
+#: .\templates\listpass.html:129 .\templates\listpass.html:131
+msgid "Compartir"
+msgstr "Share"
+
+#: .\templates\listpass.html:148
+msgid "Por favor, necesitas ingresar con un usuario para navegar."
+msgstr "Please, you need to log in with a user to navigate."
+
+#: .\templates\listpermission.html:41 .\templates\listpermission.html:65
+msgid "Permisos"
+msgstr ""
+
+#: .\templates\listpermission.html:52
+msgid "Nuevo Permiso"
+msgstr ""
+
+#: .\templates\listsection.html:33
+#, fuzzy
+#| msgid "Sección"
+msgid "Nombre Sección"
+msgstr "Section"
+
+#: .\templates\listsection.html:35 .\templates\roles_list.html:47
+#: .\templates\threat_intel_item_detail.html:10
+#: .\templates\threat_intel_report_list.html:34
+msgid "Creado"
+msgstr ""
+
+#: .\templates\listsection.html:52 .\templates\threat_intel_config.html:91
+#: .\templates\threat_intel_source_detail.html:38
+#: .\templates\threat_intel_source_list.html:51
+#, fuzzy
+#| msgid "Eliminar Activo"
+msgid "Inactivo"
+msgstr "Delete Asset"
+
+#: .\templates\listsection.html:75
+#, fuzzy
+#| msgid "Sección"
+msgid "Nueva Sección"
+msgstr "Section"
+
+#: .\templates\login.html:11
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Ingresá a tu cuenta"
+msgstr "Create account"
+
+#: .\templates\login.html:23
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Email o usuario"
+msgstr "Edit user"
+
+#: .\templates\login.html:32 .\templates\login1.html:34
+#, fuzzy
+#| msgid "Ingresa a"
+msgid "Ingresar"
+msgstr "Log in to"
+
+#: .\templates\login.html:38
+msgid "o"
+msgstr ""
+
+#: .\templates\login.html:46
+#, fuzzy
+#| msgid "SSO con Google"
+msgid "Continuar con Google"
+msgstr "SSO with Google"
+
+#: .\templates\login.html:52
+msgid "Si tu usuario pertenece a un solo tenant, te derivamos automáticamente."
+msgstr ""
+
+#: .\templates\login1.html:37
+#, fuzzy
+#| msgid "Nueva contraseña"
+msgid "No recuerdo mi contraseña"
+msgstr "New password"
+
+#: .\templates\logout.html:15
+msgid "Has terminado la sesión"
+msgstr ""
+
+#: .\templates\password_reset.html:26
+#: .\templates\password_reset_complete.html:26
+#: .\templates\password_reset_confirm.html:26
+#: .\templates\reset_password_done.html:26
+msgid "Restablecer Contraseña"
+msgstr "Reset Password"
+
+#: .\templates\password_reset.html:38
+msgid "Correo electrónico"
+msgstr "Email"
+
+#: .\templates\password_reset_complete.html:40
+msgid "Tu contraseña ha sido cambiada correctamente."
+msgstr ""
+
+#: .\templates\password_reset_confirm.html:69
+#, fuzzy
+#| msgid "Restablecer Contraseña"
+msgid "Reestablecer contraseña"
+msgstr "Reset Password"
+
+#: .\templates\password_reset_email.html:1
+msgid "Hola"
+msgstr ""
+
+#: .\templates\password_reset_email.html:3
+msgid ""
+"Recibiste este email porque solicitaste un cambio de contraseña en el "
+"dominio:"
+msgstr ""
+
+#: .\templates\password_reset_email.html:5
+msgid ""
+"Por favor sigue el proximo link para continuar con el cambio de contraseña:"
+msgstr ""
+
+#: .\templates\password_reset_email.html:9
+msgid "Gracias"
+msgstr ""
+
+#: .\templates\password_reset_email.html:10
+msgid "Equipo de Passing"
+msgstr ""
+
+#: .\templates\permission_roles_form.html:20
+msgid "Agregar Rol de Permisos"
+msgstr ""
+
+#: .\templates\permission_roles_form.html:28 .\templates\update_role.html:29
+#, fuzzy
+#| msgid "Nombre"
+msgid "Nombre del Rol"
+msgstr "Name"
+
+#: .\templates\profile.html:25 .\templates\profile.html:67
+#: .\templates\tenant_navbar.html:161
+msgid "Avatar"
+msgstr "Avatar"
+
+#: .\templates\profile.html:27 .\templates\tenant_navbar.html:163
+#, fuzzy
+#| msgid "Avatar"
+msgid "Default Avatar"
+msgstr "Avatar"
+
+#: .\templates\profile.html:35 .\templates\profile.html:55
+msgid "Correo"
+msgstr "Email"
+
+#: .\templates\profile.html:36 .\templates\user_list.html:39
+msgid "Posición"
+msgstr "Position"
+
+#: .\templates\profile.html:37 .\templates\profile.html:63
+msgid "Idioma"
+msgstr "Language"
+
+#: .\templates\profile.html:75
+msgid "2do factor de autenticación"
+msgstr "2nd authentication factor"
+
+#: .\templates\profile.html:79
+msgid "Color del menú"
+msgstr "Menu color"
+
+#: .\templates\profile.html:96
+#, fuzzy
+#| msgid "Por favor, necesitas ingresar con un usuario para navegar."
+msgid "Por favor, necesitas ingresar con un usuario para ver el perfil."
+msgstr "Please, you need to log in with a user to navigate."
+
+#: .\templates\public_navbar.html:8
+msgid "Navbar - Passing"
+msgstr ""
+
+#: .\templates\public_navbar.html:37 .\templates\tenant_navbar.html:87
+msgid "Inicio"
+msgstr "Home"
+
+#: .\templates\public_navbar.html:47
+msgid "Este es público"
+msgstr "This is public"
+
+#: .\templates\qr_2fa.html:16
+msgid "Activar verificación en dos pasos"
+msgstr ""
+
+#: .\templates\qr_2fa.html:20
+#, python-format
+msgid "Hola <strong>%(email)s</strong>."
+msgstr ""
+
+#: .\templates\qr_2fa.html:21
+msgid ""
+"Escaneá el código QR con tu app de autenticación (Google Authenticator, "
+"Authy, 1Password, etc.) y luego ingresá el código de 6 dígitos para "
+"continuar."
+msgstr ""
+
+#: .\templates\qr_2fa.html:28 .\templates\qr_2fa.html:30
+#, fuzzy
+#| msgid "Código"
+msgid "Código QR 2FA"
+msgstr "Code"
+
+#: .\templates\qr_2fa.html:32
+msgid "QR no disponible"
+msgstr ""
+
+#: .\templates\qr_2fa.html:49
+msgid "Abrí tu app de autenticación y agregá una cuenta nueva."
+msgstr ""
+
+#: .\templates\qr_2fa.html:50
+msgid "Escaneá el QR o ingresá la clave manual."
+msgstr ""
+
+#: .\templates\qr_2fa.html:51
+msgid "Ingresá abajo el código de 6 dígitos y continuá."
+msgstr ""
+
+#: .\templates\qr_2fa.html:61
+#, fuzzy
+#| msgid "Última Modificación"
+msgid "Código de verificación"
+msgstr "Last Modified"
+
+#: .\templates\qr_2fa.html:72
+msgid "Son 6 dígitos que cambian cada ~30 segundos."
+msgstr ""
+
+#: .\templates\qr_2fa.html:76
+msgid "Verificar y continuar"
+msgstr ""
+
+#: .\templates\qr_2fa.html:78
+msgid "Ya escaneé, verificar"
+msgstr ""
+
+#: .\templates\qr_2fa.html:86
+msgid "Destino después de verificar:"
+msgstr ""
+
+#: .\templates\recive-mail.html:24
+msgid "No he recibido el correo electronico."
+msgstr ""
+
+#: .\templates\roles_list.html:22
+msgid "Roles"
+msgstr ""
+
+#: .\templates\roles_list.html:34
+msgid "Agregar Rol"
+msgstr ""
+
+#: .\templates\roles_list.html:44
+#, fuzzy
+#| msgid "Nombre"
+msgid "Nombre Rol"
+msgstr "Name"
+
+#: .\templates\roles_list.html:45
+#, fuzzy
+#| msgid "Copiar Contraseña"
+msgid "Cantidad de Contraseñas"
+msgstr "Copy Password"
+
+#: .\templates\roles_list.html:62
+#, fuzzy
+#| msgid "Editar"
+msgid "Editar Rol"
+msgstr "Edit"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:197
+#, fuzzy
+#| msgid "Nueva contraseña"
+msgid "Nueva Contraseña"
+msgstr "New password"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:199
+msgid "Generador rápido"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:207 .\templates\tenant_navbar.html:99
+msgid "Recursos"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:215 .\templates\tenant_navbar.html:114
+msgid "Proyectos"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:216 .\templates\tenant_navbar.html:119
+msgid "Clientes"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:226
+msgid "Amenazas"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:227
+msgid "Vulnerabilidades"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:228
+#, fuzzy
+#| msgid "Evaluación"
+msgid "Evaluaciones"
+msgstr "Evaluation"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:239
+#: .\templates\threat_intel_analysis_detail.html:9
+#: .\templates\threat_intel_analysis_list.html:17
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Análisis IA"
+msgstr "Analysis Notes"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:241
+#: .\templates\threat_intel_review_list.html:14
+#, fuzzy
+#| msgid "Ver secciones"
+msgid "Revisiones"
+msgstr "View sections"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:243
+msgid "Config. Amenazas"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:252
+msgid "Salir"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:277
+#, fuzzy
+#| msgid "Generar contraseña"
+msgid "Generador rápido de contraseñas"
+msgstr "Generate password"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:282
+#, fuzzy
+#| msgid "Longitud:"
+msgid "Longitud"
+msgstr "Length:"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:313
+#, fuzzy
+#| msgid "Contraseña moderada"
+msgid "Contraseña generada"
+msgstr "Moderate password"
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:314
+msgid "Copiar"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:319
+msgid "Crear y abrir formulario"
+msgstr ""
+
+#: ⁨.\templates\tenant_navbar copy.html⁩:381
+#, fuzzy
+#| msgid "Genera una Contraseña"
+msgid "Generá una contraseña primero."
+msgstr "Generate a Password"
+
+#: .\templates\tenant_navbar.html:94
+msgid "Admin"
+msgstr ""
+
+#: .\templates\tenant_navbar.html:126
+#, fuzzy
+#| msgid "Evaluación"
+msgid "Evaluación de Riesgo"
+msgstr "Evaluation"
+
+#: .\templates\threat_intel_analysis_detail.html:10
+#, python-format
+msgid "Run #%(rid)s | Modelo: %(name)s"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:22
+#, fuzzy
+#| msgid "Realizada"
+msgid "Item Analizado"
+msgstr "Completed"
+
+#: .\templates\threat_intel_analysis_detail.html:25
+#: .\templates\threat_intel_review_detail.html:59
+msgid "CVE:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:26
+#: .\templates\threat_intel_item_detail.html:43
+#: .\templates\threat_intel_report_create.html:120
+#: .\templates\threat_intel_review_detail.html:60
+msgid "Severidad:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:31
+msgid "CVSS:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:33
+msgid "Ver Item Completo"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:46
+msgid "Re-ejecutar"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:50
+#: .\templates\threat_intel_run_detail.html:55
+#, fuzzy
+#| msgid "Descargar adjunto"
+msgid "Descargar JSON"
+msgstr "Download attachment"
+
+#: .\templates\threat_intel_analysis_detail.html:60
+msgid "Análisis Generado"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:75
+#: .\templates\threat_intel_item_detail.html:51
+#: .\templates\threat_intel_review_detail.html:64
+msgid "Sí"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:75
+#: .\templates\threat_intel_item_detail.html:51
+#: .\templates\threat_intel_review_detail.html:66
+msgid "No"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:85
+#: .\templates\threat_intel_analysis_list.html:49
+#: .\templates\threat_intel_analysis_list.html:83
+#: .\templates\threat_intel_item_detail.html:122
+#: .\templates\threat_intel_report_detail.html:99
+#: .\templates\threat_intel_runitem_list.html:42
+msgid "Low"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:99
+msgid "JSON Crudo (para referencia)"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:122
+msgid "Metadatos"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:125
+msgid "Modelo IA:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:126
+msgid "Versión de Prompt:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:128
+#: .\templates\threat_intel_report_detail.html:38
+#: .\templates\threat_intel_review_detail.html:32
+msgid "Run:"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_detail.html:128
+#: .\templates\threat_intel_analysis_list.html:87
+#: .\templates\threat_intel_item_detail.html:159
+#: .\templates\threat_intel_report_list.html:44
+#: .\templates\threat_intel_review_detail.html:32
+#: .\templates\threat_intel_run_detail.html:8
+#, python-format
+msgid "Run #%(rid)s"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:18
+msgid "Listado de análisis generados por IA para vulnerabilidades"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:27
+#: .\templates\threat_intel_run_list.html:24
+#: .\templates\threat_intel_runitem_list.html:27
+msgid "Refrescar"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:30
+msgid "Ver Runs"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:39
+#: .\templates\threat_intel_analysis_list.html:61
+#: .\templates\threat_intel_run_detail.html:99
+#: .\templates\threat_intel_runitem_list.html:62
+msgid "CVE/ID"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:40
+msgid "Buscar por CVE..."
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:43
+#: .\templates\threat_intel_analysis_list.html:63
+#: .\templates\threat_intel_report_detail.html:82
+msgid "Prioridad"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:45
+#: .\templates\threat_intel_runitem_list.html:38
+msgid "Todas"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:53
+#, fuzzy
+#| msgid "Filtros"
+msgid "Filtrar"
+msgstr "Filters"
+
+#: .\templates\threat_intel_analysis_list.html:62
+#: .\templates\threat_intel_run_detail.html:100
+#: .\templates\threat_intel_runitem_list.html:63
+msgid "Título"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:64
+msgid "Modelo IA"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:65
+#: .\templates\threat_intel_report_list.html:33
+#: .\templates\threat_intel_review_list.html:42
+msgid "Run"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:94
+msgid "JSON"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:100
+msgid "No hay análisis disponibles"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:112
+#: .\templates\threat_intel_report_list.html:71
+#: .\templates\threat_intel_review_list.html:99
+#: .\templates\threat_intel_runitem_list.html:112
+#: .\templates\threat_intel_source_list.html:76
+#: .\templates\threat_intel_techtag_list.html:93
+msgid "Primera"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:115
+#: .\templates\threat_intel_report_list.html:74
+#: .\templates\threat_intel_review_list.html:102
+#: .\templates\threat_intel_runitem_list.html:115
+#: .\templates\threat_intel_source_list.html:79
+#: .\templates\threat_intel_techtag_list.html:96
+msgid "Anterior"
+msgstr ""
+
+#: .\templates\threat_intel_analysis_list.html:128
+#: .\templates\threat_intel_report_list.html:87
+#: .\templates\threat_intel_review_list.html:115
+#: .\templates\threat_intel_runitem_list.html:128
+#: .\templates\threat_intel_source_list.html:92
+#: .\templates\threat_intel_techtag_list.html:109
+msgid "Última"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:14
+msgid "Configuración de Inteligencia de Amenazas"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:15
+msgid "Gestiona fuentes de datos y etiquetas de tecnología"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:21
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Inteligencia"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_config.html:34
+#: .\templates\threat_intel_config.html:52
+msgid "Total:"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:34
+msgid "fuentes"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:35
+#: .\templates\threat_intel_config.html:53
+#, fuzzy
+#| msgid "Activa"
+msgid "Activas:"
+msgstr "Active"
+
+#: .\templates\threat_intel_config.html:37
+#: .\templates\threat_intel_config.html:55
+msgid "Ver Todas"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:40
+#: .\templates\threat_intel_config.html:58
+#, fuzzy
+#| msgid "Nueva Etapa"
+msgid "Nueva"
+msgstr "New Stage"
+
+#: .\templates\threat_intel_config.html:52
+msgid "etiquetas"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:67
+msgid "Fuentes Activas Recientes"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:76
+#: .\templates\threat_intel_item_detail.html:10
+#: .\templates\threat_intel_source_list.html:34
+#: .\templates\vendor_evaluation_pending_list.html:33
+msgid "Tipo"
+msgstr ""
+
+#: .\templates\threat_intel_config.html:78
+#: .\templates\threat_intel_source_create.html:89
+#: .\templates\threat_intel_source_update.html:89
+msgid "URL Base"
+msgstr "Base URL"
+
+#: .\templates\threat_intel_config.html:100
+msgid "No hay fuentes configuradas"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:19
+#, fuzzy
+#| msgid "Detalle"
+msgid "Detalles"
+msgstr "Detail"
+
+#: .\templates\threat_intel_item_detail.html:35
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Severidad & Evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\threat_intel_item_detail.html:39
+#: .\templates\threat_intel_review_create.html:71
+#: .\templates\threat_intel_review_detail.html:61
+#: .\templates\threat_intel_review_update.html:73
+msgid "CVSS Score:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:49
+msgid "Marcado como Relevante:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:56
+msgid "Análisis IA disponible:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:71
+#, python-format
+msgid "Análisis IA (%(name)s)"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:76
+#: .\templates\threat_intel_review_create.html:79
+#: .\templates\threat_intel_review_detail.html:93
+msgid "Resumen:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:83
+msgid "Impacto Preliminar:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:90
+#, fuzzy
+#| msgid "Acciones Inmediatas"
+msgid "Acciones Recomendadas:"
+msgstr "Immediate Actions"
+
+#: .\templates\threat_intel_item_detail.html:97
+#: .\templates\threat_intel_review_detail.html:96
+msgid "Tecnologías Afectadas:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:108
+msgid "Deadline Recomendado:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:114
+#: .\templates\threat_intel_review_create.html:81
+#: .\templates\threat_intel_review_detail.html:94
+msgid "Prioridad:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:128
+msgid "Notas:"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:144
+#, python-format
+msgid "Apariciones en Runs (%(count)s)"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:150
+msgid "Run ID"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:151
+msgid "Período"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:153
+msgid "Detectado"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:178
+#: .\templates\threat_intel_review_create.html:41
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Items"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_item_detail.html:181
+#, fuzzy
+#| msgid "Crear Re-evaluación"
+msgid "Crear Review"
+msgstr "Create Re-evaluation"
+
+#: .\templates\threat_intel_item_detail.html:184
+msgid "Ver Run"
+msgstr ""
+
+#: .\templates\threat_intel_item_detail.html:187
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Crear Evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\threat_intel_item_detail.html:191
+#: .\templates\threat_intel_report_list.html:21
+#: .\templates\threat_intel_review_list.html:21
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Runs"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_item_detail.html:195
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Ver Análisis"
+msgstr "Analysis Notes"
+
+#: .\templates\threat_intel_link_threat.html:5
+#, python-format
+msgid "Vincular Amenaza a IntelItem %(cid)s"
+msgstr ""
+
+#: .\templates\threat_intel_link_threat.html:10
+msgid "Buscar amenazas..."
+msgstr ""
+
+#: .\templates\threat_intel_link_threat.html:11
+msgid "Buscar"
+msgstr ""
+
+#: .\templates\threat_intel_link_threat.html:29
+msgid "No se encontraron amenazas."
+msgstr ""
+
+#: .\templates\threat_intel_link_threat.html:35
+msgid "Vincular"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:38
+#, fuzzy
+#| msgid "Volver"
+msgid "Volver a Run"
+msgstr "Back"
+
+#: .\templates\threat_intel_report_create.html:42
+msgid "Crear Nuevo Reporte"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:43
+#, python-format
+msgid "Para Run #%(rid)s (%(start)s - %(end)s)"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:49
+msgid "Nuevo Reporte"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:57
+#: .\templates\threat_intel_report_list.html:32
+msgid "Asunto"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:65
+#, fuzzy
+#| msgid "Nombre descriptivo de la fuente"
+msgid "Título descriptivo del reporte"
+msgstr "Descriptive source name"
+
+#: .\templates\threat_intel_report_create.html:70
+msgid "Contenido (Markdown)"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:78
+msgid ""
+"Puedes usar Markdown para formatear: **negrita**, *cursiva*, `código`, etc."
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:83
+msgid "Destinatarios"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:91
+msgid "Correos separados por comas: usuario1@example.com, usuario2@example.com"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:96
+#: .\templates\threat_intel_run_detail.html:49
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Reporte"
+msgstr "Create account"
+
+#: .\templates\threat_intel_report_create.html:109
+#, python-format
+msgid "Análisis Disponibles (%(count)s)"
+msgstr ""
+
+#: .\templates\threat_intel_report_create.html:136
+msgid "No hay análisis disponibles para este run"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:13
+#, python-format
+msgid "Reporte para Run #%(rid)s"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:19
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Reportes"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_report_detail.html:22
+msgid "Ir al Run"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:26
+msgid "Enviar por Email"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:34
+msgid "Información del Reporte"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:37
+msgid "Asunto:"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:39
+msgid "Período:"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:40
+#: .\templates\threat_intel_run_detail.html:72
+#: .\templates\threat_intel_source_detail.html:34
+#: .\templates\threat_intel_techtag_detail.html:28
+#, fuzzy
+#| msgid "Estado"
+msgid "Estado:"
+msgstr "Status"
+
+#: .\templates\threat_intel_report_detail.html:42
+#: .\templates\threat_intel_report_list.html:35
+#: .\templates\threat_intel_report_list.html:49
+#, fuzzy
+#| msgid "Enviar"
+msgid "Enviado"
+msgstr "Send"
+
+#: .\templates\threat_intel_report_detail.html:42
+#: .\templates\threat_intel_report_list.html:49
+msgid "Borrador"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:46
+#, fuzzy
+#| msgid "Enviar"
+msgid "Enviado:"
+msgstr "Send"
+
+#: .\templates\threat_intel_report_detail.html:49
+#: .\templates\threat_intel_report_detail.html:129
+msgid "Destinatarios:"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:56
+msgid "Contenido del Reporte"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:66
+msgid "No hay contenido generado"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:73
+msgid "Análisis Incluidos"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:80
+#: .\templates\threat_intel_review_create.html:54
+#: .\templates\threat_intel_review_list.html:41
+#: .\templates\threat_intel_review_update.html:56
+msgid "CVE"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:81
+#: .\templates\threat_intel_review_create.html:58
+#: .\templates\threat_intel_review_update.html:60
+#: .\templates\threat_intel_run_detail.html:101
+#: .\templates\threat_intel_runitem_list.html:36
+#: .\templates\threat_intel_runitem_list.html:64
+msgid "Severidad"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:83
+#: .\templates\threat_intel_run_detail.html:68
+msgid "Resumen"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:108
+#, fuzzy
+#| msgid "No hay evaluaciones registradas para este proveedor."
+msgid "No hay análisis disponibles para este reporte"
+msgstr "No evaluations registered for this vendor."
+
+#: .\templates\threat_intel_report_detail.html:120
+msgid "Enviar Reporte por Email"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:133
+msgid "No hay destinatarios configurados"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:147
+msgid "Enviar por email"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:148
+msgid "Enviar a los destinatarios configurados"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:161
+msgid "Incluir PDF como adjunto"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:162
+msgid "Requiere: pip install weasyprint"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:171
+msgid "Backend de Email"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:185
+msgid "SMTP (Gmail)"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:186
+msgid "Configurado en settings.py"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:199
+msgid "Brevo (SendinBlue)"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:201
+msgid "Requiere: BREVO_API_KEY en settings"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:202
+msgid "Ver guía de configuración"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:211
+msgid "Nota:"
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:211
+msgid "La generación de PDF requiere la librería WeasyPrint."
+msgstr ""
+
+#: .\templates\threat_intel_report_detail.html:221
+#, fuzzy
+#| msgid "Enviar"
+msgid "Enviar Reporte"
+msgstr "Send"
+
+#: .\templates\threat_intel_report_list.html:15
+msgid "Listado de reportes generados"
+msgstr ""
+
+#: .\templates\threat_intel_report_list.html:24
+msgid "Crear Reporte (desde Run)"
+msgstr ""
+
+#: .\templates\threat_intel_report_list.html:60
+msgid "No hay reportes disponibles"
+msgstr ""
+
+#: .\templates\threat_intel_report_list.html:79
+#: .\templates\threat_intel_runitem_list.html:120
+#: .\templates\threat_intel_source_list.html:84
+msgid "de"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:45
+#, fuzzy
+#| msgid "Crear evaluación de proveedor"
+msgid "Crear Revisión de Seguridad"
+msgstr "Create vendor evaluation"
+
+#: .\templates\threat_intel_review_create.html:46
+#: .\templates\threat_intel_review_update.html:48
+#, python-format
+msgid "Para %(cve)s en Run #%(rid)s"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:78
+msgid "Análisis Disponible"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:84
+#: .\templates\threat_intel_review_detail.html:95
+msgid "Acción Recomendada:"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:91
+msgid "Nueva Revisión"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:99
+#: .\templates\threat_intel_review_list.html:43
+#: .\templates\threat_intel_review_update.html:108
+msgid "Decisión"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:107
+#: .\templates\threat_intel_review_update.html:116
+msgid "Selecciona la acción que se debe tomar para este CVE"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:112
+#: .\templates\threat_intel_review_update.html:121
+msgid "Guía de Decisiones:"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:114
+#: .\templates\threat_intel_review_update.html:123
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Ticket:"
+msgstr "Create account"
+
+#: .\templates\threat_intel_review_create.html:114
+#: .\templates\threat_intel_review_update.html:123
+msgid "Se requiere acción inmediata en nuestra infraestructura"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:115
+#: .\templates\threat_intel_review_update.html:124
+msgid "Monitorear:"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:115
+#: .\templates\threat_intel_review_update.html:124
+msgid "Observar y evaluar el impacto en futuro"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:116
+#: .\templates\threat_intel_review_update.html:125
+msgid "No Aplica:"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:116
+#: .\templates\threat_intel_review_update.html:125
+msgid "No es relevante para nuestra infraestructura"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:117
+#: .\templates\threat_intel_review_update.html:126
+msgid "Postergar:"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:117
+#: .\templates\threat_intel_review_update.html:126
+msgid "Decidir más adelante"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:123
+#: .\templates\threat_intel_review_detail.html:76
+#: .\templates\threat_intel_review_update.html:132
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Notas de la Revisión"
+msgstr "Analysis Notes"
+
+#: .\templates\threat_intel_review_create.html:131
+#: .\templates\threat_intel_review_update.html:140
+msgid "Comentarios adicionales sobre la decisión tomada"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:136
+#: .\templates\threat_intel_review_update.html:145
+msgid "Referencia de Ticket (Opcional)"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:144
+#: .\templates\threat_intel_review_update.html:153
+msgid "ej: BITRIX-1234 o URL del ticket de seguimiento"
+msgstr ""
+
+#: .\templates\threat_intel_review_create.html:149
+#, fuzzy
+#| msgid "Guardar Seccion"
+msgid "Guardar Revisión"
+msgstr "Save Section"
+
+#: .\templates\threat_intel_review_detail.html:6
+#, python-format
+msgid "Revisión: %(cve)s"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:7
+#, python-format
+msgid "Decisión en Run #%(rid)s"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:13
+msgid "Revisiones del Run"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:19
+msgid "Todas las Revisiones"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:28
+msgid "Información de la Revisión"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:31
+msgid "Item:"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:33
+msgid "Decisión:"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:35
+#: .\templates\threat_intel_review_list.html:57
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Ticket"
+msgstr "Create account"
+
+#: .\templates\threat_intel_review_detail.html:37
+#: .\templates\threat_intel_review_list.html:59
+msgid "Monitorear"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:39
+#: .\templates\threat_intel_review_list.html:61
+msgid "No Aplica"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:41
+#: .\templates\threat_intel_review_list.html:63
+msgid "Postergar"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:44
+#: .\templates\threat_intel_review_update.html:82
+msgid "Decidido por:"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:45
+#, fuzzy
+#| msgid "Fecha"
+msgid "Fecha:"
+msgstr "Date"
+
+#: .\templates\threat_intel_review_detail.html:47
+msgid "Ticket:"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:56
+msgid "Información del Item"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:62
+msgid "Es Relevante:"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:82
+msgid "Sin notas"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:90
+msgid "Análisis Asociado"
+msgstr ""
+
+#: .\templates\threat_intel_review_detail.html:99
+msgid "Ver Análisis Completo"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:15
+msgid "Listado de decisiones y revisiones de items"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:25
+msgid "Crear Review (desde Run)"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:33
+#, python-format
+msgid "Mostrando revisiones para <strong>Run #%(rp)s</strong>"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:34
+msgid "Ver todas las revisiones"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:44
+msgid "Decidido por"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:46
+msgid "Ticket"
+msgstr ""
+
+#: .\templates\threat_intel_review_list.html:88
+msgid "No hay revisiones disponibles"
+msgstr ""
+
+#: .\templates\threat_intel_review_update.html:43
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Revisión"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_review_update.html:47
+#: .\templates\threat_intel_review_update.html:100
+#, fuzzy
+#| msgid "Iniciar sesión"
+msgid "Editar Revisión"
+msgstr "Sign in"
+
+#: .\templates\threat_intel_review_update.html:79
+msgid "Información de la Revisión Original"
+msgstr ""
+
+#: .\templates\threat_intel_review_update.html:86
+msgid "Fecha Original:"
+msgstr ""
+
+#: .\templates\threat_intel_review_update.html:92
+#, fuzzy
+#| msgid "Notas de Análisis"
+msgid "Análisis:"
+msgstr "Analysis Notes"
+
+#: .\templates\threat_intel_review_update.html:158
+#: .\templates\threat_intel_source_update.html:111
+#: .\templates\threat_intel_techtag_update.html:87
+msgid "Guardar Cambios"
+msgstr "Save Changes"
+
+#: .\templates\threat_intel_run_detail.html:19
+msgid "Información General"
+msgstr ""
+
+#: .\templates\threat_intel_run_detail.html:43
+msgid "Ver Items"
+msgstr ""
+
+#: .\templates\threat_intel_run_detail.html:46
+#, fuzzy
+#| msgid "Ver secciones"
+msgid "Ver Revisiones"
+msgstr "View sections"
+
+#: .\templates\threat_intel_run_detail.html:52
+#: .\templates\threat_intel_run_list.html:99
+#, fuzzy
+#| msgid "Descargar adjunto"
+msgid "Descargar CSV"
+msgstr "Download attachment"
+
+#: .\templates\threat_intel_run_detail.html:71
+msgid "Items encontrados:"
+msgstr ""
+
+#: .\templates\threat_intel_run_detail.html:92
+msgid "Items Detectados (primeros 10)"
+msgstr ""
+
+#: .\templates\threat_intel_run_detail.html:93
+msgid "Ver todos"
+msgstr ""
+
+#: .\templates\threat_intel_run_detail.html:102
+#: .\templates\threat_intel_runitem_list.html:65
+msgid "CVSS"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:17
+#, python-format
+msgid "Items del Run #%(rid)s"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:18
+#, python-format
+msgid "Período: %(ps)s a %(pe)s"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:24
+#, fuzzy
+#| msgid "Volver"
+msgid "Volver al Run"
+msgstr "Back"
+
+#: .\templates\threat_intel_runitem_list.html:46
+msgid "Relevancia"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:49
+msgid "Relevantes"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:50
+msgid "No relevantes"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:66
+msgid "Relevante"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:93
+msgid "Review"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:100
+msgid "No hay items para este run"
+msgstr ""
+
+#: .\templates\threat_intel_runitem_list.html:108
+#, fuzzy
+#| msgid "Posición"
+msgid "Paginación"
+msgstr "Position"
+
+#: .\templates\threat_intel_source_create.html:31
+#: .\templates\threat_intel_source_detail.html:12
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Fuentes"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_source_create.html:35
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Nueva Fuente"
+msgstr "Create account"
+
+#: .\templates\threat_intel_source_create.html:36
+msgid ""
+"Agregar una nueva fuente de inteligencia de amenazas (NVD, CISA, AWS, etc.)"
+msgstr ""
+
+#: .\templates\threat_intel_source_create.html:42
+msgid "Nueva Fuente de Datos"
+msgstr ""
+
+#: .\templates\threat_intel_source_create.html:50
+#: .\templates\threat_intel_source_update.html:50
+msgid "Código (Único)"
+msgstr "Code (Unique)"
+
+#: .\templates\threat_intel_source_create.html:58
+#: .\templates\threat_intel_source_update.html:58
+msgid "ej: NVD, CISA, AWS, MSRC, GITHUB"
+msgstr "e.g.: NVD, CISA, AWS, MSRC, GITHUB"
+
+#: .\templates\threat_intel_source_create.html:71
+#: .\templates\threat_intel_source_update.html:71
+msgid "Nombre descriptivo de la fuente"
+msgstr "Descriptive source name"
+
+#: .\templates\threat_intel_source_create.html:76
+#: .\templates\threat_intel_source_update.html:76
+msgid "Tipo de Fuente"
+msgstr "Source Type"
+
+#: .\templates\threat_intel_source_create.html:84
+#: .\templates\threat_intel_source_update.html:84
+msgid "Método de obtención: API REST, RSS Feed, o Web Scraping"
+msgstr "Obtainment method: API REST, RSS Feed, or Web Scraping"
+
+#: .\templates\threat_intel_source_create.html:97
+#: .\templates\threat_intel_source_update.html:97
+msgid "ej: https://services.nvd.nist.gov/rest/json/"
+msgstr "e.g.: https://services.nvd.nist.gov/rest/json/"
+
+#: .\templates\threat_intel_source_create.html:104
+#: .\templates\threat_intel_source_update.html:104
+msgid "Activa (usar en próximos scans)"
+msgstr "Active (use in upcoming scans)"
+
+#: .\templates\threat_intel_source_create.html:111
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Fuente"
+msgstr "Create account"
+
+#: .\templates\threat_intel_source_detail.html:6
+#, python-format
+msgid "Fuente: %(code)s"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:22
+msgid "Información de la Fuente"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:27
+#, fuzzy
+#| msgid "Código"
+msgid "Código:"
+msgstr "Code"
+
+#: .\templates\threat_intel_source_detail.html:28
+#: .\templates\threat_intel_techtag_detail.html:27
+#, fuzzy
+#| msgid "Nombre"
+msgid "Nombre:"
+msgstr "Name"
+
+#: .\templates\threat_intel_source_detail.html:29
+msgid "Tipo:"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:32
+#, fuzzy
+#| msgid "URL Base"
+msgid "URL Base:"
+msgstr "Base URL"
+
+#: .\templates\threat_intel_source_detail.html:48
+#, fuzzy
+#| msgid "Descripción"
+msgid "Descripción del Tipo"
+msgstr "Description"
+
+#: .\templates\threat_intel_source_detail.html:52
+msgid "API:"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:52
+msgid "Esta fuente se obtiene mediante llamadas a API REST."
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:54
+msgid "RSS:"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:54
+msgid "Esta fuente se obtiene mediante feeds RSS."
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:56
+msgid "HTML:"
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:56
+msgid "Esta fuente se obtiene mediante web scraping de contenido HTML."
+msgstr ""
+
+#: .\templates\threat_intel_source_detail.html:58
+#, fuzzy
+#| msgid "Tipo de Fuente"
+msgid "Tipo de fuente:"
+msgstr "Source Type"
+
+#: .\templates\threat_intel_source_list.html:15
+msgid "Gestiona las fuentes de inteligencia de amenazas (NVD, CISA, AWS, etc.)"
+msgstr ""
+
+#: .\templates\threat_intel_source_list.html:21
+#: .\templates\threat_intel_techtag_list.html:21
+msgid "Volver a Configuración"
+msgstr ""
+
+#: .\templates\threat_intel_source_list.html:24
+#, fuzzy
+#| msgid "Editar Fuente"
+msgid "Nueva Fuente"
+msgstr "Edit Source"
+
+#: .\templates\threat_intel_source_list.html:35
+msgid "Base URL"
+msgstr ""
+
+#: .\templates\threat_intel_source_list.html:65
+msgid "No hay fuentes disponibles"
+msgstr ""
+
+#: .\templates\threat_intel_source_update.html:31
+#: .\templates\threat_intel_techtag_update.html:33
+msgid "Volver a Detalles"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_source_update.html:35
+#: .\templates\threat_intel_source_update.html:42
+msgid "Editar Fuente"
+msgstr "Edit Source"
+
+#: .\templates\threat_intel_source_update.html:36
+msgid "Actualizar parámetros de"
+msgstr "Update parameters for"
+
+#: .\templates\threat_intel_techtag_create.html:171
+#: .\templates\threat_intel_techtag_detail.html:12
+#, fuzzy
+#| msgid "Volver a Detalles"
+msgid "Volver a Etiquetas"
+msgstr "Back to Details"
+
+#: .\templates\threat_intel_techtag_create.html:175
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Nueva Etiqueta"
+msgstr "Create account"
+
+#: .\templates\threat_intel_techtag_create.html:176
+msgid "Agregar una nueva etiqueta de tecnología para la detección automática"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:182
+#: .\templates\threat_intel_techtag_list.html:24
+#, fuzzy
+#| msgid "Nueva Etapa"
+msgid "Nueva Etiqueta"
+msgstr "New Stage"
+
+#: .\templates\threat_intel_techtag_create.html:190
+#: .\templates\threat_intel_techtag_update.html:52
+#, fuzzy
+#| msgid "Nombre descriptivo de la fuente"
+msgid "Nombre de la Etiqueta"
+msgstr "Descriptive source name"
+
+#: .\templates\threat_intel_techtag_create.html:200
+msgid ""
+"ej: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, "
+"etc."
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:205
+#: .\templates\threat_intel_techtag_update.html:65
+msgid "Palabras Clave (JSON Array)"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:216
+msgid "Formato:"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:216
+#: .\templates\threat_intel_techtag_create.html:217
+msgid "[\\"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:217
+msgid "Ejemplo:"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:218
+msgid "Se usarán para detectar automáticamente CVEs relacionados"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_create.html:231
+#, fuzzy
+#| msgid "Activa (usar en próximos scans)"
+msgid "Activa (usar en búsquedas y análisis)"
+msgstr "Active (use in upcoming scans)"
+
+#: .\templates\threat_intel_techtag_create.html:238
+#, fuzzy
+#| msgid "Crear cuenta"
+msgid "Crear Etiqueta"
+msgstr "Create account"
+
+#: .\templates\threat_intel_techtag_detail.html:6
+msgid "Etiqueta de tecnología"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_detail.html:22
+msgid "Información"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_detail.html:32
+#: .\templates\threat_intel_techtag_list.html:68
+#, fuzzy
+#| msgid "Activa"
+msgid "Inactiva"
+msgstr "Active"
+
+#: .\templates\threat_intel_techtag_detail.html:42
+msgid "Palabras Clave para Búsqueda"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_detail.html:46
+#, python-format
+msgid ""
+"Se usarán estas palabras para detectar automáticamente vulnerabilidades "
+"relacionadas con <strong>%(name)s</strong>:"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_detail.html:55
+msgid "No hay palabras clave definidas"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_list.html:15
+msgid "Gestiona las etiquetas para clasificar vulnerabilidades por tecnología"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_list.html:41
+msgid "Palabras Clave"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_list.html:82
+msgid "No hay etiquetas disponibles"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_update.html:37
+#, python-format
+msgid "Editar Etiqueta: %(name)s"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_update.html:38
+#, fuzzy
+#| msgid "Actualizar parámetros de"
+msgid "Actualizar palabras clave y parámetros de detección"
+msgstr "Update parameters for"
+
+#: .\templates\threat_intel_techtag_update.html:44
+#, fuzzy
+#| msgid "Editar Fuente"
+msgid "Editar Etiqueta"
+msgstr "Edit Source"
+
+#: .\templates\threat_intel_techtag_update.html:60
+msgid "ej: Ransomware, Malware, Vulnerabilidad Crítica"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_update.html:73
+msgid "Formato JSON: [\\"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_update.html:73
+msgid "Estas palabras se usarán para detección automática en reportes"
+msgstr ""
+
+#: .\templates\threat_intel_techtag_update.html:80
+#, fuzzy
+#| msgid "Activa (usar en próximos scans)"
+msgid "Activa (usar en análisis)"
+msgstr "Active (use in upcoming scans)"
+
+#: .\templates\threat_intel_techtag_update.html:101
+msgid "Palabras Clave Actuales"
+msgstr ""
+
+#: .\templates\treatment-create.html:39
+#, python-format
+msgid "Lista de %(verbose_name)s"
+msgstr ""
+
+#: .\templates\treatment-create.html:66
+msgid "Etapa actual:"
+msgstr ""
+
+#: .\templates\treatment-create.html:69
+msgid "Etapa:"
+msgstr ""
+
+#: .\templates\treatment-create.html:70
+msgid "Seleccione una etapa"
+msgstr ""
+
+#: .\templates\treatment-create.html:74
+#, fuzzy
+#| msgid "Cambiar Etapa"
+msgid "Cambiar etapa"
+msgstr "Change Stage"
+
+#: .\templates\treatment-create.html:171
+msgid "Seleccione un recurso"
+msgstr ""
+
+#: .\templates\treatment-create.html:216
+msgid ""
+"Marcar como \"Implementado\" creará una re-evaluación asociada. ¿Desea "
+"continuar?"
+msgstr ""
+
+#: .\templates\update-cont.html:53
+msgid "Ingrese la contraseña"
+msgstr "Enter the password"
+
+#: .\templates\update-cont.html:62
+msgid "Ingrese el usuario de ingreso"
+msgstr "Enter the login username"
+
+#: .\templates\update-sect.html:17
+#, fuzzy
+#| msgid "Ver secciones"
+msgid "Ver Secciones"
+msgstr "View sections"
+
+#: .\templates\update_role.html:21
+msgid "Modificar Roles de Permiso"
+msgstr ""
+
+#: .\templates\upload_contrasenas.html:10
+#, fuzzy
+#| msgid "Ver contraseña"
+msgid "Subir contraseñas desde CSV"
+msgstr "View password"
+
+#: .\templates\upload_contrasenas.html:21
+msgid "Subir"
+msgstr ""
+
+#: .\templates\upload_contrasenas.html:24
+msgid "Formato del CSV"
+msgstr ""
+
+#: .\templates\upload_csv.html:37
+msgid "Descargar plantilla"
+msgstr "Download template"
+
+#: .\templates\user_form.html:41
+msgid "Editar Usuario"
+msgstr "Edit user"
+
+#: .\templates\user_list.html:36
+msgid "Nombre y apellido"
+msgstr ""
+
+#: .\templates\user_list.html:37
+msgid "Documento"
+msgstr ""
+
+#: .\templates\user_list.html:38
+msgid "eMail"
+msgstr ""
+
+#: .\templates\user_list.html:40
+msgid "Domicilio"
+msgstr ""
+
+#: .\templates\user_list.html:41
+msgid "Rol"
+msgstr ""
+
+#: .\templates\user_list.html:43
+msgid "Fech. Ingreso"
+msgstr ""
+
+#: .\templates\user_list.html:44
+msgid "Fech. Egreso"
+msgstr ""
+
+#: .\templates\user_list.html:53
+#, fuzzy
+#| msgid "Usuario"
+msgid "Usuario Activo"
+msgstr "User"
+
+#: .\templates\user_list.html:55
+#, fuzzy
+#| msgid "Editar activo"
+msgid "Usuario Inactivo"
+msgstr "Edit asset"
+
+#: .\templates\user_list.html:61
+msgid "Super user"
+msgstr ""
+
+#: .\templates\user_list.html:63
+msgid "Staff"
+msgstr ""
+
+#: .\templates\user_list.html:75
+#, fuzzy
+#| msgid "Activa"
+msgid "2FA activado"
+msgstr "Active"
+
+#: .\templates\user_list.html:77 .\templates\user_list.html:88
+msgid "2FA desactivado"
+msgstr ""
+
+#: .\templates\user_list.html:83
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Editar usuario"
+msgstr "Edit user"
+
+#: .\templates\user_list.html:86
+#, fuzzy
+#| msgid "Enviar"
+msgid "Enviar QR"
+msgstr "Send"
+
+#: .\templates\user_list.html:91
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Desactivar usuario"
+msgstr "Edit user"
+
+#: .\templates\user_list.html:93
+#, fuzzy
+#| msgid "Editar Usuario"
+msgid "Activar usuario"
+msgstr "Edit user"
+
+#: .\templates\user_list.html:95
+#, fuzzy
+#| msgid "Detalle"
+msgid "Detalle usuario"
+msgstr "Detail"
+
+#: .\templates\vendor_checklist_form.html:14
+#, fuzzy
+#| msgid "Asignar plantilla a proveedor"
+msgid "Asignar checklist a proveedor"
+msgstr "Assign template to vendor"
+
+#: .\templates\vendor_checklist_form.html:15
+msgid "Relaciona rápidamente una plantilla con el proveedor seleccionado."
+msgstr ""
+
+#: .\templates\vendor_checklist_form.html:45
+#, fuzzy
+#| msgid "Guardar Seccion"
+msgid "Guardar asignación"
+msgstr "Save Section"
+
+#: .\templates\vendor_evaluation_detail.html:9
+msgid "Evaluación"
+msgstr "Evaluation"
+
+#: .\templates\vendor_evaluation_detail.html:10
+msgid "Proveedor"
+msgstr "Vendor"
+
+#: .\templates\vendor_evaluation_detail.html:13
+#: .\templates\vendor_evaluation_pending_list.html:40
+msgid "Plantilla"
+msgstr "Template"
+
+#: .\templates\vendor_evaluation_detail.html:28
+msgid "Programada"
+msgstr "Scheduled"
+
+#: .\templates\vendor_evaluation_detail.html:29
+msgid "Realizada"
+msgstr "Completed"
+
+#: .\templates\vendor_evaluation_detail.html:30
+msgid "Responsable"
+msgstr "Responsible"
+
+#: .\templates\vendor_evaluation_detail.html:42
+msgid "Pregunta"
+msgstr "Question"
+
+#: .\templates\vendor_evaluation_detail.html:43
+msgid "Resultado"
+msgstr "Result"
+
+#: .\templates\vendor_evaluation_detail.html:44
+msgid "Observaciones"
+msgstr "Observations"
+
+#: .\templates\vendor_evaluation_detail.html:75
+msgid "Guardar y completar"
+msgstr "Save and complete"
+
+#: .\templates\vendor_evaluation_form.html:9
+msgid "Crear evaluación de proveedor"
+msgstr "Create vendor evaluation"
+
+#: .\templates\vendor_evaluation_form.html:10
+msgid "Generá una nueva evaluación tomando la plantilla asignada al proveedor."
+msgstr "Generate a new evaluation using the template assigned to the vendor."
+
+#: .\templates\vendor_evaluation_pending_list.html:17
+#, python-format
+msgid ""
+"Tus evaluaciones se habilitan %(reminder_lead_days)s días antes de la fecha "
+"programada."
+msgstr ""
+
+#: .\templates\vendor_evaluation_pending_list.html:21
+#, fuzzy
+#| msgid "Vincular a proveedor"
+msgid "Volver a proveedores"
+msgstr "Link to vendor"
+
+#: .\templates\vendor_evaluation_pending_list.html:44
+#, fuzzy
+#| msgid "Programada"
+msgid "Programada para"
+msgstr "Scheduled"
+
+#: .\templates\vendor_evaluation_pending_list.html:48
+#, python-format
+msgid "Faltan %(evaluation.days_until_scheduled)s días"
+msgstr ""
+
+#: .\templates\vendor_evaluation_pending_list.html:50
+#, python-format
+msgid "Venció hace %(evaluation.days_until_scheduled_abs)s días"
+msgstr ""
+
+#: .\templates\vendor_evaluation_pending_list.html:56
+#, fuzzy
+#| msgid "Crear evaluación"
+msgid "Abrir evaluación"
+msgstr "Create evaluation"
+
+#: .\templates\vendor_evaluation_pending_list.html:60
+#, python-format
+msgid "Disponible en %(evaluation.days_until_scheduled)s días"
+msgstr ""
+
+#: .\templates\vendor_evaluation_pending_list.html:62
+msgid "Disponible próximamente"
+msgstr ""
+
+#: .\templates\vendor_evaluation_pending_list.html:72
+#, fuzzy
+#| msgid "No hay evaluaciones registradas para este proveedor."
+msgid "No tenés evaluaciones pendientes por el momento."
+msgstr "No evaluations registered for this vendor."
+
+#: .\templates\verify_2fa.html:16
+msgid "Autenticación en 2 pasos"
+msgstr ""
+
+#: .\templates\verify_2fa.html:30
+msgid "Verificar"
+msgstr ""

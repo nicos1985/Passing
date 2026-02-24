@@ -14,12 +14,18 @@ from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
+import logging
+
+logger = logging.getLogger(__name__)
 
 #devuelve si es administrador
 def is_administrator(user):
+    """True si el usuario es staff o superusuario."""
     return user.is_superuser or user.is_staff
 
+
 def is_superadmin(user):
+    """True solo para superusuarios globales."""
     return user.is_superuser
 
 
@@ -40,14 +46,14 @@ class PermissionListView(LoginRequiredMixin, ListView):
 @user_passes_test(is_superadmin)
 def seleccionar_usuario(request):
     usuario_form = PermissionUserForm()
-    print(f'usuario_form no post: {usuario_form}')
+    logger.debug('usuario_form no post: %s', usuario_form)
     if request.method == 'POST':
         usuario_form = PermissionUserForm(request.POST)
-        print(f'usuario_form post: {usuario_form}')
+        logger.debug('usuario_form post: %s', usuario_form)
         if usuario_form.is_valid():
-            print('formulario userform es valido')
+            logger.debug('formulario userform es valido')
             usuario = usuario_form.cleaned_data['usuario']
-            print(f'usuario = {usuario}')
+            logger.debug('usuario = %s', usuario)
             # Redirige a la vista de permisos y pasa el usuario
             return redirect('permissionform2', usuario_id=usuario.id)
 
@@ -55,14 +61,15 @@ def seleccionar_usuario(request):
 
 @user_passes_test(is_superadmin)
 def gestion_permisos(request, usuario_id):
-    usuario = get_object_or_404(CustomUser, id=usuario_id)
+    usuario = get_object_or_404(CustomUser.for_current_tenant(), id=usuario_id)
     permiso_form = PermisoForm(usuario, request.POST or None)
-    contrasena = Contrasena.objects.filter(is_personal=False)
+    contrasenas = Contrasena.objects.filter(is_personal=False)
+    logger.debug('gestion_permisos: found %d contrasenas', contrasenas.count())
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
             
-            for contrasena in contrasena:
+            for contrasena in contrasenas:
                 default_value = False
                 permiso = permiso_form.cleaned_data.get(f'permiso_{contrasena.nombre_contra}', default_value)
 
@@ -70,32 +77,32 @@ def gestion_permisos(request, usuario_id):
                     user_id=usuario,
                     contra_id=contrasena
                 )
-                print(f'permissions: {permissions}')
+                logger.debug('permissions: %s', permissions)
                 permissions.permission = permiso
-                print(f'permissions.permission: {permissions.permission}')
+                logger.debug('permissions.permission: %s', permissions.permission)
                 permissions.save()
 
             # Redirige a donde desees después de guardar los cambios
             messages.success(request,  'los permisos han sido asignados correctamente.')
             
             return redirect('listpass')
-    else:
-        for contra in contrasena:
-            print(f'contraseñas: {contra.usuario}')
-        return render(request, 'create-perm-p2.html', {
+        else:
+            for contra in contrasenas:
+                logger.debug('contraseñas: %s', getattr(contra, 'usuario', None))
+            return render(request, 'create-perm-p2.html', {
             'permiso_form': permiso_form,
             'usuario' : usuario,
-            'contraseñas' : contrasena,
+            'contraseñas' : contrasenas,
         })
         
 @user_passes_test(is_administrator)
 def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
     try:
         # Obtener o crear el objeto de permiso
-        user = get_object_or_404(CustomUser, username = id_user)
+        user = get_object_or_404(CustomUser.for_current_tenant(), username = id_user)
         notificacion = get_object_or_404(AdminNotification, id=id_noti)
         contrasena = get_object_or_404(Contrasena, id=id_cont)
-        user_share = get_object_or_404(CustomUser, id=id_user_share)
+        user_share = get_object_or_404(CustomUser.for_current_tenant(), id=id_user_share)
         permission_obj, created = ContraPermission.objects.get_or_create(
             user_id=user_share, 
             contra_id=contrasena,
@@ -114,14 +121,14 @@ def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
                                                             type_notification = f"recibiste acceso a {contrasena.nombre_contra}",
                                                             comment = "Admin te dió acceso."
         )
-        print(f'user_notificarions_share: {user_notification_share}')
+        logger.debug('user_notificarions_share: %s', user_notification_share)
         user_notification = UserNotifications.objects.create(
                                                             id_contrasena = contrasena,
                                                             id_user = user,
                                                             type_notification = "Permiso Concedido",
                                                             comment = f"Se dió acceso a {user_share.username}."
         )
-        print(f'user_notification: {user_notification}')
+        logger.debug('user_notification: %s', user_notification)
         message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
         messages.success(request, message)
 
@@ -151,7 +158,7 @@ def give_permission(request, user, contrasena):
                         contra_id=contrasena, 
                         permission=True
                     )
-        print(f'permissions: {permission}')
+        logger.debug('permissions: %s', permission)
     except Exception as e:
         message = f'Hubo un error al intentar crear un permiso {contrasena}. Error {e}'
         messages.error(request, message)
@@ -160,7 +167,7 @@ def give_permission(request, user, contrasena):
 
 def generate_rol_permissions(request, rol, user):
     rol = get_object_or_404(PermissionRoles, id=rol.id)
-    usuario = get_object_or_404(CustomUser, id=user.id)
+    usuario = get_object_or_404(CustomUser.for_current_tenant(), id=user.id)
     contrasenas = rol.get_contrasenas() #obtengo todas las contraseñas relacionadas al Rol
     #intento eliminar todos los permisos actuales. 
     try:
@@ -187,8 +194,16 @@ def generate_rol_permissions(request, rol, user):
             message = f'hubo un error al dar permiso a la contraseña {contrasena}. Error {e}'
             messages.error(request, message)
 
-    usuario.assigned_role = rol
-    usuario.save()    
+    # Persistir la asignación de rol mediante el modelo UserRoles
+    try:
+        from .models import UserRoles
+        # eliminar roles previos para este usuario (comportamiento simple: un solo rol activo)
+        UserRoles.objects.filter(user=usuario).delete()
+        UserRoles.objects.create(user=usuario, rol=rol)
+    except Exception as e:
+        # Registrar y notificar, pero no romper el flujo
+        message = f'No se pudo asociar el rol al usuario en UserRoles: {e}'
+        messages.error(request, message)
 
     return contrasenas
 
@@ -292,17 +307,17 @@ def update_owner(request):
     for contrasena in contrasenas:
         try:
             log_mod = LogData.objects.get(contraseña=contrasena.id, action='Create', entidad='Contraseña')
-            print(f'log_mod: {log_mod}')
+            logger.debug('log_mod: %s', log_mod)
 
             contrasena.owner = log_mod.usuario
             contrasena.save()
-            print(f'contrasena_owner_ok: {contrasena.owner}')
+            logger.debug('contrasena_owner_ok: %s', contrasena.owner)
 
         except LogData.DoesNotExist:
 
             contrasena.owner = None
             contrasena.save()
-            print(f'contrasena_owner_notexist: {contrasena.owner}')
+            logger.debug('contrasena_owner_notexist: %s', contrasena.owner)
 
     return render(request, 'listpass.html')
 
@@ -322,7 +337,7 @@ def obtener_reporte_contrasenas_repetidas():
             else:
                 contrasenas_desencriptadas[decrypted_password] = [contrasena_obj]
         except Exception as e:
-            print(f"Error desencriptando la contraseña con id {contrasena_obj.id}: {e}")
+            logger.exception('Error desencriptando la contraseña con id %s', contrasena_obj.id)
 
     # Filtrar solo las contraseñas repetidas
     contrasenas_duplicadas = {k: v for k, v in contrasenas_desencriptadas.items() if len(v) > 1}
@@ -344,7 +359,7 @@ def obtener_reporte_contrasenas_repetidas():
 
 @user_passes_test(is_administrator)
 def users_audit(request):
-    users_active_all = CustomUser.objects.filter(is_active=True)
+    users_active_all = CustomUser.for_current_tenant().filter(is_active=True)
     exclude_users = GRAN_PERMISSION_ID_USERS
     users = users_active_all.exclude(id__in = exclude_users).order_by('id')
     
@@ -354,12 +369,19 @@ def users_audit(request):
             'pass_duplicate_count':{}}
     for user in users:
         user_role_assigned = user.assigned_role
-        rol = PermissionRoles.objects.get(id=user_role_assigned.id)
-       
-
-        user_contrasenas_list = []
-        contrasenas_of_role = rol.get_contrasenas_not_personal()
+        # `assigned_role` is a property stub that may return None (see CustomUser.assigned_role).
+        # Guard against None before accessing `.id` or calling role methods.
+        if user_role_assigned is None:
+            rol = None
+            user_role_assigned_id = None
+            contrasenas_of_role = Contrasena.objects.none()
+        else:
+            user_role_assigned_id = user_role_assigned.id
+            rol = PermissionRoles.objects.get(id=user_role_assigned_id)
+            contrasenas_of_role = rol.get_contrasenas_not_personal()
         
+        # Inicializa la lista de contraseñas del usuario (evita UnboundLocalError si no hay rol)
+        user_contrasenas_list = []
         contrasenas_of_permission = ContraPermission.objects.filter(user_id=user, permission=True, contra_id__is_personal=False)
         # Obtener la queryset del modelo Contrasena a partir de las relaciones en ContraPermission
         contrasenas_queryset = Contrasena.objects.filter(id__in=contrasenas_of_permission.values_list('contra_id', flat=True))
@@ -392,8 +414,8 @@ def users_audit(request):
         data['users'].append({
             'user_id': user.id,
             'user_name': user.username,
-            'user_role_assigned_id': user_role_assigned.id,
-            'user_role_assigned': user_role_assigned,
+            'user_role_assigned_id': user_role_assigned_id,
+            'user_role_assigned': user_role_assigned if rol is not None else None,
             'count_differences': count_differences,  # O cualquier otro campo que quieras mostrar del usuario
             'contrasenas': user_contrasenas_list
         })
@@ -424,7 +446,7 @@ def users_audit(request):
     data['strength_pass'] = strength_count
     data['pass_duplicate_count'] = reporte_contrasenas_repetidas
 
-    print(f'context: {data}')
+    logger.debug('context: %s', data)
 
     return render(request, 'users_audit.html', context={'data': data})
 

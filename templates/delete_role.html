@@ -1,5 +1,6 @@
 {% extends 'base.html'%}
-
+{% load static %}
+{% load i18n %}
 
 {% block content %}
 
@@ -8,7 +9,7 @@
     <div class="card center">
             <div class="card-title">
                 <div class="container" style="height: 85px; padding-top: 20px;">
-                    <h2><i class="fas fa-trash" ></i> Eliminar Rol</h2>
+                    <h2><i class="fas fa-trash" ></i> {% trans "Eliminar Rol" %}</h2>
                     
                 </div>
             </div>
@@ -17,16 +18,16 @@
                 <div class="card-body">
                     
                        
-                    <h5> ¿Estas Seguro que deseas borrar el rol: <a href="{% url 'permissionrolesupdate' object.id %}"?>{{ object.rol_name }}</a> </h5>
+                    <h5> {% trans "¿Estas Seguro que deseas borrar el rol:" %} <a href="{% url 'permissionrolesupdate' object.id %}"?>{{ object.rol_name }}</a> </h5>
 
                 </div>
                      <a href="{% url 'deleterolepk' object.id %}" >              
                 <button type="submit" class="btn btn-danger">           
-                    <i class="fas fa-trash" class="btn btn-danger"></i> Eliminar
+                    <i class="fas fa-trash" class="btn btn-danger"></i> {% trans "Eliminar" %}
                 </button>        
                      </a>   
                             <button  class="btn">
-                                <a class="btn btn-primary btn-flat" href= {% url 'roles' %}> <i class="fas fa-ban"></i> Cancelar </a>
+                                <a class="btn btn-primary btn-flat" href= {% url 'roles' %}> <i class="fas fa-ban"></i> {% trans "Cancelar" %} </a>
                             </button>
                         </div> 
                     

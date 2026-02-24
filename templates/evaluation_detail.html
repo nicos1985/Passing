@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+
+
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div class="container mt-4">
+  <h2>{% trans "Detalle de Evaluación" %}</h2>
+
+  <h4>{% blocktrans %}Objeto evaluado: {{ evaluation.evaluated_object }}{% endblocktrans %}</h4>
+  <div class="mb-3">
+    {% if not evaluation.treatment %}
+      <form method="post" action="{% url 'evaluation-force-treatment' evaluation.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger">{% trans "Forzar creación de tratamiento y vincular" %}</button>
+      </form>
+    {% else %}
+      <p>{% trans "Tratamiento asociado:" %} <a href="{% url 'treatment-detail' evaluation.treatment.pk %}">#{{ evaluation.treatment.pk }} - {{ evaluation.treatment.name }}</a></p>
+    {% endif %}
+  </div>
+ 
+
+  <div class="accordion mt-4" id="evaluatedObjectAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="evaluatedObjectHeading">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#evaluatedObjectCollapse" aria-expanded="false" aria-controls="evaluatedObjectCollapse">
+          {% trans "Detalles del objeto evaluado" %}
+        </button>
+      </h2>
+      <div id="evaluatedObjectCollapse" class="accordion-collapse collapse" aria-labelledby="evaluatedObjectHeading" data-bs-parent="#evaluatedObjectAccordion">
+        <div class="accordion-body">
+          <table class="table table-striped table-sm">
+            <tbody>
+              {% for field in evaluated_fields %}
+              <tr>
+                <th>{{ field.verbose_name }}</th>
+                <td>{{ field.value }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-bordered">
+    <tr><th>{% trans "Amenaza" %}</th><td>{{ evaluation.threat }}</td></tr>
+    <tr><th>{% trans "Vulnerabilidad" %}</th><td>{{ evaluation.vulnerability }}</td></tr>
+    <tr><th>{% trans "Descripción" %}</th><td>{{ evaluation.description }}</td></tr>
+    <tr><th>{% trans "Impacto confidencialidad" %}</th><td>{{ evaluation.badge_confidenciality|safe }}</td></tr>
+    <tr><th>{% trans "Impacto integridad" %}</th><td>{{ evaluation.badge_integrity|safe }}</td></tr>
+    <tr><th>{% trans "Impacto disponibilidad" %}</th><td>{{ evaluation.badge_availability|safe }}</td></tr>
+    <tr><th>{% trans "Probabilidad" %}</th><td>{{ evaluation.get_probability_display }}</td></tr>
+    <tr><th>{% trans "Valor de Impacto" %}</th><td>{{ evaluation.impact_value|floatformat:1 }}</td></tr>
+    <tr><th>{% trans "Valor de Riesgo" %}</th><td>{{ evaluation.risk_value|floatformat:1 }}</td></tr>
+    <tr><th>{% trans "Nivel de Riesgo" %}</th><td>{{ evaluation.get_risk_level_badge|safe }}</td></tr>
+  </table>
+
+  {% if evaluation.treatment %}
+  <div class="card mt-4">
+    <div class="card-header">{% trans "Tratamiento asociado" %}</div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <h5 class="mb-0">#{{ evaluation.treatment.pk }} — {{ evaluation.treatment.name }}</h5>
+          <div class="small text-muted">{{ evaluation.treatment.content_object }}</div>
+        </div>
+        <div class="text-end">
+          <div>{{ evaluation.treatment.get_stage_badge|safe }}</div>
+          <div class="mt-1">{{ evaluation.treatment.get_deadline_badge|safe }}</div>
+        </div>
+      </div>
+
+      <p class="mb-1"><strong>{% trans "Responsable:" %}</strong> {{ evaluation.treatment.treatment_responsible }}</p>
+      {% if evaluation.treatment.description %}
+        <p class="mb-1"><strong>{% trans "Descripción:" %}</strong> {{ evaluation.treatment.description }}</p>
+      {% endif %}
+      {% if evaluation.treatment.immediate_actions %}
+        <p class="mb-1"><strong>{% trans "Acciones inmediatas:" %}</strong> {{ evaluation.treatment.immediate_actions }}</p>
+      {% endif %}
+      {% if evaluation.treatment.corrective_actions %}
+        <p class="mb-1"><strong>{% trans "Acciones correctivas:" %}</strong> {{ evaluation.treatment.corrective_actions }}</p>
+      {% endif %}
+      {% if evaluation.treatment.analysis_notes %}
+        <p class="mb-1"><strong>{% trans "Notas de análisis:" %}</strong> {{ evaluation.treatment.analysis_notes }}</p>
+      {% endif %}
+
+      <div class="mt-3">
+        <a href="{% url 'treatment-detail' evaluation.treatment.pk %}" class="btn btn-sm btn-outline-primary">{% trans "Ver detalle del tratamiento" %}</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+
+  
+</div>
+{% endblock %}

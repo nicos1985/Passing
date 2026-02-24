@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load custom_tags %}
+{% load i18n %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        <h2>{{verbose_name_plural}}</h2>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3 d-flex gap-2">
+{% comment %}
+                <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                    <i class="fa-solid fa-gear"></i> Configuración
+                </a>
+{% endcomment %}
+            <a class="btn btn-primary btn-flat" href="{% url create_view %}">
+                <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
+            </a>
+            {% if model_name == 'informationassets' %}
+            <a class="btn btn-outline-secondary btn-flat" href="{% url 'asset-actions-all' %}">
+              <i class="fas fa-history"></i> {% trans "Historial de préstamos" %}
+            </a>
+            {% endif %}
+            {% if model_name == 'vendor' %}
+            <a class="btn btn-secondary btn-flat" href="{% url 'checklist-template-create' %}">
+              <i class="fa-solid fa-list-check"></i> {% trans "Crear plantilla de checklist" %}
+            </a>
+            <a class="btn btn-success btn-flat" href="{% url 'vendor-evaluation-create' %}">
+              <i class="fa-solid fa-file-pen"></i> {% trans "Crear evaluación" %}
+            </a>
+            <a class="btn btn-info btn-flat" href="{% url 'vendor-evaluations-pending' %}">
+              <i class="fa-solid fa-clock-rotate-left"></i> {% trans "Evaluaciones pendientes" %}
+            </a>
+            {% endif %}
+        </div>
+
+        
+        
+        <div class="container">
+
+<!-- Botón de toggle -->
+<div class="mb-2">
+  <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse">
+    {% trans "Filtros" %}
+  </button>
+</div>
+
+<!-- Contenedor colapsable de filtros -->
+<div class="collapse" id="filtrosCollapse">
+  <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
+    <div class="row g-3">
+      {% for field in fields %}
+        {% if field.name in dynamic_filters %}
+          {% with dynamic_filters|dict_get:field.name as filtro %}
+            {% if filtro.type == 'date' %}
+              <div class="col-md-4">
+                  <label class="form-label">{{ field.verbose }}</label>
+                  <div class="row">
+                    <div class="col-12 col-sm-6 mb-2 mb-sm-0">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="min">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <input type="date" class="form-control filtro-fecha" data-colname="{{ field.name }}" data-range="max">
+                    </div>
+                  </div>
+                </div>
+
+            {% else %}
+              <div class="col-md-4">
+                <label for="filter_{{ field.name }}" class="form-label">{{ field.verbose }}</label>
+                <select id="filter_{{ field.name }}" class="form-select filter-choice" data-colname="{{ field.name }}">
+                  <option value="">{% trans "Todos" %}</option>
+                  {% for choice in filtro %}
+                    <option value="{{ choice.value }}">{{ choice.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+            
+          {% endwith %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+            <table id="data" class="table" style="font-size: 0.86rem !important;">
+                <thead class="table-dark">
+                  <tr>
+                    {% for field in fields %}
+                    
+                    <th data-colname="{{ field.name }}">
+                       {{ field.verbose }}
+                      </th>
+                                        
+                    {% endfor %}
+                    <th>{% trans "Acciones" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for obj in object_list %}
+                  
+                    <tr>
+
+                      {% for field in fields %}
+                      <td title="{{ obj|get_attr:field.name }}">
+                        {% if field.name == "object_id" %}
+                          {{ obj.content_object }}
+                        {% elif field.name == 'description' %}
+                          {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
+                        {% elif field.name == 'implementation_status' %}
+                          {% if obj.get_stage_badge %}
+                            {{ obj.get_stage_badge|safe }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        {% elif field.name == 'deadline' %}
+                          {{ obj.get_deadline_badge|safe }}
+                        {% elif field.name == 'stage' %}
+                          {{ obj.get_stage_badge|safe }}
+                        {% else %}
+                          {{ obj|get_attr:field.name }}
+                        {% endif %}
+                      </td>
+                                                
+                      {% endfor %}
+                      <td>
+                        <a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="{% trans "Editar" %} {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>
+                        <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="{% trans "Detalle" %} {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
+                        <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="{% trans "Eliminar" %} {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
+                        {% if model_name == 'vendor' %}
+                          <a href="{% url 'vendor-checklist-create' %}?vendor={{ obj.id }}" title="{% trans "Asignar plantilla" %}"><i class="fa-solid fa-link" style="color:#0d6efd; margin-left:8px;"></i></a>
+                          <a href="{% url 'vendor-evaluation-create' %}?vendor={{ obj.id }}" title="{% trans "Crear evaluación" %}"><i class="fa-solid fa-file-pen" style="color:#198754; margin-left:8px;"></i></a>
+                    
+                        {% endif %}
+                        {% if model_name == 'informationassets' %}
+                          {% if obj.is_loaned %}
+                            <a href="{% url 'asset-return' %}?asset={{ obj.id }}"><i class="fas fa-rotate-left" title="{% trans "Devolver" %}" style="color:#0d6efd !important; margin-left:8px;"></i></a>
+                          {% else %}
+                            <a href="{% url 'asset-loan' %}?asset={{ obj.id }}"><i class="fas fa-hand-holding" title="{% trans "Prestar" %}" style="color:#198754 !important; margin-left:8px;"></i></a>
+                          {% endif %}
+                          <a href="{% url 'asset-actions' obj.id %}"><i class="fas fa-history" title="{% trans "Historial" %}" style="color:#6c757d !important; margin-left:8px;"></i></a>
+                          {% if obj.pending_actions_count %}
+                            <span class="badge bg-warning text-dark ms-2" title="{% trans "Acciones pendientes de confirmación" %}">Pendiente: {{ obj.pending_actions_count }}</span>
+                          {% endif %}
+                        {% endif %}
+                    </td>
+                    </tr>
+                    
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+                 
+        </div>
+    {% endif %}
+
+
+ 
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/init-datatable.js' %}"></script>
+{% endblock %}

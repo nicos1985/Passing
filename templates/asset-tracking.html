@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<div class="container pt-4">
+    <div class="col-lg-11 mx-auto">
+        <div class="row mb-3">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h4>{% trans "Seguimiento de activos" %}</h4>
+                <div>
+                    <a class="btn btn-primary" href="{% url 'asset-loan' %}">{% trans "Registrar préstamo" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'asset-return' %}">{% trans "Registrar devolución" %}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Activo" %}</th>
+                            <th>{% trans "Titular actual" %}</th>
+                            <th>{% trans "Historial reciente" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                            <tr>
+                                <td>{{ item.asset.name }}</td>
+                                <td>{% if item.holder %}{{ item.holder.get_full_name|default:item.holder.username }}{% else %}<span class="text-muted">Disponible</span>{% endif %}</td>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for act in item.recent_actions %}
+                                            <li>
+                                                <strong>{{ act.get_action_type_display }}</strong>
+                                                &middot; {% if act.user %}{{ act.user.get_full_name|default:act.user.username }}{% else %}—{% endif %}
+                                                &middot; por {% if act.performed_by %}{{ act.performed_by.get_full_name|default:act.performed_by.username }}{% else %}—{% endif %}
+                                                &middot; <small class="text-muted">{{ act.timestamp }}</small>
+                                                {% if act.description %}<div class="small">{{ act.description }}</div>{% endif %}
+                                            </li>
+                                        {% empty %}
+                                            <li class="text-muted">{% trans "Sin movimientos recientes" %}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

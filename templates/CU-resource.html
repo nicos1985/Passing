@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+{% block head %}{% endblock %}
+
+{% block content %}
+
+{% if not request.user.is_superuser and not request.user.is_staff %}
+<div class="container-fluid text-center">
+    <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
+        <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
+    <div class="row justify-content-center mt-4">
+        <div class="col-sm-12 d-flex justify-content-center">
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>{% trans "Login" %}</a>
+        </div>
+        <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
+            <a class="btn btn-primary" href="{% url 'register' %}" style = 'margin-top: 20px;'>{% trans "Registrarse" %}</a>
+        </div>
+    </div>
+</div>
+{% elif request.user.is_superuser or request.user.is_staff %}
+<p>LANGUAGE_CODE = {{ LANGUAGE_CODE }}</p>
+{% get_current_language as LANG %}
+<p>get_current_language = {{ LANG }}</p>
+<div class="container pt-5">
+    <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <a class="btn btn-primary btn-flat" href="{% url list_url_name %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
+                </div>
+            </div>
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-folder-open"></i> {{ action_type }} {{ verbose_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+                        </div>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form %}
+                        
+                            {% for field in form.visible_fields %}
+                            
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <div class="text-danger">{{ field.errors.as_text }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+
+                        <div class="btn-group-submit mt-3">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fas fa-save"></i> {% trans "Guardar cambios" %}
+                            </button>
+                            <button type="reset" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Make textareas default to 1 row (except those explicitly set to 5), and allow vertical resize
+    document.querySelectorAll('textarea.form-control').forEach(function (el) {
+        var rows = parseInt(el.getAttribute('rows')) || 0;
+        if (rows !== 5) {
+            el.setAttribute('rows', 1);
+        }
+        el.style.resize = 'vertical';
+    });
+
+    // AJAX load for model -> objects
+    var modelType = document.getElementById('id_model_type');
+    if (modelType) {
+        modelType.addEventListener('change', function () {
+            var modelId = this.value;
+            console.log('Model ID selected:', modelId);
+            fetch(`{% url 'ajax-get-objects' %}?type_id=${encodeURIComponent(modelId)}`)
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    console.log('AJAX success:', data.objects);
+                    var objectSelect = document.getElementById('id_object_id');
+                    if (!objectSelect) return;
+                    objectSelect.innerHTML = '<option value="">Seleccione un recurso</option>';
+                    data.objects.forEach(function (obj) {
+                        var opt = document.createElement('option');
+                        opt.value = obj.id;
+                        opt.textContent = obj.name;
+                        objectSelect.appendChild(opt);
+                    });
+                })
+                .catch(function (err) { console.error('AJAX error:', err); });
+        });
+    }
+});
+</script>
+{% endblock %}

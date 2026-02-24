@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container pt-5">
+  <div class="col-lg-10 col-xl-8 mx-auto">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <h5 class="mb-0"><i class="fa-solid fa-list-check"></i> {% blocktrans %}Plantilla: {{ object.name }}{% endblocktrans %}</h5>
+          <p class="text mb-0">{% trans "Edición de campos principales e ítems del checklist." %}</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-dark btn-sm" href="{% url 'checklist-templates' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+          {% if related_links %}
+            {% for link, label in related_links %}
+              <a class="btn btn-outline-dark btn-sm" href="{{ link }}">{{ label }}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div class="row mb-3">
+            {% for field in form.visible_fields %}
+              <div class="col-md-6 mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="border-top pt-3 mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">{% trans "Ítems" %}</h5>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary">{{ formset.total_form_count }} {% trans "registros" %}</span>
+                <button id="add-checklist-item" type="button" class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-plus"></i> {% trans "Agregar ítem" %}
+                </button>
+              </div>
+            </div>
+              {{ formset.management_form }}
+              {% if formset.non_form_errors %}
+                <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+              {% endif %}
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>{% trans "Orden" %}</th>
+                    <th>{% trans "Pregunta / Texto" %}</th>
+                    <th>{% trans "Requerido" %}</th>
+                    <th>{% trans "Control" %}</th>
+                    <th>{% trans "Eliminar" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for f in formset %}
+                      <tr class="checklist-item-row">
+                        <td>
+                          {% for hidden in f.hidden_fields %}
+                            {{ hidden }}
+                          {% endfor %}
+                          {% if f.order.errors %}
+                            <div class="text-danger small">{{ f.order.errors|join:", " }}</div>
+                          {% endif %}
+                          {{ f.order }}
+                        </td>
+                        <td>
+                          {% if f.text.errors %}
+                            <div class="text-danger small">{{ f.text.errors|join:", " }}</div>
+                          {% endif %}
+                          {{ f.text }}
+                        </td>
+                        <td>
+                          {% if f.required.errors %}
+                            <div class="text-danger small">{{ f.required.errors|join:", " }}</div>
+                          {% endif %}
+                          {{ f.required }}
+                        </td>
+                        <td>
+                          {% if f.controls.errors %}
+                            <div class="text-danger small">{{ f.controls.errors|join:", " }}</div>
+                          {% endif %}
+                          {{ f.controls }}
+                        </td>
+                        <td class="text-center">
+                          <button type="button" class="btn btn-sm btn-outline-danger remove-item-button">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
+                          {{ f.DELETE }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> {% trans "Guardar plantilla" %}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'checklist-templates' %}">{% trans "Cancelar" %}</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <template id="checklist-item-template">
+    <tr class="checklist-item-row">
+      <td>
+        {% for hidden in formset.empty_form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+        {{ formset.empty_form.order }}
+      </td>
+      <td>
+        {{ formset.empty_form.text }}
+      </td>
+      <td>
+        {{ formset.empty_form.required }}
+      </td>
+      <td>
+        {{ formset.empty_form.controls }}
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-item-button">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+        {{ formset.empty_form.DELETE }}
+      </td>
+    </tr>
+  </template>
+
+  {% block javascript %}
+  <script>
+    (function() {
+      const addBtn = document.getElementById('add-checklist-item');
+      const tableBody = document.querySelector('.table tbody');
+      const totalForms = document.getElementById('{{ formset.management_form.TOTAL_FORMS.id_for_label }}');
+      const template = document.getElementById('checklist-item-template');
+
+      function attachRemove(row) {
+        const button = row.querySelector('.remove-item-button');
+        const deleteInput = row.querySelector('input[name$="-DELETE"], input[id$="-DELETE"]');
+        if (!button) return;
+        button.addEventListener('click', () => {
+          if (deleteInput) {
+            deleteInput.checked = true;
+            deleteInput.value = deleteInput.value || 'on';
+          }
+          if (row.dataset.dynamic === 'true') {
+            row.remove();
+            if (totalForms) {
+              totalForms.value = Math.max(0, parseInt(totalForms.value, 10) - 1);
+            }
+          } else {
+            row.classList.add('d-none');
+          }
+        });
+      }
+
+      document.querySelectorAll('.checklist-item-row').forEach(attachRemove);
+
+      addBtn?.addEventListener('click', () => {
+        if (!template || !tableBody || !totalForms) return;
+        const index = parseInt(totalForms.value, 10);
+        const fragment = document.createElement('tbody');
+        fragment.innerHTML = template.innerHTML.replace(/__prefix__/g, index);
+        const newRow = fragment.querySelector('.checklist-item-row');
+        if (newRow) {
+          newRow.dataset.dynamic = 'true';
+          tableBody.appendChild(newRow);
+          totalForms.value = index + 1;
+          attachRemove(newRow);
+        }
+      });
+    })();
+  </script>
+  {% endblock %}
+{% endblock %}

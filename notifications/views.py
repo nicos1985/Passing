@@ -1,3 +1,5 @@
+"""Vistas y helpers que generan las notificaciones de compartición de contraseñas."""
+
 from django.contrib import messages
 from django.db.models.query import QuerySet
 from django.http import HttpResponseForbidden, JsonResponse
@@ -19,15 +21,18 @@ from django.db.models import Case, When, Value, IntegerField
 
 
 def can_view_contrasena(user, request):
+    """Indica si el usuario puede ver la contraseña solicitada."""
     contrasena_id = int(request.GET.get('contrasena'))
     contrasena_obj = get_object_or_404(Contrasena, id=contrasena_id)
     return user.is_staff or ContraPermission.objects.filter(user_id=user, contra_id=contrasena_obj, permission=True).exists()
 
 def is_administrator(user):
+    """Determina si el usuario pertenece al staff o es superusuario."""
     return user.is_superuser or user.is_staff
 
 @login_required
 def share_contrasena_form(request, contrasena):
+    """Recibe la solicitud de compartir y crea notificación para admins."""
     if request.method == 'POST':
         form = CreateNotificationForm(request.POST)
         if form.is_valid():
@@ -73,15 +78,16 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
     context_object_name = 'notifications'
     login_url = 'login'
     
+    """Lista las notificaciones del usuario ordenadas por estado."""
     
     def get_queryset(self):
         
-        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')  # Ajusta 'campo' según tu modelo
-
+        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')
         return queryset
 
     
 class MarkNotificationsViewed(LoginRequiredMixin, View):
+    """Marca como vistas las notificaciones del usuario vía AJAX."""
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
@@ -100,6 +106,8 @@ class MarkNotificationsViewed(LoginRequiredMixin, View):
 
 
 class ListNotificationsAdmin(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Lista las solicitudes pendientes para admins y staff."""
+
     model = AdminNotification
     template_name = 'admin-noti-list.html'
     context_object_name = 'notifications'
@@ -112,10 +120,11 @@ class ListNotificationsAdmin(LoginRequiredMixin, UserPassesTestMixin, ListView):
         messages.error(self.request, "No tienes permiso para acceder a esta página.")
         return redirect('listpass')
 
-
 class UpdateNotificationsUser():
+    """Placeholder para futuras acciones sobre notificaciones de usuario."""
     pass
 
 class UpdateNotificationsAdmin():
+    """Espacio reservado para editar notificaciones de admins en un futuro."""
     pass
 

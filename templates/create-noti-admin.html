@@ -1,27 +1,24 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-
-<body>
-    <body>
-        <div class="container pt-5" >
-            <div class="row">
-                <div class="col-md-5 mx-auto"> 
-            <div class="card">
-                    <div class="card-header" >
-                        <div class="container" style=" padding: 10px;"style="background-color: #F7F7F7 ;">
-                            <h2><i class="fas fa-plus" ></i>  Solicitud de permisos</h2>
-                            <button class="btn" >
-                                <a class="btn btn-primary btn-flat" href= "{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i>  Lista</a>
+    <div class="container pt-5">
+        <div class="row">
+            <div class="col-md-5 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="container" style="padding: 10px; background-color: #F7F7F7;">
+                            <h2><i class="fas fa-plus"></i> {% trans "Solicitud de permisos" %}</h2>
+                            <button class="btn">
+                                <a class="btn btn-primary btn-flat" href="{% url 'listpass' %}"><i class="fa-solid fa-bars"></i> {% trans "Lista" %}</a>
                             </button>
                         </div>
                     </div>
-        
+
                     <div class="card-body">
-                        <form method="POST" >
+                        <form method="POST">
                             {% csrf_token %}
-                            {{form.errors}}
+                            {{ form.errors }}
 
                             <div class="form-group" style="margin-bottom: 20px;">
                                 {{ form.id_user_share.label_tag }}
@@ -31,8 +28,11 @@
                                 {{ form.comment.label_tag }}
                                 {{ form.comment }}
                             </div>
-                            <button class="btn btn-primary" type="submit">Enviar</button>
+                            <button class="btn btn-primary" type="submit">{% trans "Enviar" %}</button>
                         </form>
+                    </div>
                 </div>
-    </body>
+            </div>
+        </div>
+    </div>
 {% endblock %}

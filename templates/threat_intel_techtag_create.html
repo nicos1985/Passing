@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+{% block head %}
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .form-card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 12px;
+        }
+        
+        .form-card .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.5rem;
+        }
+        
+        .form-card .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control, .form-check-input {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-check-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-text {
+            display: block;
+            margin-top: 0.4rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .form-card .card-body {
+            padding: 2rem;
+        }
+        
+        .btn-group-submit {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .btn-submit {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-submit-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-submit-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-submit-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .btn-submit-secondary:hover {
+            background: #e9ecef;
+            border-color: #999;
+        }
+        
+        .example-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .example-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .example-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .example-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 120px;
+        }
+        
+        .example-value {
+            color: #555;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            color: #764ba2;
+            transform: translateX(-4px);
+        }
+
+        #id_name, #id_keywords {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        #id_keywords {
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <a href="{% url 'threat_intel:techtag-list' %}" class="back-button">
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Etiquetas" %}
+        </a>
+
+        <div class="mb-4">
+            <h2 style="color: #333; font-weight: 700;">{% trans "Crear Nueva Etiqueta" %}</h2>
+            <p class="text-muted">{% trans "Agregar una nueva etiqueta de tecnología para la detección automática" %}</p>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-plus-circle"></i> {% trans "Nueva Etiqueta" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_name">
+                                <i class="fa-solid fa-tag" style="color: #667eea;"></i> {% trans "Nombre de la Etiqueta" %}
+                            </label>
+                            {% if form.name.errors %}
+                                {{ form.name }}
+                                <div class="alert alert-danger mt-2" role="alert">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{ form.name.errors.0 }}
+                                </div>
+                            {% else %}
+                                {{ form.name }}
+                            {% endif %}
+                            <small class="form-text">{% trans "ej: Ubuntu, MySQL, Laravel, AWS EC2, Docker, Kubernetes, Node.js, Python, etc." %}</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_keywords">
+                                <i class="fa-solid fa-key" style="color: #667eea;"></i> {% trans "Palabras Clave (JSON Array)" %}
+                            </label>
+                            {% if form.keywords.errors %}
+                                {{ form.keywords }}
+                                <div class="alert alert-danger mt-2" role="alert">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{ form.keywords.errors.0 }}
+                                </div>
+                            {% else %}
+                                {{ form.keywords }}
+                            {% endif %}
+                            <small class="form-text">
+                                <strong>{% trans "Formato:" %}</strong> {% trans "[\"palabra1\", \"palabra2\", \"palabra3\"]" %}
+                                <br><strong>{% trans "Ejemplo:" %}</strong> {% trans "[\"ubuntu\", \"jammy\", \"focal\", \"bionic\", \"linux\"]" %}
+                                <br>{% trans "Se usarán para detectar automáticamente CVEs relacionados" %}
+                            </small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <div class="form-check" style="padding-left: 0;">
+                                {% if form.is_active.errors %}
+                                    {{ form.is_active }}
+                                    <div class="alert alert-danger mt-2">{{ form.is_active.errors.0 }}</div>
+                                {% else %}
+                                    <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                                {% endif %}
+                                <label class="form-check-label" for="id_is_active" style="font-weight: 500; margin: 0;">
+                                    <i class="fa-solid fa-toggle-on" style="color: #667eea;"></i> {% trans "Activa (usar en búsquedas y análisis)" %}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="btn-group-submit">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Crear Etiqueta" %}
+                            </button>
+                            <button type="reset" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="example-card">
+                <h6 style="color: #333; font-weight: 600; margin-bottom: 1.5rem;">
+                    <i class="fa-solid fa-lightbulb" style="color: #ffc107;"></i> Ejemplos de Etiquetas
+                </h6>
+                
+                <div class="example-item">
+                    <div class="example-label">Ubuntu</div>
+                    <div class="example-value">["ubuntu", "jammy", "focal", "bionic", "xenial"]</div>
+                </div>
+                
+                <div class="example-item">
+                    <div class="example-label">MySQL</div>
+                    <div class="example-value">["mysql", "mariadb", "percona", "innodb"]</div>
+                </div>
+                
+                <div class="example-item">
+                    <div class="example-label">Laravel</div>
+                    <div class="example-value">["laravel", "php", "composer", "eloquent"]</div>
+                </div>
+                
+                <div class="example-item">
+                    <div class="example-label">AWS EC2</div>
+                    <div class="example-value">["aws", "ec2", "amazon linux", "elastic compute"]</div>
+                </div>
+                
+                <div class="example-item">
+                    <div class="example-label">Docker</div>
+                    <div class="example-value">["docker", "container", "containerization", "dockerfile"]</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

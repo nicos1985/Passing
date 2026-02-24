@@ -1,0 +1,27 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>{% trans "Demo i18n - Resources" %}</title>
+  </head>
+  <body>
+    <h1>{% trans "Demo de internacionalización (UI)" %}</h1>
+    <p>{{ message }}</p>
+    <p><strong>Idioma activo:</strong> {{ current_lang }}</p>
+    <form method="post" action="#">
+      {% csrf_token %}
+      <button type="button">{{ button }}</button>
+    </form>
+    <p>{% trans "Puedes cambiar el idioma usando el endpoint /i18n/setlang/" %}</p>
+    <form action="/i18n/setlang/" method="post">
+  {% csrf_token %}
+  <select name="language">
+    <option value="es">Español</option>
+    <option value="en">English</option>
+  </select>
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <input type="submit" value="OK">
+</form>
+  </body>
+</html>

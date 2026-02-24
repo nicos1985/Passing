@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<h1>{% trans "Plantillas de checklist" %}</h1>
+<div class="mb-3">
+  <a class="btn btn-primary" href="{% url 'checklist-template-create' %}">{% trans "Crear plantilla" %}</a>
+  <a class="btn btn-secondary" href="{% url 'vendor-checklist-create' %}">{% trans "Asignar plantilla a proveedor" %}</a>
+  <a class="btn btn-success" href="{% url 'vendor-evaluation-create' %}">{% trans "Crear evaluación" %}</a>
+</div>
+<table class="table mt-3">
+  <thead><tr><th>{% trans "ID" %}</th><th>{% trans "Nombre" %}</th><th>{% trans "Activa" %}</th></tr></thead>
+  <tbody>
+    {% for t in object_list %}
+      <tr>
+        <td>{{ t.id }}</td>
+        <td><a href="{% url 'checklist-template-detail' t.pk %}">{{ t.name }}</a></td>
+        <td>{{ t.active }}</td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary" title="{% trans "Editar plantilla" %}" href="{% url 'checklist-template-detail' t.pk %}"><i class="fa-solid fa-pen-to-square"></i></a>
+          <a class="btn btn-sm btn-outline-secondary" title="{% trans "Vincular a proveedor" %}" href="{% url 'vendor-checklist-create' %}?template={{ t.pk }}"><i class="fa-solid fa-link"></i></a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3">{% trans "No hay plantillas" %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

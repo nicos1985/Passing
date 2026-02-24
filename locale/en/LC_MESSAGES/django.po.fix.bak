@@ -1,0 +1,825 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-20 08:51-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: .\resources\templates\resources\i18n_demo.html:6
+msgid "Demo i18n - Resources"
+msgstr ""
+
+#: .\resources\templates\resources\i18n_demo.html:9
+msgid "Demo de internacionalización (UI)"
+msgstr "Demo de internacionalización (UI)"
+
+
+#: .\resources\templates\resources\i18n_demo.html:16
+msgid "Puedes cambiar el idioma usando el endpoint /i18n/setlang/"
+msgstr "Puedes cambiar el idioma usando el endpoint /i18n/setlang/"
+
+
+#: .\resources\views.py:1745
+msgid "Bienvenido al demo de internacionalización (UI)"
+msgstr "Bienvenido al demo de internacionalización (UI)"
+
+
+#: .\resources\views.py:1746
+msgid "Haz clic aquí"
+msgstr "Haz clic aquí"
+
+
+#: .\templates\CU-resource.html:11 .\templates\update-asset.html:23
+#: .\templates\user_form.html:23
+msgid ""
+"Por favor, necesitas ingresar con un usuario administrador para navegar."
+msgstr "\" \"Por favor, necesitas ingresar con un usuario administrador para navegar."
+
+
+#: .\templates\CU-resource.html:12 .\templates\listpass.html:149
+#: .\templates\update-asset.html:24 .\templates\user_form.html:24
+msgid "Si no tienes cuenta puedes registrarte."
+msgstr "Si no tienes cuenta puedes registrarte."
+
+
+#: .\templates\CU-resource.html:15 .\templates\listpass.html:152
+#: .\templates\update-asset.html:28 .\templates\user_form.html:28
+msgid "Login"
+msgstr "Login"
+
+
+#: .\templates\CU-resource.html:18 .\templates\listpass.html:156
+#: .\templates\update-asset.html:32 .\templates\user_form.html:32
+msgid "Registrarse"
+msgstr "Register"
+
+
+#: .\templates\CU-resource.html:39 .\templates\checklist_template_form.html:13
+#: .\templates\create-sect.html:20 .\templates\detail-resource.html:19
+#: .\templates\profile.html:84 .\templates\vendor_evaluation_detail.html:18
+#: .\templates\vendor_evaluation_form.html:13
+msgid "Volver"
+msgstr "Back"
+
+
+#: .\templates\CU-resource.html:62 .\templates\profile.html:83
+#: .\templates\update-asset.html:59 .\templates\user_form.html:59
+#: .\templates\vendor_evaluation_detail.html:76
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the error below."
+msgstr "Please correct the error below."
+
+
+#: .\templates\admin\login.html:26
+msgid "Please correct the errors below."
+msgstr "Please correct the errors below."
+
+
+#: .\templates\admin\login.html:42
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr "\" \"You are authenticated as %(username)s, but are not authorized to access this \" \"page. Would you like to login to a different account?"
+
+
+#: .\templates\admin\login.html:62
+msgid "Forgotten your password or username?"
+msgstr "Forgotten your password or username?"
+
+
+#: .\templates\admin\login.html:67
+msgid "Log in"
+msgstr "Log in"
+
+
+#: .\templates\checklist_template_form.html:9 .\templates\list_resource.html:38
+msgid "Crear plantilla de checklist"
+msgstr "Crear plantilla de checklist"
+
+
+#: .\templates\checklist_template_form.html:40
+msgid "Guardar plantilla"
+msgstr "Save template"
+
+
+#: .\templates\checklist_template_form.html:41 .\templates\create-sect.html:48
+#: .\templates\delete-asset.html:30 .\templates\delete-resource.html:30
+#: .\templates\detail-resource.html:130 .\templates\password_reset.html:46
+#: .\templates\password_reset_confirm.html:57
+#: .\templates\threat_intel_source_update.html:114
+msgid "Cancelar"
+msgstr "Cancel"
+
+
+#: .\templates\checklist_templates_list.html:5
+msgid "Crear plantilla"
+msgstr "Create template"
+
+
+#: .\templates\checklist_templates_list.html:6
+msgid "Asignar plantilla a proveedor"
+msgstr "Assign template to vendor"
+
+
+#: .\templates\checklist_templates_list.html:7
+#: .\templates\detail-resource.html:63 .\templates\list_resource.html:41
+#: .\templates\list_resource.html:144
+#: .\templates\vendor_evaluation_form.html:40
+msgid "Crear evaluación"
+msgstr "Create evaluation"
+
+
+#: .\templates\checklist_templates_list.html:10
+msgid "ID"
+msgstr "ID"
+
+
+#: .\templates\checklist_templates_list.html:10 .\templates\profile.html:45
+#: .\templates\threat_intel_source_update.html:63
+msgid "Nombre"
+msgstr "Name"
+
+
+#: .\templates\checklist_templates_list.html:10
+msgid "Activa"
+msgstr "Active"
+
+
+#: .\templates\checklist_templates_list.html:18
+msgid "Editar plantilla"
+msgstr "Edit plantilla"
+
+
+#: .\templates\checklist_templates_list.html:19
+msgid "Vincular a proveedor"
+msgstr "Vincular a proveedor"
+
+
+#: .\templates\checklist_templates_list.html:23
+msgid "No hay plantillas"
+msgstr "No hay plantillas"
+
+
+#: .\templates\create-sect.html:12
+msgid "Ver secciones"
+msgstr "View secciones"
+
+
+#: .\templates\create-sect.html:45
+msgid "Guardar Seccion"
+msgstr "Save Section"
+
+
+#: .\templates\delete-asset.html:11 .\templates\delete-resource.html:11
+msgid "Eliminar Activo"
+msgstr "Delete asset"
+
+
+#: .\templates\delete-asset.html:20
+msgid "¿Estas Seguro que deseas borrar este Activo?"
+msgstr "¿Estas Seguro que deseas borrar este Activo?"
+
+
+#: .\templates\delete-asset.html:26 .\templates\delete-resource.html:26
+#: .\templates\detail-asset.html:83 .\templates\detail-resource.html:54
+#: .\templates\list_resource.html:141 .\templates\listpass.html:134
+msgid "Eliminar"
+msgstr "Delete"
+
+
+#: .\templates\delete-resource.html:20
+msgid "¿Estas Seguro que deseas borrar este"
+msgstr "¿Estas Seguro que deseas borrar este"
+
+
+#: .\templates\detail-asset.html:20
+msgid "Detalle del Activo"
+msgstr "Asset Details"
+
+
+#: .\templates\detail-asset.html:21 .\templates\update-asset.html:46
+msgid "Lista de Activos"
+msgstr "Assets List"
+
+
+#: .\templates\detail-asset.html:32
+msgid "Descripción"
+msgstr "Description"
+
+
+#: .\templates\detail-asset.html:36
+msgid "Código"
+msgstr "Code"
+
+
+#: .\templates\detail-asset.html:40
+msgid "Valor"
+msgstr "Value"
+
+
+#: .\templates\detail-asset.html:44 .\templates\detail-resource.html:69
+#: .\templates\vendor_evaluation_detail.html:10
+msgid "Estado"
+msgstr "Status"
+
+
+#: .\templates\detail-asset.html:48
+msgid "Ubicación"
+msgstr "Location"
+
+
+#: .\templates\detail-asset.html:52
+msgid "Categoría"
+msgstr "Category"
+
+
+#: .\templates\detail-asset.html:56
+msgid "Número de Serie"
+msgstr "Serial Number"
+
+
+#: .\templates\detail-asset.html:60
+msgid "Clasificación de Información"
+msgstr "Clasificación de Información"
+
+
+#: .\templates\detail-asset.html:64
+msgid "Propietario"
+msgstr "Owner"
+
+
+#: .\templates\detail-asset.html:68
+msgid "Fecha de Creación"
+msgstr "Created At"
+
+
+#: .\templates\detail-asset.html:72
+msgid "Última Modificación"
+msgstr "Last Modified"
+
+
+#: .\templates\detail-asset.html:82 .\templates\list_resource.html:139
+#: .\templates\listpass.html:75
+msgid "Editar"
+msgstr "Edit"
+
+
+#: .\templates\detail-resource.html:69
+msgid "Fecha"
+msgstr "Fecha"
+
+
+#: .\templates\detail-resource.html:69
+msgid "Evaluado por"
+msgstr "Evaluado por"
+
+
+#: .\templates\detail-resource.html:69 .\templates\list_resource.html:108
+msgid "Acciones"
+msgstr "Actions"
+
+
+#: .\templates\detail-resource.html:78
+msgid "Ver"
+msgstr "View"
+
+
+#: .\templates\detail-resource.html:84
+msgid "No hay evaluaciones registradas para este proveedor."
+msgstr "No hay evaluaciones registradas para este proveedor."
+
+
+#: .\templates\detail-resource.html:94
+msgid "Crear Re-evaluación"
+msgstr "Crear Re-evaluación"
+
+
+#: .\templates\detail-resource.html:104
+msgid "Cambiar etapa del Tratamiento"
+msgstr "Cambiar etapa del Tratamiento"
+
+
+#: .\templates\detail-resource.html:105
+msgid "Cerrar"
+msgstr "Close"
+
+
+#: .\templates\detail-resource.html:109
+msgid "Nueva Etapa"
+msgstr "Nueva Etapa"
+
+
+#: .\templates\detail-resource.html:117
+msgid "Notas de Análisis"
+msgstr "Analysis Notes"
+
+
+#: .\templates\detail-resource.html:121
+msgid "Acciones Inmediatas"
+msgstr "Immediate Actions"
+
+
+#: .\templates\detail-resource.html:125
+msgid "Acciones Correctivas"
+msgstr "Corrective Actions"
+
+
+#: .\templates\detail-resource.html:131
+msgid "Guardar y Cambiar Etapa"
+msgstr "Save and Change Stage"
+
+
+#: .\templates\detail-resource.html:145
+msgid "Cambiar Etapa"
+msgstr "Change Stage"
+
+
+#: .\templates\landing.html:10
+msgid "Ingresa a"
+msgstr "Ingresa a"
+
+
+#: .\templates\landing.html:12
+msgid ""
+"Accedé a tu espacio de trabajo con tu usuario y contraseña, o iniciá sesión "
+"con Google."
+msgstr "\" \"Accedé a tu espacio de trabajo con tu usuario y contraseña, o iniciá sesión \" \"con Google."
+
+
+#: .\templates\landing.html:17 .\templates\public_navbar.html:41
+msgid "Crear cuenta"
+msgstr "Create account"
+
+
+#: .\templates\landing.html:20
+msgid "Iniciar sesión"
+msgstr "Sign in"
+
+
+#: .\templates\landing.html:37
+msgid "¿Qué podés hacer acá?"
+msgstr "¿Qué podés hacer acá?"
+
+
+#: .\templates\landing.html:41
+msgid "Un único acceso"
+msgstr "Un único acceso"
+
+
+#: .\templates\landing.html:41
+msgid "para múltiples cuentas."
+msgstr "para múltiples cuentas."
+
+
+#: .\templates\landing.html:45
+msgid "SSO con Google"
+msgstr "SSO con Google"
+
+
+#: .\templates\landing.html:45
+msgid "2FA"
+msgstr "2FA"
+
+
+#: .\templates\landing.html:45
+msgid "según políticas de la cuenta."
+msgstr "según políticas de la cuenta."
+
+
+#: .\templates\landing.html:49
+msgid "Derivación automática"
+msgstr "Derivación automática"
+
+
+#: .\templates\landing.html:49
+msgid "si tenés un solo acceso; selector si tenés varios."
+msgstr "si tenés un solo acceso; selector si tenés varios."
+
+
+#: .\templates\list_resource.html:33
+msgid "Historial de préstamos"
+msgstr "Loan history"
+
+
+#: .\templates\list_resource.html:44
+msgid "Evaluaciones pendientes"
+msgstr "Pending evaluations"
+
+
+#: .\templates\list_resource.html:56
+msgid "Filtros"
+msgstr "Filters"
+
+
+#: .\templates\list_resource.html:84
+msgid "Todos"
+msgstr "All"
+
+
+#: .\templates\list_resource.html:140 .\templates\listpass.html:73
+#: .\templates\listpass.html:78
+msgid "Detalle"
+msgstr "Detail"
+
+
+#: .\templates\list_resource.html:143
+msgid "Asignar plantilla"
+msgstr "Assign template"
+
+
+#: .\templates\list_resource.html:149
+msgid "Devolver"
+msgstr "Return"
+
+
+#: .\templates\list_resource.html:151
+msgid "Prestar"
+msgstr "Lend"
+
+
+#: .\templates\list_resource.html:153
+msgid "Historial"
+msgstr "History"
+
+
+#: .\templates\list_resource.html:155
+msgid "Acciones pendientes de confirmación"
+msgstr "Actions pendientes de confirmación"
+
+
+#: .\templates\listpass.html:39
+msgid "Nueva contraseña"
+msgstr "New password"
+
+
+#: .\templates\listpass.html:57
+msgid "Nombre Contraseña"
+msgstr "Name Password"
+
+
+#: .\templates\listpass.html:58
+msgid "Actualiza"
+msgstr "Actualiza"
+
+
+#: .\templates\listpass.html:59
+msgid "Sección"
+msgstr "Sección"
+
+
+#: .\templates\listpass.html:60
+msgid "Link"
+msgstr "Link"
+
+
+#: .\templates\listpass.html:61 .\templates\update-cont.html:61
+msgid "Usuario"
+msgstr "User"
+
+
+#: .\templates\listpass.html:62
+msgid "Contraseña"
+msgstr "Password"
+
+
+#: .\templates\listpass.html:63
+msgid "Acción"
+msgstr "Acción"
+
+
+#: .\templates\listpass.html:71
+msgid "Es de uso personal"
+msgstr "Es de uso personal"
+
+
+#: .\templates\listpass.html:98
+msgid "Contraseña fuerte"
+msgstr "Password fuerte"
+
+
+#: .\templates\listpass.html:100
+msgid "Contraseña moderada"
+msgstr "Password moderada"
+
+
+#: .\templates\listpass.html:102
+msgid "Contraseña débil"
+msgstr "Password débil"
+
+
+#: .\templates\listpass.html:105
+msgid "Ver contraseña"
+msgstr "View contraseña"
+
+
+#: .\templates\listpass.html:107
+msgid "Copiar Contraseña"
+msgstr "Copiar Password"
+
+
+#: .\templates\listpass.html:124 .\templates\listpass.html:126
+msgid "Descargar adjunto"
+msgstr "Descargar adjunto"
+
+
+#: .\templates\listpass.html:129 .\templates\listpass.html:131
+msgid "Compartir"
+msgstr "Compartir"
+
+
+#: .\templates\listpass.html:148
+msgid "Por favor, necesitas ingresar con un usuario para navegar."
+msgstr "Por favor, necesitas ingresar con un usuario para navegar."
+
+
+#: .\templates\password_reset.html:28
+msgid "Restablecer Contraseña"
+msgstr "Restablecer Password"
+
+
+#: .\templates\password_reset.html:40
+msgid "Correo electrónico"
+msgstr "Email"
+
+
+#: .\templates\password_reset.html:45 .\templates\upload_csv.html:25
+msgid "Enviar"
+msgstr "Send"
+
+
+#: .\templates\profile.html:17
+msgid "Mi Perfil"
+msgstr "My Profile"
+
+
+#: .\templates\profile.html:33 .\templates\profile.html:53
+msgid "Correo"
+msgstr "Email"
+
+
+#: .\templates\profile.html:34
+msgid "Posición"
+msgstr "Position"
+
+
+#: .\templates\profile.html:35 .\templates\profile.html:61
+msgid "Idioma"
+msgstr "Language"
+
+
+#: .\templates\profile.html:49
+msgid "Apellido"
+msgstr "Last name"
+
+
+#: .\templates\profile.html:57
+msgid "Puesto"
+msgstr "Position"
+
+
+#: .\templates\profile.html:65
+msgid "Avatar"
+msgstr "Avatar"
+
+
+#: .\templates\profile.html:73
+msgid "2do factor de autenticación"
+msgstr "2do factor de autenticación"
+
+
+#: .\templates\profile.html:77
+msgid "Color del menú"
+msgstr "Color del menú"
+
+
+#: .\templates\public_navbar.html:36
+msgid "Inicio"
+msgstr "Home"
+
+
+#: .\templates\public_navbar.html:46
+msgid "Este es público"
+msgstr "Este es público"
+
+
+#: .\templates\threat_intel_source_update.html:31
+msgid "Volver a Detalles"
+msgstr "Back a Detalles"
+
+
+#: .\templates\threat_intel_source_update.html:35
+#: .\templates\threat_intel_source_update.html:42
+msgid "Editar Fuente"
+msgstr "Edit Fuente"
+
+
+#: .\templates\threat_intel_source_update.html:36
+msgid "Actualizar parámetros de"
+msgstr "Actualizar parámetros de"
+
+
+#: .\templates\threat_intel_source_update.html:50
+msgid "Código (Único)"
+msgstr "Code (Único)"
+
+
+#: .\templates\threat_intel_source_update.html:58
+msgid "ej: NVD, CISA, AWS, MSRC, GITHUB"
+msgstr "ej: NVD, CISA, AWS, MSRC, GITHUB"
+
+
+#: .\templates\threat_intel_source_update.html:71
+msgid "Nombre descriptivo de la fuente"
+msgstr "Name descriptivo de la fuente"
+
+
+#: .\templates\threat_intel_source_update.html:76
+msgid "Tipo de Fuente"
+msgstr "Tipo de Fuente"
+
+
+#: .\templates\threat_intel_source_update.html:84
+msgid "Método de obtención: API REST, RSS Feed, o Web Scraping"
+msgstr "Método de obtención: API REST, RSS Feed, o Web Scraping"
+
+
+#: .\templates\threat_intel_source_update.html:89
+msgid "URL Base"
+msgstr "URL Base"
+
+
+#: .\templates\threat_intel_source_update.html:97
+msgid "ej: https://services.nvd.nist.gov/rest/json/"
+msgstr "ej: https://services.nvd.nist.gov/rest/json/"
+
+
+#: .\templates\threat_intel_source_update.html:104
+msgid "Activa (usar en próximos scans)"
+msgstr "Active (usar en próximos scans)"
+
+
+#: .\templates\threat_intel_source_update.html:111
+msgid "Guardar Cambios"
+msgstr "Save Changes"
+
+
+#: .\templates\update-asset.html:42
+msgid "Editar activo"
+msgstr "Edit asset"
+
+
+#: .\templates\update-cont.html:10
+msgid "Lista"
+msgstr "Lista"
+
+
+#: .\templates\update-cont.html:30
+msgid "Genera una Contraseña"
+msgstr "Genera una Password"
+
+
+#: .\templates\update-cont.html:31
+msgid "Opciones"
+msgstr "Opciones"
+
+
+#: .\templates\update-cont.html:37
+msgid "Longitud:"
+msgstr "Length:"
+
+
+#: .\templates\update-cont.html:39
+msgid "Incluir mayúsculas"
+msgstr "Include uppercase"
+
+
+#: .\templates\update-cont.html:40
+msgid "Incluir minúsculas"
+msgstr "Include lowercase"
+
+
+#: .\templates\update-cont.html:41
+msgid "Incluir números"
+msgstr "Include numbers"
+
+
+#: .\templates\update-cont.html:42
+msgid "Incluir símbolos"
+msgstr "Include symbols"
+
+
+#: .\templates\update-cont.html:43
+msgid "Generar contraseña"
+msgstr "Generate password"
+
+
+#: .\templates\update-cont.html:43
+msgid "Generar"
+msgstr "Generate"
+
+
+#: .\templates\update-cont.html:53
+msgid "Ingrese la contraseña"
+msgstr "Ingrese la contraseña"
+
+
+#: .\templates\update-cont.html:62
+msgid "Ingrese el usuario de ingreso"
+msgstr "Ingrese el usuario de ingreso"
+
+
+#: .\templates\update-cont.html:85
+msgid "Guardar"
+msgstr "Save"
+
+
+#: .\templates\upload_csv.html:37
+msgid "Descargar plantilla"
+msgstr "Download template"
+
+
+#: .\templates\user_form.html:42
+msgid "Editar Usuario"
+msgstr "Edit user"
+
+
+#: .\templates\user_form.html:46
+msgid "Lista de Usuarios"
+msgstr "Users list"
+
+
+#: .\templates\vendor_evaluation_detail.html:9
+msgid "Evaluación"
+msgstr "Evaluación"
+
+
+#: .\templates\vendor_evaluation_detail.html:10
+msgid "Proveedor"
+msgstr "Vendor"
+
+
+#: .\templates\vendor_evaluation_detail.html:13
+msgid "Plantilla"
+msgstr "Template"
+
+
+#: .\templates\vendor_evaluation_detail.html:28
+msgid "Programada"
+msgstr "Scheduled"
+
+
+#: .\templates\vendor_evaluation_detail.html:29
+msgid "Realizada"
+msgstr "Completed"
+
+
+#: .\templates\vendor_evaluation_detail.html:30
+msgid "Responsable"
+msgstr "Responsible"
+
+
+#: .\templates\vendor_evaluation_detail.html:42
+msgid "Pregunta"
+msgstr "Question"
+
+
+#: .\templates\vendor_evaluation_detail.html:43
+msgid "Resultado"
+msgstr "Result"
+
+
+#: .\templates\vendor_evaluation_detail.html:44
+msgid "Observaciones"
+msgstr "Observations"
+
+
+#: .\templates\vendor_evaluation_detail.html:75
+msgid "Guardar y completar"
+msgstr "Save and complete"
+
+
+#: .\templates\vendor_evaluation_form.html:9
+msgid "Crear evaluación de proveedor"
+msgstr "Create vendor evaluation"
+
+
+#: .\templates\vendor_evaluation_form.html:10
+msgid "Generá una nueva evaluación tomando la plantilla asignada al proveedor."
+msgstr "Generá una nueva evaluación tomando la plantilla asignada al proveedor."

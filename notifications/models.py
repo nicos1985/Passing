@@ -1,40 +1,44 @@
+"""Modelos que registran alertas sobre contraseñas para usuarios y administradores."""
+
 from django.db import models
 from passbase.models import Contrasena
 from login.models import CustomUser
+from django.utils.translation import gettext_lazy as _
+
 
 class UserNotifications(models.Model):
-    """Se encarga de gestionar el modelo de notificaciones a usuarios que 
-    no sean ni admin ni staff solo van a ser notificaciones si acciones"""
-
-    id_contrasena = models.ForeignKey(Contrasena, on_delete=models.CASCADE)
-    id_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    type_notification = models.CharField(max_length=150)
-    comment = models.CharField(max_length=150)
-    viewed = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now=True)
-
-    class Meta():
-        verbose_name = "Notificaciones a usuario"
-        
-
-class UserType(models.IntegerChoices):
-    STAFF = 0, 'Staff'
-    ADMIN = 1, 'Admin'
-
-class AdminNotification(models.Model):
-    """Se encarga de gestionar el modelo de notificaciones a admins y staff.
-    pueden realizar acciones sobre estas notificaciones."""
-
-    id_contrasena = models.ForeignKey(Contrasena, on_delete=models.CASCADE)
-    id_user = models.CharField(max_length=50)
-    id_user_share = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    type_notification = models.CharField(max_length=50)
-    type_user = models.IntegerField(choices=UserType.choices, default=UserType.ADMIN)
-    action = models.CharField(max_length=50)
-    comment = models.CharField(max_length=60)
-    viewed = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now=True)
+    """Notificaciones que se envían a usuarios comunes cuando falta acción."""
+    id_contrasena = models.ForeignKey(Contrasena, on_delete=models.CASCADE, verbose_name=_('Contraseña'))
+    id_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Usuario'))
+    type_notification = models.CharField(max_length=150, verbose_name=_('Tipo de notificación'))
+    comment = models.CharField(max_length=150, verbose_name=_('Comentario'))
+    viewed = models.BooleanField(default=False, verbose_name=_('Visto'))
+    created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
 
     class Meta:
-        verbose_name = "Notificaciones a admin"
-        ordering = ('viewed',)
+        verbose_name = _("Notificaciones a usuario")
+
+
+class UserType(models.IntegerChoices):
+    """Tipos de usuario que pueden recibir notificaciones administrativas."""
+
+    STAFF = 0, _('Staff')
+    ADMIN = 1, _('Admin')
+
+
+class AdminNotification(models.Model):
+    """Registro de solicitudes enviadas a admins o staff sobre contraseñas."""
+
+    id_contrasena = models.ForeignKey(Contrasena, on_delete=models.CASCADE, verbose_name=_('Contraseña'))
+    id_user = models.CharField(max_length=50, verbose_name=_('Usuario'))
+    id_user_share = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Usuario compartido'))
+    type_notification = models.CharField(max_length=50, verbose_name=_('Tipo de notificación'))
+    type_user = models.IntegerField(choices=UserType.choices, default=UserType.ADMIN, verbose_name=_('Tipo de usuario'))
+    action = models.CharField(max_length=50, verbose_name=_('Acción'))
+    comment = models.CharField(max_length=60, verbose_name=_('Comentario'))
+    viewed = models.BooleanField(default=False, verbose_name=_('Visto'))
+    created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
+
+    class Meta:
+        verbose_name = _("Notificaciones a admin")
+    ordering = ('viewed',)

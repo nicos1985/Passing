@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+    <div class="container mt-3">
+        <h2>{{ source.name }}</h2>
+        <p class="text-muted">{% blocktrans with code=source.code %}Fuente: {{ code }}{% endblocktrans %}</p>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <div class="container mb-3">
+            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:source-list' %}">
+                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Fuentes" %}
+            </a>
+            <a href="{% url 'threat_intel:source-update' source.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> {% trans "Editar" %}
+            </a>
+        </div>
+
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{% trans "Información de la Fuente" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Código:" %}</strong> <code>{{ source.code }}</code></p>
+                            <p><strong>{% trans "Nombre:" %}</strong> {{ source.name }}</p>
+                            <p><strong>{% trans "Tipo:" %}</strong> <span class="badge bg-secondary">{{ source.kind }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>{% trans "URL Base:" %}</strong></p>
+                            <p><code>{{ source.base_url }}</code></p>
+                            <p><strong>{% trans "Estado:" %}</strong>
+                                {% if source.is_active %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check"></i> {% trans "Activo" %}</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-times"></i> {% trans "Inactivo" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>{% trans "Descripción del Tipo" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if source.kind == 'api' %}
+                        <p><strong>{% trans "API:" %}</strong> {% trans "Esta fuente se obtiene mediante llamadas a API REST." %}</p>
+                    {% elif source.kind == 'rss' %}
+                        <p><strong>{% trans "RSS:" %}</strong> {% trans "Esta fuente se obtiene mediante feeds RSS." %}</p>
+                    {% elif source.kind == 'html' %}
+                        <p><strong>{% trans "HTML:" %}</strong> {% trans "Esta fuente se obtiene mediante web scraping de contenido HTML." %}</p>
+                    {% else %}
+                        <p>{% trans "Tipo de fuente:" %} <strong>{{ source.kind }}</strong></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

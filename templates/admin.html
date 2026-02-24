@@ -1,170 +1,289 @@
-<!DOCTYPE html>
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
-
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}"/>
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-
+    <style>
+        .admin-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .admin-card .card-body {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .admin-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #0d6efd;
+        }
+        
+        .admin-card h5 {
+            margin: 0.5rem 0 0 0;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .section-header {
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #0d6efd;
+        }
+        
+        .section-header h3 {
+            color: #333;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .admin-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .admin-link:hover {
+            color: inherit;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 
 {% if not request.user.is_staff and not request.user.is_superuser %}
 
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading"><i class="fa-solid fa-exclamation-triangle"></i> {% trans "Acceso Restringido" %}</h4>
+                    <p class="mb-0">{% trans "Necesitas ingresar con un usuario administrador para acceder a esta sección." %}</p>
+                </div>
 
-<body>
-    <div class="container">
-        <div class="row">
-            <h3 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Por favor, necesitas ingresar con un usuario administrador para navegar. 
-                <br>Si no tienes cuenta puedes registrarte.</h3>
-        </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2">
-            <div class="col">
-                <a class="card-text" href="{% url 'login' %}" style="text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fas fa-sign-in-alt"></i>&nbsp;&nbsp;&nbsp;Login</h4>
-                        </div>
+                <div class="row row-cols-1 row-cols-md-2 g-3">
+                    <div class="col">
+                        <a href="{% url 'login' %}" class="admin-link">
+                            <div class="card admin-card">
+                                <div class="card-body">
+                                    <div class="admin-card-icon">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </div>
+                                    <h5>{% trans "Iniciar Sesión" %}</h5>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </a>
-            </div>
-            <div class="col">
-                <a class="card-text" href="{% url 'register' %}" style="margin-top: 20px; text-decoration:none;">
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h4 class="card-title text-center"><i class="fa-solid fa-address-card"></i>&nbsp;&nbsp;&nbsp;Registrarse</h4>
-                        </div>
+                    <div class="col">
+                        <a href="{% url 'register' %}" class="admin-link">
+                            <div class="card admin-card">
+                                <div class="card-body">
+                                    <div class="admin-card-icon">
+                                        <i class="fa-solid fa-address-card"></i>
+                                    </div>
+                                    <h5>{% trans "Registrarse" %}</h5>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </a>
+                </div>
             </div>
         </div>
     </div>
 
-    {% elif request.user.is_staff or request.user.is_superuser %}
+{% elif request.user.is_staff or request.user.is_superuser %}
 
-    <div class="container">
-        <div class="row">
-            <h3 class="text-center" style="color: rgb(27, 27, 27); margin-top: 100px;">Hola {{user.username}}, tienes estas opciones para realizar</h3>
+    <div class="container mt-4">
+        <div class="mb-4">
+            <h1 class="display-6">{% trans "Panel de Administración" %}</h1>
+            <p class="text-muted">{% blocktrans %}Bienvenido, <strong>{{ user.username }}</strong>{% endblocktrans %}</p>
         </div>
-        <div class="row">
-            <h1></h1>
-        </div>
-        
-        <!-- Sección Configuración -->
-        <section class="my-4">
-            <h2>Configuración</h2>
-            <div class="row">
-                <div class="col">
-                    <a class="card-text" href="{% url 'update_email_config' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-envelope"></i>&nbsp&nbspConfigurar email</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        
-        </section>
-        <!--seccion usuarios -->
-        <section class="my-4">
-            <h2>Usuarios</h2>
-            <div class="row">
-                <div class="col">
-                    <a class="card-text" href="{% url 'userlist' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-user"></i>&nbsp&nbspUsuarios</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col">
-                    <a class="card-text" href="{% url 'usersaudit' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-magnifying-glass"></i>&nbsp&nbspAuditoria</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
 
-        </section>
-        
-        
+        <!-- Sección Configuración General -->
+        <div class="section-header">
+            <h3><i class="fa-solid fa-sliders"></i> {% trans "Configuración General" %}</h3>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+            <div class="col">
+                <a href="{% url 'configuracion-global' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon">
+                                <i class="fa-solid fa-gears"></i>
+                            </div>
+                            <h5>{% trans "Configuración Global" %}</h5>
+                            <small class="text-muted">{% trans "Parámetros del sistema" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col">
+                <a href="{% url 'upload-csv' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon">
+                                <i class="fa-solid fa-upload"></i>
+                            </div>
+                            <h5>{% trans "Importación Masiva" %}</h5>
+                            <small class="text-muted">{% trans "CSV y datos" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Sección Inteligencia de Amenazas -->
+        <div class="section-header">
+            <h3><i class="fa-solid fa-brain"></i> {% trans "Inteligencia de Amenazas" %}</h3>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+            <div class="col">
+                <a href="{% url 'threat_intel:source-list' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #17a2b8;">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <h5>{% trans "Fuentes de Datos" %}</h5>
+                            <small class="text-muted">{% trans "NVD, CISA, AWS, etc." %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{% url 'threat_intel:techtag-list' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #ffc107;">
+                                <i class="fa-solid fa-tags"></i>
+                            </div>
+                            <h5>{% trans "Etiquetas de Tecnología" %}</h5>
+                            <small class="text-muted">{% trans "Ubuntu, MySQL, Laravel, etc." %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Sección Usuarios -->
+        <div class="section-header">
+            <h3><i class="fa-solid fa-users"></i> {% trans "Usuarios" %}</h3>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+            <div class="col">
+                <a href="{% url 'userlist' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #28a745;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <h5>{% trans "Gestionar Usuarios" %}</h5>
+                            <small class="text-muted">{% trans "Ver y editar usuarios" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{% url 'usersaudit' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #fd7e14;">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <h5>{% trans "Auditoría" %}</h5>
+                            <small class="text-muted">{% trans "Registro de actividades" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Sección Permisos -->
-        <section class="my-4">
-            <h2>Permisos</h2>
-            <div class="row">
-                <div class="col">
-                    <a class="card-text" href="{% url 'permissionlist' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-key"></i>&nbsp&nbspVer Permisos</h4>
+        <div class="section-header">
+            <h3><i class="fa-solid fa-lock"></i> {% trans "Permisos y Roles" %}</h3>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+            <div class="col">
+                <a href="{% url 'permissionlist' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #dc3545;">
+                                <i class="fa-solid fa-key"></i>
                             </div>
+                            <h5>{% trans "Ver Permisos" %}</h5>
+                            <small class="text-muted">{% trans "Listar permisos disponibles" %}</small>
                         </div>
-                    </a>
-                </div>
-                {% if request.user.is_superuser %}
-                <div class="col">
-                    <a class="card-text" href="{% url 'permissionform1' %}" style="margin-top: 20px; text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-key"></i>&nbsp&nbspAsignar Permisos</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                    </div>
+                </a>
             </div>
-        </section>
-        {% else %}
-        {% endif %}
-        <!-- Sección Roles -->
-        <section class="my-4">
-            <h2>Roles</h2>
-            <div class="row">
-                <div class="col">
-                    <a class="card-text" href="{% url 'roles' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-eye"></i>&nbsp&nbspVer Roles</h4>
+            {% if request.user.is_superuser %}
+            <div class="col">
+                <a href="{% url 'permissionform1' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #dc3545;">
+                                <i class="fa-solid fa-shield"></i>
                             </div>
+                            <h5>{% trans "Asignar Permisos" %}</h5>
+                            <small class="text-muted">{% trans "Configurar accesos" %}</small>
                         </div>
-                    </a>
-                </div>
-                <div class="col">
-                    <a class="card-text" href="{% url 'permissionrolescreate' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-scroll"></i>&nbsp&nbspCrear un rol</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col">
-                    <a class="card-text" href="{% url 'assignroluser' %}" style="text-decoration:none;">
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h4 class="card-title text-center"><i class="fa-solid fa-user-tie"></i>&nbsp&nbspAsignar un Rol</h4>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                    </div>
+                </a>
             </div>
-        </section>
+            {% endif %}
+            <div class="col">
+                <a href="{% url 'roles' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #6c757d;">
+                                <i class="fa-solid fa-eye"></i>
+                            </div>
+                            <h5>{% trans "Ver Roles" %}</h5>
+                            <small class="text-muted">{% trans "Listado de roles" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+            <div class="col">
+                <a href="{% url 'permissionrolescreate' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #6c757d;">
+                                <i class="fa-solid fa-scroll"></i>
+                            </div>
+                            <h5>{% trans "Crear un Rol" %}</h5>
+                            <small class="text-muted">{% trans "Nuevo rol personalizado" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{% url 'assignroluser' %}" class="admin-link">
+                    <div class="card admin-card">
+                        <div class="card-body">
+                            <div class="admin-card-icon" style="color: #6c757d;">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <h5>{% trans "Asignar un Rol" %}</h5>
+                            <small class="text-muted">{% trans "Usuario → Rol" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
-</body>
 
 {% endif %}
 

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2>{{ item.canonical_id }} - {{ item.title }}</h2>
+                <p class="text-muted">{% trans "Tipo" %}: {{ item.get_kind_display }} | {% trans "Creado" %}: {{ item.created_at|date:"Y-m-d H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Información principal -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">{% trans "Detalles" %}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for field in fields %}
+                            <div class="mb-3">
+                                <strong>{{ field.verbose_name }}:</strong>
+                                <p>{{ field.value|default:"N/A" }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">{% trans "Severidad & Evaluación" %}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>{% trans "CVSS Score:" %}</strong>
+                            <h3>{{ item.cvss|default:"N/A" }}</h3>
+                        </div>
+                        <div class="mb-3">
+                            <strong>{% trans "Severidad:" %}</strong>
+                            <span class="badge bg-{% if item.severity == 'critical' %}danger{% elif item.severity == 'high' %}warning{% elif item.severity == 'medium' %}info{% else %}secondary{% endif %} fs-6">
+                                {{ item.get_severity_display }}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>{% trans "Marcado como Relevante:" %}</strong>
+                            <span class="badge {% if item.is_relevant %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if item.is_relevant %}{% trans "Sí" %}{% else %}{% trans "No" %}{% endif %}
+                            </span>
+                        </div>
+                        {% if analysis %}
+                        <div class="mb-3">
+                            <strong>{% trans "Análisis IA disponible:" %}</strong>
+                            <span class="badge bg-info">{{ analysis.model_name }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análisis IA si existe -->
+        {% if analysis %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">{% blocktrans with name=analysis.model_name %}Análisis IA ({{ name }}){% endblocktrans %}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if analysis.summary_es %}
+                        <div class="mb-3">
+                            <strong>{% trans "Resumen:" %}</strong>
+                            <p>{{ analysis.summary_es }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if analysis.impact_previ %}
+                        <div class="mb-3">
+                            <strong>{% trans "Impacto Preliminar:" %}</strong>
+                            <p>{{ analysis.impact_previ }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if analysis.recommended_action %}
+                        <div class="mb-3">
+                            <strong>{% trans "Acciones Recomendadas:" %}</strong>
+                            <p>{{ analysis.recommended_action }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if analysis.affected_tech %}
+                        <div class="mb-3">
+                            <strong>{% trans "Tecnologías Afectadas:" %}</strong>
+                            <div>
+                            {% for tech in analysis.affected_tech %}
+                                <span class="badge bg-warning text-dark">{{ tech }}</span>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if analysis.recommended_deadline %}
+                        <div class="mb-3">
+                            <strong>{% trans "Deadline Recomendado:" %}</strong>
+                            <p>{{ analysis.recommended_deadline }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <strong>{% trans "Prioridad:" %}</strong>
+                            {% if analysis.priority == 'critical' %}
+                                <span class="badge bg-danger">{% trans "Critical" %}</span>
+                            {% elif analysis.priority == 'high' %}
+                                <span class="badge bg-warning">{% trans "High" %}</span>
+                            {% elif analysis.priority == 'medium' %}
+                                <span class="badge bg-info">{% trans "Medium" %}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{% trans "Low" %}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if analysis.notes %}
+                        <div class="mb-3">
+                            <strong>{% trans "Notas:" %}</strong>
+                            <p>{{ analysis.notes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Runs donde aparece este item -->
+        {% if run_items %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">{% blocktrans with count=run_items|length %}Apariciones en Runs ({{ count }}){% endblocktrans %}</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Run ID" %}</th>
+                                    <th>{% trans "Período" %}</th>
+                                    <th>{% trans "Estado" %}</th>
+                                    <th>{% trans "Detectado" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ri in run_items %}
+                                <tr>
+                                    <td><a href="{% url 'threat_intel:run-detail' ri.run.id %}">{% blocktrans with rid=ri.run.id %}Run #{{ rid }}{% endblocktrans %}</a></td>
+                                    <td>{{ ri.run.period_start|date:"Y-m-d" }} a {{ ri.run.period_end|date:"Y-m-d" }}</td>
+                                    <td><span class="badge bg-info">{{ ri.run.status }}</span></td>
+                                    <td>{{ ri.detected_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acciones -->
+        <div class="row mt-3 mb-3">
+            <div class="col-12 d-flex gap-2">
+                {% if run %}
+                <a href="{{ back_url }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Items" %}
+                </a>
+                <a href="{% url 'threat_intel:review-create' run.id item.id %}" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> {% trans "Crear Review" %}
+                </a>
+                <a href="{% url 'threat_intel:run-detail' run.id %}" class="btn btn-info">
+                    <i class="fas fa-link"></i> {% trans "Ver Run" %}
+                </a>
+                <a href="{% url 'evaluation-create' %}?intel_item_id={{ item.id }}" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i> {% trans "Crear Evaluación" %}
+                </a>
+                {% else %}
+                <a href="{% url 'threat_intel:run-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Runs" %}
+                </a>
+                {% if analysis %}
+                <a href="{% url 'threat_intel:analysis-detail' analysis.id %}" class="btn btn-info">
+                    <i class="fas fa-microscope"></i> {% trans "Ver Análisis" %}
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

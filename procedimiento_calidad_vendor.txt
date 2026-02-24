@@ -1,0 +1,95 @@
+1-	Objetivo: Mantener y/o mejorar el estándar de calidad del producto/servicio.
+2-	Alcance: El responsable de compras y las distintas áreas de la organización.
+3-	Definiciones:
+•	Requerimiento: Estándar de calidad y cantidad de un producto o servicio necesario para el desempeño de las tareas en la organización.
+4-	Responsabilidades: 
+•	Responsable de compras: Es el responsable de recibir los requerimientos de compras y darle curso para gestionar la compra. 
+•	Gerencia: Gerencia del área responsable de la compra. 
+
+5-	Desarrollo: 
+5.1. Se realizará los siguientes controles de acuerdo al tipo de servicio: 
+A. Servicios mensuales continuados críticos:
+•	Se realizará un control de calidad y seguridad cada 4 meses teniendo en cuenta el listado de requerimientos enviados al comienzo del proceso de requerimiento búsqueda y selección de proveedores. 
+•	El control de calidad y seguridad lo realizará el Gerente de área o supervisor en caso de que no hay un gerente directo. 
+•	Se enviará por mail el resultado del control con los fundamentos necesarios. 
+•	En caso de desviaciones del estándar de los requerimientos sebe realizar el reclamo correspondiente al proveedor del servicio.
+•	En caso de no cumplir la cláusula de Confidencialidad y/o disponibilidad, se realizará un análisis de vulnerabilidades en la matriz de riesgos de la seguridad. 
+B. Servicios críticos  no continuados:
+•	Se realizará un control de calidad al recibir el servicio. 
+•	El encargado es el responsable de compras de esa adquisición. 
+•	Se enviará por mail el resultado del control con los puntos evaluados. 
+•	En caso de desviaciones del estándar de los requerimientos sebe realizar el reclamo correspondiente al proveedor del servicio.
+•	En caso de no cumplir la cláusula de Confidencialidad y/o disponibilidad, se realizará un análisis de vulnerabilidades en la matriz de riesgos de la seguridad. 
+
+C. Servicios No críticos continuados: 
+•	Se realizará el control de calidad cada 6 meses de servicio. 
+•	El responsable es la gerencia del área que usa el servicio. 
+•	Se enviará por mail el resultado del control con los puntos evaluados. 
+•	En caso de desviaciones del estándar de los requerimientos sebe realizar el reclamo correspondiente al proveedor del servicio.
+D. Servicios no críticos no continuados: 
+•	Se realizará un control de calidad al recibir el servicio. 
+•	El encargado es el responsable de compras de esa adquisición. 
+•	Se informará por mail el resultado del control en caso de que hay una desviación del requerimiento. 
+Todos los controles de calidad de servicio se realizarán siendo registradas en el formulario “Registro de calidad de servicios a proveedores”. 
+
+Revisión anual: 
+Se realizará una revisión anual en el mes de diciembre de cada año mediante comité de “Revisión de calidad de servicio”, revisando todos los controles realizados en el año y todos los servicios. Se evaluaran alternativas de servicios o proveedores. El comité lo formarán Gerencias y Dirección. 
+
+5.2. Monitoreo, revisión y gestión de cambios en servicios de proveedores
+
+Para todos los servicios de proveedores, en especial aquellos catalogados como críticos, se deberán identificar, registrar y evaluar los cambios que puedan tener impacto en la seguridad de la información, la continuidad operativa o el cumplimiento legal/regulatorio.
+
+A tales efectos, se definen las siguientes actividades:
+
+	Cada responsable de proveedor deberá mantenerse informado sobre posibles cambios en la prestación del servicio, revisando comunicaciones oficiales, notificaciones por correo electrónico, reuniones periódicas, u otros canales definidos por el proveedor.
+	Durante las evaluaciones periódicas de calidad (según criticidad del servicio), se incluirá una sección específica sobre “Cambios relevantes detectados en el servicio”, donde se relevarán:
+•	Nuevas versiones del sistema o funcionalidades.
+•	Cambios en políticas de privacidad, seguridad o términos de servicio.
+•	Cambios en subcontrataciones o en la localización de datos.
+•	Cambios en accesos, credenciales o procedimientos técnicos.
+	Si el cambio reviste riesgo significativo, deberá generarse un análisis de impacto y riesgo a travez de la F-02A-001 Matriz de evaluación y tratamiento de Riesgos, en caso de corresponder, un Plan de Cambio interno (ver procedimiento PD-02B-003).
+	El resultado del análisis o las medidas tomadas deberán registrarse en el formulario F-05A-001 o bien en Bitrix24, si el cambio se gestiona mediante dicho sistema.
+
+En caso de que los cambios detectados impliquen incumplimiento contractual o vulneren la confidencialidad, integridad o disponibilidad de la información, se deberá notificar al Responsable de Seguridad de la Información, quien podrá escalar el caso a la Dirección y actualizar la matriz de riesgos del SGSI si corresponde.
+5.3 Tratamiento específico para Proveedores TIC
+Con el fin de dar cumplimiento al punto A.5.21 de la norma ISO/IEC 27001:2022, se establece el siguiente tratamiento diferencial para los proveedores de Tecnologías de la Información y las Comunicaciones (TIC), definidos como aquellos que proveen servicios o productos tecnológicos que tienen interacción directa o indirecta con los sistemas de información, infraestructura, datos, procesos digitales o plataformas utilizadas por Previ S.R.L.
+
+5.3.1. Identificación de proveedores TIC
+En el formulario de evaluación y en el listado de proveedores se incorporará la categoría "Proveedor TIC", que será utilizada para aplicar los controles diferenciales que se detallan a continuación.
+
+5.3.2. Evaluación inicial de seguridad
+Además del cumplimiento de requerimientos funcionales y de calidad, todo proveedor TIC deberá ser evaluado considerando los siguientes criterios de seguridad de la información:
+	Nivel de acceso a datos o sistemas de Previ.
+	Existencia de políticas de seguridad, compliance o certificaciones (ISO 27001, SOC2, etc.).
+	Prácticas de protección de datos (cifrado, backup, control de accesos, etc.).
+	Uso que dará a los datos (propósito, almacenamiento, subcontratistas).
+	Capacidad de respuesta ante incidentes de seguridad.
+Cuando el proveedor no cumpla con condiciones mínimas y no exista alternativa equivalente, se deberá realizar un análisis de riesgos y plan de tratamiento, documentado en la matriz correspondiente (F-02A-001).
+
+
+5.3.3. Contratación de proveedores TIC
+Todo contrato o acuerdo con proveedores TIC deberá contener como mínimo:
+	Cláusula de confidencialidad de la información.
+	Cláusula de disponibilidad del servicio, si corresponde
+	Obligación de informar incidentes que afecten la seguridad de la información.
+	Definición de responsabilidades sobre la gestión de accesos, respaldos, y contingencias.
+
+5.3.4. Terminación del vínculo
+	Al finalizar la relación con un proveedor TIC, el responsable del servicio deberá asegurarse de:
+	Solicitar y documentar la eliminación total de los datos almacenados, procesados o transmitidos por el proveedor.
+	Revocar todos los accesos otorgados a sistemas internos o plataformas utilizadas.
+	Obtener comunicación formal del proveedor confirmando el cierre del servicio.
+
+Estos puntos serán evaluados y controlados utilizando el instructivo específico para proveedores TIC (ver IT-05A-001).
+
+6-	Registros:
+F-05A-001 Planilla de Control de Calidad de Servicio 
+IT-05A-001 Evaluacion inicial y final de proveedores TIC
+7-	Control de Cambios: 
+Revisión 00: Original
+
+Revisión 01: Se cambian Proveedores “Esenciales” a “Críticos”. Se modifican los Formularios relacionados para agregar la evaluación de la seguridad de la información. 
+
+Revisión 02: Se agrega el punto 5.2 donde se describe el monitoreo, revisión y gestión de cambio de los proveedores. 
+
+Revisión 03:  Se agrega el punto 5.3 donde se describe el tratamiento de proveedores TIC. 

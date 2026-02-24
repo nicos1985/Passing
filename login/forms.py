@@ -1,14 +1,19 @@
+"""Formularios de autenticación, registro y perfiles para el hub y el tenant."""
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
-from .models import CustomUser
+from accounts.models import TenantSettings, CustomUser
+from django_tenants.utils import get_tenant
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
+from django.conf import settings
 
 
 
 
 class CustomLoginForm(AuthenticationForm):
+    """Login protegido con reCaptcha para el hub público."""
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
@@ -19,6 +24,7 @@ class CustomLoginForm(AuthenticationForm):
 )
     
 class UserRegisterForm(UserCreationForm):
+    """Registro manual de usuarios globales para crear superusuarios o perfiles clásicos."""
     email = forms.EmailField()
     password1 = forms.CharField(label = 'Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label = 'Confirmar Contraseña', widget=forms.PasswordInput)
@@ -49,21 +55,38 @@ class UserRegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    """Actualiza el perfil del usuario incluyendo avatar, preferencias de color y 2FA."""
     menu_color = forms.CharField(
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
         widget=forms.TextInput(attrs={'type': 'color'})
     )
 
+    # Selector de idioma para la UI
+    language = forms.ChoiceField(
+        label='Idioma',
+        choices=getattr(settings, 'LANGUAGES', [('es', 'Español')]),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color']
-
+        fields = ['first_name', 'last_name', 'email', 'avatar', 'position', 'menu_color', 'is_2fa_enabled', 'language']
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == 'is_2fa_enabled':
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif name == 'avatar':
+                field.widget.attrs.update({'class': 'form-control form-control-sm', 'id': 'id_avatar'})
+            elif name == 'menu_color':
+                field.widget.attrs.update({'class': 'form-control form-control-color', 'style': 'height:44px; width:120px;'})
+            else:
+                field.widget.attrs.update({'class': 'form-control', 'autocomplete': 'off'})
 
 
 
 class UserForm(forms.ModelForm):
+    """Formulario de administración para crear o editar usuarios dentro del tenant."""
     admission_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     birth_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     is_superuser = forms.RadioSelect()
@@ -84,9 +107,10 @@ class UserForm(forms.ModelForm):
         
 
 class UserDepartureForm(forms.ModelForm):
-     departure_date = forms.DateField(label= 'Fecha de baja',widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-     departure_motive = forms.CharField(label= 'Motivo de baja',widget=forms.Textarea(attrs={'class': 'form-control'}))
-     class Meta:
+    """Permite desactivar usuarios y registrar motivo + fecha de baja."""
+    departure_date = forms.DateField(label= 'Fecha de baja',widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    departure_motive = forms.CharField(label= 'Motivo de baja',widget=forms.Textarea(attrs={'class': 'form-control'}))
+    class Meta:
         model = CustomUser
         fields = ['departure_date', 'departure_motive', 'is_active']
 
@@ -96,6 +120,7 @@ class UserDepartureForm(forms.ModelForm):
 
 
 class AdminLoginForm(AuthenticationForm):
+    """Login para administradores con reCaptcha reforzado."""
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
@@ -103,4 +128,63 @@ class AdminLoginForm(AuthenticationForm):
             
         }
     )
-)
+)    
+
+# class GlobalSettingsForm(forms.ModelForm):
+#     """Edita los parámetros globales del tenant como SSO y recordatorios."""
+#     menu_color = forms.CharField(
+#         max_length=7,
+#         widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
+#     )
+    
+#     class Meta:
+#         model = GlobalSettings
+#         fields = ['company_name','multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+#         widgets = {
+#             'company_name': forms.TextInput(attrs={'class':'form-control'}),
+#             'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
+#             'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#             'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),
+#             'set_admins': forms.SelectMultiple(attrs={'class': 'form-control'})
+#         }
+
+
+class TenantSettingsForm(forms.ModelForm):
+    """Form para editar `TenantSettings` (reemplaza gradualmente a `GlobalSettingsForm`)."""
+    menu_color = forms.CharField(
+        max_length=7,
+        widget=forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        # Accept `request` to scope `set_admins` to current tenant
+        request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+        client = None
+        if request is not None:
+            try:
+                tenant = get_tenant(request)
+                client = tenant
+            except Exception:
+                client = getattr(request.user, 'client', None)
+
+        # Scope the set_admins queryset to users of this client/tenant
+        if 'set_admins' in self.fields:
+            if client is not None:
+                self.fields['set_admins'].queryset = CustomUser.for_client(client)
+            else:
+                self.fields['set_admins'].queryset = CustomUser.objects.none()
+
+    class Meta:
+        model = TenantSettings
+        fields = ['company_name', 'company_logo', 'multifactor_status', 'is_admin_dash_active', 'menu_color', 'set_admins']
+        widgets = {
+            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'company_logo': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+            'multifactor_status': forms.Select(attrs={'class': 'form-select'}),
+            'is_admin_dash_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'menu_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control'}),
+            'set_admins': forms.SelectMultiple(attrs={'class': 'form-control'})
+        }
+

@@ -1,22 +1,31 @@
-from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
+"""Formularios para crear y editar contraseñas y secciones en `passbase`."""
+
+from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea
 from .models import Contrasena, SeccionContra
+from django import forms
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class ContrasenaForm(ModelForm):
-    
-    #este def hace un loop por cada propiedad de widget para definirle los parametros de vista (class, type, placeholder, etc) a todos los campos iterables del form. Ahorra código respecto de como se realizó mas abajo en la clase meta.
-    
+    """Formulario de alta para `Contrasena`.
+
+    El constructor aplica clases y atributos comunes a los widgets.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
-         
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
+
     class Meta:
         model = Contrasena
         fields = '__all__'
         exclude = ['active']
-        labels ={
-            'nombre_contra' : 'Nombre',
+        labels = {
+            'nombre_contra': 'Nombre',
             'active': 'Activo',
         }
         #widgets se utiliza para mandarle al formulario atributos de html como clases, placeholder, autocomplete, etc. 
@@ -64,27 +73,23 @@ class ContrasenaForm(ModelForm):
         }
 
 class ContrasenaUForm(ModelForm):
-    
-    """este def hace un loop por cada propiedad de widget para definirle 
-    los parametros de vista (class, type, placeholder, etc) a todos 
-    los campos iterables del form. Ahorra código respecto de como 
-    se realizó mas abajo en la clase meta."""
-    
+    """Formulario de edición para `Contrasena` que pre-puebla campos desencriptados."""
+
     def __init__(self, *args, **kwargs):
         decrypted_user = kwargs.pop('decrypted_user', None)
         decrypted_password = kwargs.pop('decrypted_password', None)
         super().__init__(*args, **kwargs)
-        
+
         for form in self.visible_fields():
             try:
                 if form.field.widget.attrs.get('id') == 'is_personal':
                     form.field.widget.attrs['class'] = 'form-check-input'
-                
+
                 else:
                     form.field.widget.attrs['class'] = 'form-control'
                     form.field.widget.attrs['autocomplete'] = 'off'
             except Exception as e:
-                print(f'no se pudo hacer esto: {e}')
+                logger.exception('no se pudo hacer esto: %s', e)
                 form.field.widget.attrs['class'] = 'form-control'
                 form.field.widget.attrs['autocomplete'] = 'off'
 
@@ -93,16 +98,14 @@ class ContrasenaUForm(ModelForm):
         if decrypted_password:
             self.fields['contraseña'].initial = decrypted_password
 
-    
-
     class Meta:
         model = Contrasena
         fields = '__all__'
-        exclude = ['active','owner']
-        labels ={
-            'nombre_contra' : 'Nombre',
+        exclude = ['active', 'owner']
+        labels = {
+            'nombre_contra': 'Nombre',
             'active': 'Activo',
-            'is_personal' :'Contraseña Personal'
+            'is_personal': 'Contraseña Personal'
         }
         #widgets se utiliza para mandarle al formulario atributos de html como clases, placeholder, autocomplete, etc. 
         #tambien se puede utilizar una libreria de django para asignar los atributos en el html que se llama django-widgets-tweks
@@ -153,14 +156,24 @@ class ContrasenaUForm(ModelForm):
         }
 
 class SectionForm(ModelForm):
+    """Formulario sencillo para crear/editar `SeccionContra`."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class']= 'form-control'
-            form.field.widget.attrs['autocomplete']= 'off'
-
+            form.field.widget.attrs['class'] = 'form-control'
+            form.field.widget.attrs['autocomplete'] = 'off'
 
     class Meta:
-            model = SeccionContra
-            fields = '__all__'
-            exclude = ['active','owner']
+        model = SeccionContra
+        fields = '__all__'
+        exclude = ['active', 'owner']
+
+
+class CSVUploadForm(forms.Form):
+    """Formulario para subir CSV con múltiples contraseñas."""
+
+    file = forms.FileField(
+        label="Subir archivo CSV",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control"})
+    )

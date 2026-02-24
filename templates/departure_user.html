@@ -1,8 +1,6 @@
 {% extends 'base.html'%}
-
-
 {% load static %}
-
+{% load i18n %}
 
 {% block head %}
 
@@ -23,10 +21,10 @@
             <div class="card center">
                 <div class="card-title">
                     <div class="container" style="height: 105px; padding-top: 20px;">
-                        <h2><i class="fa-solid fa-user-tie"></i> Baja de Usuario</h2>
+                        <h2><i class="fa-solid fa-user-tie"></i> {% trans "Baja de Usuario" %}</h2>
                         <button class="btn">
                             <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
-                                <i class="fa-solid fa-gear"></i> Configurar
+                                <i class="fa-solid fa-gear"></i> {% trans "Configurar" %}
                             </a>
                         </button>
                     </div>
@@ -36,7 +34,7 @@
                         {% csrf_token %}
                         {{ form.as_p }}
                         <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-                            <i class="fas fa-save"></i> Confirmar baja
+                            <i class="fas fa-save me-2"></i> {% trans "Confirmar baja" %}
                         </button>
                     </form>
                 </div>

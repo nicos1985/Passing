@@ -1,0 +1,228 @@
+
+
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+
+{% block head %}
+
+
+
+{% endblock %}
+
+{% block content %}
+
+{% if not request.user.is_superuser and not request.user.is_staff %}
+<div class="container-fluid text-center">
+    <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %}
+        <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
+    <div class="row justify-content-center mt-4">
+        
+        <div class="col-sm-12 d-flex justify-content-center">
+            <a class="btn btn-primary" href="{% url 'login' %}" style = 'margin-top: 20px;'>{% trans "Login" %}</a>
+        </div>
+        <span></span>
+        <div class="col-sm-12 d-flex justify-content-center mt-2 mt-sm-0">
+            <a class="btn btn-primary" href="{% url 'register' %}" style = 'margin-top: 20px;'>{% trans "Registrarse" %}</a>
+        </div>
+    
+    </div>
+</div>
+{% elif request.user.is_superuser or request.user.is_staff %}
+<div class="container pt-5" >
+        <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mb-3">
+            <a class="btn btn-primary btn-flat" href="{% url 'treatment-list' %}"> <i class="fa-solid fa-bars"></i>  {% blocktrans with verbose_name=verbose_name %}Lista de {{ verbose_name }}{% endblocktrans %}</a>
+        </div>
+    </div>
+
+    <div class="card form-card">
+        <div class="card-header">
+            <h5><i class="fa-solid fa-hand-holding-medical"></i> {{ action_type }} {{ verbose_name }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.errors }}
+                <h5 style="color: darkred; margin-top:10px;">{{ message }}</h5>
+                {# Stage control: show current stage badge and a compact selector above the main fields #}
+                <div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+                    <div class="col-12">
+                        <style>
+                            .stage-tiles { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+                            .stage-tile { cursor:pointer; padding:8px 12px; border-radius:8px; border:1px solid #dee2e6; background:#f8f9fa; display:flex; align-items:center; gap:8px; }
+                            .stage-tile.selected { background:#0d6efd; color:white; border-color:#0d6efd; }
+                            .stage-tile .stage-label { font-weight:600; }
+                            .stage-tile .stage-sub { font-size:0.85rem; opacity:0.85; }
+                        </style>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if form.instance and form.instance.pk %}
+                                    <strong>{% trans "Etapa actual:" %}</strong>
+                                    {{ form.instance.get_stage_badge|safe }}
+                                {% else %}
+                                    <strong>{% trans "Etapa:" %}</strong>
+                                    <span class="text-muted">{% trans "Seleccione una etapa" %}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="form-label mb-0">{% trans "Cambiar etapa" %}</label>
+                            </div>
+                        </div>
+
+                        <div id="stageTiles" class="stage-tiles mt-2" aria-hidden="false"></div>
+
+                        {# keep the real select hidden so Django receives the value on submit #}
+                        <div style="display:none">{% if form.stage %}{{ form.stage }}{% endif %}</div>
+                    </div>
+                </div>
+
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}{% url 'treatment-list' %}{% endif %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+                    </div>
+                    <div>
+                        {% if related_links %}
+                            {% for rl in related_links %}
+                                <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 10px; margin-bottom: 20px;">
+                    {% for field in form.visible_fields %}
+                        {% if field.name != 'stage' %}
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {% if field.name == 'name' %}
+                                        <i class="fa-solid fa-tag" style="color: #667eea;"></i>
+                                    {% elif field.name == 'description' %}
+                                        <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
+                                    {% elif field.name == 'model_type' or field.name == 'object_id' %}
+                                        <i class="fa-solid fa-cubes" style="color: #667eea;"></i>
+                                    {% elif field.name == 'deadline' or field.name == 'start_date' or field.name == 'finish_date' %}
+                                        <i class="fa-solid fa-calendar" style="color: #667eea;"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-square" style="color: #667eea;"></i>
+                                    {% endif %}
+                                    &nbsp;{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">
+                                        {{ field.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="btn-group-submit">
+                    <button type="submit" class="btn btn-submit btn-submit-primary">
+                        <i class="fas fa-save"></i> {% trans "Guardar cambios" %}
+                    </button>
+                    <button type="reset" class="btn btn-submit btn-submit-secondary">
+                        <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
+                    </button>
+                </div>
+                <input type="hidden" id="object_id_preselected" value="{{ form.fields.object_id.initial }}">
+            </form>
+        </div>
+    </div>
+            </div>
+        </div> 
+
+    <div class="row">
+    </div>
+
+</div>
+{%endif%}
+
+{% endblock %}
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    const $modelType = $('#id_model_type');
+    const $objectSelect = $('#id_object_id');
+    const preselected = $('#object_id_preselected').val();
+  
+    // Ejecutar AJAX sólo si cambia el tipo de recurso (o si NO estamos editando)
+    $modelType.on('change', function () {
+      const modelId = $(this).val();
+      console.log("Model Type changed:", modelId);
+  
+      $.ajax({
+        url: "{% url 'ajax-get-objects' %}",
+        data: { type_id: modelId },
+        success: function (data) {
+          $objectSelect.empty();
+          $objectSelect.append(`<option value="">{% trans "Seleccione un recurso" %}</option>`);
+  
+          data.objects.forEach(function (obj) {
+            const selected = (obj.id.toString() === preselected) ? 'selected' : '';
+            $objectSelect.append(`<option value="${obj.id}" ${selected}>${obj.name}</option>`);
+          });
+        },
+        error: function (xhr) {
+          console.error("AJAX error:", xhr.responseText);
+        }
+      });
+    });
+  
+    // Solo forzar la carga por AJAX si no hay valor ya seleccionado
+    if (!preselected) {
+      $modelType.trigger('change');
+    }
+  });
+</script>
+<script>
+$(function(){
+    const $stageSelect = $('#id_stage');
+    const $tiles = $('#stageTiles');
+    if ($stageSelect.length && $tiles.length){
+        $tiles.empty();
+        $stageSelect.find('option').each(function(){
+            const val = $(this).attr('value');
+            const label = $(this).text();
+            const $tile = $(`<div class="stage-tile" data-value="${val}"><span class="stage-label">${label}</span></div>`);
+            $tiles.append($tile);
+        });
+
+        function selectTile(val){
+            $stageSelect.val(val);
+            $tiles.find('.stage-tile').removeClass('selected');
+            $tiles.find(`.stage-tile[data-value="${val}"]`).addClass('selected');
+        }
+
+        const current = $stageSelect.val() || $stageSelect.find('option:selected').val();
+        if (current) selectTile(current);
+
+        $tiles.on('click', '.stage-tile', function(){
+            const val = $(this).data('value').toString();
+            // Confirm when marking as Implementado (value might be '3')
+            if (val === '3'){
+                if (!confirm("{% trans 'Marcar como "Implementado" creará una re-evaluación asociada. ¿Desea continuar?' %}")){
+                    return;
+                }
+            }
+            selectTile(val);
+        });
+    }
+});
+</script>
+  
+
+
+{% endblock%}

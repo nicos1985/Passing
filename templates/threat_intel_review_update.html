@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+{% block head %}
+    <link href="{% static 'lib/select2-4.1.0/css/select2.min.css' %}" rel="stylesheet" />
+    <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/select2-4.1.0/js/select2.min.js' %}"></script>
+    <style>
+        .form-container { max-width: 800px; margin: 0 auto; }
+        .form-card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; border-radius: 12px; }
+        .form-card .card-header { background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border-radius: 12px 12px 0 0 !important; padding: 1.5rem; }
+        .form-card .card-header h5 { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .info-card { background: #f8f9fa; border-left: 4px solid #28a745; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .info-card h6 { color: #333; font-weight: 600; margin-bottom: 0.5rem; }
+        .info-card p { margin: 0.5rem 0; }
+        .info-card .badge { margin: 0.25rem 0; }
+        .form-group label { font-weight: 600; color: #333; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .form-control, .form-select, textarea { border-radius: 8px; border: 2px solid #e0e0e0; padding: 0.75rem; transition: all 0.3s ease; }
+        .form-control:focus, .form-select:focus, textarea:focus { border-color: #28a745; box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25); }
+        .form-text { display: block; margin-top: 0.4rem; font-size: 0.9rem; color: #6c757d; }
+        .form-card .card-body { padding: 2rem; }
+        .btn-group-submit { display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #f0f0f0; }
+        .btn-submit { flex: 1; padding: 0.75rem 1.5rem; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; border: none; }
+        .btn-submit-primary { background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; }
+        .btn-submit-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4); color: white; }
+        .btn-submit-secondary { background: #f8f9fa; color: #333; border: 2px solid #e0e0e0; }
+        .btn-submit-secondary:hover { background: #e9ecef; border-color: #999; }
+        .back-button { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; color: #28a745; text-decoration: none; font-weight: 500; transition: all 0.3s ease; }
+        .back-button:hover { color: #218838; transform: translateX(-4px); }
+        .decision-guide { padding: 1rem; border-radius: 8px; border-left: 4px solid #28a745; background: #f0f7f4; margin: 1rem 0; }
+        .decision-guide strong { color: #28a745; }
+        #id_decision, #id_notes, #id_ticket_ref { width: 100%; box-sizing: border-box; }
+        #id_notes { min-height: 130px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .revision-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem; }
+        .revision-meta strong { display: block; margin-bottom: 0.25rem; color: #28a745; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <a href="{% url 'threat_intel:review-detail' review.id %}" class="back-button">
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Revisión" %}
+        </a>
+
+        <div class="mb-4">
+            <h2 style="color: #333; font-weight: 700;">{% trans "Editar Revisión" %}</h2>
+            <p class="text-muted">{% blocktrans with cve=review.item.cve_id rid=review.run.id %}Para {{ cve }} en Run #{{ rid }}{% endblocktrans %}</p>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            <!-- Información del Item -->
+            <div class="info-card">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fa-solid fa-virus"></i> {% trans "CVE" %}</h6>
+                        <p style="font-size: 1.1rem; color: #dc3545; font-weight: 600;">{{ review.item.cve_id }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fa-solid fa-chart-line"></i> {% trans "Severidad" %}</h6>
+                        <p>
+                            <span class="badge" style="background: 
+                                {% if review.item.severity == 'CRITICAL' %}#dc3545
+                                {% elif review.item.severity == 'HIGH' %}#fd7e14
+                                {% elif review.item.severity == 'MEDIUM' %}#ffc107
+                                {% else %}#28a745{% endif %};
+                                padding: 0.5rem 1rem; font-size: 1rem;">
+                                {{ review.item.severity }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <p><strong>{% trans "CVSS Score:" %}</strong> {{ review.item.cvss_score }}</p>
+                <p><strong>{% trans "Descripción:" %}</strong> {{ review.item.description|truncatewords:40 }}</p>
+            </div>
+
+            <!-- Metadatos de la Revisión Original -->
+                <div class="info-card">
+                <h6><i class="fa-solid fa-history"></i> {% trans "Información de la Revisión Original" %}</h6>
+                <div class="revision-meta">
+                    <div>
+                        <strong>{% trans "Decidido por:" %}</strong>
+                        <span>{{ review.decided_by.username }}</span>
+                    </div>
+                    <div>
+                        <strong>{% trans "Fecha Original:" %}</strong>
+                        <span>{{ review.decided_at|date:"Y-m-d H:i:s" }}</span>
+                    </div>
+                </div>
+                {% if review.analysis %}
+                    <p style="margin-top: 0.5rem;">
+                        <strong><i class="fa-solid fa-microscope"></i> {% trans "Análisis:" %}</strong> {{ review.analysis.summary_es|truncatewords:10 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Formulario de Edición -->
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-pen-to-square"></i> {% trans "Editar Revisión" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_decision">
+                                <i class="fa-solid fa-gavel" style="color: #28a745;"></i> {% trans "Decisión" %}
+                            </label>
+                            {% if form.decision.errors %}
+                                {{ form.decision }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.decision.errors.0 }}</div>
+                            {% else %}
+                                {{ form.decision }}
+                            {% endif %}
+                            <small class="form-text">{% trans "Selecciona la acción que se debe tomar para este CVE" %}</small>
+                        </div>
+
+                        <!-- Guía de Decisiones -->
+                        <div class="decision-guide">
+                            <strong><i class="fa-solid fa-lightbulb"></i> {% trans "Guía de Decisiones:" %}</strong>
+                            <ul class="mt-2 mb-0" style="font-size: 0.95rem;">
+                                <li><strong>{% trans "Crear Ticket:" %}</strong> {% trans "Se requiere acción inmediata en nuestra infraestructura" %}</li>
+                                <li><strong>{% trans "Monitorear:" %}</strong> {% trans "Observar y evaluar el impacto en futuro" %}</li>
+                                <li><strong>{% trans "No Aplica:" %}</strong> {% trans "No es relevante para nuestra infraestructura" %}</li>
+                                <li><strong>{% trans "Postergar:" %}</strong> {% trans "Decidir más adelante" %}</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_notes">
+                                <i class="fa-solid fa-note-sticky" style="color: #28a745;"></i> {% trans "Notas de la Revisión" %}
+                            </label>
+                            {% if form.notes.errors %}
+                                {{ form.notes }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.notes.errors.0 }}</div>
+                            {% else %}
+                                {{ form.notes }}
+                            {% endif %}
+                            <small class="form-text">{% trans "Comentarios adicionales sobre la decisión tomada" %}</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="id_ticket_ref">
+                                <i class="fa-solid fa-link" style="color: #28a745;"></i> {% trans "Referencia de Ticket (Opcional)" %}
+                            </label>
+                            {% if form.ticket_ref.errors %}
+                                {{ form.ticket_ref }}
+                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.ticket_ref.errors.0 }}</div>
+                            {% else %}
+                                {{ form.ticket_ref }}
+                            {% endif %}
+                            <small class="form-text">{% trans "ej: BITRIX-1234 o URL del ticket de seguimiento" %}</small>
+                        </div>
+
+                        <div class="btn-group-submit">
+                            <button type="submit" class="btn btn-submit btn-submit-primary">
+                                <i class="fa-solid fa-check-circle"></i> {% trans "Guardar Cambios" %}
+                            </button>
+                            <a href="{% url 'threat_intel:review-detail' review.id %}" class="btn btn-submit btn-submit-secondary">
+                                <i class="fa-solid fa-x"></i> {% trans "Cancelar" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

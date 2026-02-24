@@ -1,41 +1,40 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 
-<div class="container pt-5" >
+<div class="container pt-5">
 
     <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 85px; padding-top: 20px;">
-                    <h2><i class="fas fa-power-off" ></i> {{title}}</h2>
-                    
-                </div>
+        <div class="card-title">
+            <div class="container" style="height: 85px; padding-top: 20px;">
+                <h2><i class="fas fa-power-off"></i> {{ title }}</h2>
+            </div>
+        </div>
+
+        <div class="card-body" style="background-color: #F7F7F7;">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <h5>
+                        {% blocktrans with action=action name=object.nombre_seccion %}¿Estás seguro que deseas {{ action }}: {{ name }}?{% endblocktrans %}
+                    </h5>
+                </form>
             </div>
 
-            <div class="card-body"style="background-color: #F7F7F7 ;">
-                <div class="card-body">
-                    <form method="POST" >
-                        {% csrf_token %}
-                    <h5> ¿Estas seguro que deseas {{action}}: {{ object.nombre_seccion }}? </h5>
+            <div class="d-flex gap-2" style="padding: 1rem;">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-power-off"></i> {{ action }}
+                    </button>
+                </form>
 
-                </div>
-                                     
-                <button type="submit" class="btn btn-success">           
-                    <i class="fas fa-power-off" class="btn btn-success"></i> {{action}}
-                </button>        
-                            
-                            <button  class="btn">
-                                <a class="btn btn-primary btn-flat" href= {% url 'listsection' %}> <i class="fas fa-ban"></i> Cancelar </a>
-                            </button>
-                        </div> 
-                    </form>
+                <a class="btn btn-primary btn-flat" href="{% url 'listsection' %}">
+                    <i class="fas fa-ban"></i> {% trans "Cancelar" %}
+                </a>
             </div>
-            
         </div>
     </div>
 
-    {% endblock %}
-
-        
-</div>
+{% endblock %}
