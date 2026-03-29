@@ -29,15 +29,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
 
 
-    {% block head %}
     <style>
       .bg-orange {
           background-color: #fd7e14 !important;
       }
-
     </style>
+    <link href="{% static 'css/ui-kit.css' %}" rel="stylesheet" />
     <link href="{% static 'css/form-styles.css' %}" rel="stylesheet" />
-    {% endblock %}
+    {% block head %}{% endblock %}
 </head>
 <body>
   <div class="d-flex">

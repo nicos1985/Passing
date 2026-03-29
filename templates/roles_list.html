@@ -18,22 +18,14 @@
 
 
 
-<div class="container" style="height: 60px;">
-    <h2>{% trans "Roles" %}</h2>
-</div>
-
-{% if request.user.is_authenticated %}
-
-
-
-<div class="container">
-    <button class="btn">
-        <a class="btn btn-primary btn-flat" href="{% url 'config' %}"> <i class="fa-solid fa-gear"></i>  {% trans "Configuración" %}</a>
-    </button>
-    <button class="btn">
-        <a class="btn btn-primary btn-flat" href="{% url 'permissionrolescreate' %}"> <i class="fa-solid fa-plus"></i>   {% trans "Agregar Rol" %}</a>
-    </button>
-</div>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-semibold">{% trans "Roles" %}</h4>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}</a>
+      <a class="btn btn-primary btn-sm" href="{% url 'permissionrolescreate' %}"><i class="fa-solid fa-plus me-1"></i>{% trans "Agregar Rol" %}</a>
+    </div>
+  </div>
 <div>
     <div class="container">
     <table class="table" id="data">
@@ -68,12 +60,8 @@
         </tbody>
     </table>
     </div>
+  </div>
 </div>
-     
-          
-{% endif %}
-
-
 {% endblock %}
 
 {% block javascript %}

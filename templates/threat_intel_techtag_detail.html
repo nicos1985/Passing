@@ -8,7 +8,7 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3">
-            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:techtag-list' %}">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'threat_intel:techtag-list' %}">
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Etiquetas" %}
             </a>
             <a href="{% url 'threat_intel:techtag-update' techtag.id %}" class="btn btn-warning">

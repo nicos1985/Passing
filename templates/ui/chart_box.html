@@ -1,0 +1,4 @@
+{# Usage: {% include "ui/chart_box.html" with accent_color="#0d6efd" height="260px" placeholder="Chart placeholder" %} #}
+<div class="ui-chart-box {{ extra_class|default:'' }}" style="--accent-color: {{ accent_color|default:'#0d6efd' }}; height: {{ height|default:'280px' }};">
+  {{ placeholder|default:"Chart placeholder" }}
+</div>

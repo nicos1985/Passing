@@ -20,64 +20,81 @@
     </div>
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
-<p>LANGUAGE_CODE = {{ LANGUAGE_CODE }}</p>
-{% get_current_language as LANG %}
-<p>get_current_language = {{ LANG }}</p>
-<div class="container pt-5">
-    <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 25px;">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <a class="btn btn-primary btn-flat" href="{% url list_url_name %}"> <i class="fa-solid fa-bars"></i>  Lista de {{ verbose_name }}</a>
-                </div>
-            </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="ui-muted-title">{{ verbose_name_plural|default:verbose_name }}</div>
+            <h3 class="mb-0">{{ action_type }} {{ verbose_name }}</h3>
+            <p class="text-muted mb-0">{% trans "Editá o creá el recurso usando el esquema unificado." %}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+            <button type="reset" form="cu-form" class="btn btn-outline-secondary">{% trans "Descartar" %}</button>
+            <button type="submit" form="cu-form" class="btn btn-primary">{% if action_type == 'Crear' %}{% trans "Crear" %}{% else %}{% trans "Guardar" %}{% endif %}</button>
+        </div>
+    </div>
 
-            <div class="card form-card">
-                <div class="card-header">
-                    <h5><i class="fa-solid fa-folder-open"></i> {{ action_type }} {{ verbose_name }}</h5>
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{{ verbose_name }}</span>
+                    {% if form.instance.pk %}<span class="badge bg-primary-subtle text-primary">{% trans "ID" %} #{{ form.instance.pk }}</span>{% endif %}
                 </div>
-                <div class="card-body">
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <div>
-                            <a class="btn btn-outline-secondary" href="{% if list_url_name %}{% url list_url_name %}{% else %}#{% endif %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
-                        </div>
-                    </div>
-
-                    <form method="post" novalidate>
+                <div class="card-body ui-card-body-pad">
+                    <form method="post" novalidate id="cu-form">
                         {% csrf_token %}
                         {% if form %}
-                        
-                            {% for field in form.visible_fields %}
-                            
-                                <div class="mb-3">
-                                    {{ field.label_tag }}
-                                    {{ field }}
-                                    {% if field.help_text %}
-                                        <div class="form-text">{{ field.help_text|safe }}</div>
-                                    {% endif %}
-                                    {% if field.errors %}
-                                        <div class="text-danger">{{ field.errors.as_text }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+                            <div class="row g-3">
+                                {% for field in form.visible_fields %}
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                            <div class="form-text">{{ field.help_text|safe }}</div>
+                                        {% endif %}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">{{ field.errors.as_text }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                        
-
-                        <div class="btn-group-submit mt-3">
-                            <button type="submit" class="btn btn-submit btn-submit-primary">
-                                <i class="fas fa-save"></i> {% trans "Guardar cambios" %}
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> {% if action_type == 'Crear' %}{% trans "Crear" %}{% else %}{% trans "Guardar cambios" %}{% endif %}
                             </button>
-                            <button type="reset" class="btn btn-submit btn-submit-secondary">
-                                <i class="fa-solid fa-redo"></i> {% trans "Limpiar" %}
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-redo me-2"></i> {% trans "Limpiar" %}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row">
+        <div class="col-lg-4">
+            <div class="card ui-accent-card" style="--accent-color: #20c997;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{% trans "Ayuda" %}</span>
+                    <span class="badge bg-light text-dark">{% trans "Contexto" %}</span>
+                </div>
+                <div class="card-body ui-card-body-pad">
+                    <p class="text-muted mb-2">{% trans "Revisá los campos obligatorios y validá antes de guardar." %}</p>
+                    <p class="text-muted mb-0">{% trans "Podés descartar cambios con el botón de arriba." %}</p>
+                </div>
+            </div>
+
+            <div class="card ui-accent-card mt-3" style="--accent-color: #6f42c1;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{% trans "Historial" %}</span>
+                    <span class="badge bg-light text-dark">{% trans "Actividad" %}</span>
+                </div>
+                <div class="card-body ui-card-body-pad">
+                    <p class="text-muted mb-0">{% trans "Completa cuando existan notas o cambios recientes." %}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -107,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(`{% url 'ajax-get-objects' %}?type_id=${encodeURIComponent(modelId)}`)
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
-                    console.log('AJAX success:', data.objects);
                     var objectSelect = document.getElementById('id_object_id');
                     if (!objectSelect) return;
                     objectSelect.innerHTML = '<option value="">Seleccione un recurso</option>';

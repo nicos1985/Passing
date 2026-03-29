@@ -14,18 +14,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-3">
-        <h2>{% trans "Activos de la información" %}</h2>
-    </div>
-
-    {% if request.user.is_authenticated %}
-        <div class="container mb-3 d-flex gap-2">
-            <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
-                <i class="fa-solid fa-gear"></i> {% trans "Configuración" %}
-            </a>
-            <a class="btn btn-primary btn-flat" href="{% url 'asset-create' %}">
-                <i class="fa-solid fa-toolbox"></i> {% trans "Alta de activo" %}
-            </a>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0 fw-semibold">{% trans "Activos de la información" %}</h4>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'asset-create' %}"><i class="fa-solid fa-toolbox me-1"></i>{% trans "Alta de activo" %}</a>
+          </div>
         </div>
 
         <div class="container">
@@ -69,7 +64,7 @@
                 </tbody>
             </table>
         </div>
-    {% endif %}
+    </div>
 {% endblock %}
 
 {% block javascript %}

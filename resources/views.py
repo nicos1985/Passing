@@ -522,6 +522,11 @@ class GenericResourceDetailView(DetailView):
             if model_name == 'treatment':
                 stage_field = meta.get_field('stage')
                 context['stage_choices'] = list(stage_field.choices)
+                try:
+                    evaluation = getattr(obj, 'risk_evaluation', None)
+                except Exception:
+                    evaluation = None
+                context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         except Exception:
             context['stage_choices'] = []
         try:
@@ -626,6 +631,11 @@ class VendorUpdateView(LoginRequiredMixin, UpdateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
+        try:
+            evaluation = getattr(self.object, 'risk_evaluation', None)
+        except Exception:
+            evaluation = None
+        context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
 
 class VendorDetailView(LoginRequiredMixin, DetailView):
@@ -696,6 +706,11 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
+        try:
+            evaluation = getattr(self.object, 'risk_evaluation', None)
+        except Exception:
+            evaluation = None
+        context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
     
 class ProjectDeleteView(LoginRequiredMixin, DeleteView):
@@ -759,6 +774,11 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
+        try:
+            evaluation = getattr(self.object, 'risk_evaluation', None)
+        except Exception:
+            evaluation = None
+        context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
     
 class ClientDeleteView(LoginRequiredMixin, DeleteView):
@@ -789,6 +809,96 @@ def get_objects_by_type(request):
         data.append({'id': obj.id, 'name': str(obj)})
 
     return JsonResponse({'objects': data})
+
+
+def get_object_metadata(request):
+    """Devuelve metadatos resumidos del objeto evaluado (para panel lateral)."""
+    type_id = request.GET.get('type_id')
+    object_id = request.GET.get('object_id')
+    if not type_id or not object_id:
+        return JsonResponse({'error': 'type_id and object_id are required'}, status=400)
+
+    meta = _build_evaluated_metadata(type_id, object_id)
+    if not meta:
+        return JsonResponse({'error': 'Not found'}, status=404)
+
+    return JsonResponse(meta)
+
+
+def _build_evaluated_metadata(model_type_id, object_pk):
+    """Devuelve metadatos básicos del objeto evaluado para mostrarlos en la UI."""
+    try:
+        ct = ContentType.objects.get(pk=model_type_id)
+        model_class = ct.model_class()
+        obj = model_class.objects.filter(pk=object_pk).first()
+        if obj is None:
+            return None
+
+        fields = []
+        for field in obj._meta.get_fields():
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['updated']:
+                value = getattr(obj, field.name, None)
+                if field.choices:
+                    display_method = f"get_{field.name}_display"
+                    value = getattr(obj, display_method, lambda: value)()
+                # Ensure JSON-serializable values for the metadata endpoint
+                if isinstance(value, models.Model):
+                    value = str(value)
+                elif isinstance(value, (list, tuple, set)):
+                    value = ', '.join(map(str, value))
+                fields.append({
+                    'label': field.verbose_name.title(),
+                    'value': value,
+                })
+        model_name = model_class._meta.model_name
+        detail_map = {
+            'informationassets': 'informationassets-detail',
+            'vendor': 'vendor-detail',
+            'project': 'project-detail',
+            'clientcompany': 'clientcompany-detail',
+        }
+        detail_url = None
+        try:
+            url_name = detail_map.get(model_name)
+            if url_name:
+                detail_url = reverse(url_name, args=[obj.pk])
+        except Exception:
+            detail_url = None
+
+        return {
+            'id': obj.pk,
+            'name': str(obj),
+            'type': model_class._meta.verbose_name.title(),
+            'detail_url': detail_url,
+            'fields': fields[:8],  # solo mostramos un puñado para no saturar la vista
+        }
+    except Exception:
+        return None
+
+
+def _build_evaluation_metadata(evaluation: RiskEvaluation):
+    """Devuelve metadatos de la evaluación que originó un tratamiento."""
+    if not evaluation:
+        return None
+
+    evaluated_meta = _build_evaluated_metadata(evaluation.evaluated_type_id, evaluation.evaluated_id)
+
+    try:
+        detail_url = reverse('evaluation-detail', args=[evaluation.pk])
+    except Exception:
+        detail_url = None
+
+    return {
+        'id': evaluation.pk,
+        'detail_url': detail_url,
+        'risk_badge': evaluation.get_risk_level_badge(),
+        'risk_value': evaluation.risk_value,
+        'created': evaluation.created,
+        'threat': str(evaluation.threat) if evaluation.threat else None,
+        'vulnerability': str(evaluation.vulnerability) if evaluation.vulnerability else None,
+        'description': evaluation.description,
+        'evaluated': evaluated_meta,
+    }
 
 
 def crear_evaluacion(request):
@@ -907,9 +1017,16 @@ def crear_evaluacion(request):
             except ContentType.DoesNotExist:
                 pass
 
+    selected_type_id = request.POST.get('model_type') if request.method == 'POST' else type_id
+    selected_object_id = request.POST.get('object_id') if request.method == 'POST' else object_id
+    evaluated_meta = None
+    if selected_type_id and selected_object_id:
+        evaluated_meta = _build_evaluated_metadata(selected_type_id, selected_object_id)
+
     return render(request, 'evaluacion_form.html', {
         'form': form,
         'model_types': model_types,
+        'evaluated_meta': evaluated_meta,
         'related_links': [
             (reverse('evaluation-list'), 'Lista de evaluaciones'),
             (reverse('checklist-templates'), 'Plantillas de checklist'),
@@ -942,7 +1059,72 @@ class RiskEvaluationDetailView(DetailView):
                 })
 
         context['evaluated_fields'] = base_fields
+        # Metadata del objeto evaluado para enlaces y cabeceras
+        try:
+            ct = self.object.evaluated_type
+            model_class = ct.model_class()
+            model_name = model_class._meta.model_name if model_class else None
+            type_label = model_class._meta.verbose_name.title() if model_class else ''
+        except Exception:
+            ct = None
+            model_name = None
+            type_label = ''
+
+        detail_map = {
+            'informationassets': 'informationassets-detail',
+            'vendor': 'vendor-detail',
+            'project': 'project-detail',
+            'clientcompany': 'clientcompany-detail',
+        }
+        detail_url = None
+        if model_name:
+            try:
+                url_name = detail_map.get(model_name)
+                if url_name:
+                    detail_url = reverse(url_name, args=[self.object.evaluated_id])
+            except Exception:
+                detail_url = None
+
+        context['evaluated_meta'] = {
+            'id': self.object.evaluated_id,
+            'name': str(evaluated) if evaluated else '',
+            'type': type_label,
+            'detail_url': detail_url,
+        }
         return context
+
+
+class RiskEvaluationUpdateView(LoginRequiredMixin, UpdateView):
+    """Permite editar una evaluación existente reutilizando el formulario base."""
+    model = RiskEvaluation
+    form_class = RiskEvaluationForm
+    template_name = 'evaluacion_form.html'
+    context_object_name = 'evaluation'
+    login_url = 'login'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        obj = self.get_object()
+        initial['model_type'] = obj.evaluated_type
+        initial['object_id'] = str(obj.evaluated_id)
+        return initial
+
+    def get_success_url(self):
+        return reverse('evaluation-detail', args=[self.object.pk])
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        model_types = ContentType.objects.filter(model__in=[
+            'informationassets', 'vendor', 'project', 'clientcompany'
+        ])
+        ctx['model_types'] = model_types
+        ctx['evaluated_meta'] = _build_evaluated_metadata(self.object.evaluated_type_id, self.object.evaluated_id)
+        ctx['related_links'] = [
+            (reverse('evaluation-list'), 'Lista de evaluaciones'),
+            (reverse('checklist-templates'), 'Plantillas de checklist'),
+        ]
+        ctx['action_type'] = 'Editar'
+        return ctx
 
 
 @login_required
@@ -1115,6 +1297,13 @@ def crear_tratamiento(request):
     model_types = ContentType.objects.filter(model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
     ])
+    evaluation_id = request.GET.get('evaluation_id') or request.POST.get('evaluation_id')
+    evaluation_obj = None
+    evaluation_meta = None
+
+    if evaluation_id:
+        evaluation_obj = RiskEvaluation.objects.filter(pk=evaluation_id).select_related('evaluated_type').first()
+        evaluation_meta = _build_evaluation_metadata(evaluation_obj)
     
     if request.method == 'POST':
         
@@ -1139,7 +1328,21 @@ def crear_tratamiento(request):
             logger.warning("Formulario inválido en crear_tratamiento para user %s", request.user)
             # Mostramos los choices que están cargados para el select
     else:
-        form = TreatmentForm()
+        initial = {}
+        if evaluation_obj:
+            initial['model_type'] = evaluation_obj.evaluated_type_id
+            initial['object_id'] = str(evaluation_obj.evaluated_id)
+
+        form = TreatmentForm(initial=initial)
+
+        if evaluation_obj:
+            try:
+                model_class = evaluation_obj.evaluated_type.model_class()
+                form.fields['object_id'].choices = [
+                    (str(obj.pk), str(obj)) for obj in model_class.objects.all()
+                ]
+            except Exception:
+                pass
         
 
     return render(request, 'treatment-create.html', {
@@ -1149,6 +1352,8 @@ def crear_tratamiento(request):
             (reverse('treatment-list'), 'Lista de tratamientos'),
             (reverse('checklist-templates'), 'Plantillas de checklist'),
         ],
+        'evaluation_meta': evaluation_meta,
+        'action_type': 'Crear',
     })
 
 
@@ -1184,6 +1389,11 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
         model_name = self.model._meta.model_name
         context['list_url_name'] = f'{model_name}-list'
         context['action_type'] = 'Editar'
+        try:
+            evaluation = getattr(self.object, 'risk_evaluation', None)
+        except Exception:
+            evaluation = None
+        context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
     
     def form_valid(self, form):

@@ -21,26 +21,26 @@
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
 {% comment %}
-                <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}">
                     <i class="fa-solid fa-gear"></i> Configuración
                 </a>
 {% endcomment %}
-            <a class="btn btn-primary btn-flat" href="{% url create_view %}">
+            <a class="btn btn-primary btn-sm" href="{% url create_view %}">
                 <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
             </a>
             {% if model_name == 'informationassets' %}
-            <a class="btn btn-outline-secondary btn-flat" href="{% url 'asset-actions-all' %}">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-actions-all' %}">
               <i class="fas fa-history"></i> {% trans "Historial de préstamos" %}
             </a>
             {% endif %}
             {% if model_name == 'vendor' %}
-            <a class="btn btn-secondary btn-flat" href="{% url 'checklist-template-create' %}">
+            <a class="btn btn-secondary btn-sm" href="{% url 'checklist-template-create' %}">
               <i class="fa-solid fa-list-check"></i> {% trans "Crear plantilla de checklist" %}
             </a>
-            <a class="btn btn-success btn-flat" href="{% url 'vendor-evaluation-create' %}">
+            <a class="btn btn-success btn-sm" href="{% url 'vendor-evaluation-create' %}">
               <i class="fa-solid fa-file-pen"></i> {% trans "Crear evaluación" %}
             </a>
-            <a class="btn btn-info btn-flat" href="{% url 'vendor-evaluations-pending' %}">
+            <a class="btn btn-info btn-sm" href="{% url 'vendor-evaluations-pending' %}">
               <i class="fa-solid fa-clock-rotate-left"></i> {% trans "Evaluaciones pendientes" %}
             </a>
             {% endif %}

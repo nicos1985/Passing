@@ -1,0 +1,18 @@
+{# Usage: {% include "ui/kpi_tile.html" with label="Evaluaciones" value="128" delta="12%" delta_state="positive" accent_color="#0d6efd" %} #}
+<div class="ui-kpi {{ extra_class|default:'' }}" style="--accent-color: {{ accent_color|default:'#0d6efd' }};">
+  <div class="ui-kpi-label">{{ label }}</div>
+  <div class="d-flex align-items-center gap-2">
+    <div class="ui-kpi-value">{{ value }}</div>
+    {% if delta %}
+      {% if delta_state == 'negative' %}
+        <span class="badge bg-danger">{{ delta }}</span>
+      {% elif delta_state == 'neutral' %}
+        <span class="badge bg-secondary">{{ delta }}</span>
+      {% else %}
+        <span class="badge bg-success">{{ delta }}</span>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% if caption %}<div class="text-muted small">{{ caption }}</div>{% endif %}
+  {% if sparkline_placeholder %}<div class="mt-2 ui-chart-box" style="height: 60px;">{{ sparkline_placeholder }}</div>{% endif %}
+</div>

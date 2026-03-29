@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}
+<style>
+  body { background: #0d1117; color: #e6edf3; }
+  :root { --shadow-soft: 0 6px 20px rgba(0,0,0,0.4); }
+  .accent-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 4px solid var(--accent-color, #58a6ff);
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .accent-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 16px 32px rgba(0,0,0,0.55); }
+  .muted-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; color: #c9d1d9; }
+  .sparkline { height: 60px; background: linear-gradient(135deg, rgba(88,166,255,0.14), rgba(63,185,80,0.14)); border-radius: 8px; }
+  .chart-box { height: 320px; background: radial-gradient(circle at 20% 20%, rgba(88,166,255,0.12), transparent 40%), radial-gradient(circle at 80% 0%, rgba(247,200,67,0.16), transparent 45%); border: 1px dashed #30363d; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #8b949e; font-weight: 600; }
+  .table-metric td, .table-metric th { padding: 0.35rem 0.5rem; }
+  .table thead { color: #e6edf3; }
+  .table-light { background: #161b22; }
+  .table-hover tbody tr:hover { background: #1f2530; }
+  .text-muted { color: #c9d1d9 !important; }
+  .btn-outline-secondary { border-color: #30363d; color: #e6edf3; }
+  .btn-outline-secondary:hover { background: #21262d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div>
+      <div class="muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-1">{% trans "Dashboard de indicadores" %}</h3>
+      <p class="text-muted mb-0">{% trans "Versión dark del dashboard para probar KPIs y charts." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Filtrar" %}</button>
+      <button class="btn btn-outline-primary">{% trans "Exportar" %}</button>
+      <button class="btn btn-primary">{% trans "Nueva vista" %}</button>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="accent-card p-3" style="--accent-color: #58a6ff;">
+        <div class="muted-title mb-1">{% trans "Evaluaciones" %}</div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="display-6 mb-0">128</div>
+          <span class="badge bg-success">+12%</span>
+        </div>
+        <div class="text-muted small">{% trans "Últimos 30 días" %}</div>
+        <div class="sparkline mt-2"></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="accent-card p-3" style="--accent-color: #3fb950;">
+        <div class="muted-title mb-1">{% trans "Proveedores" %}</div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="display-6 mb-0">86</div>
+          <span class="badge bg-success">+4%</span>
+        </div>
+        <div class="text-muted small">{% trans "Onboarding completado" %}</div>
+        <div class="sparkline mt-2"></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="accent-card p-3" style="--accent-color: #f7c843;">
+        <div class="muted-title mb-1">{% trans "Alertas" %}</div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="display-6 mb-0">42</div>
+          <span class="badge bg-warning text-dark">{% trans "Estable" %}</span>
+        </div>
+        <div class="text-muted small">{% trans "Críticas y altas" %}</div>
+        <div class="sparkline mt-2"></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="accent-card p-3" style="--accent-color: #a371f7;">
+        <div class="muted-title mb-1">{% trans "SLAs" %}</div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="display-6 mb-0">92%</div>
+          <span class="badge bg-success">{% trans "OK" %}</span>
+        </div>
+        <div class="text-muted small">{% trans "Cumplimiento mensual" %}</div>
+        <div class="sparkline mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="accent-card p-3" style="--accent-color: #58a6ff;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="muted-title mb-1">{% trans "Tendencia" %}</div>
+            <h5 class="mb-0">{% trans "Evaluaciones por severidad" %}</h5>
+          </div>
+          <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-secondary active">{% trans "Mes" %}</button>
+            <button class="btn btn-outline-secondary">{% trans "Trimestre" %}</button>
+            <button class="btn btn-outline-secondary">{% trans "Año" %}</button>
+          </div>
+        </div>
+        <div class="chart-box">
+          {% trans "Placeholder de gráfico (líneas/áreas)." %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="accent-card p-3 h-100" style="--accent-color: #3fb950;">
+        <div class="muted-title mb-1">{% trans "Distribución" %}</div>
+        <h5 class="mb-3">{% trans "Riesgos por categoría" %}</h5>
+        <div class="chart-box" style="height: 260px;">
+          {% trans "Placeholder gráfico de dona / barras apiladas." %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="accent-card p-3" style="--accent-color: #f7c843;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">{% trans "Top pendientes" %}</h5>
+          <a href="#" class="small text-decoration-none text-muted">{% trans "Ver todo" %}</a>
+        </div>
+        <table class="table table-sm table-hover align-middle mb-0 table-metric">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Nombre" %}</th>
+              <th>{% trans "Estado" %}</th>
+              <th class="text-end">{% trans "Días" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Proveedor ACME</td>
+              <td><span class="badge bg-danger">{% trans "Vencido" %}</span></td>
+              <td class="text-end">12</td>
+            </tr>
+            <tr>
+              <td>Backup DC</td>
+              <td><span class="badge bg-warning text-dark">{% trans "En curso" %}</span></td>
+              <td class="text-end">5</td>
+            </tr>
+            <tr>
+              <td>Onboarding HR</td>
+              <td><span class="badge bg-success">{% trans "OK" %}</span></td>
+              <td class="text-end">1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="accent-card p-3" style="--accent-color: #2ea0b6;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">{% trans "SLAs / Tickets" %}</h5>
+          <div class="badge bg-dark text-light">{% trans "Última hora" %}</div>
+        </div>
+        <div class="chart-box" style="height: 220px;">
+          {% trans "Placeholder barras horizontales / burbujas." %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

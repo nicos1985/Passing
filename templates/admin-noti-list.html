@@ -19,21 +19,14 @@
 
 
 
-<div class="container" style="height: 60px;">
-    <h2>{% trans "Notificaciones" %}</h2>
-</div>
-
-{% if request.user.is_authenticated %}
-
-
-
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-semibold">{% trans "Notificaciones" %}</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'listpass' %}">
+      <i class="fa-solid fa-bars me-1"></i>{% trans "Lista" %}
+    </a>
+  </div>
 <div class="container">
-    <button class="btn">
-        <a class="btn btn-primary btn-flat" href="{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i>  {% trans "Lista" %}</a>
-    </button>
-</div>
-<div>
-    <div class="container">
     <table class="table" id="data">
         <thead class="table-dark">
         
@@ -107,9 +100,6 @@
 </div>
      
           
-{% endif %}
-
-
 {% endblock %}
 
 {% block javascript %}

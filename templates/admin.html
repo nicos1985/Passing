@@ -7,6 +7,7 @@
         .admin-card {
             transition: all 0.3s ease;
             border: none;
+            border-left: 4px solid var(--accent-color, #0d6efd);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             height: 100%;
         }
@@ -24,7 +25,7 @@
         .admin-card-icon {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            color: #0d6efd;
+            color: var(--accent-color, #0d6efd);
         }
         
         .admin-card h5 {
@@ -37,7 +38,7 @@
             margin-top: 2rem;
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
-            border-bottom: 3px solid #0d6efd;
+            border-bottom: 4px solid #0d6efd;
         }
         
         .section-header h3 {
@@ -104,7 +105,7 @@
     <div class="container mt-4">
         <div class="mb-4">
             <h1 class="display-6">{% trans "Panel de Administración" %}</h1>
-            <p class="text-muted">{% blocktrans %}Bienvenido, <strong>{{ user.username }}</strong>{% endblocktrans %}</p>
+            <p class="text-muted">{% blocktrans %}Bienvenido, <strong>{{ request.user.username }}</strong>{% endblocktrans %}</p>
         </div>
 
         <!-- Sección Configuración General -->
@@ -139,6 +140,48 @@
                     </div>
                 </a>
             </div>
+
+            <div class="col">
+                <a href="{% url 'docmanager:drive_config' %}" class="admin-link">
+                    <div class="card admin-card" style="--accent-color: #3b82f6;">
+                        <div class="card-body">
+                            <div class="admin-card-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h5>{% trans "Google Drive" %}</h5>
+                            <small class="text-muted">{% trans "Service Account cifrada" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="{% url 'docmanager:drive_status' %}" class="admin-link">
+                    <div class="card admin-card" style="--accent-color: #10b981;">
+                        <div class="card-body">
+                            <div class="admin-card-icon">
+                                <i class="fa-solid fa-wave-square"></i>
+                            </div>
+                            <h5>{% trans "Estado Drive" %}</h5>
+                            <small class="text-muted">{% trans "Ver conexión" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="{% url 'docmanager:drive_browse' %}" class="admin-link">
+                    <div class="card admin-card" style="--accent-color: #6366f1;">
+                        <div class="card-body">
+                            <div class="admin-card-icon">
+                                <i class="fa-solid fa-folder-tree"></i>
+                            </div>
+                            <h5>{% trans "Explorar Drive" %}</h5>
+                            <small class="text-muted">{% trans "Listar carpetas/archivos" %}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Sección Inteligencia de Amenazas -->
@@ -148,9 +191,9 @@
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
                 <a href="{% url 'threat_intel:source-list' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #17a2b8;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #17a2b8;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-database"></i>
                             </div>
                             <h5>{% trans "Fuentes de Datos" %}</h5>
@@ -161,9 +204,9 @@
             </div>
             <div class="col">
                 <a href="{% url 'threat_intel:techtag-list' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #ffc107;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #ffc107;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-tags"></i>
                             </div>
                             <h5>{% trans "Etiquetas de Tecnología" %}</h5>
@@ -181,9 +224,9 @@
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
                 <a href="{% url 'userlist' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #28a745;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #28a745;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-user"></i>
                             </div>
                             <h5>{% trans "Gestionar Usuarios" %}</h5>
@@ -194,9 +237,9 @@
             </div>
             <div class="col">
                 <a href="{% url 'usersaudit' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #fd7e14;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #fd7e14;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-magnifying-glass"></i>
                             </div>
                             <h5>{% trans "Auditoría" %}</h5>
@@ -214,9 +257,9 @@
         <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
             <div class="col">
                 <a href="{% url 'permissionlist' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #dc3545;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #dc3545;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-key"></i>
                             </div>
                             <h5>{% trans "Ver Permisos" %}</h5>
@@ -228,9 +271,9 @@
             {% if request.user.is_superuser %}
             <div class="col">
                 <a href="{% url 'permissionform1' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #dc3545;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #dc3545;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-shield"></i>
                             </div>
                             <h5>{% trans "Asignar Permisos" %}</h5>
@@ -242,9 +285,9 @@
             {% endif %}
             <div class="col">
                 <a href="{% url 'roles' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #6c757d;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #6c757d;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-eye"></i>
                             </div>
                             <h5>{% trans "Ver Roles" %}</h5>
@@ -258,9 +301,9 @@
         <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
             <div class="col">
                 <a href="{% url 'permissionrolescreate' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #6c757d;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #6c757d;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-scroll"></i>
                             </div>
                             <h5>{% trans "Crear un Rol" %}</h5>
@@ -271,9 +314,9 @@
             </div>
             <div class="col">
                 <a href="{% url 'assignroluser' %}" class="admin-link">
-                    <div class="card admin-card">
+                    <div class="card admin-card" style="--accent-color: #6c757d;">
                         <div class="card-body">
-                            <div class="admin-card-icon" style="color: #6c757d;">
+                            <div class="admin-card-icon">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
                             <h5>{% trans "Asignar un Rol" %}</h5>

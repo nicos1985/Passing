@@ -2,39 +2,32 @@
 {% load i18n %}
 
 {% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-semibold"><i class="fas fa-power-off me-2"></i>{{ title }}</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'listsection' %}">
+      <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Cancelar" %}
+    </a>
+  </div>
 
-<div class="container pt-5">
-
-    <div class="card center">
-        <div class="card-title">
-            <div class="container" style="height: 85px; padding-top: 20px;">
-                <h2><i class="fas fa-power-off"></i> {{ title }}</h2>
-            </div>
-        </div>
-
-        <div class="card-body" style="background-color: #F7F7F7;">
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    <h5>
-                        {% blocktrans with action=action name=object.nombre_seccion %}¿Estás seguro que deseas {{ action }}: {{ name }}?{% endblocktrans %}
-                    </h5>
-                </form>
-            </div>
-
-            <div class="d-flex gap-2" style="padding: 1rem;">
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-power-off"></i> {{ action }}
-                    </button>
-                </form>
-
-                <a class="btn btn-primary btn-flat" href="{% url 'listsection' %}">
-                    <i class="fas fa-ban"></i> {% trans "Cancelar" %}
-                </a>
-            </div>
-        </div>
+  <div class="card ui-accent-card" style="--accent-color: #198754;">
+    <div class="card-header">
+      <span>{% trans "Confirmar acción" %}</span>
     </div>
-
+    <div class="card-body">
+      <p class="mb-0">
+        {% blocktrans with action=action name=object.nombre_seccion %}¿Estás seguro que deseas {{ action }}: {{ name }}?{% endblocktrans %}
+      </p>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success btn-sm">
+          <i class="fas fa-power-off me-1"></i>{{ action }}
+        </button>
+      </form>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'listsection' %}">{% trans "Cancelar" %}</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

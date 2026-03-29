@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="ui-muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-0">{% trans "Crear registro" %}</h3>
+      <p class="text-muted mb-0">{% trans "Usá este mock para definir el look & feel de formularios de creación." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Cancelar" %}</button>
+      <button class="btn btn-primary">{% trans "Guardar" %}</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+        <div class="card-header">{% trans "Datos principales" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Título" %}</label>
+              <input type="text" class="form-control" placeholder="{% trans 'Nombre del registro' %}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Owner" %}</label>
+              <select class="form-select">
+                <option>{% trans "Seleccionar" %}</option>
+                <option>Ana Gómez</option>
+                <option>Juan Pérez</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">{% trans "Descripción" %}</label>
+              <textarea class="form-control" rows="3" placeholder="{% trans 'Breve descripción del objetivo' %}"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #20c997;">
+        <div class="card-header">{% trans "Parámetros" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Severidad" %}</label>
+              <select class="form-select">
+                <option>{% trans "Baja" %}</option>
+                <option selected>{% trans "Media" %}</option>
+                <option>{% trans "Alta" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Estado" %}</label>
+              <select class="form-select">
+                <option>{% trans "Borrador" %}</option>
+                <option selected>{% trans "Activo" %}</option>
+                <option>{% trans "Archivado" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Fecha objetivo" %}</label>
+              <input type="date" class="form-control">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card ui-accent-card" style="--accent-color: #ffc107;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Metadatos" %}</span>
+          <span class="badge bg-light text-dark">{% trans "Opcional" %}</span>
+        </div>
+        <div class="card-body ui-card-body-pad">
+          <label class="form-label">{% trans "Etiquetas" %}</label>
+          <input type="text" class="form-control" placeholder="risk, vendor, 2024">
+          <small class="text-muted d-block mt-2">{% trans "Separá con comas." %}</small>
+          <hr>
+          <label class="form-label">{% trans "Adjuntos" %}</label>
+          <div class="border rounded p-3 text-center text-muted">{% trans "Arrastrá archivos o haz clic para seleccionar" %}</div>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #6f42c1;">
+        <div class="card-header">{% trans "Ayuda contextual" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <p class="text-muted mb-0">{% trans "Usá este bloque para instrucciones rápidas, enlaces a guías, checklist, etc." %}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

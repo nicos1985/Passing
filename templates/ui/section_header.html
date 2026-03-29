@@ -1,0 +1,9 @@
+{# Usage: {% include "ui/section_header.html" with title="Título" subtitle="Texto" actions=toolbar_html accent_color="#0d6efd" %} #}
+<div class="ui-accent-header" style="--accent-color: {{ accent_color|default:'#0d6efd' }};">
+  <div>
+    <div class="ui-muted-title">{{ eyebrow|default:'' }}</div>
+    <h5 class="mb-0">{{ title }}</h5>
+    {% if subtitle %}<div class="text-muted small">{{ subtitle }}</div>{% endif %}
+  </div>
+  {% if actions %}<div class="d-flex align-items-center gap-2">{{ actions }}</div>{% endif %}
+</div>

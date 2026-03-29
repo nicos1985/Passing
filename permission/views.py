@@ -94,6 +94,12 @@ def gestion_permisos(request, usuario_id):
             'usuario' : usuario,
             'contraseñas' : contrasenas,
         })
+
+    return render(request, 'create-perm-p2.html', {
+        'permiso_form': permiso_form,
+        'usuario': usuario,
+        'contraseñas': contrasenas,
+    })
         
 @user_passes_test(is_administrator)
 def grant_permission(request, id_cont, id_user_share, id_noti, id_user):

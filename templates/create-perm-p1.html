@@ -1,41 +1,33 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 {% load i18n %}
 
 {% block content %}
-<div class="container pt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-4 col-md-6 col-sm-8">
-            <div class="card center">
-                <div class="card-title">
-                        <div class="container" style="height: 105px; padding-top: 20px;">
-                            <h2><i class="fas fa-plus"></i> {% trans "Crear Permiso" %}</h2>
-                            <button class="btn">
-                                <a class="btn btn-primary btn-flat" href="{% url 'config' %}">
-                                    <i class="fa-solid fa-gear"></i> {% trans "Configuración" %}
-                                </a>
-                            </button>
-                        </div>
-                </div>
-                    <div class="card-body" style="background-color: #F7F7F7;">
-                        <h5>{% trans "Elige el usuario a dar permisos" %}</h5>
-                    </div>
-                <div class="card-body" style="background-color: #F7F7F7;">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <div class="card-body">
-                                {{ usuario_form }}
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-flat">
-                            {% trans "Siguiente" %} <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0 fw-semibold"><i class="fas fa-plus me-2"></i>{% trans "Crear Permiso" %}</h4>
+      <small class="text-muted">{% trans "Elige el usuario a dar permisos" %}</small>
     </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}">
+      <i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}
+    </a>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+      <div class="card-header">
+        <span>{% trans "Seleccionar usuario" %}</span>
+      </div>
+      <div class="card-body">
+        {{ usuario_form }}
+      </div>
+      <div class="card-footer bg-transparent">
+        <button type="submit" class="btn btn-primary btn-sm">
+          {% trans "Siguiente" %} <i class="fas fa-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </form>
 </div>
-
-
 {% endblock %}

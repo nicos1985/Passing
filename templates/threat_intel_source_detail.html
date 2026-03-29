@@ -8,7 +8,7 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3">
-            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:source-list' %}">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'threat_intel:source-list' %}">
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Fuentes" %}
             </a>
             <a href="{% url 'threat_intel:source-update' source.id %}" class="btn btn-warning">

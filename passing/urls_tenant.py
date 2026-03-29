@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.urls import path, include
+from django.views.generic import TemplateView
 from django.conf.urls.static import static
 from .views import home_tenant, test_send_email, UpdateEmailConfigView, set_language
 
@@ -26,9 +27,50 @@ urlpatterns = [
     path("threat-intel/", include("threat_intel.urls")),
     path("pass/", include("passbase.urls")),
     path("notifications/", include("notifications.urls")),
+    path("docmanager/", include("docmanager.urls")),
     path("perm/", include("permission.urls")),
     path("test_send_email/", test_send_email, name="test_send_email"),
     path("update_email_config/", UpdateEmailConfigView.as_view(), name="update_email_config"),
+    path(
+        "mockups/dashboard/",
+        TemplateView.as_view(template_name="mockups/dashboard.html"),
+        name="mock_dashboard",
+    ),
+    path(
+        "mockups/dashboard/dark/",
+        TemplateView.as_view(template_name="mockups/dashboard_dark.html"),
+        name="mock_dashboard_dark",
+    ),
+    path(
+        "mockups/forms/create/",
+        TemplateView.as_view(template_name="mockups/form_create.html"),
+        name="mock_form_create",
+    ),
+    path(
+        "mockups/forms/create/dark/",
+        TemplateView.as_view(template_name="mockups/form_create_dark.html"),
+        name="mock_form_create_dark",
+    ),
+    path(
+        "mockups/forms/update/",
+        TemplateView.as_view(template_name="mockups/form_update.html"),
+        name="mock_form_update",
+    ),
+    path(
+        "mockups/forms/update/dark/",
+        TemplateView.as_view(template_name="mockups/form_update_dark.html"),
+        name="mock_form_update_dark",
+    ),
+    path(
+        "mockups/detail/",
+        TemplateView.as_view(template_name="mockups/detail.html"),
+        name="mock_detail",
+    ),
+    path(
+        "mockups/detail/dark/",
+        TemplateView.as_view(template_name="mockups/detail_dark.html"),
+        name="mock_detail_dark",
+    ),
 ]
 
 if settings.DEBUG:

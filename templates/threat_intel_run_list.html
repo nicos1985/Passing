@@ -20,7 +20,7 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
-          <a class="btn btn-primary btn-flat" href="{% url 'threat_intel:run-list' %}">
+          <a class="btn btn-primary btn-sm" href="{% url 'threat_intel:run-list' %}">
             <i class="fa-solid fa-refresh"></i> {% trans "Refrescar" %}
           </a>
         </div>

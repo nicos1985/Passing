@@ -36,7 +36,7 @@
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
 
-            <a class="btn btn-primary btn-flat" href="{% url create_view %}">
+            <a class="btn btn-primary btn-sm" href="{% url create_view %}">
               <i class="fa-solid fa-plus"></i> {% blocktrans %}Alta de {{ verbose_name_plural }}{% endblocktrans %}
             </a>
         </div>

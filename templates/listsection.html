@@ -17,13 +17,13 @@
 {% endblock %}
 
 {% block content %}
-
-<div class="container" style="height: 60px;">
-    <h2>{{ title }}</h2>
-</div>
-
-
-    <div class="container">
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-semibold">{{ title }}</h4>
+    <a class="btn btn-primary btn-sm" href="{% url 'createsection' %}">
+      <i class="fas fa-plus me-1"></i>{% trans "Nueva Sección" %}
+    </a>
+  </div>
         
 
 
@@ -54,12 +54,13 @@
                         </td>
                         <td>{{ section.created }}</td>
 
-                        <td> <a href=" {% url 'updatesection' section.id %} " <i class="fas fa-pen" style="margin-right:10px; text-decoration-line: None; color:rgb(68, 94, 243);"></i></a>
+                <td>
+                  <a href="{% url 'updatesection' section.id %}" title="{% trans "Editar" %}"><i class="fas fa-pen" style="margin-right:10px; color:rgb(68, 94, 243);"></i></a>
 
                             {% if section.active == True %}
-                            <a href=" {% url 'deletesection' section.id %} " <i class="fas fa-trash" style="margin-right:10px; text-decoration-line: None; color:rgb(216, 48, 48);"></i></a></td>
+                            <a href="{% url 'deletesection' section.id %}" title="{% trans "Eliminar" %}"><i class="fas fa-trash" style="margin-right:10px; color:rgb(216, 48, 48);"></i></a></td>
                             {% elif section.active == False %}
-                            <a href=" {% url 'activesection' section.id %} " <i class="fa-solid fa-power-off" style="margin-right:10px; text-decoration-line: None; color:rgb(54, 173, 54);"></i></a></td>
+                            <a href="{% url 'activesection' section.id %}" title="{% trans "Activar" %}"><i class="fa-solid fa-power-off" style="margin-right:10px; color:rgb(54, 173, 54);"></i></a></td>
                             {% endif %}
                     </tr>
                             
@@ -69,22 +70,6 @@
 
             </table>
 
-            <div>
-                <button class="btn">
-                    <a class="btn btn-primary btn-flat" href="{% url 'createsection' %}">
-                    <i class="fas fa-plus"></i> {% trans "Nueva Sección" %} </a>
-                </button>
-            </div>
-
-            
-        
     </div>
-
+</div>
 {% endblock %}
-
-{% block javascript %}
-
-<script src="{% static 'js/init-datatable.js' %}"></script>
-            
-{% endblock %}
-</html>

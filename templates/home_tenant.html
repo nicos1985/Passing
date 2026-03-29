@@ -1,6 +1,41 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block head %}
+<style>
+  /* Cards with left accent instead of full background */
+  .accent-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-left: 4px solid var(--accent-color, #0d6efd);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    color: #212529;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .accent-card:hover,
+  .card.h-100:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  }
+
+  .card.h-100 {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .accent-card .card-body {
+    padding: 1rem 1.25rem;
+  }
+
+  .accent-header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    border-left: 4px solid var(--accent-color, #0d6efd);
+    color: #212529;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
   {% with nombre=request.user.get_full_name|default:request.user.username %}
@@ -25,7 +60,7 @@
       <div class="row g-3">
         <div class="col-6 col-md-3">
           <a href="{% url 'treatment-list' %}?stage=0" class="text-decoration-none">
-          <div class="card text-white bg-danger h-100">
+          <div class="card accent-card h-100" style="--accent-color: #dc3545;">
             <div class="card-body">
               <h6 class="card-title">{% trans "Pendientes" %}</h6>
               <h2 class="card-text">{{ stage_counts.0|default:0 }}</h2>
@@ -36,7 +71,7 @@
         </div>
         <div class="col-6 col-md-3">
           <a href="{% url 'treatment-list' %}?stage=1" class="text-decoration-none">
-          <div class="card text-dark bg-warning h-100">
+          <div class="card accent-card h-100" style="--accent-color: #ffc107;">
             <div class="card-body">
               <h6 class="card-title">{% trans "Análisis" %}</h6>
               <h2 class="card-text">{{ stage_counts.1|default:0 }}</h2>
@@ -47,7 +82,7 @@
         </div>
         <div class="col-6 col-md-3">
           <a href="{% url 'treatment-list' %}?stage=2" class="text-decoration-none">
-          <div class="card text-white bg-primary h-100">
+          <div class="card accent-card h-100" style="--accent-color: #0d6efd;">
             <div class="card-body">
               <h6 class="card-title">{% trans "En Progreso" %}</h6>
               <h2 class="card-text">{{ stage_counts.2|default:0 }}</h2>
@@ -58,7 +93,7 @@
         </div>
         <div class="col-6 col-md-3">
           <a href="{% url 'treatment-list' %}?stage=3" class="text-decoration-none">
-          <div class="card text-white bg-success h-100">
+          <div class="card accent-card h-100" style="--accent-color: #28a745;">
             <div class="card-body">
               <h6 class="card-title">{% trans "Implementados" %}</h6>
               <h2 class="card-text">{{ stage_counts.3|default:0 }}</h2>
@@ -170,7 +205,7 @@
             <div class="row g-2 mb-3">
               <div class="col-6 col-sm-3">
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=critical&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=critical{% endif %}" class="text-decoration-none">
-                  <div class="card text-white bg-danger h-100">
+                  <div class="card accent-card h-100" style="--accent-color: #dc3545;">
                     <div class="card-body p-2 text-center">
                       <div class="small">{% trans "Critical" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.critical|default:0 }}</div>
@@ -180,8 +215,8 @@
               </div>
               <div class="col-6 col-sm-3">
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=high&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=high{% endif %}" class="text-decoration-none">
-                  <div class="card text-white bg-warning h-100">
-                    <div class="card-body p-2 text-center text-dark">
+                  <div class="card accent-card h-100" style="--accent-color: #ffc107;">
+                    <div class="card-body p-2 text-center">
                       <div class="small">{% trans "High" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.high|default:0 }}</div>
                     </div>
@@ -190,7 +225,7 @@
               </div>
               <div class="col-6 col-sm-3">
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?severity=medium&is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}?priority=medium{% endif %}" class="text-decoration-none">
-                  <div class="card text-white bg-primary h-100">
+                  <div class="card accent-card h-100" style="--accent-color: #0d6efd;">
                     <div class="card-body p-2 text-center">
                       <div class="small">{% trans "Medium" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.medium|default:0 }}</div>
@@ -200,7 +235,7 @@
               </div>
               <div class="col-6 col-sm-3">
                 <a href="{% if last_run_pk %}{% url 'threat_intel:runitem-list' last_run_pk %}?is_relevant=true{% else %}{% url 'threat_intel:analysis-list' %}{% endif %}" class="text-decoration-none">
-                  <div class="card text-white bg-secondary h-100">
+                  <div class="card accent-card h-100" style="--accent-color: #6c757d;">
                     <div class="card-body p-2 text-center">
                       <div class="small">{% trans "Unknown" %}</div>
                       <div class="h4 mb-0">{{ ti_counts.unknown|default:0 }}</div>
@@ -233,7 +268,7 @@
       <div class="col-12 mb-3">
       <div class="card h-100">
         <a class="text-decoration-none" href="{% url 'vendor-evaluations-pending' %}">
-        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+        <div class="card-header accent-header d-flex justify-content-between align-items-center" style="--accent-color: #ffc107;">
           <div>
             <div class="medium text"><i class="fa-solid fa-handshake me-2"></i> {% trans "Evaluaciones de proveedores pendientes" %}</div>
             

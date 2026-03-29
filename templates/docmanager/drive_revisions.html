@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <h2 class="mb-3"><i class="fa-solid fa-clock-rotate-left"></i> {% trans "Revisiones del archivo" %}</h2>
+            <p class="text-muted">{% trans "Historial de versiones visible con la Service Account." %}</p>
+
+            <div class="d-flex justify-content-between mb-3">
+                <a class="btn btn-outline-secondary" href="{% url 'docmanager:drive_browse' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver al explorador" %}</a>
+                <span class="text-monospace small">ID: {{ file_id }}</span>
+            </div>
+
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="fa-solid fa-circle-xmark"></i> {{ error }}
+                </div>
+            {% endif %}
+
+            {% if revisions %}
+                <div class="table-responsive shadow-sm">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans "Nombre" %}</th>
+                                <th>{% trans "Revision" %}</th>
+                                <th>{% trans "Modificado" %}</th>
+                                <th>{% trans "Usuario" %}</th>
+                                <th class="d-none d-lg-table-cell">{% trans "Tam." %}</th>
+                                <th class="d-none d-lg-table-cell">{% trans "Keep forever" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rev in revisions %}
+                                <tr>
+                                    <td>{{ rev.originalFilename|default:"(sin nombre)" }}</td>
+                                    <td class="text-monospace">{{ rev.id }}</td>
+                                    <td>
+                                        {% if rev.modified_dt %}
+                                            {{ rev.modified_dt|date:"Y-m-d H:i" }}
+                                        {% elif rev.modifiedTime %}
+                                            {{ rev.modifiedTime|date:"Y-m-d H:i" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ rev.editor|default:"-" }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ rev.size_human|default:rev.size_int|default:rev.size|default:"-" }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ rev.keepForever|yesno:"Yes,No" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="fa-solid fa-circle-info"></i> {% trans "No hay revisiones visibles para este archivo." %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

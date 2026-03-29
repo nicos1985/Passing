@@ -3,20 +3,20 @@
 {% load static %}
 {% load i18n %}
 {% block content %}
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <h2>{{ item.canonical_id }} - {{ item.title }}</h2>
-                <p class="text-muted">{% trans "Tipo" %}: {{ item.get_kind_display }} | {% trans "Creado" %}: {{ item.created_at|date:"Y-m-d H:i" }}</p>
-            </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0 fw-semibold">{{ item.canonical_id }} &ndash; {{ item.title }}</h4>
+            <p class="text-muted mb-0 small">{% trans "Tipo" %}: {{ item.get_kind_display }} | {% trans "Creado" %}: {{ item.created_at|date:"Y-m-d H:i" }}</p>
         </div>
+    </div>
 
         <!-- Información principal -->
         <div class="row mt-3">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">{% trans "Detalles" %}</h5>
+                <div class="card ui-accent-card" style="--accent-color: #6c757d;">
+                    <div class="card-header">
+                        <span>{% trans "Detalles" %}</span>
                     </div>
                     <div class="card-body">
                         {% for field in fields %}
@@ -30,9 +30,9 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">{% trans "Severidad & Evaluación" %}</h5>
+                <div class="card ui-accent-card" style="--accent-color: #6c757d;">
+                    <div class="card-header">
+                        <span>{% trans "Severidad &amp; Evaluación" %}</span>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
@@ -66,9 +66,9 @@
         {% if analysis %}
         <div class="row mt-3">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">{% blocktrans with name=analysis.model_name %}Análisis IA ({{ name }}){% endblocktrans %}</h5>
+                <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+                    <div class="card-header">
+                        <span>{% blocktrans with name=analysis.model_name %}Análisis IA ({{ name }}){% endblocktrans %}</span>
                     </div>
                     <div class="card-body">
                         {% if analysis.summary_es %}
@@ -139,9 +139,9 @@
         {% if run_items %}
         <div class="row mt-3">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">{% blocktrans with count=run_items|length %}Apariciones en Runs ({{ count }}){% endblocktrans %}</h5>
+                <div class="card ui-accent-card" style="--accent-color: #6c757d;">
+                    <div class="card-header">
+                        <span>{% blocktrans with count=run_items|length %}Apariciones en Runs ({{ count }}){% endblocktrans %}</span>
                     </div>
                     <div class="card-body">
                         <table class="table table-sm">

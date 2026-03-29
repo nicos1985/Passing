@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="ui-muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-0">{% trans "Editar registro" %}</h3>
+      <p class="text-muted mb-0">{% trans "Prototipo para pantallas de edición (update)." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Descartar cambios" %}</button>
+      <button class="btn btn-outline-danger">{% trans "Eliminar" %}</button>
+      <button class="btn btn-primary">{% trans "Guardar cambios" %}</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Datos principales" %}</span>
+          <span class="badge bg-primary-subtle text-primary">{% trans "ID #482" %}</span>
+        </div>
+        <div class="card-body ui-card-body-pad">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Título" %}</label>
+              <input type="text" class="form-control" value="Evaluación Proveedor ACME">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Owner" %}</label>
+              <select class="form-select">
+                <option>Ana Gómez</option>
+                <option selected>Juan Pérez</option>
+                <option>Team Riesgos</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">{% trans "Descripción" %}</label>
+              <textarea class="form-control" rows="3">{% trans "Evaluación anual del proveedor de infraestructura." %}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #20c997;">
+        <div class="card-header">{% trans "Parámetros" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Severidad" %}</label>
+              <select class="form-select">
+                <option>{% trans "Baja" %}</option>
+                <option>{% trans "Media" %}</option>
+                <option selected>{% trans "Alta" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Estado" %}</label>
+              <select class="form-select">
+                <option>{% trans "Borrador" %}</option>
+                <option selected>{% trans "Activo" %}</option>
+                <option>{% trans "Archivado" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Fecha objetivo" %}</label>
+              <input type="date" class="form-control" value="2025-12-15">
+            </div>
+            <div class="col-12">
+              <div class="alert alert-info mb-0">
+                <strong>{% trans "Nota" %}:</strong> {% trans "Este bloque puede mostrar cambios no guardados, warnings o helpers." %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card ui-accent-card" style="--accent-color: #ffc107;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Metadatos" %}</span>
+          <span class="badge bg-light text-dark">{% trans "Editable" %}</span>
+        </div>
+        <div class="card-body ui-card-body-pad">
+          <label class="form-label">{% trans "Etiquetas" %}</label>
+          <input type="text" class="form-control" value="vendor, annual, risk">
+          <small class="text-muted d-block mt-2">{% trans "Separá con comas." %}</small>
+          <hr>
+          <label class="form-label">{% trans "Adjuntos" %}</label>
+          <div class="border rounded p-3 text-center text-muted">{% trans "Listado de archivos adjuntos iría aquí." %}</div>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #6f42c1;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Historial" %}</span>
+          <span class="badge bg-light text-dark">{% trans "Actividad" %}</span>
+        </div>
+        <div class="card-body ui-card-body-pad">
+          <ul class="list-unstyled mb-0 small">
+            <li><strong>09:21</strong> — {% trans "Guardado por" %} Ana</li>
+            <li><strong>08:10</strong> — {% trans "Comentario agregado" %}</li>
+            <li><strong>07:55</strong> — {% trans "Adjunto subido" %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

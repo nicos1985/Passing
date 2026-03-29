@@ -11,6 +11,10 @@ django-tenants==3.7.0
 exceptiongroup==1.1.1
 h11==0.14.0
 idna==3.4
+celery==5.3.6
+google-api-python-client==2.151.0
+google-auth==2.28.1
+google-auth-httplib2==0.2.0
 outcome==1.2.0
 Pillow==10.1.0
 psycopg2==2.9.9

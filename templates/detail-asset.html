@@ -2,86 +2,90 @@
 {% load static %}
 {% load i18n %}
 
-{% block head %}
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/css/dataTables.bootstrap5.min.css' %}" />
-<link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}" />
-<script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
-{% endblock %}
-
 {% block content %}
-
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>{% trans "Detalle del Activo" %}</h2>
-        <a class="btn btn-primary" href="{% url 'asset-list' %}"><i class="fa-solid fa-bars"></i> {% trans "Lista de Activos" %}</a>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0 fw-semibold"><i class="fa-solid fa-server me-2"></i>{{ object.name }}</h4>
+      <small class="text-muted">{% trans "Detalle del Activo" %}</small>
     </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-list' %}">
+        <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver" %}
+      </a>
+      {% if request.user.is_authenticated %}
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'asset-update' object.pk %}">
+          <i class="fa-solid fa-pen me-1"></i>{% trans "Editar" %}
+        </a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'asset-delete' object.pk %}">
+          <i class="fa-solid fa-trash me-1"></i>{% trans "Eliminar" %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
 
-    <div class="card mt-3">
-        <div class="card-header bg-dark text-white">
-            <h3 class="mb-0">{{ object.name }}</h3>
+  <div class="row g-3">
+    <!-- Columna principal -->
+    <div class="col-lg-8">
+      <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+        <div class="card-header">
+          <span>{% trans "Información del activo" %}</span>
         </div>
         <div class="card-body">
-            <table class="table table-striped">
-                <tbody>
-                    <tr>
-                        <th scope="row">{% trans "Descripción" %}:</th>
-                        <td>{{ object.description }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Código" %}:</th>
-                        <td>{{ object.code }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Valor" %}:</th>
-                        <td>${{ object.value }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Estado" %}:</th>
-                        <td>{{ object.status }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Ubicación" %}:</th>
-                        <td>{{ object.location }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Categoría" %}:</th>
-                        <td>{{ object.category }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Número de Serie" %}:</th>
-                        <td>{{ object.serial_number }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Clasificación de Información" %}:</th>
-                        <td>{{ object.information_classification }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Propietario" %}:</th>
-                        <td><a href="{% url 'detail-user' object.pk %}">{{ object.owner }}</a></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Fecha de Creación" %}:</th>
-                        <td>{{ object.created|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{% trans "Última Modificación" %}:</th>
-                        <td>{{ object.updated|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                </tbody>
-            </table>
+          <dl class="row mb-0">
+            <dt class="col-sm-4">{% trans "Nombre" %}</dt>
+            <dd class="col-sm-8">{{ object.name }}</dd>
+
+            <dt class="col-sm-4">{% trans "Descripción" %}</dt>
+            <dd class="col-sm-8">{{ object.description|default:"-" }}</dd>
+
+            <dt class="col-sm-4">{% trans "Tipo de activo" %}</dt>
+            <dd class="col-sm-8">{{ object.get_asset_type_display }}</dd>
+
+            <dt class="col-sm-4">{% trans "Clasificación de información" %}</dt>
+            <dd class="col-sm-8">{{ object.get_information_classification_display }}</dd>
+
+            <dt class="col-sm-4">{% trans "Nivel de datos personales" %}</dt>
+            <dd class="col-sm-8">{{ object.get_personal_data_level_display }}</dd>
+
+            <dt class="col-sm-4">{% trans "Valor monetario" %}</dt>
+            <dd class="col-sm-8">{% if object.value %}${{ object.value }}{% else %}-{% endif %}</dd>
+
+            <dt class="col-sm-4">{% trans "Número de serie" %}</dt>
+            <dd class="col-sm-8">{{ object.serial_number|default:"-" }}</dd>
+
+            <dt class="col-sm-4">{% trans "Ubicación" %}</dt>
+            <dd class="col-sm-8">{{ object.location|default:"-" }}</dd>
+          </dl>
         </div>
+      </div>
     </div>
 
-    {% if request.user.is_authenticated %}
-    <div class="mt-3">
-        <a href="{% url 'asset-update' object.pk %}" class="btn btn-warning"><i class="fa-solid fa-edit"></i> {% trans "Editar" %}</a>
-        <a href="{% url 'asset-delete' object.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash"></i> {% trans "Eliminar" %}</a>
+    <!-- Metadatos -->
+    <div class="col-lg-4">
+      <div class="card ui-accent-card" style="--accent-color: #6c757d;">
+        <div class="card-header">
+          <span>{% trans "Metadatos" %}</span>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-5">{% trans "Estado" %}</dt>
+            <dd class="col-sm-7">{{ object.get_status_display }}</dd>
+
+            <dt class="col-sm-5">{% trans "Propietario" %}</dt>
+            <dd class="col-sm-7">
+              <a href="{% url 'detail-user' object.owner.pk %}">{{ object.owner }}</a>
+            </dd>
+
+            <dt class="col-sm-5">{% trans "Creado" %}</dt>
+            <dd class="col-sm-7">{{ object.created|date:"d/m/Y H:i" }}</dd>
+
+            <dt class="col-sm-5">{% trans "Modificado" %}</dt>
+            <dd class="col-sm-7">{{ object.updated|date:"d/m/Y H:i" }}</dd>
+          </dl>
+        </div>
+      </div>
     </div>
-    {% endif %}
+  </div>
 </div>
-
 {% endblock %}

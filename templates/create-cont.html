@@ -1,214 +1,178 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load i18n %}
 
 {% block content %}
-<div class="container pt-5">
-    <div class="row">
-        <div class="col-md-5 mx-auto"> 
-    
-            <div class="card-title" >
-                <div class="container" style="height: 105px; padding-top: 20px;"style="background-color: #F7F7F7 ;">
-                    <h2><i class="fas fa-plus" ></i>{{title}}</h2>
-                    <button class="btn">
-                        <a class="btn btn-primary btn-flat" href="{% url 'listpass' %}"> <i class="fa-solid fa-bars"></i> {% trans "Lista" %}</a>
-                    </button>
-                </div>
-            </div>
-
-            <div class="card-body">
-                    <form method="POST" action="{% url 'createpass' %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-
-                        {{form.errors}}
-                        
-
-                        <div class="form-group">
-
-                            <label for="nombre_contra" style="margin-top:20px;"> {% trans "Nombre de Contraseña:" %} </label>
-                            <input id="nombre_contra" type="text" class='form-control' name="nombre_contra" maxlength="100" style="margin-top:5px;" required>
-                            
-
-                            <label for="seccion" style="margin-top:20px;">Sección:</label>
-
-                            <div class="input-group">
-                            
-                                <select name="seccion" placeholder="Elija la seccion" class="form-control" autocomplete="off" style="margin-top:5px;" required="" id="id_seccion">
-                                  {% for section in sections %}
-                                  <option value = {{section.id}}> {{section.nombre_seccion}} </option>
-                                  {% endfor %}
-                                     
-                                </select>
-                                <a class="btn btn-primary center" href="{% url 'createsection' %}"><i class="fas fa-plus" style="margin-top:5px;"></i></a> 
-
-                            </div>
-
-                            <label for="link" style="margin-top:20px;">{% trans "Link:" %}</label>
-                            <input id="link" type="text" class='form-control' name="link" maxlength="100" style="margin-top:5px;" required>
-
-                            <label for="usuario" style="margin-top:20px;">{% trans "Usuario:" %}</label>
-                            <input id="usuario" type="text" class='form-control' name="usuario" maxlength="100" style="margin-top:5px;" required autocomplete="username">
-
-                           <!-- Aqui está el generador de contraseñas -->
-                            <div class="card text-bg-light" style="margin-top:10px;">
-
-                                <div class="card-header" style="display:flex; justify-content: space-between;">{% trans "Genera una Contraseña" %}
-                                    <button type="button" class="btn btn-flat" id="toggleParamsBtn" title="{% trans "Opciones" %}"><i class="fa-solid fa-circle-chevron-down" style="color:rgb(11, 094, 215)"></i></button>
-                                </div>
-
-                                <div class="card-body">
-
-                                    
-                                        <div id="parametrosInputs" style="display:none; justify-content: flex;">
-                                            
-                                            <label for="longitud">{% trans "Longitud:" %}</label>
-                                            <input class="form-control" type="number" id="longitud" name="longitud" value="12" min="6" max="32"><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> {% trans "Incluir mayúsculas" %}</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> {% trans "Incluir minúsculas" %}</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> {% trans "Incluir números" %}</label><br>
-                                            <label><input class="form-check-input" type="checkbox" id="incluirSimbolos" name="incluirSimbolos"> {% trans "Incluir símbolos" %}</label><br>
-                                            <button type="button" class="btn btn-primary btn-flat" style="margin-top:10px;" title="{% trans "Generar contraseña" %}" id="generarContrasenaBtn">{% trans "Generar" %}
-                                                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                                            </button>
-                                        </div>
-                                        
-                                    
-                                    
-                                </div>
-                            </div>
-                            <!-- Aqui termina el generador de contraseñas -->
-                            <div class= 'input group'>
-                                <label for="contraseña" style="margin-top:7px;"> {% trans "Contraseña:" %} </label>
-                                
-
-                                <div class="input-group mb-3">
-                                    <input id="contraseña" type="password" class='form-control' name="contraseña" maxlength="100" required autocomplete="new-password">
-                                    <button class="btn btn-outline-primary" type="button" id="passwordToggle">
-                                        <i class="fas fa-eye toggle-password-icon" id="eyeIcon"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <label for="actualizacion" style="margin-top:20px;">{% trans "Actualización:" %}</label>
-                            <input id="actualizacion" type="number" pattern="[0-9]+" class='form-control' title="{% trans "Ingrese solo números positivos" %}" name="actualizacion" maxlength="100" style="margin-top:5px;" required>
-
-                            <div class="form-group">
-                                <label for="info" style="margin-top: 20px;">{% trans "Info:" %}</label>
-                                <input id="info" type="text" class="form-control" name="info" maxlength="100" style="margin-top: 5px;" required>
-                            </div>
-                            <div class="form-check form-check-inline" style="margin-top: 20px;">
-                                <label class="form-check-label" for="is_personal">
-                                    {% trans "Contraseña Personal" %}
-                                </label>
-                                <input class="form-check-input" type="checkbox" title="{% trans "Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie" %}" id="is_personal" name="is_personal">
-                                <i class="fa-solid fa-circle-question" style="color:rgb(79, 64, 247)" title="{% trans "Marca esta casilla si esta contraseña es solo de uso personal y no necesitas compartirla con nadie" %}"></i>
-                                
-                            </div>
-
-                            <div class="form-group" style="margin-top: 20px;">
-                                <label for="file">{% trans "Archivo:" %}</label>
-                                <input id="file" type="file" class="form-control-file" name="file">
-                            </div>
-
-                        </div>
-                            
-                            <button type="submit" class="btn btn-primary btn-flat" style="margin-top:20px;">
-                                <i class="fas fa-save"></i> {% trans "Guardar registro" %}
-                            </button>
-
-                        </div> 
-                    </form>
-            </div>
-            </div>
-        </div>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0 fw-semibold"><i class="fas fa-plus me-2"></i>{{ title }}</h4>
     </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'listpass' %}">
+      <i class="fa-solid fa-bars me-1"></i>{% trans "Lista" %}
+    </a>
+  </div>
 
+  <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+    <div class="card-header">
+      <span>{% trans "Datos de la contraseña" %}</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{% url 'createpass' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form.errors %}<div class="alert alert-danger">{{ form.errors }}</div>{% endif %}
 
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="nombre_contra" class="form-label">{% trans "Nombre de Contrasena:" %}</label>
+            <input id="nombre_contra" type="text" class="form-control" name="nombre_contra" maxlength="100" required>
+          </div>
 
+          <div class="col-md-6">
+            <label for="id_seccion" class="form-label">{% trans "Seccion:" %}</label>
+            <div class="input-group">
+              <select name="seccion" class="form-control" autocomplete="off" required id="id_seccion">
+                {% for section in sections %}
+                  <option value="{{ section.id }}">{{ section.nombre_seccion }}</option>
+                {% endfor %}
+              </select>
+              <a class="btn btn-outline-primary" href="{% url 'createsection' %}">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+          </div>
 
-        
-        
+          <div class="col-md-6">
+            <label for="link" class="form-label">{% trans "Link:" %}</label>
+            <input id="link" type="text" class="form-control" name="link" maxlength="100" required>
+          </div>
+
+          <div class="col-md-6">
+            <label for="usuario" class="form-label">{% trans "Usuario:" %}</label>
+            <input id="usuario" type="text" class="form-control" name="usuario" maxlength="100" required autocomplete="username">
+          </div>
+
+          <div class="col-12">
+            <div class="card border mb-2">
+              <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <span class="small">{% trans "Genera una Contrasena" %}</span>
+                <button type="button" class="btn btn-sm btn-link p-0" id="toggleParamsBtn">
+                  <i class="fa-solid fa-circle-chevron-down" style="color:rgb(11,94,215)"></i>
+                </button>
+              </div>
+              <div class="card-body py-2" id="parametrosInputs" style="display:none;">
+                <div class="row g-2 align-items-end">
+                  <div class="col-auto">
+                    <label for="longitud" class="form-label small mb-1">{% trans "Longitud:" %}</label>
+                    <input class="form-control form-control-sm" type="number" id="longitud" name="longitud" value="12" min="6" max="32" style="width:80px;">
+                  </div>
+                  <div class="col-auto d-flex flex-column gap-1">
+                    <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirMayusculas" checked>{% trans "Mayusculas" %}</label>
+                    <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirMinusculas" checked>{% trans "Minusculas" %}</label>
+                    <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirNumeros" checked>{% trans "Numeros" %}</label>
+                    <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirSimbolos">{% trans "Simbolos" %}</label>
+                  </div>
+                  <div class="col-auto">
+                    <button type="button" class="btn btn-primary btn-sm" id="generarContrasenaBtn">
+                      <i class="fa-solid fa-wand-magic-sparkles me-1"></i>{% trans "Generar" %}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <label for="contraseña" class="form-label">{% trans "Contraseña:" %}</label>
+            <div class="input-group">
+              <input id="contraseña" type="password" class="form-control" name="contraseña" maxlength="100" required autocomplete="new-password">
+              <button class="btn btn-outline-secondary" type="button" id="passwordToggle">
+                <i class="fas fa-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="actualizacion" class="form-label">{% trans "Actualizacion (dias):" %}</label>
+            <input id="actualizacion" type="number" pattern="[0-9]+" class="form-control" name="actualizacion" maxlength="100" required>
+          </div>
+
+          <div class="col-md-6">
+            <label for="info" class="form-label">{% trans "Info:" %}</label>
+            <input id="info" type="text" class="form-control" name="info" maxlength="100">
+          </div>
+
+          <div class="col-md-6">
+            <label for="file" class="form-label">{% trans "Archivo:" %}</label>
+            <input id="file" type="file" class="form-control" name="file">
+          </div>
+
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="is_personal" name="is_personal">
+              <label class="form-check-label" for="is_personal">{% trans "Contrasena Personal" %}</label>
+              <i class="fa-solid fa-circle-question ms-1" style="color:rgb(79,64,247)"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fas fa-save me-1"></i>{% trans "Guardar registro" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
-</div>
 
-<div id="msgTemplates" style="display:none;" data-copied="{% trans "Contraseña copiada" %}" data-generated="{% trans "Contraseña generada:" %}"></div>
+<div id="msgTemplates" style="display:none;"
+  data-copied="{% trans "Contrasena copiada" %}"
+  data-generated="{% trans "Contrasena generada:" %}"></div>
 
 <script>
-    document.getElementById('toggleParamsBtn').addEventListener('click', function(e) {
-        e.preventDefault(); // Prevenir el envío del formulario interno
-        var parametrosInputs = document.getElementById('parametrosInputs');
-        parametrosInputs.style.display = parametrosInputs.style.display === 'none' ? 'block' : 'none';
-    });
-    
-    document.getElementById('generarContrasenaBtn').addEventListener('click', function() {
-        // Obtener los valores de los parámetros
-        const longitud = document.getElementById('longitud').value;
-        const incluirMayusculas = document.getElementById('incluirMayusculas').checked;
-        const incluirMinusculas = document.getElementById('incluirMinusculas').checked;
-        const incluirNumeros = document.getElementById('incluirNumeros').checked;
-        const incluirSimbolos = document.getElementById('incluirSimbolos').checked;
-    
-        // Generar la contraseña en el frontend
-        var caracteresPermitidos = '';
-        if (incluirMayusculas) caracteresPermitidos += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        if (incluirMinusculas) caracteresPermitidos += 'abcdefghijklmnopqrstuvwxyz';
-        if (incluirNumeros) caracteresPermitidos += '0123456789';
-        if (incluirSimbolos) caracteresPermitidos += '!@#$%^&_+=|:"<>?/~';
-    
-        var contrasenaGenerada = '';
-        for (var i = 0; i < longitud; i++) {
-            var randomIndex = Math.floor(Math.random() * caracteresPermitidos.length);
-            contrasenaGenerada += caracteresPermitidos.charAt(randomIndex);
-        }
-    
-        // Mostrar la contraseña generada
-        document.getElementById('contraseña').setAttribute('value', contrasenaGenerada);
+  document.getElementById('toggleParamsBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    var el = document.getElementById('parametrosInputs');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  });
 
-        // Copiar la contraseña al portapapeles
-        navigator.clipboard.writeText(contrasenaGenerada)
-        .then(() => {
-            console.log('Contraseña copiada al portapapeles.');
-            const tpl = document.getElementById('msgTemplates');
-            const msg = tpl ? tpl.dataset.copied : 'Contraseña copiada';
-            mostrarMensajeTemporal(msg, 2000);
-        })
-        .catch(err => {
-            console.error('Error al copiar la contraseña al portapapeles:', err);
-        });
-    });
-    function mostrarMensajeTemporal(mensaje, duracion) {
-        var mensajeDiv = document.createElement('div');
-        mensajeDiv.textContent = mensaje;
-        mensajeDiv.style.position = 'fixed';
-        mensajeDiv.style.top = '10px';
-        mensajeDiv.style.left = '50%';
-        mensajeDiv.style.transform = 'translateX(-50%)';
-        mensajeDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        mensajeDiv.style.color = 'white';
-        mensajeDiv.style.padding = '10px';
-        mensajeDiv.style.borderRadius = '5px';
-        mensajeDiv.style.zIndex = '9999';
-        document.body.appendChild(mensajeDiv);
-
-        setTimeout(function() {
-            mensajeDiv.parentNode.removeChild(mensajeDiv);
-        }, duracion);
+  document.getElementById('generarContrasenaBtn').addEventListener('click', function() {
+    const longitud = document.getElementById('longitud').value;
+    const incluirMayusculas = document.getElementById('incluirMayusculas').checked;
+    const incluirMinusculas = document.getElementById('incluirMinusculas').checked;
+    const incluirNumeros = document.getElementById('incluirNumeros').checked;
+    const incluirSimbolos = document.getElementById('incluirSimbolos').checked;
+    var chars = '';
+    if (incluirMayusculas) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (incluirMinusculas) chars += 'abcdefghijklmnopqrstuvwxyz';
+    if (incluirNumeros) chars += '0123456789';
+    if (incluirSimbolos) chars += '!@#$%^&_+=|:"<>?/~';
+    var pass = '';
+    for (var i = 0; i < longitud; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-</script>
-<script>
-    const inputPassword = document.getElementById("contraseña");
-    const iconEye = document.getElementById("eyeIcon");
+    document.getElementById('contraseña').setAttribute('value', pass);
+    navigator.clipboard.writeText(pass).then(function() {
+      var tpl = document.getElementById('msgTemplates');
+      mostrarMensajeTemporal(tpl ? tpl.dataset.copied : 'Copiada', 2000);
+    }).catch(function() {});
+  });
 
-    iconEye.addEventListener('click', function() {
-        if (inputPassword.type === 'password') {
-            inputPassword.type = 'text';
-            iconEye.classList.remove('fa-eye');
-            iconEye.classList.add('fa-eye-slash');
-        } else {
-            inputPassword.type = 'password';
-            iconEye.classList.remove('fa-eye-slash');
-            iconEye.classList.add('fa-eye');
-        }
-    });
+  function mostrarMensajeTemporal(mensaje, duracion) {
+    var div = document.createElement('div');
+    div.textContent = mensaje;
+    div.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px;border-radius:5px;z-index:9999';
+    document.body.appendChild(div);
+    setTimeout(function() { div.parentNode.removeChild(div); }, duracion);
+  }
+
+  var inputPassword = document.getElementById('contraseña');
+  var iconEye = document.getElementById('eyeIcon');
+  iconEye.addEventListener('click', function() {
+    if (inputPassword.type === 'password') {
+      inputPassword.type = 'text';
+      iconEye.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      inputPassword.type = 'password';
+      iconEye.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  });
 </script>
 {% endblock %}
-

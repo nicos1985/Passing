@@ -1,0 +1,6 @@
+{# Usage: {% include "ui/stat_chip.html" with label="Riesgo" value="Alto" accent_color="#dc3545" hint="Última actualización: hoy" %} #}
+<div class="ui-chip {{ extra_class|default:'' }}" style="--accent-color: {{ accent_color|default:'#0d6efd' }};">
+  <div class="text-muted small mb-1">{{ label }}</div>
+  <div class="fw-semibold">{{ value }}</div>
+  {% if hint %}<div class="text-muted small mb-0">{{ hint }}</div>{% endif %}
+</div>

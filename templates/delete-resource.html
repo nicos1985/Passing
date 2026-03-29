@@ -1,42 +1,39 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-
-<div class="container pt-5" >
-
-    <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 85px; padding-top: 20px;">
-                    <h2><i class="fas fa-trash" ></i> {% trans "Eliminar Activo" %}</h2>
-                    
-                </div>
-            </div>
-
-            <div class="card-body"style="background-color: #F7F7F7 ;">
-                <div class="card-body">
-                    <form method="POST" >
-                        {% csrf_token %}
-                    <h5> {% trans "¿Estas Seguro que deseas borrar este" %} {{verbose_name}}? </h5>
-                    <h6>{{object.name}}</h6>
-
-                </div>
-                                     
-                <button type="submit" class="btn btn-danger">           
-                        <i class="fas fa-trash" class="btn btn-danger"></i> {% trans "Eliminar" %}
-                </button>        
-                            
-                            <button  class="btn">
-                                <a class="btn btn-primary btn-flat" href= {% url list_view %}> <i class="fas fa-ban"></i> {% trans "Cancelar" %} </a>
-                            </button>
-                        </div> 
-                    </form>
-            </div>
-            
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="text-uppercase text-muted small">{% trans "Confirmación" %}</div>
+            <h2 class="mb-0"><i class="fa-solid fa-trash"></i> {% trans "Eliminar" %} {{ verbose_name }}</h2>
         </div>
+        <a class="btn btn-outline-secondary" href="{% url list_view %}">
+            <i class="fa-solid fa-arrow-left"></i> {% trans "Cancelar" %}
+        </a>
     </div>
 
-    {% endblock %}
-
-        
+    <div class="card ui-accent-card" style="--accent-color: #dc3545;">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+            <span>{% trans "¿Estás seguro?" %}</span>
+        </div>
+        <div class="card-body">
+            <p class="mb-1">{% blocktrans with name=verbose_name %}Estás a punto de eliminar este <strong>{{ name }}</strong>:{% endblocktrans %}</p>
+            <p class="fw-semibold fs-5 mb-3">{{ object }}</p>
+            <p class="text-muted small mb-4">{% trans "Esta acción no se puede deshacer." %}</p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-solid fa-trash"></i> {% trans "Sí, eliminar" %}
+                    </button>
+                    <a class="btn btn-outline-secondary" href="{% url list_view %}">
+                        <i class="fa-solid fa-ban"></i> {% trans "Cancelar" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+{% endblock %}

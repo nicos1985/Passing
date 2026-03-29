@@ -17,7 +17,7 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3">
-            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:config' %}">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'threat_intel:config' %}">
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Configuración" %}
             </a>
             <a href="{% url 'threat_intel:techtag-create' %}" class="btn btn-success">

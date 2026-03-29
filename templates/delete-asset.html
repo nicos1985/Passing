@@ -1,42 +1,34 @@
-{% extends 'base.html'%}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-
-<div class="container pt-5" >
-
-    <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 85px; padding-top: 20px;">
-                    <h2><i class="fas fa-trash" ></i> {% trans "Eliminar Activo" %}</h2>
-                    
-                </div>
-            </div>
-
-            <div class="card-body"style="background-color: #F7F7F7 ;">
-                <div class="card-body">
-                    <form method="POST" >
-                        {% csrf_token %}
-                    <h5> {% trans "¿Estas Seguro que deseas borrar este Activo?" %} </h5>
-                    <h6>{{object.name}}</h6>
-
-                </div>
-                                     
-                <button type="submit" class="btn btn-danger">           
-                    <i class="fas fa-trash" class="btn btn-danger"></i> {% trans "Eliminar" %}
-                </button>        
-                            
-                            <button  class="btn">
-                                <a class="btn btn-primary btn-flat" href= {% url 'asset-list' %}> <i class="fas fa-ban"></i> {% trans "Cancelar" %} </a>
-                            </button>
-                        </div> 
-                    </form>
-            </div>
-            
-        </div>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0 fw-semibold text-danger"><i class="fa-solid fa-trash me-2"></i>{% trans "Eliminar activo" %}</h4>
     </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-list' %}">
+      <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Cancelar" %}
+    </a>
+  </div>
 
-    {% endblock %}
-
-        
+  <div class="card ui-accent-card" style="--accent-color: #dc3545;">
+    <div class="card-header">
+      <span>{% trans "Confirmar eliminación" %}</span>
+    </div>
+    <div class="card-body">
+      <p class="mb-1">{% trans "¿Estás seguro que deseás borrar este activo?" %}</p>
+      <p class="fw-semibold">{{ object.name }}</p>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="fa-solid fa-trash me-1"></i>{% trans "Eliminar" %}
+        </button>
+      </form>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-list' %}">{% trans "Cancelar" %}</a>
+    </div>
+  </div>
 </div>
+{% endblock %}

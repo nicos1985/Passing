@@ -750,6 +750,7 @@ class RiskEvaluation(models.Model):
             <div style="font-weight:500; color:{text_color};">{label}</div>
         </div>
         """
+        return mark_safe(html)
 
 
 ############################# Asset Actions (Prestamo / Devolucion) #############################

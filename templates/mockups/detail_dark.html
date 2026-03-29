@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}
+<style>
+  body { background: #0d1117; color: #e6edf3; }
+  .hero-card {
+    border: 1px solid #21262d;
+    border-left: 4px solid #58a6ff;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    background: linear-gradient(135deg, #0f1624 0%, #0d1117 60%);
+    padding: 1.5rem;
+  }
+  .stat-chip { border: 1px solid #30363d; border-left: 3px solid var(--accent, #58a6ff); border-radius: 0.5rem; padding: 0.75rem 1rem; background: #161b22; }
+  .section-card { border: 1px solid #21262d; border-left: 4px solid var(--accent-color, #58a6ff); border-radius: 0.5rem; box-shadow: 0 8px 22px rgba(0,0,0,0.45); background: #161b22; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .section-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.55); }
+  .section-card .card-header { background: #1f2530; border-bottom: 1px solid #21262d; font-weight: 600; color: #e6edf3; }
+  .muted-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; color: #c9d1d9; }
+  .text-muted { color: #c9d1d9 !important; }
+  .section-card .card-body, .hero-card { color: #e6edf3; }
+  .section-card .card-body small, .section-card .small, .hero-card .small { color: #c9d1d9; }
+  .section-card .card-body li { color: #e6edf3; }
+  .section-card .card-body strong { color: #f5f7fb; }
+  .badge.bg-warning { color: #111; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <div class="muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-1">{% trans "Detalle de registro" %}</h3>
+      <p class="text-muted mb-0">{% trans "Versión dark para vistas detail." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Volver" %}</button>
+      <button class="btn btn-outline-primary">{% trans "Editar" %}</button>
+      <button class="btn btn-primary">{% trans "Acción principal" %}</button>
+    </div>
+  </div>
+
+  <div class="hero-card mb-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <div class="text-muted small">{% trans "ID" %} #482 · {% trans "Owner" %}: Juan Pérez</div>
+        <h4 class="mb-2">{% trans "Evaluación Proveedor ACME" %}</h4>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge bg-primary">{% trans "Activo" %}</span>
+          <span class="badge bg-warning text-dark">{% trans "Vence en 12 días" %}</span>
+          <span class="badge bg-info text-dark">{% trans "Plantilla: Vendor Base" %}</span>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="stat-chip" style="--accent: #f85149;">
+          <div class="text-muted small">{% trans "Riesgo" %}</div>
+          <div class="h5 mb-0">{% trans "Alto" %}</div>
+        </div>
+        <div class="stat-chip" style="--accent: #3fb950;">
+          <div class="text-muted small">{% trans "Progreso" %}</div>
+          <div class="h5 mb-0">68%</div>
+        </div>
+        <div class="stat-chip" style="--accent: #58a6ff;">
+          <div class="text-muted small">{% trans "Última actualización" %}</div>
+          <div class="h5 mb-0">2025-12-02</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card section-card" style="--accent-color: #58a6ff;">
+        <div class="card-header">{% trans "Resumen" %}</div>
+        <div class="card-body">
+          <p class="text-muted">{% trans "Descripción breve del registro y su contexto." %}</p>
+          <ul class="mb-0">
+            <li>{% trans "Se evalúa anualmente." %}</li>
+            <li>{% trans "Requiere validación de riesgos críticos." %}</li>
+            <li>{% trans "Incluye checklist técnico y legal." %}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card section-card mt-3" style="--accent-color: #3fb950;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Historial" %}</span>
+          <a href="#" class="small text-decoration-none text-muted">{% trans "Ver todo" %}</a>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0 small">
+            <li><strong>10:24</strong> — {% trans "Comentario agregado" %}</li>
+            <li><strong>09:10</strong> — {% trans "Se actualizó la severidad" %}</li>
+            <li><strong>08:55</strong> — {% trans "Adjunto nuevo" %}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card section-card mt-3" style="--accent-color: #a371f7;">
+        <div class="card-header">{% trans "Checklist" %}</div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>{% trans "Revisión técnica" %}</span>
+            <span class="badge bg-success">{% trans "Completado" %}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>{% trans "Revisión legal" %}</span>
+            <span class="badge bg-warning text-dark">{% trans "En progreso" %}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>{% trans "Riesgos críticos" %}</span>
+            <span class="badge bg-danger">{% trans "Pendiente" %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card section-card" style="--accent-color: #f7c843;">
+        <div class="card-header">{% trans "Metadatos" %}</div>
+        <div class="card-body">
+          <div class="mb-2"><strong>{% trans "Etiquetas" %}:</strong> vendor, anual, risk</div>
+          <div class="mb-2"><strong>{% trans "Propietario" %}:</strong> Juan Pérez</div>
+          <div class="mb-2"><strong>{% trans "Equipo" %}:</strong> Riesgos</div>
+          <div class="mb-0"><strong>{% trans "Adjuntos" %}:</strong> 3 PDF</div>
+        </div>
+      </div>
+
+      <div class="card section-card mt-3" style="--accent-color: #2ea0b6;">
+        <div class="card-header">{% trans "Siguiente paso" %}</div>
+        <div class="card-body">
+          <p class="mb-2">{% trans "Programar revisión con el proveedor y cerrar riesgos abiertos." %}</p>
+          <button class="btn btn-primary w-100">{% trans "Agendar" %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

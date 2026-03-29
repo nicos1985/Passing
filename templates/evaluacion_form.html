@@ -18,7 +18,6 @@
 
 {% block content %}
 
-    
 {% if not request.user.is_superuser and not request.user.is_staff %}
 <div class="container-fluid text-center">
     <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
@@ -36,97 +35,202 @@
     </div>
 </div>
 {%endif%}
-
-<body>
-
-<div class="form-container" style="margin-top:20px;">
-  <div class="card form-card">
-    <div class="card-header">
-      <h5><i class="fa-solid fa-triangle-exclamation me-2"></i> {% trans "Crear / Editar Evaluación de Riesgo" %}</h5>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="ui-muted-title">{% trans "Evaluaciones" %}</div>
+      <h3 class="mb-0">{% trans "Crear / Editar Evaluación de Riesgo" %}</h3>
+      <p class="text-muted mb-0">{% trans "Usá este formulario para registrar o actualizar una evaluación sobre un activo." %}</p>
     </div>
-    <div class="card-body">
-      <form method="post" id="risk-form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'evaluation-list' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+      {% if related_links %}
+        {% for rl in related_links %}
+          <a class="btn btn-outline-info" href="{{ rl.0 }}">{{ rl.1 }}</a>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
 
-      <div class="mb-3 d-flex justify-content-between align-items-center">
-        <div>
-          <a class="btn btn-outline-secondary" href="{% url 'risk-list' %}"><i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}</a>
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-primary"></i>
+          <span class="fw-semibold">{% trans "Datos de la evaluación" %}</span>
         </div>
-        <div>
-          {% if related_links %}
-            {% for rl in related_links %}
-              <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
-            {% endfor %}
-          {% endif %}
+        <div class="card-body ui-card-body-pad">
+          <form method="post" id="risk-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="row g-3">
+              {% for field in form.visible_fields %}
+                <div class="col-md-6">
+                  <label for="{{ field.id_for_label }}" class="form-label">
+                    {% if field.name == 'model_type' %}
+                      <i class="fa-solid fa-cubes text-primary"></i>
+                    {% elif field.name == 'object_id' %}
+                      <i class="fa-solid fa-hashtag text-primary"></i>
+                    {% elif field.name == 'threat' %}
+                      <i class="fa-solid fa-exclamation-triangle text-primary"></i>
+                    {% elif field.name == 'vulnerability' %}
+                      <i class="fa-solid fa-bug text-primary"></i>
+                    {% elif field.name == 'description' %}
+                      <i class="fa-solid fa-file-lines text-primary"></i>
+                    {% elif field.name == 'confidenciality_impact' or field.name == 'integrity_impact' or field.name == 'availability_impact' %}
+                      <i class="fa-solid fa-chart-bar text-primary"></i>
+                    {% elif field.name == 'probability' %}
+                      <i class="fa-solid fa-chart-line text-primary"></i>
+                    {% else %}
+                      <i class="fa-solid fa-square text-primary"></i>
+                    {% endif %}
+                    &nbsp;{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                  {% endif %}
+                  {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-check-circle me-2"></i> {% trans "Guardar Evaluación" %}
+              </button>
+              <button type="reset" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-redo me-2"></i> {% trans "Limpiar" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card ui-accent-card" style="--accent-color: #ffc107;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Metadatos del activo" %}</span>
+          <span class="badge bg-light text-dark">{% trans "Contexto" %}</span>
+        </div>
+        <div class="card-body ui-card-body-pad" id="meta-card">
+          <p class="mb-1 fw-semibold" id="meta-name">{% if evaluated_meta %}{{ evaluated_meta.name }}{% else %}{% trans "Sin selección" %}{% endif %}</p>
+          <p class="text-muted small mb-3" id="meta-subtitle">
+            {% if evaluated_meta %}{{ evaluated_meta.type }} · {% trans "ID" %} {{ evaluated_meta.id }}{% else %}{% trans "Seleccioná modelo y objeto para ver detalles." %}{% endif %}
+          </p>
+          <p class="small mb-3" id="meta-link-wrap" {% if not evaluated_meta or not evaluated_meta.detail_url %}style="display:none;"{% endif %}>
+            <a id="meta-link" href="{% if evaluated_meta %}{{ evaluated_meta.detail_url }}{% endif %}" target="_blank" rel="noopener" class="link-primary text-decoration-none">
+              {% trans "Ver detalle del recurso" %}
+            </a>
+          </p>
+          <ul class="list-unstyled small mb-0" id="meta-fields">
+            {% if evaluated_meta and evaluated_meta.fields %}
+              {% for field in evaluated_meta.fields %}
+                <li class="d-flex justify-content-between py-1 border-bottom">
+                  <span class="text-muted">{{ field.label }}</span>
+                  <span class="text-end">{{ field.value }}</span>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li class="text-muted" id="meta-empty">{% trans "Los metadatos se completan automáticamente según el activo elegido." %}</li>
+            {% endif %}
+          </ul>
         </div>
       </div>
 
-        <div class="row mb-3">
-                {% for field in form.visible_fields %}
-            <div class="col-md-6 mb-3">
-              <div class="form-group">
-                <label for="{{ field.id_for_label }}" class="form-label">
-                  {% if field.name == 'model_type' %}
-                    <i class="fa-solid fa-cubes" style="color: #667eea;"></i>
-                  {% elif field.name == 'object_id' %}
-                    <i class="fa-solid fa-hashtag" style="color: #667eea;"></i>
-                  {% elif field.name == 'threat' %}
-                    <i class="fa-solid fa-exclamation-triangle" style="color: #667eea;"></i>
-                  {% elif field.name == 'vulnerability' %}
-                    <i class="fa-solid fa-bug" style="color: #667eea;"></i>
-                  {% elif field.name == 'description' %}
-                    <i class="fa-solid fa-file-lines" style="color: #667eea;"></i>
-                  {% elif field.name == 'confidenciality_impact' or field.name == 'integrity_impact' or field.name == 'availability_impact' %}
-                    <i class="fa-solid fa-chart-bar" style="color: #667eea;"></i>
-                  {% elif field.name == 'probability' %}
-                    <i class="fa-solid fa-chart-line" style="color: #667eea;"></i>
-                  {% else %}
-                    <i class="fa-solid fa-square" style="color: #667eea;"></i>
-                  {% endif %}
-                  &nbsp;{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
-                {% endif %}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
+      <div class="card ui-accent-card mt-3" style="--accent-color: #6f42c1;">
+        <div class="card-header">{% trans "Ayuda contextual" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <p class="text-muted mb-2">{% trans "Revisá que el activo, la amenaza y la vulnerabilidad correspondan." %}</p>
+          <p class="text-muted mb-0">{% trans "Los niveles de impacto y probabilidad definen el riesgo resultante." %}</p>
         </div>
-
-        <div class="btn-group-submit">
-          <button type="submit" class="btn btn-submit btn-submit-primary">
-            <i class="fa-solid fa-check-circle me-2"></i> {% trans "Guardar Evaluación" %}
-          </button>
-          <button type="reset" class="btn btn-submit btn-submit-secondary">
-            <i class="fa-solid fa-redo me-2"></i> {% trans "Limpiar" %}
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
-
-
-
-
+  {% if evaluated_meta %}{{ evaluated_meta|json_script:"initial-meta" }}{% endif %}
   <script>
   document.addEventListener('DOMContentLoaded', function () {
     const modelSelect = document.getElementById('id_model_type') || document.getElementById('model_type');
     const objectSelect = document.getElementById('id_object_id') || document.getElementById('object_id');
     const fetchUrl = "{% url 'ajax-get-objects' %}";
+    const metaUrl = "{% url 'ajax-object-metadata' %}";
+
+    const metaName = document.getElementById('meta-name');
+    const metaSubtitle = document.getElementById('meta-subtitle');
+    const metaFields = document.getElementById('meta-fields');
+    const metaEmpty = document.getElementById('meta-empty');
+    const metaLinkWrap = document.getElementById('meta-link-wrap');
+    const metaLink = document.getElementById('meta-link');
+
+    function renderMeta(meta) {
+      if (!metaName || !metaSubtitle || !metaFields) return;
+      if (!meta) {
+        metaName.textContent = '{% trans "Sin selección" %}';
+        metaSubtitle.textContent = '{% trans "Seleccioná modelo y objeto para ver detalles." %}';
+        if (metaLinkWrap) metaLinkWrap.style.display = 'none';
+        metaFields.innerHTML = '<li class="text-muted" id="meta-empty">{% trans "Los metadatos se completan automáticamente según el activo elegido." %}</li>';
+        return;
+      }
+
+      metaName.textContent = meta.name || '{% trans "Sin selección" %}';
+      metaSubtitle.textContent = `${meta.type || ''} · {% trans "ID" %} ${meta.id || ''}`.trim();
+      if (metaLinkWrap) {
+        if (meta.detail_url) {
+          metaLinkWrap.style.display = '';
+          if (metaLink) metaLink.href = meta.detail_url;
+        } else {
+          metaLinkWrap.style.display = 'none';
+        }
+      }
+      metaFields.innerHTML = '';
+      if (Array.isArray(meta.fields) && meta.fields.length) {
+        meta.fields.forEach(f => {
+          const li = document.createElement('li');
+          li.className = 'd-flex justify-content-between py-1 border-bottom';
+          li.innerHTML = `<span class="text-muted">${f.label || ''}</span><span class="text-end">${f.value ?? ''}</span>`;
+          metaFields.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.className = 'text-muted';
+        li.textContent = '{% trans "Los metadatos se completan automáticamente según el activo elegido." %}';
+        metaFields.appendChild(li);
+      }
+    }
+
+    function fetchMetadata(typeId, objId) {
+      if (!typeId || !objId) {
+        renderMeta(null);
+        return;
+      }
+      renderMeta(null);
+      fetch(`${metaUrl}?type_id=${typeId}&object_id=${objId}`)
+        .then(resp => resp.ok ? resp.json() : null)
+        .then(data => renderMeta(data))
+        .catch(() => renderMeta(null));
+    }
 
     if (!modelSelect || !objectSelect) return;
 
     // Ensure dataset.url is available for other handlers
     try { modelSelect.dataset.url = fetchUrl; } catch (e) {}
 
+    // Prefill metadata from server-rendered context if present
+    const initialMetaScript = document.getElementById('initial-meta');
+    if (initialMetaScript) {
+      try { renderMeta(JSON.parse(initialMetaScript.textContent)); } catch (e) { renderMeta(null); }
+    } else {
+      renderMeta(null);
+    }
+
     modelSelect.addEventListener('change', function () {
       const typeId = this.value;
       objectSelect.innerHTML = '<option value="">Cargando...</option>';
+      fetchMetadata(null, null);
 
       if (typeId) {
         fetch(`${fetchUrl}?type_id=${typeId}`)
@@ -146,6 +250,10 @@
       } else {
         objectSelect.innerHTML = '<option value="">Seleccionar objeto...</option>';
       }
+    });
+
+    objectSelect.addEventListener('change', function () {
+      fetchMetadata(modelSelect.value, this.value);
     });
   });
   </script>

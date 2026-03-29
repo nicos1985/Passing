@@ -10,25 +10,22 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-3">
-        <h2>{% trans "Configuración de Inteligencia de Amenazas" %}</h2>
-        <p class="text-muted">{% trans "Gestiona fuentes de datos y etiquetas de tecnología" %}</p>
-    </div>
-
-    {% if request.user.is_authenticated %}
-        <div class="container mb-3">
-            <a class="btn btn-secondary btn-flat" href="{% url 'threat_intel:run-list' %}">
-                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Inteligencia" %}
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0 fw-semibold">{% trans "Configuración de Inteligencia de Amenazas" %}</h4>
+                <p class="text-muted mb-0 small">{% trans "Gestiona fuentes de datos y etiquetas de tecnología" %}</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'threat_intel:run-list' %}">
+                <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver a Inteligencia" %}
             </a>
         </div>
-
-        <div class="container">
             <div class="row">
                 <!-- Resumen -->
                 <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5><i class="fa-solid fa-database"></i> {% trans "Fuentes de Datos" %}</h5>
+                    <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-database me-1"></i>{% trans "Fuentes de Datos" %}</span>
                         </div>
                         <div class="card-body">
                             <p><strong>{% trans "Total:" %}</strong> {{ source_count }} {% trans "fuentes" %}</p>
@@ -44,9 +41,9 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-warning text-white">
-                            <h5><i class="fa-solid fa-tags"></i> {% trans "Etiquetas de Tecnología" %}</h5>
+                    <div class="card ui-accent-card" style="--accent-color: #ffc107;">
+                        <div class="card-header">
+                            <span><i class="fa-solid fa-tags me-1"></i>{% trans "Etiquetas de Tecnología" %}</span>
                         </div>
                         <div class="card-body">
                             <p><strong>{% trans "Total:" %}</strong> {{ techtag_count }} {% trans "etiquetas" %}</p>
@@ -62,9 +59,9 @@
                 </div>
             </div>
 
-            <div class="card mt-3">
+            <div class="card ui-accent-card mt-3" style="--accent-color: #6c757d;">
                 <div class="card-header">
-                    <h5>{% trans "Fuentes Activas Recientes" %}</h5>
+                    <span>{% trans "Fuentes Activas Recientes" %}</span>
                 </div>
                 <div class="card-body">
                     {% if sources %}
@@ -102,7 +99,7 @@
                 </div>
             </div>
         </div>
-    {% endif %}
+    </div>
 {% endblock %}
 
 {% block javascript %}

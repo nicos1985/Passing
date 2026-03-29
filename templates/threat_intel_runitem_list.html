@@ -20,10 +20,10 @@
 
     {% if request.user.is_authenticated %}
         <div class="container mb-3 d-flex gap-2">
-            <a class="btn btn-secondary btn-flat" href="{{ back_url }}">
-                <i class="fa-solid fa-arrow-left"></i> {% trans "Volver al Run" %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ back_url }}">
+                <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver al Run" %}
             </a>
-            <a class="btn btn-primary btn-flat" href="{% url 'threat_intel:runitem-list' run.pk %}">
+            <a class="btn btn-primary btn-sm" href="{% url 'threat_intel:runitem-list' run.pk %}">
                 <i class="fa-solid fa-refresh"></i> {% trans "Refrescar" %}
             </a>
         </div>
@@ -65,7 +65,10 @@
                     <th>{% trans "CVSS" %}</th>
                     <th>{% trans "Relevante" %}</th>
                     <th>{% trans "Acciones" %}</th>
-                                    <tr>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ri in run_items %}
                   <tr>
                     <td>{{ ri.item.canonical_id }}</td>
                     <td title="{{ ri.item.title }}">{{ ri.item.title|truncatewords:8 }}</td>

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}
+<style>
+  body { background: #0d1117; color: #e6edf3; }
+  .content-wrapper, .container { color: inherit; }
+  .accent-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 4px solid var(--accent-color, #58a6ff);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .accent-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+  .accent-card .card-header { background: #1f2530; border-bottom: 1px solid #21262d; font-weight: 600; color: #e6edf3; }
+  .form-label { font-weight: 600; color: #e6edf3; }
+  .form-control, .form-select, textarea { background: #0d1117; border-color: #30363d; color: #e6edf3; }
+  .form-control::placeholder, textarea::placeholder { color: #c9d1d9; opacity: 0.9; }
+  .form-control:focus, .form-select:focus { border-color: var(--accent-color, #58a6ff); box-shadow: 0 0 0 0.15rem rgba(88,166,255,0.25); }
+  .muted-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; color: #c9d1d9; }
+  .text-muted { color: #c9d1d9 !important; }
+  hr { border-color: #21262d; }
+  .btn-outline-secondary { border-color: #30363d; color: #e6edf3; }
+  .btn-outline-secondary:hover { background: #21262d; }
+  .btn-outline-danger { border-color: #f85149; color: #f85149; }
+  .btn-outline-danger:hover { background: rgba(248,81,73,0.1); }
+  .badge.bg-primary-subtle { background: rgba(88,166,255,0.12); color: #58a6ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-0">{% trans "Editar registro" %}</h3>
+      <p class="text-muted mb-0">{% trans "Versión dark para pantallas de edición." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Descartar cambios" %}</button>
+      <button class="btn btn-outline-danger">{% trans "Eliminar" %}</button>
+      <button class="btn btn-primary">{% trans "Guardar cambios" %}</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card accent-card" style="--accent-color: #58a6ff;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Datos principales" %}</span>
+          <span class="badge bg-primary-subtle text-primary">{% trans "ID #482" %}</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Título" %}</label>
+              <input type="text" class="form-control" value="Evaluación Proveedor ACME">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Owner" %}</label>
+              <select class="form-select">
+                <option>Ana Gómez</option>
+                <option selected>Juan Pérez</option>
+                <option>Team Riesgos</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">{% trans "Descripción" %}</label>
+              <textarea class="form-control" rows="3">{% trans "Evaluación anual del proveedor de infraestructura." %}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card accent-card mt-3" style="--accent-color: #3fb950;">
+        <div class="card-header">{% trans "Parámetros" %}</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Severidad" %}</label>
+              <select class="form-select">
+                <option>{% trans "Baja" %}</option>
+                <option>{% trans "Media" %}</option>
+                <option selected>{% trans "Alta" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Estado" %}</label>
+              <select class="form-select">
+                <option>{% trans "Borrador" %}</option>
+                <option selected>{% trans "Activo" %}</option>
+                <option>{% trans "Archivado" %}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{% trans "Fecha objetivo" %}</label>
+              <input type="date" class="form-control" value="2025-12-15">
+            </div>
+            <div class="col-12">
+              <div class="alert alert-info mb-0" style="background: rgba(88,166,255,0.1); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3);">
+                <strong>{% trans "Nota" %}:</strong> {% trans "Espacio para advertencias o ayudas en modo oscuro." %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card accent-card" style="--accent-color: #f7c843;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Metadatos" %}</span>
+          <span class="badge bg-dark text-light">{% trans "Editable" %}</span>
+        </div>
+        <div class="card-body">
+          <label class="form-label">{% trans "Etiquetas" %}</label>
+          <input type="text" class="form-control" value="vendor, annual, risk">
+          <small class="text-muted d-block mt-2">{% trans "Separá con comas." %}</small>
+          <hr>
+          <label class="form-label">{% trans "Adjuntos" %}</label>
+          <div class="border rounded p-3 text-center text-muted">{% trans "Listado de archivos adjuntos iría aquí." %}</div>
+        </div>
+      </div>
+
+      <div class="card accent-card mt-3" style="--accent-color: #a371f7;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Historial" %}</span>
+          <span class="badge bg-dark text-light">{% trans "Actividad" %}</span>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0 small text-muted">
+            <li><strong>09:21</strong> — {% trans "Guardado por" %} Ana</li>
+            <li><strong>08:10</strong> — {% trans "Comentario agregado" %}</li>
+            <li><strong>07:55</strong> — {% trans "Adjunto subido" %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

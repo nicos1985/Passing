@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <div class="ui-muted-title">{% trans "Mock" %}</div>
+      <h3 class="mb-1">{% trans "Detalle de registro" %}</h3>
+      <p class="text-muted mb-0">{% trans "Prototipo para vistas detail: encabezado con KPIs, acciones y bloques informativos." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">{% trans "Volver" %}</button>
+      <button class="btn btn-outline-primary">{% trans "Editar" %}</button>
+      <button class="btn btn-primary">{% trans "Acción principal" %}</button>
+    </div>
+  </div>
+
+  <div class="card ui-accent-card mb-4" style="--accent-color: #0d6efd;">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <div class="text-muted small">{% trans "ID" %} #482 · {% trans "Owner" %}: Juan Pérez</div>
+        <h4 class="mb-2">{% trans "Evaluación Proveedor ACME" %}</h4>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge bg-primary">{% trans "Activo" %}</span>
+          <span class="badge bg-warning text-dark">{% trans "Vence en 12 días" %}</span>
+          <span class="badge bg-info text-dark">{% trans "Plantilla: Vendor Base" %}</span>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        {% include "ui/stat_chip.html" with label=_("Riesgo") value=_("Alto") accent_color="#dc3545" %}
+        {% include "ui/stat_chip.html" with label=_("Progreso") value="68%" accent_color="#20c997" %}
+        {% include "ui/stat_chip.html" with label=_("Última actualización") value="2025-12-02" accent_color="#0d6efd" %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card ui-accent-card" style="--accent-color: #0d6efd;">
+        <div class="card-header">{% trans "Resumen" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <p class="text-muted">{% trans "Descripción breve del registro y su contexto." %}</p>
+          <ul class="mb-0">
+            <li>{% trans "Se evalúa anualmente." %}</li>
+            <li>{% trans "Requiere validación de riesgos críticos." %}</li>
+            <li>{% trans "Incluye checklist técnico y legal." %}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #20c997;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>{% trans "Historial" %}</span>
+          <a href="#" class="small text-decoration-none">{% trans "Ver todo" %}</a>
+        </div>
+        <div class="card-body ui-card-body-pad">
+          <ul class="list-unstyled mb-0 small">
+            <li><strong>10:24</strong> — {% trans "Comentario agregado" %}</li>
+            <li><strong>09:10</strong> — {% trans "Se actualizó la severidad" %}</li>
+            <li><strong>08:55</strong> — {% trans "Adjunto nuevo" %}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #6f42c1;">
+        <div class="card-header">{% trans "Checklist" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>{% trans "Revisión técnica" %}</span>
+            <span class="badge bg-success">{% trans "Completado" %}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>{% trans "Revisión legal" %}</span>
+            <span class="badge bg-warning text-dark">{% trans "En progreso" %}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>{% trans "Riesgos críticos" %}</span>
+            <span class="badge bg-danger">{% trans "Pendiente" %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card ui-accent-card" style="--accent-color: #ffc107;">
+        <div class="card-header">{% trans "Metadatos" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <div class="mb-2"><strong>{% trans "Etiquetas" %}:</strong> vendor, anual, risk</div>
+          <div class="mb-2"><strong>{% trans "Propietario" %}:</strong> Juan Pérez</div>
+          <div class="mb-2"><strong>{% trans "Equipo" %}:</strong> Riesgos</div>
+          <div class="mb-0"><strong>{% trans "Adjuntos" %}:</strong> 3 PDF</div>
+        </div>
+      </div>
+
+      <div class="card ui-accent-card mt-3" style="--accent-color: #17a2b8;">
+        <div class="card-header">{% trans "Siguiente paso" %}</div>
+        <div class="card-body ui-card-body-pad">
+          <p class="mb-2">{% trans "Programar revisión con el proveedor y cerrar riesgos abiertos." %}</p>
+          <button class="btn btn-primary w-100">{% trans "Agendar" %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
