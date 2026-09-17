@@ -4,6 +4,7 @@ config.py
 db.sqlite3
 settings.py
 debug.log
+debug.log.*
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django
 

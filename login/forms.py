@@ -1,11 +1,27 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+import logging
+
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from django.contrib.auth.forms import AuthenticationForm
 from .models import CustomUser
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
 
 
+
+
+class LoggedPasswordResetForm(PasswordResetForm):
+    def get_users(self, email):
+        users = list(super().get_users(email))
+        logger = logging.getLogger('passing.mail')
+        if users:
+            logger.info('Password reset: eligible_accounts=%s', len(users))
+        else:
+            logger.warning(
+                'Password reset: no eligible account; no email will be sent '
+                '(unknown email, inactive account or unusable password)'
+            )
+        return users
 
 
 class CustomLoginForm(AuthenticationForm):
