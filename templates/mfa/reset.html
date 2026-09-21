@@ -1,0 +1,16 @@
+{% extends 'mfa/base.html' %}
+{% block content %}
+  <h1 class="h3">Recuperar autenticador</h1>
+  <p>Cuenta: <strong>{{ target.username }}</strong></p>
+  {% if completed %}
+    <p>Se invalidaron el autenticador anterior y las sesiones de esta cuenta. El usuario debe ingresar con su contraseña y configurar un QR nuevo.</p>
+  {% else %}
+    <p>Antes de continuar, verificá la identidad del usuario por un canal confiable. Esta acción cerrará sus sesiones y eliminará el autenticador anterior.</p>
+    <p>Confirmá con tu propia contraseña y un código nuevo de tu autenticador.</p>
+    <form method="post">
+      {% csrf_token %}{{ form.as_p }}
+      <button type="submit" class="btn btn-danger">Reiniciar autenticador de {{ target.username }}</button>
+    </form>
+  {% endif %}
+  <p class="mt-3"><a href="{% url 'userlist' %}">Volver a usuarios</a></p>
+{% endblock %}

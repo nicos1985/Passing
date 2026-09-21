@@ -72,7 +72,7 @@
                 
                 <td>{{object.created|date:"d/m/y H:i"}}</td>
                 {% if object.viewed == False %}
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></a></td>
+                <td><form method="post" action="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-link p-0"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></button></form></td>
                 {% else %}
                 <td><a href="#" disabled><i class ="fas fa-arrows-to-eye" style="color:rgb(121, 121, 121);"></i></a></td>
                 {%endif%}
@@ -95,7 +95,7 @@
                 
                 <td>{{object.created|date:"d/m/y H:i"}}</td>
                 {% if object.viewed == False %}
-                <td><a href="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></a></td>
+                <td><form method="post" action="{% url 'grantperm' id_cont=object.id_contrasena.id id_user_share=object.id_user_share.id id_noti=object.id id_user=object.id_user %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-link p-0"><i class ="fas fa-arrows-to-eye" style="color:rgb(68, 94, 200); "></i></button></form></td>
                 {% else %}
                 <td><a href="#" disabled><i class ="fas fa-arrows-to-eye" style="color:rgb(121, 121, 121);"></i></a></td>
                 {%endif%}

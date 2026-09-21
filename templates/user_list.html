@@ -92,10 +92,13 @@
                 <td>{{object.admission_date|date:"d/m/y"}}</td>
                 <td>{{object.departure_date|date:"d/m/y"}}</td>
                 <td><a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="Editar usuario" style="margin-right: 10px; text-decoration: none; color: #FFE682;"></i></a>
+                    {% if request.user.is_superuser and object.id != request.user.id %}
+                    <a href="{% url 'two_factor:recover' object.id %}" title="Recuperar autenticador" aria-label="Recuperar autenticador de {{ object.username }}" style="margin-right: 10px; text-decoration: none; color: #FFE682;"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></a>
+                    {% endif %}
                     {% if object.is_active %}
                     <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="desactivar usuario" style="margin-right: 10px; text-decoration: none; color: #FF7367;"></i></a>
                     {% else %}
-                    <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="margin-right: 10px; text-decoration: none; color: #7CFF6D;"></i></a>
+                    <form method="post" action="{% url 'activateuser' object.id %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-link p-0"><i class="fas fa-person-arrow-up-from-line" title="Activar usuario" style="margin-right: 10px; text-decoration: none; color: #7CFF6D;"></i></button></form>
                     {% endif %}
                 </td>
 

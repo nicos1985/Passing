@@ -9,7 +9,7 @@ from cryptography.fernet import Fernet
 
 from login.models import CustomUser
 from passbase.crypto import decrypt_data, encrypt_data
-from passing import settings
+from django.conf import settings
 
 # Create your models here.
 class SeccionContra(models.Model):
@@ -59,9 +59,9 @@ class Contrasena(models.Model):
     def save(self, *args, **kwargs):
         
         if isinstance(self.contraseña, str):
-            self.contraseña = encrypt_data(self.contraseña)
+            self.contraseña = encrypt_data(self.contraseña, allow_encrypted=True)
         if isinstance(self.usuario, str):
-            self.usuario = encrypt_data(self.usuario)
+            self.usuario = encrypt_data(self.usuario, allow_encrypted=True)
         super().save(*args, **kwargs)
 
     def get_decrypted_password(self):
@@ -210,7 +210,7 @@ class LogData(models.Model):
                 usuario_encrypted = None
             return usuario_encrypted
         except Exception as e:
-            print(f"Error extracting encrypted user: {e}")
+            pass  # Do not log form data or secrets.
             return None
 
     def get_decrypted_user(self, usuario_encrypted):

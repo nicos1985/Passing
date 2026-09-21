@@ -60,13 +60,8 @@
                 <td>{{object.nombre_contra}}</td>
                 <td>{{object.seccion}}</td>
                 <td>{{object.link}}</td>
-                {% if user.is_superuser %}
-                    <td>oculto</td>
-                    <td>oculto</td>
-                {% else %}
                     <td>{{contraseña.decrypted_user}}</td>
                     <td>{{contraseña.decrypted_password}}</td>
-                {% endif %}
                 <td>{{object.info}}</td>
 
                 {%if object.file%}
@@ -125,11 +120,7 @@
                         <td>{{detail.usuario.username}}</td>
                         <td>{{detail.created}}</td>
                         <td>{{detail.action}}</td>
-                        {% if user.is_superuser %}
-                        <td>Oculto</td>
-                        {% else %}
                         <td>{{detail.password}}</td>
-                        {% endif %}
                         <td>{{detail.detail}}</td>
                       
                     </tr>   
@@ -167,7 +158,7 @@
                     <td>{{row.user_id.last_name}}</td>
                     <td>{{row.user_id.position}}</td>
                     {% if request.user.is_superuser %}
-                    <td><a href="{% url 'denypermission' row.id %}"><i title="Denegar permisos" class="fas fa-ban" style="color:rgb(187, 45, 59)"></i></a></td>
+                    <td><form method="post" action="{% url 'denypermission' row.id %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-link p-0"><i title="Denegar permisos" class="fas fa-ban" style="color:rgb(187, 45, 59)"></i></button></form></td>
                     {% endif %}                  
                 </tr>   
                 {%endfor%} 

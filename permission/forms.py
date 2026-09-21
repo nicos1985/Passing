@@ -16,51 +16,16 @@ class PermissionUserForm(forms.Form):
 
 class PermisoForm(forms.Form):
     def __init__(self, usuario, *args, **kwargs):
-        
         super().__init__(*args, **kwargs)
-        contrasenas = Contrasena.objects.filter(is_personal=False)
-        
-        for contrasena in contrasenas:
-            initial_value = False
-            log_contra_user_id = LogData.objects.filter(entidad='Contraseña',contraseña=int(contrasena.id), action='Create').exists() #reviso si existe el log create de la contraseña
+        permissions = {p.contra_id_id: p for p in ContraPermission.objects.filter(user_id=usuario)}
+        for credential in Contrasena.objects.filter(is_personal=False, active=True).select_related('seccion', 'owner').order_by('seccion_id', 'pk'):
+            permission = permissions.get(credential.pk)
+            self.fields[f'permiso_{credential.pk}'] = forms.BooleanField(
+                label=credential.nombre_contra, required=False,
+                initial=bool(permission and permission.permission == 'True' and permission.perm_active),
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input',
+                    'seccion': credential.seccion, 'info': credential.info, 'usuario': credential.owner or ''}))
 
-            permission_exists = ContraPermission.objects.filter(user_id=usuario, contra_id=contrasena).exists()
-
-            if log_contra_user_id:
-
-                log_contra_user_id = LogData.objects.get(entidad='Contraseña',contraseña=int(contrasena.id), action='Create').usuario #traigo usuario creador de contraseña
-
-                if permission_exists:
-                    permission_instance = ContraPermission.objects.get(user_id=usuario, contra_id=contrasena)
-                    initial_value = permission_instance.permission
-                    
-                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
-                        label=contrasena.nombre_contra,
-                        initial=initial_value,
-                        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
-                        required=False
-                        )
-                
-                else:
-                    self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
-                    label=contrasena.nombre_contra,
-                    initial=False,
-                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': log_contra_user_id} ),
-                    required=False
-                    )
-            else:
-                log_contra_user_id = None    
-
-   # Obtén los campos originales
-        fields = list(self.fields.items())
-        print(f'fields: {fields}')
-      
-
-        # Ordena los campos según el atributo 'seccion' del widget
-        fields.sort(key=lambda x: str(x[1].widget.attrs.get('seccion', '')))
-
-        # Asigna los campos ordenados de nuevo al formulario
-        self.fields = OrderedDict(fields)
 
 class CustomModelChoiceIterator(ModelChoiceIterator):
     def choice(self, obj):
@@ -81,7 +46,7 @@ class CustomModelChoiceField(ModelMultipleChoiceField):
 class PermissionRolesForm(forms.ModelForm):
     rol_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     contrasenas = CustomModelChoiceField(
-        queryset=Contrasena.objects.filter(is_personal=False),
+        queryset=Contrasena.objects.filter(is_personal=False, active=True),
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         label='Contraseñas',
     )

@@ -78,7 +78,7 @@
 <form id="parametrosForm">
     <div id="parametrosInputs">
         <label for="longitud">Longitud:</label>
-        <input type="number" id="longitud" name="longitud" value="12" min="6" max="32"><br>
+        <input type="number" id="longitud" name="longitud" value="12" min="12" max="128"><br>
         <label><input type="checkbox" id="incluirMayusculas" name="incluirMayusculas" checked> Incluir mayúsculas</label><br>
         <label><input type="checkbox" id="incluirMinusculas" name="incluirMinusculas" checked> Incluir minúsculas</label><br>
         <label><input type="checkbox" id="incluirNumeros" name="incluirNumeros" checked> Incluir números</label><br>
@@ -93,12 +93,14 @@
 </body>
 
 <script>
-    document.getElementById('toggleParamsBtn').addEventListener('click', function() {
+    document.getElementById('toggleParamsBtn').addEventListener('click', function(event) {
+        event.preventDefault();
         var parametrosInputs = document.getElementById('parametrosInputs');
         parametrosInputs.style.display = parametrosInputs.style.display === 'none' ? 'block' : 'none';
     });
     
-    document.getElementById('generarContrasenaBtn').addEventListener('click', function() {
+    document.getElementById('generarContrasenaBtn').addEventListener('click', function(event) {
+        event.preventDefault();
         // Obtener los valores de los parámetros
         const longitud = document.getElementById('longitud').value;
         const incluirMayusculas = document.getElementById('incluirMayusculas').checked;
@@ -113,9 +115,10 @@
         if (incluirNumeros) caracteresPermitidos += '0123456789';
         if (incluirSimbolos) caracteresPermitidos += '!@#$%^&*()_+={}[]|:;"<>,.?/~';
     
+        if (!caracteresPermitidos || !Number.isInteger(Number(longitud)) || longitud < 12 || longitud > 128) { alert('Elegí un tipo de carácter y una longitud entre 12 y 128.'); return; }
         var contrasenaGenerada = '';
         for (var i = 0; i < longitud; i++) {
-            var randomIndex = Math.floor(Math.random() * caracteresPermitidos.length);
+            var randomIndex = secureRandomIndex(caracteresPermitidos.length);
             contrasenaGenerada += caracteresPermitidos.charAt(randomIndex);
         }
     

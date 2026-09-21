@@ -1,0 +1,27 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="same-origin">
+  <title>Seguridad · Passing</title>
+  <link rel="stylesheet" href="{% static 'lib/bootstrap-5.2.2-dist/css/bootstrap.min.css' %}">
+  <style>
+    body { background: #f4f6f8; color: #212629; }
+    main { max-width: 540px; margin: 6vh auto; padding: 28px; background: white; border-radius: 12px; }
+    input:not([type=hidden]) { display: block; width: 100%; padding: 8px; margin-top: 6px; }
+    .errorlist { color: #a51d2d; }
+    img.qr { width: 240px; max-width: 100%; }
+  </style>
+</head>
+<body><main>
+  <p class="text-muted">Passing · Seguridad de la cuenta</p>
+  {% block content %}{% endblock %}
+  {% if request.user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}" class="mt-4">
+      {% csrf_token %}<button class="btn btn-link" type="submit">Cerrar sesión</button>
+    </form>
+  {% endif %}
+</main></body>
+</html>

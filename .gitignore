@@ -5,6 +5,11 @@ db.sqlite3
 settings.py
 debug.log
 debug.log.*
+.uv-cache/
+.python/
+.venv-test/
+.local/
+static-collected/
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django
 
@@ -18,6 +23,8 @@ db.sqlite3
 db.sqlite3-journal
 media
 */migrations/
+!securitycontrol/migrations/
+!securitycontrol/migrations/*.py
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.

@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 import logging
 
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
@@ -25,6 +26,12 @@ class LoggedPasswordResetForm(PasswordResetForm):
 
 
 class CustomLoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only the explicit local development settings bypass the external captcha.
+        if settings.DEBUG and getattr(settings, 'LOCAL_DEVELOPMENT', False):
+            self.fields.pop('captcha', None)
+
     captcha = ReCaptchaField(
     widget=ReCaptchaV3(
         attrs={
@@ -74,7 +81,9 @@ class UserRegisterForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
-    menu_color = forms.CharField(
+    current_password = forms.CharField(label='Contraseña actual (para cambiar el correo)', required=False,
+                                       widget=forms.PasswordInput)
+    menu_color = forms.RegexField(regex=r'^#[0-9a-fA-F]{6}$',
         max_length=7,  # El valor hexadecimal del color es de 7 caracteres (#XXXXXX)
         widget=forms.TextInput(attrs={'type': 'color'})
     )
@@ -85,6 +94,34 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        data = super().clean()
+        if data.get('email') != self.instance.email and not self.instance.check_password(data.get('current_password', '')):
+            self.add_error('current_password', 'Ingresá tu contraseña actual para cambiar el correo.')
+        return data
+
+    def clean_avatar(self):
+        from django.core.files.uploadedfile import UploadedFile, SimpleUploadedFile
+        from PIL import Image
+        from io import BytesIO
+        from uuid import uuid4
+        upload = self.cleaned_data.get('avatar')
+        if not isinstance(upload, UploadedFile):
+            return upload
+        if upload.size > 2 * 1024 * 1024:
+            raise forms.ValidationError('El avatar no puede superar 2 MB.')
+        try:
+            upload.seek(0)
+            with Image.open(upload) as picture:
+                if picture.width * picture.height > 16000000:
+                    raise ValueError('Oversized image')
+                picture.thumbnail((512, 512))
+                output = BytesIO()
+                picture.convert('RGB').save(output, format='PNG')
+            return SimpleUploadedFile(f'{uuid4().hex}.png', output.getvalue(), content_type='image/png')
+        except (OSError, ValueError, Image.DecompressionBombError):
+            raise forms.ValidationError('Seleccioná una imagen válida.')
 
 
 

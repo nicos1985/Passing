@@ -10,36 +10,32 @@ from notifications.models import AdminNotification, UserNotifications
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from passbase.models import Contrasena
 from permission.models import ContraPermission
+from passbase.access import visible_credentials
 from django.db.models import Case, When, Value, IntegerField
 
 
-def can_view_contrasena(user, request):
-    contrasena_id = int(request.GET.get('contrasena'))
-    contrasena_obj = get_object_or_404(Contrasena, id=contrasena_id)
-    return user.is_staff or ContraPermission.objects.filter(user_id=user, contra_id=contrasena_obj, permission=True).exists()
-
 def is_administrator(user):
-    return user.is_superuser or user.is_staff
+    return user.is_superuser
 
 @login_required
 def share_contrasena_form(request, contrasena):
+    credential = get_object_or_404(visible_credentials(request.user), pk=contrasena, is_personal=False)
     if request.method == 'POST':
         form = CreateNotificationForm(request.POST)
         if form.is_valid():
             share = form.cleaned_data['id_user_share']
             comment = form.cleaned_data['comment']
-            contrasena_obj = get_object_or_404(Contrasena, id=contrasena)
+            contrasena_obj = credential
 
-            obj_permission = ContraPermission.objects.filter(user_id=share, contra_id=contrasena, permission=True).first()
+            obj_permission = ContraPermission.objects.filter(user_id=share, contra_id=contrasena, permission=True, perm_active=True).first()
             if not obj_permission:
                 _, created = AdminNotification.objects.get_or_create(
                     id_contrasena=contrasena_obj,
-                    id_user_share=share,
+                    id_user_share=share, viewed=False,
                     defaults={
                         'id_user': request.user.username,
                         'type_notification': 'Compartir Contraseña',
@@ -82,7 +78,6 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
 
     
 class MarkNotificationsViewed(LoginRequiredMixin, View):
-    @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 

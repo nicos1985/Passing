@@ -1,0 +1,7 @@
+{% extends 'mfa/base.html' %}
+{% block content %}
+  <h1 class="h3">Segundo factor activado</h1>
+  <p>Tu cuenta está protegida con un autenticador. La sesión dura hasta 24 horas desde el ingreso. Al vencer o cerrar sesión, se solicitarán nuevamente tu contraseña y un código.</p>
+  <p>Para cambiar de teléfono o recuperar el acceso, contactá a un administrador. Se invalidará el autenticador anterior y vas a configurar un QR nuevo.</p>
+  <a href="{% url 'listpass' %}" class="btn btn-primary">Ir a Passing</a>
+{% endblock %}

@@ -18,7 +18,7 @@
 
 {% block content %}
 
-{% if not request.user.is_staff and not request.user.is_superuser %}
+{% if not request.user.is_superuser %}
 
 
 <body>
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    {% elif request.user.is_staff or request.user.is_superuser %}
+    {% elif request.user.is_superuser %}
 
     <div class="container">
         <div class="row">

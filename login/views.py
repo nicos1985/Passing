@@ -2,6 +2,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.decorators import method_decorator
+from django.http import FileResponse, Http404
+from django.views.decorators.http import require_POST
+from passbase.access import superadmin_required
 from django.contrib.auth.forms import SetPasswordForm
 from .forms import CustomLoginForm, UserDepartureForm, UserRegisterForm, ProfileForm, UserForm
 from django.contrib import messages
@@ -16,7 +19,7 @@ from django.utils.decorators import method_decorator
 
 # Funcion para user_passes_test 
 def is_administrator(user):
-    return user.is_superuser or user.is_staff
+    return user.is_superuser
 
 def is_superadmin(user):
     return user.is_superuser
@@ -27,6 +30,7 @@ def is_superadmin(user):
 
 # Create your views here.
 
+@superadmin_required
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -109,7 +113,7 @@ def profile_view(request, username):
                 if profile_form.is_valid():
                     profile_form.save()
                 else:
-                    print('Formulario no válido')
+                    pass  # Do not log form data or secrets.
                 
             else:
                 profile_form = ProfileForm(instance=user)
@@ -136,8 +140,8 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'  # Cambia esto a la plantilla que estás utilizando
     form_class = SetPasswordForm  # Especifica el formulario que deseas utilizar
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch') 
-class UserListView(ListView):   
+@method_decorator(superadmin_required, name='dispatch')
+class UserListView(ListView):
     model = CustomUser
     template_name = 'user_list.html'
     context_object_name = 'users'
@@ -147,7 +151,7 @@ class UserListView(ListView):
         
         return obj
     
-@method_decorator(user_passes_test(is_administrator), name='dispatch') 
+@method_decorator(superadmin_required, name='dispatch')
 class UserUpdateView(UpdateView):
     model = CustomUser
     form_class = UserForm
@@ -156,6 +160,18 @@ class UserUpdateView(UpdateView):
     #print(f'now: {date.today()}')
 
    
+    def form_valid(self, form):
+        from django.db import transaction
+        with transaction.atomic():
+            admins = list(CustomUser.objects.select_for_update().filter(is_superuser=True, is_active=True))
+            removing = not form.cleaned_data.get('is_active') or not form.cleaned_data.get('is_superuser')
+            if removing and (self.object.pk == self.request.user.pk or (
+                any(u.pk == self.object.pk for u in admins) and len(admins) <= 1
+            )):
+                form.add_error(None, 'No podés quitarte el acceso ni desactivar al último superadministrador.')
+                return self.form_invalid(form)
+            return super().form_valid(form)
+
     def get_initial(self):
             initial = super().get_initial()
             initial['birth_date'] = self.object.formatted_birth_date()
@@ -163,7 +179,7 @@ class UserUpdateView(UpdateView):
             initial['departure_date'] = self.object.formatted_departure_date()
             return initial
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch')     
+@method_decorator(superadmin_required, name='dispatch')
 class DepartureUser(UpdateView):
     model = CustomUser
     form_class = UserDepartureForm
@@ -176,42 +192,21 @@ class DepartureUser(UpdateView):
         return context
 
     def form_valid(self, form):
-        try:
-            user = self.get_object()
-            print(f'estoy en form valid: user = {user}')  # Obtener el usuario actual basado en la pk de la URL
-            deactivate = deactivate_user(self.request, user.id)
-            print(f'deactivate return: {deactivate}')
-            messages.success(self.request, f"Se dió de baja exitosamente al usuario {user.username}.")
-        except Exception as e:
-            print(f'exception departure_user: {e}')
-            messages.error(self.request, f"Error al dar de baja al usuario: {str(e)}")
-        return super().form_valid(form)
+        from django.db import transaction
+        with transaction.atomic():
+            # Lock administrators together to serialize concurrent demotions.
+            admins = list(CustomUser.objects.select_for_update().filter(is_superuser=True, is_active=True))
+            if self.object.pk == self.request.user.pk or (
+                self.object.is_superuser and len(admins) <= 1
+            ):
+                form.add_error(None, 'No podés darte de baja ni desactivar al último superadministrador.')
+                return self.form_invalid(form)
+            form.instance.is_active = False
+            return super().form_valid(form)
 
 
-def deactivate_user(request, pk):
-    try:
-        user = get_object_or_404(CustomUser, pk=pk)
-        print(f'user_deactivate = {user}')
-        if user == request.user:
-            messages.error(request, "No puedes eliminar el mismo usuario con el que estás logueado.")
-            return redirect('userlist')
-        
-        superusers = CustomUser.objects.filter(is_superuser=True, is_active=True).count()
-        if user.is_superuser and superusers <= 1:
-            messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único superusuario.')
-        else:
-            message = user.inactivate()
-            
-            messages.success(request, message)
-        
-    except CustomUser.DoesNotExist:
-        messages.error(request, f"El usuario con ID {pk} no existe.")
-    except Exception as e:
-        messages.error(request, f"Error al desactivar el usuario: {str(e)}")
-
-    return message
-
-@user_passes_test(is_administrator)
+@superadmin_required
+@require_POST
 def activate_user(request, pk):
     try:
         user = get_object_or_404(CustomUser, id=pk)
@@ -227,3 +222,26 @@ def activate_user(request, pk):
         messages.error(request, message)
 
     return render(request, 'user_list.html', {'users': CustomUser.objects.all().order_by('is_active')})
+
+
+@login_required
+def avatar(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
+    if user != request.user and not request.user.is_superuser:
+        raise Http404
+    if not user.avatar:
+        raise Http404
+    # Re-encode legacy uploads too: no original HTML/SVG/metadata is served inline.
+    from io import BytesIO
+    from PIL import Image
+    try:
+        with user.avatar.open('rb') as source, Image.open(source) as picture:
+            if picture.width * picture.height > 16000000:
+                raise Http404
+            picture.thumbnail((512, 512))
+            output = BytesIO()
+            picture.convert('RGB').save(output, format='PNG')
+        output.seek(0)
+        return FileResponse(output, content_type='image/png')
+    except (OSError, ValueError, Image.DecompressionBombError):
+        raise Http404

@@ -24,5 +24,4 @@ class SeccionContAdmin(admin.ModelAdmin):
     readonly_fields=('created', 'updated')
 
 admin.site.register(SeccionContra ,SeccionContAdmin)
-admin.site.register(Contrasena, ContrasenaAdmin)
-admin.site.register(LogData ,LogDataAdmin)
+# Credentials and their history are only accessible through object-authorized views.

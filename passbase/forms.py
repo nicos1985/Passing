@@ -1,7 +1,20 @@
 from django.forms import CheckboxInput, FileInput, ModelForm, PasswordInput, RadioSelect, Select, TextInput, Textarea  
 from .models import Contrasena, SeccionContra
+from passing.uploads import validate_attachment
+from .crypto import encrypt_data
 
-class ContrasenaForm(ModelForm):
+class CredentialInputMixin:
+    def save(self, commit=True):
+        # User input is always plaintext, even if it resembles a stored Fernet token.
+        # Only trusted model reloads may preserve existing ciphertext.
+        self.instance.usuario = encrypt_data(self.cleaned_data['usuario'])
+        self.instance.contraseña = encrypt_data(self.cleaned_data['contraseña'])
+        return super().save(commit=commit)
+
+
+class ContrasenaForm(CredentialInputMixin, ModelForm):
+    def clean_file(self):
+        return validate_attachment(self.cleaned_data.get('file'))
     
     #este def hace un loop por cada propiedad de widget para definirle los parametros de vista (class, type, placeholder, etc) a todos los campos iterables del form. Ahorra código respecto de como se realizó mas abajo en la clase meta.
     
@@ -13,8 +26,8 @@ class ContrasenaForm(ModelForm):
          
     class Meta:
         model = Contrasena
-        fields = '__all__'
-        exclude = ['active']
+        fields = ['nombre_contra', 'seccion', 'link', 'usuario', 'contraseña',
+                  'actualizacion', 'info', 'file', 'is_personal']
         labels ={
             'nombre_contra' : 'Nombre',
             'active': 'Activo',
@@ -63,7 +76,9 @@ class ContrasenaForm(ModelForm):
                 })      
         }
 
-class ContrasenaUForm(ModelForm):
+class ContrasenaUForm(CredentialInputMixin, ModelForm):
+    def clean_file(self):
+        return validate_attachment(self.cleaned_data.get('file'))
     
     """este def hace un loop por cada propiedad de widget para definirle 
     los parametros de vista (class, type, placeholder, etc) a todos 
@@ -71,9 +86,12 @@ class ContrasenaUForm(ModelForm):
     se realizó mas abajo en la clase meta."""
     
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         decrypted_user = kwargs.pop('decrypted_user', None)
         decrypted_password = kwargs.pop('decrypted_password', None)
         super().__init__(*args, **kwargs)
+        if user is None or self.instance.owner_id != user.pk:
+            self.fields.pop('is_personal', None)
         
         for form in self.visible_fields():
             try:
@@ -84,7 +102,7 @@ class ContrasenaUForm(ModelForm):
                     form.field.widget.attrs['class'] = 'form-control'
                     form.field.widget.attrs['autocomplete'] = 'off'
             except Exception as e:
-                print(f'no se pudo hacer esto: {e}')
+                pass  # Do not log form data or secrets.
                 form.field.widget.attrs['class'] = 'form-control'
                 form.field.widget.attrs['autocomplete'] = 'off'
 
@@ -97,8 +115,8 @@ class ContrasenaUForm(ModelForm):
 
     class Meta:
         model = Contrasena
-        fields = '__all__'
-        exclude = ['active','owner']
+        fields = ['nombre_contra', 'seccion', 'link', 'usuario', 'contraseña',
+                  'actualizacion', 'info', 'file', 'is_personal']
         labels ={
             'nombre_contra' : 'Nombre',
             'active': 'Activo',

@@ -3,10 +3,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django import forms
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView, FormView
 from django.db.models import Count
 from notifications.models import AdminNotification, UserNotifications
-from passing.settings import GRAN_PERMISSION_ID_USERS
+from django.conf import settings
+from django.db import transaction
+from django.views.decorators.http import require_POST
+from passbase.access import superadmin_required
 from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena, LogData
 from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm, UserRolForm
@@ -17,14 +20,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 #devuelve si es administrador
 def is_administrator(user):
-    return user.is_superuser or user.is_staff
+    return user.is_superuser
 
 def is_superadmin(user):
     return user.is_superuser
 
 
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser o es staff
+@method_decorator(superadmin_required, name='dispatch') #no permite ingreso si no es superuser o es staff
 class PermissionListView(LoginRequiredMixin, ListView):
     model = ContraPermission
     template_name = 'listpermission.html'
@@ -37,100 +40,82 @@ class PermissionListView(LoginRequiredMixin, ListView):
     
 
 
-@user_passes_test(is_superadmin)
+@superadmin_required
 def seleccionar_usuario(request):
     usuario_form = PermissionUserForm()
-    print(f'usuario_form no post: {usuario_form}')
+    pass  # Do not log form data or secrets.
     if request.method == 'POST':
         usuario_form = PermissionUserForm(request.POST)
-        print(f'usuario_form post: {usuario_form}')
+        pass  # Do not log form data or secrets.
         if usuario_form.is_valid():
-            print('formulario userform es valido')
+            pass  # Do not log form data or secrets.
             usuario = usuario_form.cleaned_data['usuario']
-            print(f'usuario = {usuario}')
+            pass  # Do not log form data or secrets.
             # Redirige a la vista de permisos y pasa el usuario
             return redirect('permissionform2', usuario_id=usuario.id)
 
     return render(request, 'create-perm-p1.html', {'usuario_form': usuario_form})
 
-@user_passes_test(is_superadmin)
+@superadmin_required
+@transaction.atomic
 def gestion_permisos(request, usuario_id):
     usuario = get_object_or_404(CustomUser, id=usuario_id)
     permiso_form = PermisoForm(usuario, request.POST or None)
-    contrasena = Contrasena.objects.filter(is_personal=False)
+    contrasena = Contrasena.objects.filter(is_personal=False, active=True)
     if request.method == 'POST':
         if permiso_form.is_valid():
             # Procesa el formulario de permisos y guarda los cambios
             
-            for contrasena in contrasena:
+            for credential in contrasena:
                 default_value = False
-                permiso = permiso_form.cleaned_data.get(f'permiso_{contrasena.nombre_contra}', default_value)
+                permiso = permiso_form.cleaned_data.get(f'permiso_{credential.pk}', default_value)
 
                 permissions, _ = ContraPermission.objects.get_or_create(
                     user_id=usuario,
-                    contra_id=contrasena
+                    contra_id=credential
                 )
-                print(f'permissions: {permissions}')
-                permissions.permission = permiso
-                print(f'permissions.permission: {permissions.permission}')
+                pass  # Do not log form data or secrets.
+                permissions.permission = str(permiso)
+                permissions.perm_active = permiso
+                pass  # Do not log form data or secrets.
                 permissions.save()
 
             # Redirige a donde desees después de guardar los cambios
             messages.success(request,  'los permisos han sido asignados correctamente.')
             
             return redirect('listpass')
-    else:
-        for contra in contrasena:
-            print(f'contraseñas: {contra.usuario}')
-        return render(request, 'create-perm-p2.html', {
-            'permiso_form': permiso_form,
-            'usuario' : usuario,
-            'contraseñas' : contrasena,
-        })
-        
-@user_passes_test(is_administrator)
-def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
-    try:
-        # Obtener o crear el objeto de permiso
-        user = get_object_or_404(CustomUser, username = id_user)
-        notificacion = get_object_or_404(AdminNotification, id=id_noti)
-        contrasena = get_object_or_404(Contrasena, id=id_cont)
-        user_share = get_object_or_404(CustomUser, id=id_user_share)
-        permission_obj, created = ContraPermission.objects.get_or_create(
-            user_id=user_share, 
-            contra_id=contrasena,
-            defaults={'permission': True, 'perm_active': True}
-        )
-        
-        # Si el objeto ya existía, actualizar el campo 'permission'
-        if not created:
-            permission_obj.permission = True
-            permission_obj.save()  # Guardar los cambios en la base de datos
-        notificacion.viewed = True
-        notificacion.save()
-        user_notification_share = UserNotifications.objects.create(
-                                                            id_contrasena = contrasena,
-                                                            id_user = user_share,
-                                                            type_notification = f"recibiste acceso a {contrasena.nombre_contra}",
-                                                            comment = "Admin te dió acceso."
-        )
-        print(f'user_notificarions_share: {user_notification_share}')
-        user_notification = UserNotifications.objects.create(
-                                                            id_contrasena = contrasena,
-                                                            id_user = user,
-                                                            type_notification = "Permiso Concedido",
-                                                            comment = f"Se dió acceso a {user_share.username}."
-        )
-        print(f'user_notification: {user_notification}')
-        message = f'Permisos sobre {contrasena.nombre_contra} otorgados a {user_share.username}.'
-        messages.success(request, message)
+    return render(request, 'create-perm-p2.html', {
+        'permiso_form': permiso_form, 'usuario': usuario, 'contraseñas': contrasena,
+    })
 
-    except Exception as e:
-        messages.error(request, f'Hubo un error al otorgar permisos: {e}')
-    # Redirigir a la vista 'notificaciones'
+@superadmin_required
+@require_POST
+@transaction.atomic
+def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
+    notification = get_object_or_404(
+        AdminNotification.objects.select_for_update(), pk=id_noti,
+        id_contrasena_id=id_cont, id_user_share_id=id_user_share, id_user=id_user,
+        viewed=False, id_contrasena__is_personal=False, id_contrasena__active=True,
+        id_user_share__is_active=True,
+    )
+    # A request must still be backed by the requester's current access.
+    from passbase.access import visible_credentials
+    requester = get_object_or_404(CustomUser, username=id_user, is_active=True)
+    get_object_or_404(visible_credentials(requester), pk=id_cont)
+    permission, _ = ContraPermission.objects.get_or_create(
+        contra_id_id=id_cont, user_id_id=id_user_share)
+    permission.permission = 'True'
+    permission.perm_active = True
+    permission.save()
+    notification.viewed = True
+    notification.save(update_fields=['viewed'])
+    UserNotifications.objects.create(
+        id_contrasena_id=id_cont, id_user_id=id_user_share,
+        type_notification='Acceso concedido', comment='Un administrador autorizó el acceso.')
+    messages.success(request, f'Permisos sobre {notification.id_contrasena.nombre_contra} otorgados.')
     return redirect('listnotifadmin')
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch') #no permite ingreso si no es superuser
+@method_decorator(superadmin_required, name='dispatch') #no permite ingreso si no es superuser
 class PermissionRolesCreateView(CreateView):
     model = PermissionRoles
     form_class = PermissionRolesForm
@@ -140,21 +125,17 @@ class PermissionRolesCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Añade las contraseñas al contexto
-        context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        context['contrasenas'] = Contrasena.objects.filter(is_personal=False, active=True)
         return context
 # Funciones para la asignacion de Roles a usuarios. 
 
 def give_permission(request, user, contrasena):
-    try:
-        permission=ContraPermission.objects.get_or_create(
-                        user_id=user,
-                        contra_id=contrasena, 
-                        permission=True
-                    )
-        print(f'permissions: {permission}')
-    except Exception as e:
-        message = f'Hubo un error al intentar crear un permiso {contrasena}. Error {e}'
-        messages.error(request, message)
+    if contrasena.is_personal or not contrasena.active:
+        return False
+    permission, _ = ContraPermission.objects.get_or_create(user_id=user, contra_id=contrasena)
+    permission.permission = 'True'
+    permission.perm_active = True
+    permission.save()
     return True
     
 
@@ -192,7 +173,7 @@ def generate_rol_permissions(request, rol, user):
 
     return contrasenas
 
-@user_passes_test(is_administrator)
+@superadmin_required
 def assign_rol_user(request, id_rol=None):
     """ Maneja el formulario donde se asignan los roles a los usuarios.
     Toma los datos y los pasa a la función generate_rol_permission """
@@ -228,7 +209,7 @@ def assign_rol_user(request, id_rol=None):
 
     return render(request, 'assign_rol.html', {'form': user_rol_form})
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch')
+@method_decorator(superadmin_required, name='dispatch')
 class PermissionRolView(LoginRequiredMixin, ListView):
     model = PermissionRoles
     template_name = 'roles_list.html'
@@ -247,7 +228,7 @@ class PermissionRolView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         return context
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch')
+@method_decorator(superadmin_required, name='dispatch')
 class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
     model = PermissionRoles
     form_class = PermissionRolesForm
@@ -257,11 +238,11 @@ class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Añade las contraseñas al contexto
-        context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        context['contrasenas'] = Contrasena.objects.filter(is_personal=False, active=True)
         return context
 
-@method_decorator(user_passes_test(is_administrator), name='dispatch')
-class ConfirmDeleteView(DeleteView):
+@method_decorator(superadmin_required, name='dispatch')
+class ConfirmDeleteView(DetailView):
     model = PermissionRoles
     template_name = 'delete_role.html'
     
@@ -269,7 +250,8 @@ class ConfirmDeleteView(DeleteView):
     def get_success_url(self):
         return reverse_lazy('deleterolepk', kwargs={'pk': self.object.pk})
 
-@user_passes_test(is_administrator)
+@superadmin_required
+@require_POST
 def delete_rol(request, pk):
     
     delete_instance_role = get_object_or_404(PermissionRoles, id=pk)
@@ -284,68 +266,27 @@ def delete_rol(request, pk):
     return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
     
 
-@user_passes_test(is_administrator)
+@superadmin_required
+@require_POST
 def update_owner(request):
-    """Realizar la actualizacion del campo owner de cada contraseña. """
-    contrasenas = Contrasena.objects.all()
-    
-    for contrasena in contrasenas:
-        try:
-            log_mod = LogData.objects.get(contraseña=contrasena.id, action='Create', entidad='Contraseña')
-            print(f'log_mod: {log_mod}')
-
-            contrasena.owner = log_mod.usuario
-            contrasena.save()
-            print(f'contrasena_owner_ok: {contrasena.owner}')
-
-        except LogData.DoesNotExist:
-
-            contrasena.owner = None
-            contrasena.save()
-            print(f'contrasena_owner_notexist: {contrasena.owner}')
-
-    return render(request, 'listpass.html')
+    from django.http import HttpResponseGone
+    return HttpResponseGone('La reparación de datos se realiza fuera de la interfaz web.')
 
 def obtener_reporte_contrasenas_repetidas():
-    # Crear un diccionario para almacenar las contraseñas desencriptadas y sus conteos
-    contrasenas_desencriptadas = {}
-
-    # Recorrer todas las contraseñas en el modelo
-    for contrasena_obj in Contrasena.objects.all():
-        try:
-            # Desencriptar la contraseña
-            decrypted_password = contrasena_obj.get_decrypted_password()
-
-            # Verificar si ya existe en el diccionario
-            if decrypted_password in contrasenas_desencriptadas:
-                contrasenas_desencriptadas[decrypted_password].append(contrasena_obj)
-            else:
-                contrasenas_desencriptadas[decrypted_password] = [contrasena_obj]
-        except Exception as e:
-            print(f"Error desencriptando la contraseña con id {contrasena_obj.id}: {e}")
-
-    # Filtrar solo las contraseñas repetidas
-    contrasenas_duplicadas = {k: v for k, v in contrasenas_desencriptadas.items() if len(v) > 1}
-
-    # Crear el resumen de contraseñas duplicadas (total de duplicados)
-    resumen_contrasenas_duplicadas = sum([len(v) - 1 for v in contrasenas_duplicadas.values()])
-
-    # Crear el detalle de duplicados por contraseña
-    detalles_contrasenas_duplicadas = {
-        k: len(v) - 1 for k, v in contrasenas_duplicadas.items()
-    }
-
-    # Retornar los datos
-    return {
-        'resumen_total_duplicados': resumen_contrasenas_duplicadas,  # Total de duplicados
-        'detalles_por_contrasena': detalles_contrasenas_duplicadas,  # Duplicados por contraseña
-    }
+    # Count duplicate groups without exposing their plaintext values in HTML/logs.
+    from collections import Counter
+    from hashlib import sha256
+    counts = Counter(sha256(c.get_decrypted_password().encode()).hexdigest()
+                     for c in Contrasena.objects.filter(active=True, is_personal=False))
+    duplicates = [count - 1 for count in counts.values() if count > 1]
+    return {'resumen_total_duplicados': sum(duplicates),
+            'detalles_por_contrasena': {f'Grupo {i + 1}': count for i, count in enumerate(duplicates)}}
 
 
-@user_passes_test(is_administrator)
+@superadmin_required
 def users_audit(request):
     users_active_all = CustomUser.objects.filter(is_active=True)
-    exclude_users = GRAN_PERMISSION_ID_USERS
+    exclude_users = settings.GRAN_PERMISSION_ID_USERS
     users = users_active_all.exclude(id__in = exclude_users).order_by('id')
     
 
@@ -424,7 +365,7 @@ def users_audit(request):
     data['strength_pass'] = strength_count
     data['pass_duplicate_count'] = reporte_contrasenas_repetidas
 
-    print(f'context: {data}')
+    pass  # Do not log form data or secrets.
 
     return render(request, 'users_audit.html', context={'data': data})
 

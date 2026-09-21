@@ -10,10 +10,10 @@
                 <link rel="icon" type="image/x-icon" href="{% static 'favicon1.ico' %}">
                 <script src="{% static 'lib/bootstrap-5.2.2-dist/js/bootstrap.min.js'%}" crossorigin="anonymous"></script>
                
-                <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-                <script src="https://kit.fontawesome.com/5045960a08.js" crossorigin="anonymous"></script>
+                <script src="{% static 'vendor/47b46f988e-jquery-3.3.1.slim.min.js' %}" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+                <script src="{% static 'vendor/2f79303a8d-popper.min.js' %}" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+                <script src="{% static 'vendor/6082e4b74b-bootstrap.min.js' %}" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+                <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
 
                 
                 <meta charset="utf-8">
@@ -61,7 +61,8 @@
     padding-top: 75px; /* Ajusta esta altura según la altura de tu navbar */
 }
   </style>
-        </head>
+        <script src="{% static 'js/secure-password.js' %}"></script>
+</head>
         
     
         <body>
@@ -85,7 +86,7 @@
                                 </a>
                             </li>
                             {% if request.user.is_authenticated %}
-                                {% if request.user.is_superuser or request.user.is_staff %}
+                                {% if request.user.is_superuser %}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{% url 'config' %}">
                                             <i class="fa-solid fa-book" style="color:white">&nbsp;</i>Admin
@@ -98,18 +99,13 @@
                                         <i class="fas fa-sign-in-alt" style="color:white">&nbsp;</i>Login
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'register' %}">
-                                        <i class="fa-solid fa-address-card" style="color:white">&nbsp;</i>Registrarse
-                                    </a>
-                                </li>
                             {% endif %}
                         </ul>
                         {% if request.user.is_authenticated %}
                             <ul class="navbar-nav ms-auto">
                                 
                                     <li class="nav-item" style="margin-bottom: 20px;">
-                                        {% if request.user.is_superuser or request.user.is_staff%}
+                                        {% if request.user.is_superuser%}
                                         <a href="{% url 'listnotifadmin' %}">
                                             {% else %}
                                             <a href="{% url 'listnotifuser' %}">
@@ -127,7 +123,7 @@
                                 
                                 <li class="nav-item" style="margin-top: 5px;">
                                     {% if request.user.avatar %}
-                                        <img class="rounded-circle" src="{% get_media_prefix %}{{user.avatar}}" width="51px" height="51px" borders="45px" alt="Avatar">
+                                        <img class="rounded-circle" src="{% url 'avatar' request.user.pk %}" width="51px" height="51px" borders="45px" alt="Avatar">
                                     {% else %}
                                         <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" width="51px" height="51px" borders="45px" alt="Default Avatar">
                                     {% endif %}
@@ -135,6 +131,11 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'profile' request.user.username %}" style="color:white; margin-top: 8px;">
                                         <b>&nbsp;&nbsp;&nbsp;{{request.user}}&nbsp;&nbsp;&nbsp;</b>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'two_factor:profile' %}" title="Seguridad de la cuenta" aria-label="Seguridad de la cuenta" style="color:white; margin-top: 8px;">
+                                        <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
                                     </a>
                                 </li>
                                 <form method="POST" action="{% url 'logout' %}">
@@ -159,7 +160,7 @@
           {% if messages %}
           {% for message in messages %}
               <div class= "alert {{message.tags}}" role="alert">
-                {{ message|safe }}
+                {{ message }}
               </div>
           {% endfor %}
           {% endif %}
@@ -171,14 +172,7 @@
           {% block content %}
             
             {% endblock %}
-            {% if request.user.is_authenticated %}
-          </div>
-          <script src="https://cdn-chatbot.anima.bot/chatbot.umd.js"></script>
-        <script>
-        window.onload = function() {initChatbot("eyJpdiI6Ijd3V0d0SjBOV3FKZEluYWdrbVRzTVE9PSIsInZhbHVlIjoiV2trNjlCaUREQjNoWFFoWmR6WlpZYlJ3ME1sRFhGbkI3QStFbjZRbTNRcz0iLCJtYWMiOiJkMzY2ZjI5YmY3NmU3ZTIwOTYyMGJlZDdkY2IzY2FiODU3ZDE4Y2Q1M2FjZmYyNmE3NjUyZWIxNDIzMTEyNjljIiwidGFnIjoiIn0=");};
-        </script>
 
-            {% endif %}
           </body>
 
             {% block javascript %}

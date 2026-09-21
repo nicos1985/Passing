@@ -8,15 +8,15 @@
 <link rel="stylesheet" href="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/css/responsive.bootstrap5.min.css' %}"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+<script src="{% static 'vendor/c1043ade03-bootstrap-select.min.js' %}"></script>
 <script src="{% static 'lib/jQuery/jquery.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
 <!-- colReorder -->
-<script src="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css"></script>
-<script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+
+<script src="{% static 'vendor/48fb65f268-dataTables.colReorder.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -65,9 +65,6 @@
                         <td>{{ contra.decrypted_user }}</td>
                         <td>
                             <div style="display: flex; align-items: center;">
-                                {% if user.is_superuser %}
-                                <input type='password' id="passwordField{{ contra.id }}" style="flex: 1; border: none;" disabled>
-                                {% else %}
                                 {% if contra.password_strength == 'strong' %}
                                     <i class="fas fa-shield-halved" style="color:#7CFF6D" title="Contraseña fuerte" ></i>
                                 {% elif contra.password_strength == 'moderate' %}
@@ -81,7 +78,6 @@
                                 <i class="far fa-copy copy-icon" data-copy-target="passwordField{{ contra.id }}" title="Copiar Contraseña" style="cursor: pointer;"></i>
                                 <span>&nbsp&nbsp</span>
                                 <i class="fa-solid fa-check" id="globoDeTextopasswordField{{ contra.id }}" style="display: none; color: green;"></i>
-                                {% endif %}
                             </div>
                         </td>
                         <td>
@@ -94,9 +90,11 @@
                                         <a class="dropdown-item" href="{% url 'updatepass' contra.id %}">
                                             <i class='fas fa-pen' title='Editar Contraseña' style='color: #EFA400;'></i> Editar
                                         </a>
+                                        {% if contra.owner_id == request.user.pk %}
                                         <a class="dropdown-item" href="{% url 'deletepass' contra.id %}">
                                             <i class='fas fa-trash' title='Eliminar contraseña' style='color: #D4320F;'></i> Eliminar
                                         </a>
+                                        {% endif %}
                                         <a class="dropdown-item" href="{% url 'detailpass' contra.id %}">
                                             <i class='fas fa-circle-info' title='Detalle' style='color: #1C31A7;'></i> Detalle
                                         </a>

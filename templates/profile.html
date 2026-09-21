@@ -34,9 +34,9 @@
     <div class='container'>
         <div class="profile-image-container">
             {% if user_profile.avatar %}
-                <img class="rounded-circle" src="{% get_media_prefix %}{{user_profile.avatar}}" alt="{{ user_profile.username }}'s Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% url 'avatar' user_profile.pk %}" alt="Avatar" width="125" height="125">
             {% else %}
-                <img class="rounded-circle" src="{% get_media_prefix %}static/default-avatar.jpg" alt="Default Avatar" width="125" height="125">
+                <img class="rounded-circle" src="{% static 'default-avatar.jpg' %}" alt="Default Avatar" width="125" height="125">
             {% endif %}
             </div>
         </div>
@@ -46,6 +46,8 @@
                     {% csrf_token %}
                     {{ profile_form.errors }}
                     {{ profile_form.non_field_errors }}
+                    {{ profile_form.current_password.label_tag }}
+                    {{ profile_form.current_password }}
                     <h2>Perfil de {{ user_profile.username }}</h2>
                     <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
                         <label for="first_name" class="form-label">Nombre: </label>

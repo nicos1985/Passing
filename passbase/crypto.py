@@ -1,34 +1,32 @@
+"""Fernet helpers compatible with the historical bytes-repr database format."""
 from cryptography.fernet import Fernet, InvalidToken
-from passing import settings
+from django.conf import settings
 
 
-def encrypt_data(data):
-    if data.startswith("b'") and data.endswith("'"):
-        return data
-    else:
-        key = settings.CRYPTOGRAPHY_KEY
-        cipher_suite = Fernet(key)
-        encrypted_data = cipher_suite.encrypt(data.encode())
-        return encrypted_data
+def _token(value):
+    if isinstance(value, str):
+        if value.startswith("b'") and value.endswith("'"):
+            value = value[2:-1]
+        return value.encode('utf-8')
+    return value
+
+
+def encrypt_data(data, *, allow_encrypted=False):
+    cipher = Fernet(settings.CRYPTOGRAPHY_KEY)
+    if allow_encrypted and (isinstance(data, bytes) or (data.startswith("b'") and data.endswith("'"))):
+        try:
+            cipher.decrypt(_token(data))
+            return _token(data)
+        except InvalidToken:
+            # A password resembling bytes-repr is still a password, not ciphertext.
+            pass
+    return cipher.encrypt(data.encode('utf-8') if isinstance(data, str) else data)
+
 
 def decrypt_data(encrypted_data):
-    key = settings.CRYPTOGRAPHY_KEY
-    cipher_suite = Fernet(key)
-    
-    if isinstance(encrypted_data,(str) ):
-        if encrypted_data.startswith("b'") and encrypted_data.endswith("'"):
-            
-            # Removing the extra characters introduced by string representation
-            encrypted_data = encrypted_data[2:-1].encode()
-        else:
-            
-            encrypted_data = encrypted_data.encode()
-
+    if encrypted_data in ('', b'', None):
+        return ''
     try:
-        decrypted_bytes = cipher_suite.decrypt(encrypted_data)
-        decrypted_data = decrypted_bytes.decode()
-        
-        return decrypted_data
-    except Exception as e:
-        print(f"Error decrypting data: {e}")
-        return encrypted_data
+        return Fernet(settings.CRYPTOGRAPHY_KEY).decrypt(_token(encrypted_data)).decode('utf-8')
+    except (InvalidToken, UnicodeError, TypeError):
+        raise ValueError('No se pudo descifrar el registro; verificá la clave y la integridad de los datos.') from None

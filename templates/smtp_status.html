@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Correo de Passing</h2>
+  <p>Servidor: {{ smtp_host }} · Puerto: {{ smtp_port }} · TLS: {{ smtp_tls|yesno:'Sí,No' }}</p>
+  <p>La configuración y las credenciales de correo se administran en el servidor.</p>
+  <a href="{% url 'config' %}" class="btn btn-secondary">Volver</a>
+</div>
+{% endblock %}

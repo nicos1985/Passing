@@ -93,7 +93,7 @@
         return cookieValue;
     }
 
-    const csrftoken = getCookie('csrftoken');
+    const csrftoken = '{{ csrf_token }}';
 
     window.addEventListener('beforeunload', function() {
         fetch("{% url 'marcar_notificaciones_vistas' %}", {
