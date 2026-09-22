@@ -38,7 +38,7 @@ por otro superadministrador, con contraseña y OTP nuevos.
 .\.venv\Scripts\python.exe manage.py test passbase.test_security login.test_mfa securitycontrol --settings=passing.test_settings --noinput
 ```
 
-Las 42 pruebas pasaron. Los tests cubren rechazos con CSRF real, casos positivos de propietario/compartido,
+La suite de seguridad y MFA pasó. Los tests cubren rechazos con CSRF real, casos positivos de propietario/compartido,
 revocación, staff, registro, XSS, adjuntos, límites, cifrado, recuperación y sesión.
 Las pruebas de producción usan variables sintéticas y no envían correos.
 `makemigrations --check --dry-run` no detectó cambios de modelos pendientes.
@@ -55,18 +55,65 @@ Referencias: [Django 5.2.17](https://docs.djangoproject.com/en/5.2/releases/5.2.
 
 ## Despliegue en Ubuntu
 
-1. Identificar el servicio y el entorno efectivos. En la salida compartida aparecían
-   dos grupos de Gunicorn sobre el mismo socket. Revisar con `ps -eo user,pid,args`
-   y `systemctl status <PID>`; dejar un solo servicio responsable del socket.
+1. Identificar el servicio y el entorno efectivos. La captura del 22/09/2026
+   confirmó dos servicios activos, `gunicorn.service` y `live.service`, con un
+   master y tres workers cada uno sobre `/home/Passing/passing.sock`. Ambos usan
+   `/home/Passing`, usuario `ubuntu`, grupo `www-data` y el mismo WSGI; `ss`
+   mostró dos sockets distintos con esa misma ruta. Conservar
+   `gunicorn.service` como unidad única y retirar `live.service` en una ventana
+   breve de mantenimiento. Antes, revisar localmente si alguna unidad define
+   variables de entorno adicionales: no compartir sus valores. Detener y
+   deshabilitar `live.service`, **reiniciar `gunicorn.service`** para reconstruir
+   el socket y comprobar que Nginx responde. No detener procesos sueltos por PID:
+   systemd los vuelve a crear.
+
+   Confirmar localmente si hay diferencias en `Environment` o `EnvironmentFile`
+   entre las unidades, sin copiar secretos a una terminal compartida. Si no hay
+   configuración necesaria exclusiva de `live.service`, hacer durante una ventana
+   de mantenimiento:
+
+   ```bash
+   sudo systemctl disable --now live.service
+   sudo systemctl restart gunicorn.service
+   systemctl is-active gunicorn.service live.service
+   sudo ss -xlnp | grep -F '/home/Passing/passing.sock'
+   ```
+
+   Debe quedar un solo listener de `gunicorn.service`; verificar también el login
+   por HTTPS mediante Nginx. Si falla, revisar `journalctl -u gunicorn.service`
+   y la configuración de Nginx antes de seguir con migraciones.
    Usar siempre `/home/Passing/env/bin/python`, sin paquetes de `~/.local`.
    Configurar `PYTHONNOUSERSITE=1` en el servicio.
 2. Detener los workers identificados y respaldar la base, `media/`, configuración y
    claves actuales en almacenamiento privado. Verificar que el respaldo se pueda
    restaurar. No borrar las claves necesarias para leer respaldos históricos.
-3. Instalar `requirements.txt` en el entorno del servicio. El nuevo perfil usa
-   SQLite por defecto: `DJANGO_DB_PATH` debe apuntar a la **base existente**. Si el
-   servidor usa PostgreSQL, adaptar `DATABASES` antes de arrancar; no iniciar por
-   accidente una base SQLite vacía.
+3. Instalar `requirements.txt` en el entorno del servicio. El proyecto actual usa
+   PostgreSQL 14, base `postgres`, host `localhost`, puerto 5432. PostgreSQL 16
+   también está activo en 5433, pero Passing no lo utiliza según los ajustes
+   efectivos mostrados. Configurar `DJANGO_DB_ENGINE=django.db.backends.postgresql`,
+   `DJANGO_DB_NAME=postgres`, `DJANGO_DB_HOST=localhost` y `DJANGO_DB_PORT=5432`.
+   El ajuste actual también confirmó `USER=postgres`. La migración de
+   configuración puede conservar inicialmente ese usuario y su método de
+   autenticación, sin publicar la contraseña.
+   `passing.production` falla al arrancar si no se elige el motor; nunca
+   selecciona otra base por omisión. **El rol `postgres` suele ser superusuario**:
+   confirmar el atributo efectivo con una consulta de solo lectura antes de
+   seguir. Un superusuario elude los controles de permisos de PostgreSQL; no
+   debería ser la identidad permanente de la aplicación. [PostgreSQL 14:
+   atributos de roles](https://www.postgresql.org/docs/14/role-attributes.html).
+
+   ```bash
+   sudo -u postgres psql -p 5432 -d postgres -X -A -F '|' -c \
+     "SELECT rolname, rolsuper, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname = 'postgres';"
+   ```
+
+   Si `rolsuper` es `t`, programar una base y un rol exclusivos de Passing,
+   sin superusuario, con backup y restauración probada. Verificar antes si hay
+   tablas de otra aplicación en la base `postgres`; no cambiar de base/rol
+   durante el despliegue de código sin ese inventario. Para las migraciones
+   futuras, el rol de despliegue debe poder modificar los objetos del esquema;
+   los permisos de lectura/escritura por sí solos no bastan. [PostgreSQL 14:
+   privilegios y propiedad de objetos](https://www.postgresql.org/docs/14/ddl-priv.html).
 4. Configurar las variables de `production.env.example` mediante un archivo privado
    de systemd (`EnvironmentFile`, propietario root, modo 600). No subir ese archivo
    a Git ni servirlo por Nginx. `DJANGO_SECRET_KEY` debe ser nuevo y aleatorio;

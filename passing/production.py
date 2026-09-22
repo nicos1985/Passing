@@ -1,5 +1,6 @@
 """Production settings. Environment variables are supplied by the service manager."""
 import os
+from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from .base_settings import *  # noqa: F403
 from .mfa_settings import configure
@@ -44,8 +45,26 @@ if os.environ.get('DJANGO_TRUST_PROXY_HTTPS') == '1':
 TRUSTED_PROXY_IPS = [v.strip() for v in os.environ.get('DJANGO_TRUSTED_PROXY_IPS', '').split(',') if v.strip()]
 INSTALLED_APPS = [a for a in INSTALLED_APPS if a != 'debug_toolbar']
 MIDDLEWARE = [m for m in MIDDLEWARE if not m.startswith('debug_toolbar.')]
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3',
-                         'NAME': os.environ.get('DJANGO_DB_PATH', str(BASE_DIR / 'db.sqlite3'))}}
+_database_engine = required('DJANGO_DB_ENGINE')
+if _database_engine == 'django.db.backends.sqlite3':
+    _database_path = Path(required('DJANGO_DB_PATH'))
+    if not _database_path.is_absolute():
+        raise ImproperlyConfigured('DJANGO_DB_PATH debe ser una ruta absoluta a la base existente.')
+    DATABASES = {'default': {'ENGINE': _database_engine, 'NAME': str(_database_path)}}
+elif _database_engine == 'django.db.backends.postgresql':
+    _database_port = required('DJANGO_DB_PORT')
+    if not _database_port.isdecimal() or not 1 <= int(_database_port) <= 65535:
+        raise ImproperlyConfigured('DJANGO_DB_PORT debe ser un puerto válido.')
+    DATABASES = {'default': {
+        'ENGINE': _database_engine,
+        'NAME': required('DJANGO_DB_NAME'),
+        'USER': required('DJANGO_DB_USER'),
+        'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', ''),
+        'HOST': os.environ.get('DJANGO_DB_HOST', ''),
+        'PORT': _database_port,
+    }}
+else:
+    raise ImproperlyConfigured('DJANGO_DB_ENGINE debe ser sqlite3 o postgresql.')
 MEDIA_ROOT = os.environ.get('DJANGO_MEDIA_ROOT', str(BASE_DIR / 'media'))
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static-collected'
