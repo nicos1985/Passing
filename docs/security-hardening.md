@@ -107,10 +107,10 @@ Referencias: [Django 5.2.17](https://docs.djangoproject.com/en/5.2/releases/5.2.
      "SELECT rolname, rolsuper, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname = 'postgres';"
    ```
 
-   Si `rolsuper` es `t`, programar una base y un rol exclusivos de Passing,
-   sin superusuario, con backup y restauración probada. Verificar antes si hay
-   tablas de otra aplicación en la base `postgres`; no cambiar de base/rol
-   durante el despliegue de código sin ese inventario. Para las migraciones
+   Se confirmó `rolsuper=t` y que las tablas listadas en `public` son de Passing.
+   El plan concreto de copia, cambio y vuelta atrás está en
+   [postgres-cutover.md](postgres-cutover.md). Verificar los otros esquemas antes
+   de aplicarlo. Para las migraciones
    futuras, el rol de despliegue debe poder modificar los objetos del esquema;
    los permisos de lectura/escritura por sí solos no bastan. [PostgreSQL 14:
    privilegios y propiedad de objetos](https://www.postgresql.org/docs/14/ddl-priv.html).
