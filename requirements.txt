@@ -11,6 +11,7 @@ django-phonenumber-field==8.5.0
 django-recaptcha==4.1.0
 django-two-factor-auth==1.18.1
 django-otp==1.7.0
+gunicorn==26.2.0; sys_platform != 'win32'
 exceptiongroup==1.1.1
 h11==0.16.0
 idna==3.19

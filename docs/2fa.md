@@ -20,6 +20,7 @@ ingresar para probarla. No requiere migraciones adicionales.
 
    ```bash
    cd /home/Passing
+   python3.12 -m venv env
    ./env/bin/python -m pip install -r requirements.txt
    ```
 

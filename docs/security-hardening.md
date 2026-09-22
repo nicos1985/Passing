@@ -83,7 +83,24 @@ Referencias: [Django 5.2.17](https://docs.djangoproject.com/en/5.2/releases/5.2.
    por HTTPS mediante Nginx. Si falla, revisar `journalctl -u gunicorn.service`
    y la configuración de Nginx antes de seguir con migraciones.
    Usar siempre `/home/Passing/env/bin/python`, sin paquetes de `~/.local`.
-   Configurar `PYTHONNOUSERSITE=1` en el servicio.
+   La comprobación del 22/09/2026 mostró que `env` no era un entorno virtual
+   (`sys.prefix=/usr`, sin `pyvenv.cfg`); Ubuntu rechazó correctamente la
+   instalación con el error `externally-managed-environment`. Reconstruir el
+   entorno **en la misma ruta**, sin `--clear` ni `--break-system-packages`:
+
+   ```bash
+   cd /home/Passing
+   python3.12 -m venv env
+   env/bin/python -c "import sys; assert sys.prefix != sys.base_prefix; print(sys.prefix)"
+   env/bin/python -m pip --version
+   env/bin/python -m pip install -r requirements.txt
+   env/bin/python -m gunicorn --version
+   ```
+
+   Si falla `venv` por falta de `ensurepip`, instalar el paquete Ubuntu
+   `python3.12-venv` y repetir el primer comando. Ejecutar `pip` sin `sudo`.
+   `requirements.txt` fija Gunicorn para que el servicio pueda arrancar desde
+   este mismo entorno. Configurar `PYTHONNOUSERSITE=1` en el servicio.
 2. Detener los workers identificados y respaldar la base, `media/`, configuración y
    claves actuales en almacenamiento privado. Verificar que el respaldo se pueda
    restaurar. No borrar las claves necesarias para leer respaldos históricos.
@@ -123,7 +140,6 @@ Referencias: [Django 5.2.17](https://docs.djangoproject.com/en/5.2/releases/5.2.
 5. Con ese mismo entorno cargado, ejecutar:
 
 ```bash
-/home/Passing/env/bin/python -m pip install -r requirements.txt
 /home/Passing/env/bin/python manage.py migrate --settings=passing.production --noinput
 /home/Passing/env/bin/python manage.py check --deploy --settings=passing.production
 /home/Passing/env/bin/python manage.py collectstatic --settings=passing.production --noinput
