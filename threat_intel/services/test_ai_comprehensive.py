@@ -140,7 +140,7 @@ class TestAnalyzeItem(TenantTestCase):
             "notes": "Se requiere análisis adicional",
         })
         
-        self.mock_client.responses.create.return_value = mock_response
+        self.mock_client.create_message.return_value = mock_response.output_text
 
         result = analyze_item(self.mock_client, self.item, "gpt-4", "v1")
 
@@ -159,7 +159,7 @@ class TestAnalyzeItem(TenantTestCase):
             "priority": "medium",
         })
         
-        self.mock_client.responses.create.return_value = mock_response
+        self.mock_client.create_message.return_value = mock_response.output_text
 
         result = analyze_item(self.mock_client, self.item, "gpt-4", "v1")
 
@@ -172,7 +172,7 @@ class TestAnalyzeItem(TenantTestCase):
         mock_response = Mock()
         mock_response.output_text = '```json\n{"summary_es": "Test", "applies_to_stack": true, "priority": "critical"}\n```'
         
-        self.mock_client.responses.create.return_value = mock_response
+        self.mock_client.create_message.return_value = mock_response.output_text
 
         result = analyze_item(self.mock_client, self.item, "gpt-4", "v1")
 
@@ -186,7 +186,7 @@ class TestAnalyzeItem(TenantTestCase):
             "summary_es": "Minimal response",
         })
         
-        self.mock_client.responses.create.return_value = mock_response
+        self.mock_client.create_message.return_value = mock_response.output_text
 
         result = analyze_item(self.mock_client, self.item, "gpt-4", "v1")
 
@@ -306,7 +306,7 @@ class TestAnalyzeRelevantItemsForRun(TenantTestCase):
         mock_analyze_item.assert_not_called()
 
     @override_settings(OPENAI_API_KEY="", THREAT_INTEL={})
-    @patch('threat_intel.services.openai_api.get_openai_api_client')
+    @patch('threat_intel.services.ai.get_openai_api_client')
     def test_analyze_missing_api_key(self, mock_get_client):
         """Verifica error cuando falta API key"""
         # Cuando no hay API key, debe lanzar ValueError

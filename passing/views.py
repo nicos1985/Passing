@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from django.forms import ValidationError
 from django.shortcuts import redirect, render
 from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.views import View
 from django.contrib import messages
 from client.models import Client, Domain
@@ -163,6 +163,8 @@ def validate_unique_schema_name(nom_schema, nom_empresa):
         raise ValidationError(f'El nombre "{nom_empresa}" ya existe. Por favor, elige otro nombre de empresa.')
 
 def client_register(request):
+    if not settings.TENANT_REGISTRATION_ENABLED:
+        raise Http404("El registro de nuevos tenants está deshabilitado.")
     if request.method == 'POST':
         form = ClientRegisterForm(request.POST)
         if form.is_valid():
@@ -201,7 +203,7 @@ def client_register(request):
                     return redirect('client_register')
 
             messages.success(request, f'El cliente "{client_name}" ha sido creado exitosamente.')
-            return redirect(f"http://{subdomain_name}.{base_domain}:8000/login/{instance.schema_name}/create-superuser/")
+            return redirect('home')
             
         else:
             messages.warning(request, 'La creación del cliente ha tenido un problema.')

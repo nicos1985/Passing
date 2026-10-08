@@ -78,3 +78,60 @@ class VaultAccessTests(TenantTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(saved.get_decrypted_user(), "alice")
             self.assertEqual(saved.get_decrypted_password(), "example-secret")
+
+    def test_metadata_save_preserves_existing_ciphertext(self):
+        with patch.object(project_settings, "CRYPTOGRAPHY_KEY", Fernet.generate_key()):
+            entry = Contrasena.objects.create(
+                nombre_contra='Cifrado estable', seccion=self.password.seccion,
+                link='https://example.test', usuario='alice', contraseña='secreto',
+                info='inicio', owner=self.owner,
+            )
+            original_user, original_password = entry.usuario, entry.contraseña
+            entry.info = 'actualizado'
+            entry.save(update_fields=['info'])
+            entry.refresh_from_db()
+            self.assertEqual((entry.usuario, entry.contraseña), (original_user, original_password))
+            self.assertEqual(entry.get_decrypted_password(), 'secreto')
+            entry.contraseña = 'nuevo secreto'
+            entry.save()
+            entry.refresh_from_db()
+            self.assertEqual(entry.usuario, original_user)
+            self.assertEqual(entry.get_decrypted_password(), 'nuevo secreto')
+            self.assertEqual(LogData.objects.filter(contraseña=entry.pk).count(), 1)
+
+    def test_opening_edit_form_does_not_write_secret_to_log(self):
+        with patch.object(project_settings, "CRYPTOGRAPHY_KEY", Fernet.generate_key()):
+            entry = Contrasena.objects.create(
+                nombre_contra='Solo lectura', seccion=self.password.seccion,
+                link='https://example.test', usuario='alice', contraseña='secreto',
+                info='inicio', owner=self.owner,
+            )
+            ContraPermission.objects.create(user_id=self.owner, contra_id=entry, permission=True, perm_active=True)
+            count = LogData.objects.filter(contraseña=entry.pk).count()
+            response = ContrasUpdateView.as_view()(self._request('get', f'/pass/editpass/{entry.pk}', self.owner), pk=entry.pk)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(LogData.objects.filter(contraseña=entry.pk).count(), count)
+
+    def test_edit_credential_logs_only_change_type(self):
+        with patch.object(project_settings, 'CRYPTOGRAPHY_KEY', Fernet.generate_key()):
+            entry = Contrasena.objects.create(
+                nombre_contra='Edición segura', seccion=self.password.seccion,
+                link='https://example.test', usuario='alice', contraseña='original',
+                info='inicio', owner=self.owner,
+            )
+            ContraPermission.objects.create(user_id=self.owner, contra_id=entry, permission=True, perm_active=True)
+            data = {
+                'nombre_contra': entry.nombre_contra, 'seccion': entry.seccion_id,
+                'link': entry.link, 'usuario': 'alice', 'contraseña': 'cambiada',
+                'actualizacion': entry.actualizacion, 'info': 'inicio',
+                'is_personal': False,
+            }
+            request = self.factory.post(f'/pass/editpass/{entry.pk}', data)
+            request.user = self.owner
+            response = ContrasUpdateView.as_view(success_url='/pass/listpass')(request, pk=entry.pk)
+            self.assertEqual(response.status_code, 302)
+            entry.refresh_from_db()
+            self.assertEqual(entry.get_decrypted_password(), 'cambiada')
+            log = LogData.objects.filter(contraseña=entry.pk, action='change pass').get()
+            self.assertEqual(log.password, '[REDACTED]')
+            self.assertNotIn('cambiada', log.detail)

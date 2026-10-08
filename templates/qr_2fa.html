@@ -52,7 +52,7 @@
               </ol>
 
               <form
-                action="{% url 'verify_2fa_sso' %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+                action="{{ verify_url }}{% if next %}?next={{ next|urlencode }}{% endif %}"
                 method="post" class="mt-3"
                 autocomplete="one-time-code" novalidate>
                 {% csrf_token %}
@@ -61,7 +61,7 @@
                   <label for="otp" class="form-label">{% trans "Código de verificación" %}  </label>
                   <input
                     id="otp"
-                    name="code"
+                    name="{{ code_field }}"
                     type="text"
                     inputmode="numeric"
                     pattern="[0-9]{6}"
@@ -74,7 +74,7 @@
 
                 <div class="d-flex gap-2">
                   <button type="submit" class="btn btn-success btn-lg">{% trans "Verificar y continuar" %}</button>
-                  <a href="{% url 'verify_2fa_sso' %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+                  <a href="{{ verify_url }}{% if next %}?next={{ next|urlencode }}{% endif %}"
                      class="btn btn-outline-secondary btn-lg">{% trans "Ya escaneé, verificar" %}</a>
                 </div>
               </form>

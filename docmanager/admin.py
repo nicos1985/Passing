@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 
 from .models import DocumentoControlado, IntegrationCredential
@@ -63,4 +64,9 @@ class DocumentoControladoAdmin(admin.ModelAdmin):
 	search_fields = ("nombre_archivo", "drive_file_id")
 	readonly_fields = ("ultima_sincronizacion", "fecha_modificacion_drive", "created_at", "updated_at")
 	autocomplete_fields = ("credencial",)
+
+
+if not settings.DOCMANAGER_DRIVE_ENABLED:
+	admin.site.unregister(IntegrationCredential)
+	admin.site.unregister(DocumentoControlado)
 

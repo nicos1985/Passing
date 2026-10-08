@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
@@ -237,97 +238,6 @@ def register(request):
 
     return render(request, 'register.html', context)
 
-def create_uid_token(request):
-    """Placeholder para generar tokens de activación si se necesita más adelante."""
-    pass
-
-def _hub_origin(request):
-    """Devuelve la URL base del hub (PUBLIC) para construir enlaces absolutos."""
-    return getattr(settings, "HUB_ORIGIN", request.build_absolute_uri("/").rstrip("/"))
-
-
-
-@transaction.atomic
-def create_superuser(request, schema_name):
-    """
-    Crea el superuser inicial del tenant y su TenantMembership (activo).
-    Envía mail de activación (usuario queda inactivo hasta activar).
-    """
-    client = get_object_or_404(Client, schema_name=schema_name)
-    
-    if getattr(client, "created_superuser", 0) == 1:
-        messages.warning(request, "El usuario admin ya fue creado para este cliente.")
-        return redirect("home")
-
-    User = get_user_model()
-
-    if request.method == "POST":
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            # 1) Crear usuario global (PUBLIC)
-            user = form.save(commit=False)
-            user.is_superuser = True
-            user.is_staff = True
-            user.is_active = False  # hasta activar por email
-            # ⚠️ NO hacer: user.client = client  (usuarios son globales)
-            user.save()
-
-            # 2) Crear/activar TenantMembership
-            TenantMembership.objects.update_or_create(
-                user=user, client=client, defaults={"is_active": True}
-            )
-
-            # 3) (Opcional) Crear TenantSettings si no existe
-            TenantSettings.objects.get_or_create(client=client)
-
-            # 4) Marcar bandera en el client (si fallara más abajo, la transacción revierte)
-            if hasattr(client, "created_superuser"):
-                client.created_superuser = 1
-                client.save(update_fields=["created_superuser"])
-
-            # 5) Enviar email de activación (link al HUB)
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-            hub = _hub_origin(request)  # p.ej. http://localhost:8000
-            # asumamos que tenés un view en el HUB: accounts:activate
-            # si todavía usás /login/activate/, ajustá el path abajo.
-            try:
-                activation_path = reverse("activate-superuser", kwargs={"uidb64": uid, "token": token})
-            except Exception:
-                activation_path = f"/login/activate/{uid}/{token}/"
-
-            activation_url = f"{schema_name}.{hub}{activation_path}"
-            subdom_url = f"{hub}/login/"
-
-            subject = "Activa tu cuenta de usuario admin"
-            message_html = render_to_string("activation_email.html", {
-                "user": user,
-                "activation_url": activation_url,
-                "subdom_url": subdom_url
-            })
-
-            send_mail(subject, message="", from_email=settings.EMAIL_SETTINGS["DEFAULT_FROM_EMAIL"],
-                      recipient_list=[user.email], html_message=message_html)
-
-            messages.success(request, "El usuario admin ha sido creado. Revisa tu email para activarlo.")
-            return render(request, "recive-mail.html", {
-                "subject": subject,
-                "message": message_html,  # si usás la vista que muestra el HTML
-                "mail_from": settings.EMAIL_SETTINGS["DEFAULT_FROM_EMAIL"],
-                "email": user.email,
-                "action": "¿Recibiste el mail de verificación?"
-            })
-    else:
-        form = UserRegisterForm()
-
-    return render(request, "register.html", {
-        "form": form,
-        "title": "Crear usuario admin",
-        "Action": "create",
-    })
-
-
 User = get_user_model()
 
 def resend_mail(request):
@@ -431,6 +341,10 @@ def profile_view(request):
         if valid and profile_form.is_bound:
             is_2fa_enabled = profile_form.cleaned_data.get('is_2fa_enabled')
             initial_2fa = profile_form.initial.get('is_2fa_enabled')
+            policy = TenantSettings.for_client(get_tenant(request))
+            if policy and policy.multifactor_status == MultiFactorStatus.REQUIRED:
+                profile_form.instance.is_2fa_enabled = True
+                is_2fa_enabled = True
             # If user had 2FA enabled and turned it off, handle disable first
             if initial_2fa == True and is_2fa_enabled == False:
                 disable_2fa(request)
@@ -662,21 +576,33 @@ def _resolve_2fa_user_from_request(request):
     pending_uid = request.session.get("twofa_pending_uid")
     client_id = request.session.get("twofa_client_id")
     if pending_uid and client_id:
-        # opcional: podés chequear que connection.tenant.id == client_id
-        return User.objects.filter(pk=pending_uid).first()
+        tenant = get_tenant(request)
+        if tenant and tenant.id == client_id:
+            return User.objects.filter(pk=pending_uid, is_active=True).first()
 
     return None
 
 
 def verify_2fa(request):
     """Verifica el código TOTP del usuario enrutado por el middleware 2FA."""
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden('Autenticación requerida.')
+    if not request.user.otp_secret:
+        return redirect('show-qr-code-2fa')
     if request.method == "POST":
         code = request.POST.get("otp_code")
         if request.user.otp_secret:
             totp = pyotp.TOTP(request.user.otp_secret)
-            if totp.verify(code):
+            if totp.verify(code, valid_window=1):
                 # Marcar como verificado en la sesión
                 request.session["is_2fa_verified"] = True
+                tenant = get_tenant(request)
+                request.session['twofa_verified_user_id'] = request.user.pk
+                request.session['twofa_verified_client_id'] = tenant.pk
+                policy = TenantSettings.for_client(tenant)
+                if policy and policy.multifactor_status == MultiFactorStatus.REQUIRED and not request.user.is_2fa_enabled:
+                    request.user.is_2fa_enabled = True
+                    request.user.save(update_fields=['is_2fa_enabled'])
                 return redirect("listpass")  # Redirige al área protegida
             else:
                 messages.error(request, "Código inválido. Intenta nuevamente.")
@@ -693,18 +619,19 @@ def show_qr_code_2fa(request):
 
     if not getattr(user_obj, "otp_secret", None):
         user_obj.otp_secret = pyotp.random_base32()
-        user_obj.is_2fa_enabled = False
-        user_obj.save(update_fields=["otp_secret", "is_2fa_enabled"])
+        user_obj.save(update_fields=["otp_secret"])
 
     # ... generás tu QR como ya lo hacías ...
 
     next_path = request.GET.get("next") or request.session.get("twofa_next") or "/"
-    verify_url = reverse("verify_2fa_sso")  # /sso/verify-2fa/
+    is_sso = not request.user.is_authenticated
     qr_b64 = generate_qr_base64(user_obj)  # o convertí tu bytes a base64
     context = {
         "qr_data_uri": f"data:image/png;base64,{qr_b64}",  # o usá qr_url si servís la imagen por URL
         "next": request.GET.get("next") or request.session.get("twofa_next") or "/",
         "user_email": getattr(user_obj, "email", ""),
+        "verify_url": reverse('verify_2fa_sso' if is_sso else 'verify_2fa'),
+        "code_field": 'code' if is_sso else 'otp_code',
     }
     return render(request, "qr_2fa.html", context)
 
@@ -748,22 +675,14 @@ def disable_2fa(request):
     Deshabilita el 2fa para el usuario en particular.
     """
     if request.method == "POST" and request.user.is_authenticated:
+        policy = TenantSettings.for_client(get_tenant(request))
+        if policy and policy.multifactor_status == MultiFactorStatus.REQUIRED:
+            return HttpResponseForbidden('El segundo factor es obligatorio en este espacio.')
         request.user.is_2fa_enabled = False
         request.user.otp_secret = None
         request.user.save()
         messages.success(request, "2FA ha sido desactivado.")
     return redirect("profile")
-
-def disable_2fa_user(user):
-    """
-    Deshabilita el 2fa para el usuario en particular.
-    """
-    user.is_2fa_enabled = False
-    user.otp_secret = None
-    user.save()
-        
-    
-
 
 def send_qr_code_email_inline(user):
     """Envía el código QR incrustado en el cuerpo del email."""
@@ -850,10 +769,10 @@ class TenantSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
     success_url = reverse_lazy('config')
 
     def test_func(self):
-        return is_administrator(self.request.user)
+        return is_superadmin(self.request.user)
 
     def handle_no_permission(self):
-        messages.error(request, "No tienes permiso para acceder a Configuraciones Globales")
+        messages.error(self.request, "No tienes permiso para acceder a Configuraciones Globales")
         return redirect('listpass')
 
     def get_object(self):
@@ -878,51 +797,11 @@ class TenantSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
     def form_valid(self, form):
         instance = form.save(commit=False)
 
-        if instance.multifactor_status == MultiFactorStatus.REQUIRED:
-            logger.info('TenantSettings: multifactor_status ACTIVADO')
-            self.activate_multifactor_for_all()
-        elif instance.multifactor_status == MultiFactorStatus.DISABLED:
-            logger.info('TenantSettings: multifactor_status DESACTIVADO')
-            self.deactivate_multifactor_for_all()
-        elif instance.multifactor_status == MultiFactorStatus.OPTIONAL:
-            logger.info('TenantSettings: multifactor_status OPCIONAL - no se hacen cambios masivos')
-
         instance.save()
         form.save_m2m()
-
-        return super().form_valid(form)
+        self.object = instance
+        return redirect(self.get_success_url())
     
-
-    def activate_multifactor_for_all(self):
-        """
-        Activa todos los factores multiples de autenticacion a todos los usuarios. 
-        Envia mail a cada uno con el QR para la activacion del mismo. 
-        """
-        users = CustomUser.for_current_tenant().filter(is_active=True)
-        
-
-        for user in users:
-            if user.is_2fa_enabled:
-                logger.debug("activate_multifactor_for_all: skipping user %s already has 2FA", user.pk)
-            else:
-                # Log intent to enable and send QR. We keep existing behavior for now
-                # but emit audit logs so we can trace who/when changed the flag.
-                logger.info("activate_multifactor_for_all: enabling 2FA for user=%s", user.pk)
-                user.is_2fa_enabled = True
-                user.save()
-                try:
-                    send_qr_code_email_cid(user)
-                except Exception:
-                    logger.exception("Failed to send QR email for user=%s during global activation", user.pk)
-
-
-    def deactivate_multifactor_for_all(self):
-        """desactiva todos los factores multiples de autenticacion a todos los usuarios."""
-        users = CustomUser.for_current_tenant().filter(is_active=True)
-        
-        for user in users:
-            if user.has_otp_secret:
-                disable_2fa_user(user)
 
 from django.db import connection
 def sso_consume(request):
@@ -944,6 +823,8 @@ def sso_consume(request):
 
     uid = payload.get("uid")
     next_path = payload.get("next") or "/"
+    if not url_has_allowed_host_and_scheme(next_path, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        next_path = '/'
     slug = payload.get("client_slug")
 
     user = User.objects.filter(pk=uid).first()
@@ -957,8 +838,6 @@ def sso_consume(request):
     client = None
     if tenant is not None and getattr(tenant, "schema_name", None) == slug:
         client = tenant
-    else:
-        client = Client.objects.filter(schema_name=slug).first()
 
     if not client:
         return HttpResponseForbidden("Tenant desconocido.")
@@ -972,7 +851,11 @@ def sso_consume(request):
 
     # 4) Gate 2FA (si lo estás usando)
     ts = getattr(client, "settings", None)
-    require_2fa = bool(ts and ts.sso_google_requires_2fa)
+    require_2fa = bool(ts and (
+        ts.sso_google_requires_2fa
+        or ts.multifactor_status == MultiFactorStatus.REQUIRED
+        or (ts.multifactor_status == MultiFactorStatus.OPTIONAL and user.is_2fa_enabled)
+    ))
 
     if require_2fa:
         # seteo de sesión para el flujo SSO 2FA
@@ -1001,12 +884,16 @@ def _login_with_backend(request, user):
 def verify_2fa_sso(request):
     """Verifica el código TOTP dentro del flujo SSO antes de redirigir al tenant."""
     uid = request.session.get("twofa_pending_uid")
-    next_path = request.GET.get("next") or request.POST.get("next") \
-                or request.session.get("twofa_next") or "/"
+    next_path = request.session.get("twofa_next") or "/"
     client_id = request.session.get("twofa_client_id")
 
     if not uid or not client_id:
         return HttpResponseForbidden("Sesión de 2FA inválida.")
+    current_tenant = get_tenant(request)
+    if not current_tenant or current_tenant.pk != client_id:
+        return HttpResponseForbidden('Espacio de 2FA inválido.')
+    if not TenantMembership.objects.filter(user_id=uid, client_id=client_id, is_active=True).exists():
+        return HttpResponseForbidden('Acceso al espacio revocado.')
 
     user = User.objects.filter(pk=uid).first()
     if not user:
@@ -1014,7 +901,8 @@ def verify_2fa_sso(request):
 
     # --- GET: mostrar form si YA HAY otp_secret; si falta => ir a QR ---
     if request.method == "GET":
-        if not user.otp_secret:  # <- SOLO este caso va a enrolamiento
+        policy = TenantSettings.for_client(current_tenant)
+        if not user.otp_secret or (policy and policy.multifactor_status == MultiFactorStatus.REQUIRED and not user.is_2fa_enabled):
             enrol_url = reverse("show-qr-code-2fa")
             return redirect(f"{enrol_url}?next={urlquote(next_path)}&sso=1&uid={user.id}")
 
@@ -1022,6 +910,8 @@ def verify_2fa_sso(request):
         return render(request, "qr_2fa.html", {
             "next": next_path,
             "user_email": user.email,
+            "verify_url": reverse('verify_2fa_sso'),
+            "code_field": 'code',
             # Opcional: no mandes QR aquí para que el usuario se concentre en ingresar el código
             # Si querés mostrarlo igual, pasá qr_data_uri como en show_qr_code_2fa
         })
@@ -1042,26 +932,19 @@ def verify_2fa_sso(request):
         ok = False
 
     if ok:
-        # Do NOT toggle the persistent `is_2fa_enabled` flag automatically.
-        # Keep the verification for this session only and ensure the user has
-        # an `otp_secret` stored so they can enroll later if needed.
-        request.session["is_2fa_verified"] = True
-
-        if not user.otp_secret:
-            # ensure a secret exists, but do not enable 2FA persistently
-            user.otp_secret = pyotp.random_base32()
-            try:
-                user.save(update_fields=["otp_secret"])
-            except Exception:
-                logger.exception("verify_2fa_sso: failed to save otp_secret for user=%s", user.pk)
-
-        logger.info("verify_2fa_sso: session verified for user=%s (no persistent toggle)", user.pk)
+        if ts := TenantSettings.for_client(Client.objects.get(pk=client_id)):
+            if ts.multifactor_status == MultiFactorStatus.REQUIRED and not user.is_2fa_enabled:
+                user.is_2fa_enabled = True
+                user.save(update_fields=['is_2fa_enabled'])
 
         # limpiar sesión sso-2fa
         for k in ("twofa_pending_uid", "twofa_next", "twofa_client_id"):
             request.session.pop(k, None)
 
         _login_with_backend(request, user)
+        request.session['is_2fa_verified'] = True
+        request.session['twofa_verified_user_id'] = user.pk
+        request.session['twofa_verified_client_id'] = client_id
         return redirect(next_path)
 
     # Código inválido: re-render con error (sin exponer otp_secret)
@@ -1069,4 +952,6 @@ def verify_2fa_sso(request):
         "error": "Código inválido o expirado. Probá nuevamente.",
         "next": next_path,
         "user_email": user.email,
+        "verify_url": reverse('verify_2fa_sso'),
+        "code_field": 'code',
     }, status=403)

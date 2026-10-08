@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
+from django.conf import settings
+from django.http import Http404
 from client.forms import ClientRegisterForm
 from django.shortcuts import get_object_or_404, render, redirect
 
@@ -7,6 +9,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 
 def client_register(request):
+    if not settings.TENANT_REGISTRATION_ENABLED:
+        raise Http404("El registro de nuevos tenants está deshabilitado.")
     if request.method == 'POST':
         form = ClientRegisterForm(request.POST)
         if form.is_valid():

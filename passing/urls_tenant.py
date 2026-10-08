@@ -27,7 +27,6 @@ urlpatterns = [
     path("threat-intel/", include("threat_intel.urls")),
     path("pass/", include("passbase.urls")),
     path("notifications/", include("notifications.urls")),
-    path("docmanager/", include("docmanager.urls")),
     path("monitoring/", include("monitoring.urls")),
     path("perm/", include("permission.urls")),
     path("test_send_email/", test_send_email, name="test_send_email"),

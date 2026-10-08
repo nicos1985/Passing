@@ -305,28 +305,6 @@ def delete_rol(request, pk):
     return render(request, 'roles_list.html', {'roles': PermissionRoles.objects.filter(is_active=True)})
     
 
-@user_passes_test(is_administrator)
-def update_owner(request):
-    """Realizar la actualizacion del campo owner de cada contraseña. """
-    contrasenas = Contrasena.objects.all()
-    
-    for contrasena in contrasenas:
-        try:
-            log_mod = LogData.objects.get(contraseña=contrasena.id, action='Create', entidad='Contraseña')
-            logger.debug('log_mod: %s', log_mod)
-
-            contrasena.owner = log_mod.usuario
-            contrasena.save()
-            logger.debug('contrasena_owner_ok: %s', contrasena.owner)
-
-        except LogData.DoesNotExist:
-
-            contrasena.owner = None
-            contrasena.save()
-            logger.debug('contrasena_owner_notexist: %s', contrasena.owner)
-
-    return render(request, 'listpass.html')
-
 def obtener_reporte_contrasenas_repetidas():
     # Crear un diccionario para almacenar las contraseñas desencriptadas y sus conteos
     contrasenas_desencriptadas = {}

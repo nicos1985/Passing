@@ -65,27 +65,33 @@ class Contrasena(models.Model):
     def save(self, *args, **kwargs):
         """ Sobrescribe el método save para encriptar y generar un log. """
 
-        # Encriptar datos si es necesario
-        if isinstance(self.contraseña, str):
-            self.contraseña = encrypt_data(self.contraseña)
-        if isinstance(self.usuario, str):
-            self.usuario = encrypt_data(self.usuario)
-        
-        # Verificar si la contraseña es nueva
-        is_new = self._state.adding  # True si el objeto se está creando
+        is_new = self._state.adding
+        update_fields = kwargs.get('update_fields')
+        previous = None if is_new else type(self).objects.filter(pk=self.pk).values('usuario', 'contraseña').first()
+        for field in ('usuario', 'contraseña'):
+            if update_fields is not None and field not in update_fields:
+                continue
+            value = getattr(self, field)
+            if not isinstance(value, str):
+                raise TypeError(f'{field} debe ser texto')
+            old_token = previous[field] if previous else None
+            if value == old_token or (old_token and value == decrypt_data(old_token)):
+                setattr(self, field, old_token)
+            else:
+                setattr(self, field, encrypt_data(value))
 
         super().save(*args, **kwargs)
 
         # Si es una nueva contraseña, crear un log (redactando datos sensibles)
         logger.debug("Contrasena save: is_new=%s id=%s", is_new, getattr(self, 'id', None))
-        if is_new:
+        if is_new and self.owner_id:
             LogData.objects.create(
                 entidad="Contrasena",
                 password="[REDACTED]",
                 contraseña=self.id,  # Guardamos el ID de la contraseña creada
                 usuario=self.owner if self.owner else None,  # Usuario que creó la contraseña
                 action="Create",
-                detail=f"Nombre: {self.nombre_contra}, Seccion: {self.seccion}, Link: {self.link}, Info: {self.info}, owner: {self.owner}",
+                detail=f"Nombre: {self.nombre_contra}, Seccion: {self.seccion_id}, owner: {self.owner_id}",
             )
         
 
@@ -97,16 +103,11 @@ class Contrasena(models.Model):
         logs = [
             LogData(
                 entidad="Contrasena",
-                password=obj.contraseña,
+                password="[REDACTED]",
                 contraseña=obj.id,
                 usuario=obj.owner,
                 action="Create",
-                detail=f'''Nombre: {obj.nombre_contra}, 
-                        Seccion: {obj.seccion}, 
-                        Usuario: {obj.usuario}, 
-                        Link: {obj.link}, 
-                        Info: {obj.info},
-                        owner: {obj.owner}'''
+                detail=f"Nombre: {obj.nombre_contra}, Seccion: {obj.seccion_id}, owner: {obj.owner_id}"
             ) 
             for obj in objects
         ]

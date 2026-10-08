@@ -42,6 +42,8 @@ class GoogleDriveService:
     SCOPES = ["https://www.googleapis.com/auth/drive"]
 
     def __init__(self, credential: IntegrationCredential):
+        if not settings.DOCMANAGER_DRIVE_ENABLED:
+            raise GoogleDriveServiceError("La integración con Drive está deshabilitada.")
         if not credential:
             raise InvalidCredential("Se requiere una credencial activa para usar Drive.")
         if not credential.is_active:

@@ -1,21 +1,20 @@
 """Vistas y endpoints que administran contraseñas, secciones y tareas de cifrado."""
 
-import hashlib
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
 from login.models import CustomUser
 from accounts.models import TenantSettings
 from django_tenants.utils import get_tenant
 from notifications.models import UserNotifications
-from passbase.crypto import decrypt_data, encrypt_data
+from passbase.crypto import credential_fingerprint, encrypt_data
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm, CSVUploadForm
 from .models import Contrasena, SeccionContra, LogData
 from permission.models import ContraPermission
@@ -156,9 +155,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
             contraseña = cleaned_data.get('contraseña')
             usuario = cleaned_data.get('usuario')
 
-            # Genera el hash de la combinación de usuario y contraseña (no loguear la contraseña)
-            hash_combination = hashlib.sha256((usuario + contraseña).encode('utf-8')).hexdigest()
-            logger.debug('creating password hash for user=%s, hash_prefix=%s', usuario, hash_combination[:8])
+            hash_combination = credential_fingerprint(usuario, contraseña)
             # Verifica si el hash ya existe en la base de datos
             objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
             if objeto_repetido:
@@ -168,7 +165,6 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
 
             if contrasena:
                 contrasena.hash = hash_combination
-                logger.debug('contraseña.hash saved (prefix): %s', str(contrasena.hash)[:8])
                 contrasena.save()
             
             # Gestión de permisos de acceso
@@ -292,6 +288,7 @@ def upload_csv(request):
                         info = row.get("info"),
                         is_personal = is_personal_value,
                         owner = owner,
+                        hash = credential_fingerprint(row.get('usuario'), row.get('contrasena')),
                     ))
                 except KeyError as e:
                     row["error"] = f"Error en la columna: {e}"
@@ -338,10 +335,6 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         ).values_list('contra_id', flat=True)
         return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._objeto_previo = None
-
     def get(self, request, *args, **kwargs):
         # Verificar permisos antes de continuar
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
@@ -381,57 +374,20 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         })
         return kwargs
 
-    def get_object(self, queryset=None):
-        # Memoización del objeto
-        if not self._objeto_previo:
-            self._objeto_previo = super().get_object(queryset=queryset)
-            LogData.objects.create(
-                entidad= ENTITY_CONTRASENA, 
-                action='edit old', 
-                detail=f'''Nombre: {self._objeto_previo.nombre_contra}, 
-                           Seccion: {self._objeto_previo.seccion}, 
-                           Usuario: {self._objeto_previo.usuario}, 
-                           Link: {self._objeto_previo.link}, 
-                           Info: {self._objeto_previo.info},
-                           owner: {self._objeto_previo.owner}''', 
-                usuario=self.request.user, 
-                contraseña=self._objeto_previo.id,
-                password=self._objeto_previo.contraseña
-            )
-        return self._objeto_previo
-
     def form_valid(self, form):
-        contrasena = form.save(commit=False)
-        objeto_previo = self.get_object()
-        context = self.get_context_data()
-        
-        old_password = objeto_previo.contraseña
-        new_password = contrasena.encrypt_password()
-        #print(f'old contraseña: {old_password} | new contraseña: {new_password}')
-        
-        # Verifica si la contraseña ha cambiado
-        if old_password != new_password:
-            action = 'change pass'
-        else:
-            action = ACCION_TYPE
-        
-        LogData.objects.create(
-            contraseña=contrasena.pk,
-            entidad=context['entity'],
-            usuario=self.request.user,
-            action=action,
-            password=new_password,
-            detail=f'''Nombre: {contrasena.nombre_contra},
-                       Seccion: {contrasena.seccion},
-                       Usuario: {contrasena.encrypt_user()},
-                       Link: {contrasena.link},
-                       Info: {contrasena.info},
-                       owner: {contrasena.owner}'''
-        )
-        
-        # Llama al método form_valid original para guardar la instancia
+        old = Contrasena.objects.get(pk=self.object.pk)
+        changed_password = form.cleaned_data['contraseña'] != old.get_decrypted_password()
+        if changed_password or form.cleaned_data['usuario'] != old.get_decrypted_user():
+            form.instance.hash = credential_fingerprint(form.cleaned_data['usuario'], form.cleaned_data['contraseña'])
         response = super().form_valid(form)
-        
+        LogData.objects.create(
+            contraseña=self.object.pk,
+            entidad=ENTITY_CONTRASENA,
+            usuario=self.request.user,
+            action='change pass' if changed_password else ACCION_TYPE,
+            password='[REDACTED]',
+            detail=f"Nombre: {self.object.nombre_contra}, Seccion: {self.object.seccion_id}, owner: {self.object.owner_id}",
+        )
         return response
 
 class ContrasDeleteView(LoginRequiredMixin, DeleteView):
@@ -663,6 +619,7 @@ class DescargarArchivo(LoginRequiredMixin, DetailView):
         return response
     
 @user_passes_test(is_administrator)
+@require_POST
 def denypermission(request, pk):
     permission = ContraPermission.objects.get(id=pk)
     permission.permission = False
@@ -675,147 +632,4 @@ def denypermission(request, pk):
     )
     logger.info('notificacion creada: %s', notificacion_user)
     messages.success(request, f'Permiso denegado correctamente. {permission.user_id.first_name}, {permission.user_id.last_name} --> {permission.contra_id.nombre_contra}')
-    return redirect(request.META.get('HTTP_REFERER', '/'))
-
-@user_passes_test(is_administrator)
-def encrypt_all():
-    contrasenas = Contrasena.objects.all()
-    encrypted_data = []
-
-    for contrasena in contrasenas:
-        if not contrasena.usuario.startswith("b'gAAAA"):
-            logger.info('Encrypting contrasena id=%s', contrasena.id)
-            original_user = contrasena.usuario
-            original_password = contrasena.contraseña
-            contrasena.usuario = contrasena.encrypt_user()
-            contrasena.contraseña = contrasena.encrypt_password()
-            contrasena.save()
-            encrypted_data.append((contrasena.id, original_user, original_password))
-            logger.debug('Contrasena id=%s encrypted', contrasena.id)
-    
-    return encrypted_data
-
-
-@user_passes_test(is_administrator)
-def encrypt_log_data():
-    log_entries = LogData.objects.filter(entidad= ENTITY_CONTRASENA)
-    encrypted_log_data = []
-
-    for entry in log_entries:
-        try:
- 
-            # Encriptar la contraseña si no está encriptada
-            if not entry.password.startswith("b'gAAAA"):
-                original_password = entry.password
-                entry.password = entry.encrypt_password()
-                entry.save()
-                encrypted_log_data.append((entry.id, original_password, entry.get_encrypted_user()))
-
-            # Encriptar el usuario dentro del campo detail si no está encriptado
-            encrypted_user = entry.get_encrypted_user()
-            logger.debug('entry %s encrypted_user present: %s', entry.id, bool(encrypted_user))
-            if encrypted_user and not encrypted_user.startswith("b'gAAAA"):
-                decrypted_user = entry.get_decrypted_user(encrypted_user)
-                logger.debug('entry %s decrypted_user obtained (omitted)', entry.id)
-                encrypted_user = encrypt_data(decrypted_user).decode()
-                logger.debug('entry %s encrypted_user replaced', entry.id)
-
-                # Reemplazar el usuario desencriptado con el encriptado
-                entry.detail = entry.detail.replace(decrypted_user, encrypted_user)
-                entry.save()
-
-        except ObjectDoesNotExist:
-            logger.warning('No se encontró la contraseña para el log con id %s', entry.id)
-        except Exception as e:
-            logger.exception('Error processing log %s', entry.id)
-    
-    return encrypted_log_data
-
-
-@user_passes_test(is_administrator)
-def encrypt_all_data(request):
-    encrypted_contras = encrypt_all()
-    encrypted_logs = encrypt_log_data()
-    
-    # Save the log for rollback purposes
-    with open('encrypted_data.log', 'w') as f:
-        for contras in encrypted_contras:
-            f.write(f'Contrasena: {contras[0]}, Original User: {contras[1]}, Original Password: {contras[2]}\n')
-        for log in encrypted_logs:
-            f.write(f'LogData: {log[0]}, Original Password: {log[1]}, Original User: {log[2]}\n')
-    
-    # Asegurarse de que se retorna un objeto HttpResponse o un render apropiado
-    return render(request, TEMPLATE_NAME, {'message': 'Todos los datos han sido encriptados.'})
-
-# Function to rollback the encryption process
-@user_passes_test(is_administrator)
-def rollback_encryption(request):
-        
-    with open('encrypted_data.log', 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            if line.startswith('Contrasena'):
-                parts = line.strip().split(', ')
-                contras_id = int(parts[0].split(': ')[1])
-                original_user = parts[1].split(': ')[1]
-                original_password = parts[2].split(': ')[1]
-                
-                try:
-                    contras = Contrasena.objects.get(id=contras_id)
-                    contras.usuario = original_user
-                    contras.contraseña = original_password
-                    contras.save()
-                except ObjectDoesNotExist:
-                    logger.warning('Contrasena con id %s no encontrada para rollback.', contras_id)
-            
-            if line.startswith('LogData'):
-                parts = line.strip().split(', ')
-                log_id = int(parts[0].split(': ')[1])
-                original_password = parts[1].split(': ')[1]
-                original_user = parts[2].split(': ')[1]
-                
-                try:
-                    log = LogData.objects.get(id=log_id)
-                    log.password = original_password
-                    
-                    # Restaurar el usuario original en el campo detail
-                    encrypted_user = log.get_encrypted_user()
-                    if encrypted_user:
-                        
-                        log.detail = log.detail.replace(encrypted_user, original_user)
-                    
-                    log.save()
-                except ObjectDoesNotExist:
-                    logger.warning('LogData con id %s no encontrada para rollback.', log_id)
-                except Exception as e:
-                    logger.exception('Error processing rollback for log %s: %s', log_id, e)
-    return render(request, TEMPLATE_NAME, {'messages': 'Se desencriptaron todas las contraseñas'})
-
-
-@user_passes_test(is_administrator)
-def remake_pass(request):
-
-    contrasenas = Contrasena.objects.all()
-    counter = 0
-    except_counter = 0
-    for contrasena in contrasenas:
-        log_data_obj = LogData.objects.filter(contraseña=contrasena.id).order_by('-created').first()
-        if log_data_obj is not None:
-            log_data_obj_pass = log_data_obj.password
-            with open ('log_pass.txt', 'a') as f:
-                f.write(f'log_data_obj_pass:{contrasena.nombre_contra} | {decrypt_data(log_data_obj_pass)}\n' )
-                try:
-                    contrasena.contraseña = log_data_obj_pass
-                    contrasena.save()
-                    counter += 1
-                except Exception as e:
-                    f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | {e}\n')
-                    except_counter += 1
-        else:
-            except_counter +=1
-            with open ('log_pass.txt', 'a') as f:
-                f.write(f'log_data_obj_pass: {contrasena.nombre_contra} | no existe log\n')
-
-    messages.success(request,f'Se copiaron las contraseñas. Exitosas: {counter} | erroneas: {except_counter}' )
-        
-    return render(request, TEMPLATE_NAME)
+    return redirect('detailpass', pk=permission.contra_id_id)

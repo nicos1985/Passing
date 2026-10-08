@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from celery import shared_task
+from django.conf import settings
 from django.utils import timezone
 
 from .models import DocumentoControlado, IntegrationCredential
@@ -24,6 +25,8 @@ def _get_active_credential() -> IntegrationCredential | None:
 @shared_task
 def process_drive_change(resource_id: str, channel_id: str | None = None, state: str | None = None) -> str:
     """Procesa la notificación de Drive para un archivo concreto."""
+    if not settings.DOCMANAGER_DRIVE_ENABLED:
+        return "drive_deshabilitado"
     try:
         doc = DocumentoControlado.objects.get(drive_file_id=resource_id)
     except DocumentoControlado.DoesNotExist:
@@ -57,6 +60,8 @@ def check_vencimientos() -> dict:
     con el módulo existente de notifications.
     """
     resumen = {"vencido": 0, "proximo": 0, "al_dia": 0, "sin_datos": 0, "no_encontrado": 0}
+    if not settings.DOCMANAGER_DRIVE_ENABLED:
+        return resumen
     afectados: list[DocumentoControlado] = []
 
     for doc in DocumentoControlado.objects.all():

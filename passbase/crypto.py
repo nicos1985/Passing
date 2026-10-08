@@ -1,4 +1,6 @@
 import logging
+import hashlib
+import hmac
 from typing import Optional, Union
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -44,6 +46,17 @@ def encrypt_data(data: Union[str, bytes]) -> str:
     f = _get_fernet()
     token = f.encrypt(plaintext)
     return token.decode()
+
+
+def credential_fingerprint(username: str, password: str) -> str:
+    """Identificador de duplicados sin un hash SHA recuperable por diccionario."""
+    key = getattr(settings, 'CRYPTOGRAPHY_KEY', None)
+    if not key:
+        raise RuntimeError('CRYPTOGRAPHY_KEY is not configured in settings')
+    if isinstance(key, str):
+        key = key.encode()
+    payload = f'{len(username)}:{username}{password}'.encode('utf-8')
+    return hmac.new(key, payload, hashlib.sha256).hexdigest()
 
 
 def decrypt_data(token: Union[str, bytes]) -> Optional[str]:

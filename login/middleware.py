@@ -2,6 +2,8 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import reverse
 from django.db import connection
+from django.conf import settings
+from accounts.models import MultiFactorStatus, TenantSettings
 import logging
 
 
@@ -21,39 +23,29 @@ class TwoFactorAuthMiddleware:
     def __call__(self, request):
         # Only enforce 2FA for tenant schemas (skip public hub to avoid invalid redirects)
         schema = getattr(connection, "schema_name", None)
-        if schema == "public":
+        if not schema or schema == "public":
+            return self.get_response(request)
+        if request.path.startswith((settings.STATIC_URL, settings.MEDIA_URL)):
             return self.get_response(request)
 
         # Si el usuario está autenticado y no ha completado 2FA
         if request.user.is_authenticated:
-            try:
-                is_enabled = getattr(request.user, "is_2fa_enabled", None)
-                otp_present = bool(getattr(request.user, "otp_secret", None))
-                session_verified = bool(request.session.get("is_2fa_verified", False))
-                logger.debug(
-                    "TwoFactorAuthMiddleware: user=%s is_2fa_enabled=%s otp_present=%s session_is_2fa_verified=%s path=%s",
-                    getattr(request.user, "pk", None), is_enabled, otp_present, session_verified, request.path,
-                )
-            except Exception:
-                logger.exception("Error leyendo atributos de usuario en TwoFactorAuthMiddleware")
-
-            if is_enabled and not request.session.get("is_2fa_verified", False):
-                # Redirigir a la página de verificación 2FA
-                if request.path not in [
-                    "/login/verify-2fa/",
-                    "/login/logout/",
-                    "/login/",
-                    "/login/generate_qr_code/",
-                ]:  # Excluir rutas específicas
-                    messages.info(request, "Para poder continuar debes completar el codigo de autenticacion.")
-                    try:
-                        # Intentá resolver usando el urlconf activo para la request (tenant vs public)
-                        urlconf = getattr(request, "urlconf", None)
-                        verify_url = reverse("verify_2fa", urlconf=urlconf)
-                    except Exception:
-                        # Fallback a ruta absoluta conocida
-                        verify_url = "/login/verify-2fa/"
-
-                    return redirect(verify_url)
+            tenant = getattr(request, 'tenant', None) or getattr(connection, 'tenant', None)
+            policy = TenantSettings.for_client(tenant)
+            status = policy.multifactor_status if policy else MultiFactorStatus.DISABLED
+            required = status == MultiFactorStatus.REQUIRED
+            enabled = required or (status == MultiFactorStatus.OPTIONAL and request.user.is_2fa_enabled)
+            verified = (
+                request.session.get('is_2fa_verified') is True
+                and request.session.get('twofa_verified_user_id') == request.user.pk
+                and request.session.get('twofa_verified_client_id') == getattr(tenant, 'pk', None)
+            )
+            if enabled and not verified:
+                urlconf = getattr(request, 'urlconf', None)
+                allowed = {reverse(name, urlconf=urlconf) for name in ('verify_2fa', 'show-qr-code-2fa', 'logout')}
+                if request.path not in allowed:
+                    messages.info(request, 'Completá la verificación en dos pasos para continuar.')
+                    target = 'show-qr-code-2fa' if not request.user.otp_secret or (required and not request.user.is_2fa_enabled) else 'verify_2fa'
+                    return redirect(reverse(target, urlconf=urlconf))
 
         return self.get_response(request)

@@ -8,16 +8,36 @@ on:
 jobs:
   test-and-scan:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.10, 3.11]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: passing_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d passing_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DJANGO_DEBUG: '1'
+      DATABASE_NAME: passing_ci
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: '5432'
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver,.localhost
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -25,18 +45,22 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install bandit pip-audit
 
-      - name: Run Bandit security scan
-        continue-on-error: true
+      - name: Generate test encryption key
         run: |
-          bandit -r . -x migrations
+          echo "CRYPTOGRAPHY_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r accounts client login passbase permission passing monitoring -x migrations -ll
 
       - name: Run pip-audit
-        continue-on-error: true
         run: |
-          pip-audit --progress
+          pip-audit -r requirements.txt
 
       - name: Run Django tests
         env:
-          CI: true
+          CI: 'true'
         run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
           python manage.py test --verbosity 2 --noinput

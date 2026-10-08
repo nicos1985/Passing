@@ -173,4 +173,4 @@ class TestOpenAIClientIntegration(TenantTestCase):
             client = manager.create_client()
             
             self.assertIsNotNone(client)
-                logger.info("[TEST] Flujo completo ejecutado exitosamente")
+            logger.info("[TEST] Flujo completo ejecutado exitosamente")

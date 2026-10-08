@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Email service testing script.
-Run from Django shell: python manage.py shell < threat_intel/test_email.py
+Run from Django shell: python manage.py shell < threat_intel/email_smoke.py
 """
 
 import logging
@@ -100,7 +100,6 @@ backend = getattr(settings, 'THREAT_INTEL_EMAIL_BACKEND', 'smtp')
 logger.info("Email Backend: %s", backend)
 logger.info("Brevo API Key: %s", ('✓ Configured' if brevo_key else '❌ Not configured'))
 
-if not brevo_key:
 if not brevo_key:
     logger.info("To use Brevo:")
     logger.info("  1. Install SDK: pip install sib-api-v3-sdk")
