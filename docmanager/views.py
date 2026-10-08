@@ -1,9 +1,12 @@
 import json
 import urllib.parse
+import secrets
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -26,6 +29,11 @@ def drive_webhook_receiver(request):
 
 	if request.method != "POST":
 		return HttpResponseNotAllowed(["POST"])
+	token = settings.DOCMANAGER_WEBHOOK_TOKEN
+	if not token:
+		return HttpResponse(status=503)
+	if not secrets.compare_digest(request.headers.get("X-Goog-Channel-Token", ""), token):
+		return HttpResponseForbidden()
 
 	resource_id = request.headers.get("X-Goog-Resource-Id") or request.headers.get("X-Goog-Resource-ID")
 	channel_id = request.headers.get("X-Goog-Channel-Id")
@@ -38,7 +46,9 @@ def drive_webhook_receiver(request):
 	return HttpResponse(status=204)
 
 
-class DocumentInsightsView(View):
+class DocumentInsightsView(LoginRequiredMixin, UserPassesTestMixin, View):
+	def test_func(self):
+		return self.request.user.is_staff or self.request.user.is_superuser
 	"""Devuelve un resumen tipo semáforo y quick insights."""
 
 	def get(self, request, *args, **kwargs):

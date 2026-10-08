@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
+from django.conf import settings
 from datetime import timedelta
 from typing import Optional
 
@@ -206,13 +207,15 @@ class GoogleDriveService:
 
         ttl_seconds: tiempo de vida del canal (Google limita a ~7 días).
         """
+        if not settings.DOCMANAGER_WEBHOOK_TOKEN:
+            raise GoogleDriveServiceError("Configurá DOCMANAGER_WEBHOOK_TOKEN antes de registrar el canal.")
         channel_id = channel_id or str(uuid.uuid4())
         expiration_ms = int((timezone.now() + timedelta(seconds=ttl_seconds)).timestamp() * 1000)
         body = {
             "id": channel_id,
             "type": "web_hook",
             "address": webhook_url,
-            "token": str(self.credential.id),
+            "token": settings.DOCMANAGER_WEBHOOK_TOKEN,
             "expiration": expiration_ms,
         }
         try:

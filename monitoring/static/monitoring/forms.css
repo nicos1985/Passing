@@ -1,0 +1,6 @@
+.monitor-form .monitor-help-trigger { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.3rem; height: 1.3rem; color: #2475b5; cursor: help; border-radius: 50%; flex: none; }
+.monitor-form .monitor-help-trigger:hover, .monitor-form .monitor-help-trigger:focus-visible { color: #07548f; background: #e7f3ff; outline: 2px solid transparent; }
+.monitor-form .monitor-help-trigger:focus-visible { box-shadow: 0 0 0 3px #a9d4fa; }
+.monitor-form .monitor-help-tooltip { display: none; position: absolute; z-index: 1080; top: calc(100% + .4rem); left: 0; width: max-content; max-width: min(330px, calc(100vw - 40px)); padding: .6rem .75rem; border-radius: .5rem; color: #fff; background: #173b5a; box-shadow: 0 7px 20px #173b5a33; font-size: .78rem; line-height: 1.4; font-weight: 400; white-space: normal; pointer-events: none; }
+.monitor-form .monitor-help-trigger:hover .monitor-help-tooltip, .monitor-form .monitor-help-trigger:focus-visible .monitor-help-tooltip { display: block; }
+.monitor-form label { margin-bottom: 0; font-weight: 600; }

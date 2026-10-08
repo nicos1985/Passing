@@ -1,0 +1,12 @@
+<div class="d-flex align-items-center gap-2 mb-1">
+  {{ field.label_tag }}
+  {% if field.help_text %}
+    <span class="monitor-help-trigger" tabindex="0" aria-label="Ayuda: {{ field.help_text|striptags }}">
+      <i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+      <span class="monitor-help-tooltip" aria-hidden="true">{{ field.help_text }}</span>
+    </span>
+  {% endif %}
+</div>
+{{ field }}
+{% if field.help_text %}<span id="{{ field.id_for_label }}_help" class="visually-hidden">{{ field.help_text }}</span>{% endif %}
+{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}

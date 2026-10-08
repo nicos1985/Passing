@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 720px">
+  <a href="{% url 'monitoring:detail' monitor.pk %}" class="text-decoration-none">← Volver al monitoreo</a>
+  <div class="card border-danger mt-3">
+    <div class="card-body">
+      <h1 class="h4 mb-3"><i class="fa-solid fa-trash-can text-danger me-2" aria-hidden="true"></i>Eliminar monitoreo</h1>
+      <p>Vas a eliminar <strong>{{ monitor.name }}</strong> (<code>{{ monitor.host }}</code>).</p>
+      <p>También se borrarán sus <strong>{{ check_count }} checks</strong>, resúmenes históricos e <strong>{{ incident_count }} incidentes</strong> guardados. Esta acción no se puede deshacer. Las negociaciones ya creadas en Bitrix24 permanecerán allí.</p>
+      <form method="post" class="d-flex gap-2 flex-wrap">{% csrf_token %}
+        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Eliminar definitivamente</button>
+        <a href="{% url 'monitoring:detail' monitor.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

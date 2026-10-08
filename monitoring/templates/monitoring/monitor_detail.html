@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 monitor-detail monitor-screen">
+  <header class="monitor-hero mb-3">
+    <div class="d-flex justify-content-between gap-3 align-items-start flex-wrap">
+      <div><a href="{% url 'monitoring:dashboard' %}" class="hero-back">← Volver a monitorización</a><div class="monitor-eyebrow mt-3 mb-1">Detalle del servicio</div><h1 class="mb-2">{{ monitor.name }}</h1><div class="small"><i class="fa-solid {% if monitor.kind == 'ping' %}fa-satellite-dish{% elif monitor.kind == 'http' %}fa-globe{% elif monitor.kind == 'tcp' %}fa-network-wired{% elif monitor.kind == 'heartbeat' %}fa-heart-pulse{% else %}fa-lock{% endif %} me-1" aria-hidden="true"></i>{{ monitor.get_kind_display }} <span class="mx-1">·</span> <span style="overflow-wrap:anywhere">{{ monitor.host }}</span></div></div>
+      <div class="d-flex gap-2 flex-wrap"><a href="{% url 'monitoring:information' %}" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Información</a><a href="{% url 'monitoring:edit' monitor.pk %}" class="btn btn-sm btn-light monitor-icon-action" title="Editar monitor" aria-label="Editar monitor {{ monitor.name }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a><a href="{% url 'monitoring:delete' monitor.pk %}" class="btn btn-sm btn-outline-light monitor-icon-action" title="Eliminar monitor" aria-label="Eliminar monitor {{ monitor.name }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a></div>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2 mt-4"><span id="detail-state" class="badge bg-{{ live.badge }} fs-6">{{ live.label }}</span><span id="detail-last-reason" class="small">{{ monitor.last_detail }}</span></div>
+  </header>
+  {% if monitor.description %}<p class="px-1 text-muted mb-3">{{ monitor.description|linebreaksbr }}</p>{% endif %}
+  <nav class="detail-mini-nav d-flex flex-wrap gap-2 mb-4" aria-label="Secciones del monitor"><a href="#ultima-hora">Última hora</a><a href="#disponibilidad">Disponibilidad</a><a href="#latencia">Latencia</a><a href="#actividad">Actividad y configuración</a></nav>
+  <div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:maintenance_window_new' %}?monitor={{ monitor.pk }}">Programar mantenimiento</a><a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:deployment_new' monitor.pk %}">Registrar despliegue</a>{% if monitor.kind == 'heartbeat' %}<form method="post" action="{% url 'monitoring:heartbeat_regenerate' monitor.pk %}" onsubmit="return confirm('El token anterior dejará de funcionar. ¿Continuar?')">{% csrf_token %}<button class="btn btn-sm btn-outline-warning">Generar nuevo token</button></form>{% endif %}</div>
+  {% if monitor.kind == 'heartbeat' %}<div class="alert alert-info">Señal esperada cada {{ monitor.heartbeat_interval_minutes }} minutos, con {{ monitor.heartbeat_grace_minutes }} minutos de margen. Última señal: {{ monitor.heartbeat_last_signal_at|date:"d/m/Y H:i:s"|default:"Todavía no recibida" }}. El gráfico de latencia no aplica a esta tarea.</div>{% endif %}
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Disponibilidad · 24 h</div><div class="monitor-kpi-value" id="detail-availability-24h">—</div><div class="monitor-kpi-hint">Sobre checks con resultado</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Última latencia</div><div class="monitor-kpi-value" id="detail-last-latency">{% if monitor.last_latency_ms is not None %}{{ monitor.last_latency_ms }} ms{% else %}—{% endif %}</div><div class="monitor-kpi-hint">Tiempo del último check</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Último check</div><div class="fw-semibold mt-2" id="detail-last-check">{{ monitor.last_checked_at|date:"d/m/Y H:i:s"|default:"—" }}</div><div class="monitor-kpi-hint">Actualización cada {{ monitor.interval_seconds }} s</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Regla de incidente</div><div class="fw-semibold mt-2">{{ monitor.failure_threshold }} fallas / {{ monitor.recovery_threshold }} OK</div><div class="monitor-kpi-hint">Timeout {{ monitor.timeout_seconds }} segundos</div></div></div>
+  </div>
+  <div class="card monitor-panel mb-4" id="ultima-hora">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="monitor-section-title">Última hora</h2><p class="monitor-section-subtitle">Un segmento por minuto para detectar cortes recientes.</p></div><span class="health-legend"><span><i style="background:#22c55e"></i>OK</span><span><i style="background:#dc3545"></i>Falla</span><span><i style="background:#adb5bd"></i>Sin check</span></span></div>
+    <div class="card-body"><div id="detail-bars" class="detail-bars" aria-label="Resultados por minuto durante la última hora"></div><div id="detail-summary" class="detail-muted mt-2">Cargando historial…</div></div>
+  </div>
+  <div class="card monitor-panel mb-4" id="disponibilidad">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div><h2 class="monitor-section-title">Historial de disponibilidad</h2><p class="monitor-section-subtitle">Elegí un período para ver la tendencia y sus incidentes.</p></div>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Período de disponibilidad">
+        <button type="button" class="btn btn-outline-secondary active" data-availability-days="1" aria-pressed="true">24 horas</button>
+        <button type="button" class="btn btn-outline-secondary" data-availability-days="7">7 días</button>
+        <button type="button" class="btn btn-outline-secondary" data-availability-days="30">30 días</button>
+        <button type="button" class="btn btn-outline-secondary" data-availability-days="365">365 días</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-xl-3"><div class="availability-metric"><div class="detail-muted">Checks OK</div><div class="h5 mb-0" id="availability-percent">—</div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="availability-metric"><div class="detail-muted">Latencia promedio</div><div class="h5 mb-0" id="availability-average">—</div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="availability-metric"><div class="detail-muted">Latencia p95 estimada</div><div class="h5 mb-0" id="availability-p95">—</div><small class="detail-muted" id="availability-p95-coverage"></small></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="availability-metric"><div class="detail-muted">Incidentes / duración</div><div class="h5 mb-0" id="availability-incidents">—</div></div></div>
+      </div>
+      <div id="availability-bars" class="availability-bars" aria-label="Disponibilidad por período"></div>
+      <div id="availability-note" class="availability-legend mt-2">Cargando historial…</div>
+      <h2 class="h6 mt-4">Incidentes del período</h2>
+      <div class="table-responsive"><table class="table table-sm mb-0 detail-recent"><thead><tr><th>Inicio</th><th>Recuperación</th><th>Duración</th><th>Dentro del período</th></tr></thead><tbody id="availability-incident-list"><tr><td colspan="4" class="text-muted">Cargando…</td></tr></tbody></table></div>
+    </div>
+  </div>
+  <div class="card monitor-panel mb-4" id="latencia">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div><h2 class="monitor-section-title">Latencia de cada check</h2><p class="monitor-section-subtitle">La línea azul une checks OK; los puntos rojos marcan fallas.</p></div>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Período del gráfico">
+        <button type="button" class="btn btn-outline-secondary" data-hours="1">1 hora</button>
+        <button type="button" class="btn btn-outline-secondary" data-hours="6">6 horas</button>
+        <button type="button" class="btn btn-outline-secondary active" data-hours="24" aria-pressed="true">24 horas</button>
+        <button type="button" class="btn btn-outline-secondary" data-hours="168">7 días</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="chart-empty" class="detail-muted mb-2">Cargando latencias…</div>
+      <div class="d-flex gap-2 align-items-stretch detail-chart-wrap">
+        <div class="d-flex flex-column justify-content-between detail-muted text-end" style="min-width: 48px"><span id="axis-max"></span><span id="axis-mid"></span><span>0 ms</span></div>
+        <svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg>
+      </div>
+      <div class="d-flex justify-content-between detail-muted ms-5"><span id="axis-start"></span><span id="axis-end"></span></div>
+      <div id="chart-hover" class="detail-muted mt-2" aria-live="polite">Pasá el cursor por el gráfico para ver un check.</div>
+      <div class="row g-2 mt-2" aria-label="Resumen de latencias del período seleccionado">
+        <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Promedio</span><strong id="latency-average">—</strong></div></div>
+        <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Más baja</span><strong id="latency-minimum">—</strong></div></div>
+        <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Más alta</span><strong id="latency-maximum">—</strong></div></div>
+      </div>
+      <div class="detail-muted mt-2" id="latency-sample-count">Calculando mediciones del período…</div>
+    </div>
+  </div>
+  <div class="card monitor-panel mb-4"><div class="card-header"><h2 class="monitor-section-title">Despliegues y mantenimientos</h2></div><div class="card-body row g-3"><div class="col-md-6"><h3 class="h6">Despliegues recientes</h3><ul class="list-unstyled mb-0">{% for marker in deployments %}<li class="mb-2">{{ marker.deployed_at|date:"d/m/Y H:i" }} · <strong>{{ marker.version }}</strong>{% if marker.note %} · {{ marker.note }}{% endif %} <a href="{% url 'monitoring:deployment_edit' monitor.pk marker.pk %}" class="btn btn-sm btn-outline-primary monitor-icon-action ms-2" title="Editar despliegue {{ marker.version }}" aria-label="Editar despliegue {{ marker.version }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a> <form class="d-inline" method="post" action="{% url 'monitoring:deployment_delete' monitor.pk marker.pk %}" onsubmit="return confirm('¿Eliminar esta marca?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger monitor-icon-action" title="Eliminar despliegue {{ marker.version }}" aria-label="Eliminar despliegue {{ marker.version }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></form></li>{% empty %}<li class="text-muted">Sin despliegues registrados.</li>{% endfor %}</ul></div><div class="col-md-6"><h3 class="h6">Ventanas de mantenimiento</h3><ul class="list-unstyled mb-0">{% for window in maintenance_windows %}<li class="mb-2">{{ window.starts_at|date:"d/m/Y H:i" }} · {{ window.get_recurrence_display }} ({{ window.time_zone }}) · {% if window.enabled %}Activa{% else %}Desactivada{% endif %} <a href="{% url 'monitoring:maintenance_window_edit' window.pk %}" class="btn btn-sm btn-outline-primary monitor-icon-action" title="Editar mantenimiento" aria-label="Editar mantenimiento de {{ monitor.name }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a></li>{% empty %}<li class="text-muted">Sin ventanas programadas.</li>{% endfor %}</ul></div></div></div>
+  <div class="row g-3" id="actividad">
+    <div class="col-xl-7"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Últimos 30 checks</h2><p class="monitor-section-subtitle">Resultados recientes para investigar cambios de estado.</p></div><div class="table-responsive"><table class="table table-sm mb-0 detail-recent"><thead><tr><th>Fecha</th><th>Resultado</th><th>Latencia</th><th>Detalle</th></tr></thead><tbody id="detail-results"><tr><td colspan="4" class="text-muted">Cargando…</td></tr></tbody></table></div></div></div>
+    <div class="col-xl-5"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Configuración e incidentes</h2><p class="monitor-section-subtitle">Reglas activas y seguimiento del servicio.</p></div><div class="card-body">
+      <dl class="row mb-3 detail-config"><dt class="col-sm-5">Notificaciones</dt><dd class="col-sm-7">{{ monitor.recipients|default:"Sin destinatarios" }}</dd>{% if monitor.kind == 'http' %}<dt class="col-sm-5">HTTP aceptados</dt><dd class="col-sm-7">{{ monitor.expected_http_codes }}</dd><dt class="col-sm-5">Latencia máxima</dt><dd class="col-sm-7">{% if monitor.max_latency_ms %}{{ monitor.max_latency_ms }} ms{% else %}Sin límite{% endif %}</dd>{% if monitor.json_path %}<dt class="col-sm-5">JSON esperado</dt><dd class="col-sm-7"><code>{{ monitor.json_path }}</code> = <code>{{ monitor.json_expected_value }}</code></dd>{% endif %}{% endif %}{% if monitor.kind == 'tls' %}<dt class="col-sm-5">Aviso TLS</dt><dd class="col-sm-7">{{ monitor.tls_min_days }} días antes del vencimiento</dd>{% endif %}<dt class="col-sm-5">Mantenimiento</dt><dd class="col-sm-7">{{ monitor.maintenance_until|default:"No" }}</dd><dt class="col-sm-5">Creado</dt><dd class="col-sm-7">{{ monitor.created_at|date:"d/m/Y H:i" }}</dd></dl>
+      <h2 class="h6">Incidentes recientes</h2>
+      <ul class="list-unstyled mb-0">{% for incident in incidents %}<li class="mb-2"><a href="{% url 'monitoring:incident' incident.pk %}">#{{ incident.pk }} · {{ incident.started_at|date:"d/m/Y H:i" }}</a> <span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span> <span class="detail-muted">{% if incident.recovered_at %}Servicio recuperado{% else %}Falla activa{% endif %}</span></li>{% empty %}<li class="detail-muted">Sin incidentes.</li>{% endfor %}</ul>
+    </div></div></div>
+  </div>
+</div>
+{% include 'monitoring/timezone_select.html' %}
+{% endblock %}
+{% block javascript %}
+<script>
+(() => {
+  const dataUrl = "{% url 'monitoring:detail_data' monitor.pk %}";
+  const svg = document.getElementById('latency-chart');
+  const ns = 'http://www.w3.org/2000/svg';
+  let hours = 24;
+  let busy = false;
+  let plotted = [];
+  let chartStart = 0, chartEnd = 0;
+
+  function formatTime(value) {
+    return value ? new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(value)) : '—';
+  }
+  function svgElement(tag, attributes) {
+    const element = document.createElementNS(ns, tag);
+    for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+    return element;
+  }
+  function drawBars(data) {
+    const container = document.getElementById('detail-bars');
+    const fragment = document.createDocumentFragment();
+    let ok = 0, bad = 0;
+    for (let index = 0; index < data.slots.length; index++) {
+      const slot = data.slots[index];
+      const segment = document.createElement('span');
+      segment.className = 'detail-slot';
+      const time = new Date((data.first_minute + index) * 60000);
+      const label = slot ? (slot.status === 'ok' ? 'OK' : slot.status === 'error' ? 'Error del monitor' : 'Falla') : 'Sin check';
+      if (slot) { if (slot.status === 'ok') { segment.classList.add('ok'); ok++; } else { segment.classList.add('bad'); bad++; } }
+      segment.title = `${formatTime(time)} · ${label}${slot && slot.detail ? ` · ${slot.detail}` : ''}${slot && slot.latency_ms !== null ? ` · ${slot.latency_ms} ms` : ''}`;
+      segment.setAttribute('role', 'img');
+      segment.setAttribute('aria-label', segment.title);
+      fragment.append(segment);
+    }
+    container.replaceChildren(fragment);
+    document.getElementById('detail-summary').textContent = ok + bad ? `${Math.round(ok * 100 / (ok + bad))}% OK · ${ok} de ${ok + bad} checks` : 'Sin checks en la última hora';
+  }
+  function drawChart(data) {
+    const end = new Date(data.server_time).getTime();
+    const start = end - hours * 3600000;
+    chartStart = start; chartEnd = end;
+    const points = data.latencies.map(item => ({ ...item, time: new Date(item.checked_at).getTime() }));
+    const values = points.filter(item => item.latency_ms !== null && item.status === 'ok');
+    const measured = points.filter(item => Number.isFinite(item.latency_ms)).map(item => item.latency_ms);
+    const number = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 });
+    document.getElementById('latency-average').textContent = measured.length ? `${number.format(measured.reduce((sum, latency) => sum + latency, 0) / measured.length)} ms` : '—';
+    document.getElementById('latency-minimum').textContent = measured.length ? `${number.format(Math.min(...measured))} ms` : '—';
+    document.getElementById('latency-maximum').textContent = measured.length ? `${number.format(Math.max(...measured))} ms` : '—';
+    document.getElementById('latency-sample-count').textContent = measured.length ? `${measured.length} mediciones con latencia en este período (OK y fallas).` : 'No hay mediciones de latencia en este período.';
+    const max = Math.max(10, ...points.filter(item => item.latency_ms !== null).map(item => item.latency_ms));
+    const ceiling = Math.ceil(max / 10) * 10;
+    const x = time => 8 + (time - start) / (end - start) * 984;
+    const y = latency => 248 - latency / ceiling * 236;
+    svg.replaceChildren();
+    for (const value of [0, ceiling / 2, ceiling]) svg.append(svgElement('line', { x1: 8, y1: y(value), x2: 992, y2: y(value), stroke: '#e9ecef', 'stroke-width': 1 }));
+    let path = '';
+    let run = [];
+    function appendSmoothRun() {
+      if (!run.length) return;
+      const coords = run.map(point => ({ x: x(point.time), y: y(point.latency_ms) }));
+      path += `M${coords[0].x.toFixed(2)},${coords[0].y.toFixed(2)} `;
+      if (coords.length === 1) svg.append(svgElement('circle', { cx: coords[0].x, cy: coords[0].y, r: 2.5, fill: '#0d6efd' }));
+      for (let index = 0; index < coords.length - 1; index++) {
+        const before = coords[Math.max(0, index - 1)];
+        const current = coords[index];
+        const next = coords[index + 1];
+        const after = coords[Math.min(coords.length - 1, index + 2)];
+        const clamp = (value, a, b) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), value));
+        const c1x = clamp(current.x + (next.x - before.x) / 6, current.x, next.x);
+        const c1y = clamp(current.y + (next.y - before.y) / 6, current.y, next.y);
+        const c2x = clamp(next.x - (after.x - current.x) / 6, current.x, next.x);
+        const c2y = clamp(next.y - (after.y - current.y) / 6, current.y, next.y);
+        path += `C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${next.x.toFixed(2)},${next.y.toFixed(2)} `;
+      }
+      run = [];
+    }
+    for (const point of points) {
+      if (point.status === 'ok' && point.latency_ms !== null) {
+        run.push(point);
+      } else {
+        appendSmoothRun();
+        svg.append(svgElement('circle', { cx: x(point.time), cy: point.latency_ms === null ? 248 : y(point.latency_ms), r: 3, fill: '#dc3545' }));
+      }
+    }
+    appendSmoothRun();
+    svg.append(svgElement('path', { d: path, fill: 'none', stroke: '#0d6efd', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }));
+    if (values.length <= 120) for (const point of values) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: 2.5, fill: '#0d6efd' }));
+    for (const marker of data.deployments || []) {
+      const time = new Date(marker.deployed_at).getTime();
+      if (time < start || time > end) continue;
+      const position = x(time);
+      const label = `Despliegue ${marker.version} · ${formatTime(marker.deployed_at)}${marker.note ? ` · ${marker.note}` : ''}`;
+      svg.append(svgElement('line', { x1: position, y1: 4, x2: position, y2: 250, stroke: '#8b5cf6', 'stroke-width': 2, 'stroke-dasharray': '5 4', 'pointer-events': 'none' }));
+      const hitbox = svgElement('rect', { x: position - 7, y: 4, width: 14, height: 246, fill: 'transparent', tabindex: 0, role: 'img', 'aria-label': label, 'data-deployment-label': label });
+      const title = svgElement('title', {});
+      title.textContent = label;
+      hitbox.append(title);
+      svg.append(hitbox);
+    }
+    plotted = points;
+    document.getElementById('axis-max').textContent = `${ceiling} ms`;
+    document.getElementById('axis-mid').textContent = `${ceiling / 2} ms`;
+    document.getElementById('axis-start').textContent = formatTime(start);
+    document.getElementById('axis-end').textContent = formatTime(end);
+    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Rojo: falla/error` : 'No hay checks en este período.';
+  }
+  svg.addEventListener('mousemove', event => {
+    const deployment = event.target.getAttribute('data-deployment-label');
+    if (deployment) { document.getElementById('chart-hover').textContent = deployment; return; }
+    if (!plotted.length) return;
+    const rect = svg.getBoundingClientRect();
+    const target = (event.clientX - rect.left) / rect.width;
+    const time = chartStart + target * (chartEnd - chartStart);
+    let low = 0, high = plotted.length - 1;
+    while (low < high) { const mid = Math.floor((low + high) / 2); if (plotted[mid].time < time) low = mid + 1; else high = mid; }
+    const point = low && Math.abs(plotted[low - 1].time - time) < Math.abs(plotted[low].time - time) ? plotted[low - 1] : plotted[low];
+    document.getElementById('chart-hover').textContent = `${formatTime(point.checked_at)} · ${point.status === 'ok' ? 'OK' : point.status === 'error' ? 'Error del monitor' : 'Falla'}${point.detail ? ` · ${point.detail}` : ''} · ${point.latency_ms === null ? 'Sin latencia' : `${point.latency_ms} ms`}`;
+  });
+  svg.addEventListener('focusin', event => {
+    const deployment = event.target.getAttribute('data-deployment-label');
+    if (deployment) document.getElementById('chart-hover').textContent = deployment;
+  });
+  function drawResults(items) {
+    const body = document.getElementById('detail-results');
+    body.replaceChildren();
+    if (!items.length) { const row = body.insertRow(); const cell = row.insertCell(); cell.colSpan = 4; cell.textContent = 'Sin checks todavía.'; cell.className = 'text-muted'; return; }
+    for (const item of items) {
+      const row = body.insertRow();
+      row.insertCell().textContent = formatTime(item.checked_at);
+      const status = row.insertCell();
+      status.textContent = item.status === 'ok' ? 'OK' : item.status === 'error' ? 'Error' : 'Falla';
+      status.className = item.status === 'ok' ? 'check-ok' : 'check-bad';
+      row.insertCell().textContent = item.latency_ms === null ? '—' : `${item.latency_ms} ms`;
+      row.insertCell().textContent = item.detail || '—';
+    }
+  }
+  async function refresh() {
+    if (busy || document.hidden) return;
+    busy = true;
+    const requestedHours = hours;
+    try {
+      const response = await fetch(`${dataUrl}?hours=${requestedHours}`, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('No se pudo cargar el detalle');
+      const data = await response.json();
+      if (hours !== requestedHours) return;
+      const state = document.getElementById('detail-state');
+      state.className = `badge bg-${data.badge} fs-6`;
+      state.textContent = data.state;
+      document.getElementById('detail-last-reason').textContent = data.last_detail || '';
+      document.getElementById('detail-last-check').textContent = formatTime(data.last_checked_at);
+      document.getElementById('detail-last-latency').textContent = data.last_latency_ms === null ? '—' : `${data.last_latency_ms} ms`;
+      drawBars(data); drawChart(data); drawResults(data.recent);
+    } catch (error) {
+      document.getElementById('chart-empty').textContent = 'No se pudo actualizar el detalle.';
+    } finally { busy = false; if (hours !== requestedHours) refresh(); }
+  }
+  document.querySelectorAll('[data-hours]').forEach(button => button.addEventListener('click', () => {
+    hours = Number(button.dataset.hours);
+    document.querySelectorAll('[data-hours]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+    refresh();
+  }));
+  refresh();
+  setInterval(refresh, 15000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+})();
+
+(() => {
+  const url = "{% url 'monitoring:availability' monitor.pk %}";
+  let days = 1;
+  let busy = false;
+  const number = new Intl.NumberFormat('es-AR');
+  const formatMs = value => typeof value === 'string' ? value : number.format(value);
+  const dateTime = new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const dateOnly = new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, day: '2-digit', month: '2-digit' });
+  const duration = seconds => {
+    if (seconds < 60) return `${seconds} s`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
+    if (seconds < 86400) return `${(seconds / 3600).toFixed(1)} h`;
+    return `${(seconds / 86400).toFixed(1)} días`;
+  };
+  function draw(data) {
+    const totals = data.totals;
+    if (data.days === 1) document.getElementById('detail-availability-24h').textContent = totals.availability_pct === null ? '—' : `${number.format(totals.availability_pct)}%`;
+    document.getElementById('availability-percent').textContent = totals.availability_pct === null ? '—' : `${number.format(totals.availability_pct)}%`;
+    document.getElementById('availability-average').textContent = totals.latency_avg_ms === null ? '—' : `${number.format(totals.latency_avg_ms)} ms`;
+    document.getElementById('availability-p95').textContent = totals.latency_p95_ms === null ? '—' : `${formatMs(totals.latency_p95_ms)} ms`;
+    document.getElementById('availability-p95-coverage').textContent = totals.p95_coverage_pct !== null && totals.p95_coverage_pct < 100 ? `${number.format(totals.p95_coverage_pct)}% del historial de latencias tiene datos para p95` : '';
+    document.getElementById('availability-incidents').textContent = `${totals.incident_count} · ${duration(totals.downtime_seconds)}`;
+    const bars = document.getElementById('availability-bars');
+    const fragment = document.createDocumentFragment();
+    for (const bucket of data.buckets) {
+      const bar = document.createElement('span');
+      bar.className = 'availability-slot';
+      const label = days === 1 ? dateTime.format(new Date(bucket.start)) : dateOnly.format(new Date(bucket.start));
+      const pct = bucket.availability_pct;
+      if (pct !== null) bar.style.background = `linear-gradient(to top, #22c55e ${pct}%, #dc3545 ${pct}%)`;
+      bar.title = `${label} · ${pct === null ? 'Sin checks' : `${number.format(pct)}% OK (${bucket.ok} OK, ${bucket.failure} fallas)`} · ${bucket.error} errores de monitor · Promedio ${bucket.latency_avg_ms === null ? '—' : `${bucket.latency_avg_ms} ms`} · p95 ${bucket.latency_p95_ms === null ? '—' : `${bucket.latency_p95_ms} ms`}`;
+      bar.setAttribute('role', 'img');
+      bar.setAttribute('aria-label', bar.title);
+      fragment.append(bar);
+    }
+    bars.replaceChildren(fragment);
+    document.getElementById('availability-note').textContent = `${totals.ok} OK · ${totals.failure} fallas · ${totals.error} errores del monitor. Disponibilidad = OK / (OK + fallas); los errores locales se muestran aparte. Verde: OK · Rojo: falla · Gris: sin checks.`;
+    const list = document.getElementById('availability-incident-list');
+    list.replaceChildren();
+    if (!data.incidents.length) {
+      const row = list.insertRow(); const cell = row.insertCell(); cell.colSpan = 4; cell.textContent = 'Sin incidentes en este período.'; cell.className = 'text-muted';
+    } else for (const incident of data.incidents) {
+      const row = list.insertRow();
+      row.insertCell().textContent = dateTime.format(new Date(incident.started_at));
+      row.insertCell().textContent = incident.recovered_at ? dateTime.format(new Date(incident.recovered_at)) : 'En curso';
+      row.insertCell().textContent = duration(incident.duration_seconds);
+      row.insertCell().textContent = duration(incident.period_seconds);
+    }
+  }
+  async function refresh() {
+    if (busy || document.hidden) return;
+    busy = true;
+    const requestedDays = days;
+    try {
+      const response = await fetch(`${url}?days=${requestedDays}`, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('No se pudo cargar disponibilidad');
+      const data = await response.json();
+      if (requestedDays === 1) document.getElementById('detail-availability-24h').textContent = data.totals.availability_pct === null ? '—' : `${number.format(data.totals.availability_pct)}%`;
+      if (days === requestedDays) draw(data);
+    } catch (error) {
+      document.getElementById('availability-note').textContent = 'No se pudo cargar el historial de disponibilidad.';
+    } finally { busy = false; if (days !== requestedDays) refresh(); }
+  }
+  document.querySelectorAll('[data-availability-days]').forEach(button => button.addEventListener('click', () => {
+    days = Number(button.dataset.availabilityDays);
+    document.querySelectorAll('[data-availability-days]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+    refresh();
+  }));
+  refresh();
+  setInterval(refresh, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+})();
+</script>
+{% endblock %}

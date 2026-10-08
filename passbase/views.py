@@ -77,6 +77,12 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     template_name = 'detail-cont.html'
     login_url = 'login'
 
+    def get_queryset(self):
+        allowed_ids = ContraPermission.objects.filter(
+            user_id=self.request.user, perm_active=True, permission=True,
+        ).values_list('contra_id', flat=True)
+        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
+
     def get(self, request, *args, **kwargs):
         # Verificar permisos antes de continuar
         users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
@@ -161,8 +167,6 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                 return self.form_invalid(form)
 
             if contrasena:
-                contrasena.contraseña = encrypt_data(contraseña)
-                contrasena.usuario = encrypt_data(usuario)
                 contrasena.hash = hash_combination
                 logger.debug('contraseña.hash saved (prefix): %s', str(contrasena.hash)[:8])
                 contrasena.save()
@@ -200,7 +204,8 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                     except Exception as e:
                         messages.error(self.request, f'Error al crear permiso de acceso: {e}')
 
-            return super().form_valid(form)
+            self.object = contrasena
+            return redirect(self.success_url)
         
         except IntegrityError:
             form.add_error('nombre_contra', 'El nombre de la contraseña ya existe. Por favor, elige otro.')
@@ -327,6 +332,12 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('listpass')
     login_url = 'login'
 
+    def get_queryset(self):
+        allowed_ids = ContraPermission.objects.filter(
+            user_id=self.request.user, perm_active=True, permission=True,
+        ).values_list('contra_id', flat=True)
+        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._objeto_previo = None
@@ -343,10 +354,6 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
             return redirect(reverse('listpass'))
 
         return super().get(request, *args, **kwargs)
-    
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -433,26 +440,24 @@ class ContrasDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('listpass') 
     login_url = 'login' 
 
+    def get_queryset(self):
+        queryset = Contrasena.objects.filter(active=True)
+        if self.request.user.is_superuser:
+            return queryset
+        return queryset.filter(owner=self.request.user)
+
     def form_valid(self, form, *args, **kwargs):
-        
-        response = super().form_valid(form)
-        id_contrasena = self.kwargs['pk']
-        context = ContrasDeleteView.get_context_data(self)
         contrasena = self.object
-        contrasena.active = False
-        contrasena.save()
-        LogData.objects.create(contraseña = id_contrasena, 
-                               entidad = context['entity'], 
-                               usuario = self.request.user, 
-                               action = context['action'],
-                               password=contrasena.contraseña, 
-                               detail = f'''Nombre: {contrasena.nombre_contra}, 
-                                            Seccion: {contrasena.seccion},
-                                            Usuario: {contrasena.usuario}, 
-                                            Link:{contrasena.link}, 
-                                            Info:{contrasena.info},
-                                            owner: {contrasena.owner}''')
-        return response 
+        Contrasena.objects.filter(pk=contrasena.pk).update(active=False)
+        LogData.objects.create(
+            contraseña=contrasena.pk,
+            entidad='Contrasena',
+            usuario=self.request.user,
+            action='Inactive',
+            password='[REDACTED]',
+            detail=f'Nombre: {contrasena.nombre_contra}',
+        )
+        return redirect(self.success_url)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -640,6 +645,12 @@ class SectionActiveView(LoginRequiredMixin, DetailView):
 class DescargarArchivo(LoginRequiredMixin, DetailView):
     model = Contrasena
     template_name = 'filedownload.html'
+
+    def get_queryset(self):
+        allowed_ids = ContraPermission.objects.filter(
+            user_id=self.request.user, perm_active=True, permission=True,
+        ).values_list('contra_id', flat=True)
+        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()

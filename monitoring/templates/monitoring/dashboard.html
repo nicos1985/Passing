@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 monitoring-dashboard monitor-screen">
+  <header class="monitor-hero mb-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div><div class="monitor-eyebrow mb-2">Centro de operaciones</div><h1 class="mb-2">Monitorización</h1><p class="mb-0">Estado de los servicios y señales de la última hora, desde este servidor.</p></div>
+      <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:incidents' %}"><i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i>Historial de incidentes</a><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:information' %}"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Información</a><a class="btn btn-light btn-sm fw-semibold" href="{% url 'monitoring:new' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Nuevo monitoreo</a></div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <span class="monitor-live-pill" id="live-connection"><span class="live-dot"></span>Conectando…</span>
+      <span class="monitor-live-pill"><i class="fa-solid fa-server me-1" aria-hidden="true"></i><span id="worker-status" class="{% if worker_healthy %}text-success{% else %}text-warning{% endif %}">{{ worker_label }}</span></span>
+      <span class="monitor-live-pill">Último ciclo <span id="worker-last-cycle">{{ last_cycle_at|date:"d/m/Y H:i:s"|default:"—" }}</span></span>
+      <span class="monitor-live-pill">Atrasados <strong id="worker-overdue">{{ overdue_count }}</strong></span>
+    </div>
+  </header>
+  <div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:maintenance_windows' %}">Mantenimientos programados</a><a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:status' %}">Página de estado</a></div>
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Monitoreos</span><span class="monitor-kpi-icon blue"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="monitor-count">{{ monitors|length }}</div><div class="monitor-kpi-hint">Servicios configurados</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Saludables</span><span class="monitor-kpi-icon green"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="healthy-count">{{ healthy_count }}</div><div class="monitor-kpi-hint">Con check reciente OK</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Requieren atención</span><span class="monitor-kpi-icon amber"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="attention-count">{{ attention_count }}</div><div class="monitor-kpi-hint">Falla, error o sin datos</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Incidentes abiertos</span><span class="monitor-kpi-icon red"><i class="fa-solid fa-bell" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="incident-count">{{ incident_count }}</div><div class="monitor-kpi-hint">Pendientes de recuperación</div></div></div>
+  </div>
+  <div class="card monitor-panel mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
+      <div><h2 class="monitor-section-title">Servicios</h2><p class="monitor-section-subtitle">Cada barra representa un minuto de la última hora.</p></div>
+      <span class="health-legend" aria-label="Leyenda de salud">
+        <span><i style="background:#22c55e"></i>OK</span>
+        <span><i style="background:#dc3545"></i>Falla o error</span>
+        <span><i style="background:#adb5bd"></i>Sin check</span>
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap px-3 py-3 border-bottom">
+      <label class="visually-hidden" for="monitor-search">Buscar monitoreos</label><div class="input-group input-group-sm monitor-search"><span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span><input id="monitor-search" type="search" class="form-control" placeholder="Buscar servicio o destino" autocomplete="off"></div>
+      <div class="d-flex gap-1 flex-wrap" role="group" aria-label="Filtrar monitoreos"><button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">Todos</button><button type="button" class="filter-chip" data-filter="healthy" aria-pressed="false">Saludables</button><button type="button" class="filter-chip" data-filter="attention" aria-pressed="false">Atención</button><button type="button" class="filter-chip" data-filter="paused" aria-pressed="false">Detenidos</button></div>
+      <span class="small text-muted ms-auto" id="visible-count"></span>
+    </div>
+    <div class="table-responsive"><table class="table table-hover align-middle service-table">
+      <thead><tr><th>Nombre</th><th>Destino</th><th>Estado actual</th><th>Últimos 60 minutos</th><th>Último check</th><th>Latencia</th><th>Acciones</th></tr></thead>
+      <tbody>
+      {% for monitor in monitors %}
+        <tr data-monitor-id="{{ monitor.pk }}" data-monitor-name="{{ monitor.name }}" data-search="{{ monitor.name }} {{ monitor.host }} {{ monitor.get_kind_display }}" data-filter-state="{% if not monitor.enabled %}paused{% elif monitor.live_badge == 'success' %}healthy{% elif monitor.live_badge == 'danger' or monitor.live_badge == 'warning' or monitor.live_badge == 'secondary' %}attention{% else %}other{% endif %}">
+          <td data-label="Servicio"><div class="d-flex align-items-center gap-2"><span class="service-icon"><i class="fa-solid {% if monitor.kind == 'ping' %}fa-satellite-dish{% elif monitor.kind == 'http' %}fa-globe{% elif monitor.kind == 'tcp' %}fa-network-wired{% elif monitor.kind == 'heartbeat' %}fa-heart-pulse{% else %}fa-lock{% endif %}" aria-hidden="true"></i></span><span><a href="{% url 'monitoring:detail' monitor.pk %}" class="service-name">{{ monitor.name }}</a><span class="service-type d-block">{{ monitor.get_kind_display }}</span></span></div></td>
+          <td data-label="Destino"><code class="service-destination">{{ monitor.host }}</code></td>
+          <td data-label="Estado"><span><span class="badge bg-{{ monitor.live_badge }}" data-role="status">{{ monitor.live_label }}</span><small class="check-reason" data-role="check-reason">{{ monitor.last_detail }}</small></span></td>
+          <td class="health-cell" data-label="Última hora">
+            <div class="health-bars" data-role="health-bars" aria-label="Salud por minuto durante la última hora"></div>
+            <small class="health-summary" data-role="health-summary">Cargando historial…</small>
+          </td>
+          <td data-label="Último check" data-role="last-check">{{ monitor.last_checked_at|date:"d/m/Y H:i:s"|default:"—" }}</td>
+          <td data-label="Latencia" data-role="latency">{% if monitor.last_latency_ms is not None %}{{ monitor.last_latency_ms }} ms{% else %}—{% endif %}</td>
+          <td class="text-nowrap" data-label="Acciones">
+            <div class="d-flex align-items-center gap-1" role="group" aria-label="Acciones de {{ monitor.name }}">
+              <a class="btn btn-sm btn-outline-primary monitor-action" href="{% url 'monitoring:edit' monitor.pk %}" title="Editar" aria-label="Editar {{ monitor.name }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a>
+              <form method="post" action="{% url 'monitoring:maintenance' monitor.pk %}">{% csrf_token %}<input type="hidden" name="hours" data-role="maintenance-hours" value="{% if monitor.manual_maintenance %}0{% else %}1{% endif %}"><button class="btn btn-sm btn-outline-warning monitor-action" type="submit" data-role="maintenance-button" title="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %}" aria-label="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %} de {{ monitor.name }}"><i class="fa-solid {% if monitor.manual_maintenance %}fa-check{% else %}fa-screwdriver-wrench{% endif %}" aria-hidden="true"></i></button></form>
+              <form method="post" action="{% url 'monitoring:toggle' monitor.pk %}">{% csrf_token %}<button class="btn btn-sm monitor-action {% if monitor.enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit" data-role="toggle-button" title="{% if monitor.enabled %}Detener{% else %}Iniciar{% endif %}" aria-label="{% if monitor.enabled %}Detener{% else %}Iniciar{% endif %} {{ monitor.name }}"><i class="fa-solid {% if monitor.enabled %}fa-stop{% else %}fa-play{% endif %}" aria-hidden="true"></i></button></form>
+              <a class="btn btn-sm btn-outline-danger monitor-action" href="{% url 'monitoring:delete' monitor.pk %}" title="Eliminar" aria-label="Eliminar {{ monitor.name }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="text-muted text-center py-4">Todavía no hay monitoreos. Creá el primero para comenzar.</td></tr>
+      {% endfor %}
+        <tr id="filter-empty" hidden><td colspan="7" class="text-muted text-center py-4">No hay servicios que coincidan con la búsqueda o el filtro.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-xl-7"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Actividad reciente</h2><p class="monitor-section-subtitle">Los 10 checks más recientes de todos los servicios.</p></div><div class="list-group list-group-flush" id="recent-checks"><div class="list-group-item text-muted">Esperando resultados…</div></div></div></div>
+    <div class="col-xl-5"><div class="card monitor-panel h-100"><div class="card-header d-flex justify-content-between align-items-center gap-2"><div><h2 class="monitor-section-title">Fallas activas</h2><p class="monitor-section-subtitle">Los recuperados siguen disponibles en el historial.</p></div><a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:incidents' %}">Ver todos</a></div><div class="list-group list-group-flush" id="open-incidents">
+      {% for incident in incidents %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between gap-2" href="{% url 'monitoring:incident' incident.pk %}"><span>{{ incident.monitor.name }} — {{ incident.monitor.host }}<span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %} ms-1">{{ incident.workflow_status }}</span></span><span class="text-nowrap small text-muted">{{ incident.started_at|date:"d/m/Y H:i" }}</span></a>
+      {% empty %}<div class="list-group-item text-muted">No hay fallas activas. Consultá el historial para ver incidentes anteriores.</div>{% endfor %}
+    </div></div></div>
+  </div>
+</div>
+{% include 'monitoring/timezone_select.html' %}
+{% endblock %}
+{% block javascript %}
+<script>
+(() => {
+  const liveUrl = "{% url 'monitoring:live' %}";
+  const historyUrl = "{% url 'monitoring:history' %}";
+  const rows = new Map([...document.querySelectorAll('[data-monitor-id]')].map(row => [Number(row.dataset.monitorId), row]));
+  const connectionLabel = document.getElementById('live-connection');
+  const search = document.getElementById('monitor-search');
+  let activeFilter = 'all';
+  let inFlight = false;
+  let historyInFlight = false;
+
+  function applyFilters() {
+    const query = search.value.trim().toLocaleLowerCase('es-AR');
+    let visible = 0;
+    for (const row of rows.values()) {
+      const matches = (!query || row.dataset.search.toLocaleLowerCase('es-AR').includes(query)) && (activeFilter === 'all' || row.dataset.filterState === activeFilter);
+      row.hidden = !matches;
+      if (matches) visible++;
+    }
+    document.getElementById('visible-count').textContent = `${visible} de ${rows.size} visibles`;
+    document.getElementById('filter-empty').hidden = rows.size === 0 || visible !== 0;
+  }
+  search.addEventListener('input', applyFilters);
+  document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
+    activeFilter = button.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+    applyFilters();
+  }));
+  applyFilters();
+
+  function formatTime(value) {
+    if (!value) return '—';
+    return new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(value));
+  }
+
+  function drawHistory(histories, firstMinute) {
+    const timeFormatter = new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, hour: '2-digit', minute: '2-digit' });
+    for (const history of histories) {
+      const row = rows.get(history.id);
+      if (!row) continue;
+      const container = row.querySelector('[data-role="health-bars"]');
+      const summary = row.querySelector('[data-role="health-summary"]');
+      const fragment = document.createDocumentFragment();
+      let ok = 0;
+      let bad = 0;
+      history.slots.forEach((slot, index) => {
+        const minute = timeFormatter.format(new Date((firstMinute + index) * 60000));
+        const segment = document.createElement('span');
+        segment.className = 'health-slot';
+        let description = 'Sin check';
+        if (slot) {
+          if (slot.status === 'ok') {
+            segment.classList.add('ok');
+            ok += 1;
+            description = 'OK';
+          } else {
+            segment.classList.add('bad');
+            bad += 1;
+            description = slot.status === 'error' ? 'Error del monitor' : 'Falla';
+          }
+          if (slot.latency_ms !== null) description += ` · ${slot.latency_ms} ms`;
+          if (slot.detail) description += ` · ${slot.detail}`;
+        }
+        const tooltip = `${minute} · ${description}`;
+        segment.title = tooltip;
+        segment.setAttribute('role', 'img');
+        segment.setAttribute('aria-label', tooltip);
+        fragment.append(segment);
+      });
+      container.replaceChildren(fragment);
+      const checks = ok + bad;
+      summary.textContent = checks ? `${Math.round(ok * 100 / checks)}% OK · ${ok} de ${checks} checks` : 'Sin checks en la última hora';
+    }
+  }
+
+  async function refreshHistory() {
+    if (historyInFlight || document.hidden) return;
+    historyInFlight = true;
+    try {
+      const response = await fetch(historyUrl, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('No se pudo consultar el historial');
+      const data = await response.json();
+      drawHistory(data.histories, data.first_minute);
+    } catch (error) {
+      for (const row of rows.values()) {
+        const summary = row.querySelector('[data-role="health-summary"]');
+        if (!row.querySelector('[data-role="health-bars"]').children.length) summary.textContent = 'Historial no disponible';
+      }
+    } finally {
+      historyInFlight = false;
+    }
+  }
+
+  function drawRecent(items) {
+    const list = document.getElementById('recent-checks');
+    list.replaceChildren();
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'list-group-item text-muted';
+      empty.textContent = 'Aún no hay checks ejecutados.';
+      list.append(empty);
+      return;
+    }
+    for (const item of items) {
+      const entry = document.createElement('div');
+      entry.className = 'list-group-item d-flex justify-content-between gap-2 recent-check';
+      const description = document.createElement('span');
+      description.append(document.createTextNode(`${item.monitor} · `));
+      const status = document.createElement('span');
+      status.className = item.status_code === 'ok' ? 'check-ok' : 'check-bad';
+      status.textContent = item.status;
+      description.append(status);
+      if (item.detail) description.append(document.createTextNode(` · ${item.detail}`));
+      if (item.latency_ms !== null) description.append(document.createTextNode(` · ${item.latency_ms} ms`));
+      const time = document.createElement('small');
+      time.className = 'text-nowrap';
+      time.textContent = formatTime(item.checked_at);
+      entry.append(description, time);
+      list.append(entry);
+    }
+  }
+
+  function drawIncidents(items) {
+    const list = document.getElementById('open-incidents');
+    list.replaceChildren();
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'list-group-item text-muted';
+      empty.textContent = 'No hay fallas activas. Consultá el historial para ver incidentes anteriores.';
+      list.append(empty);
+      return;
+    }
+    for (const item of items) {
+      const link = document.createElement('a');
+      link.className = 'list-group-item list-group-item-action d-flex justify-content-between gap-2';
+      link.href = item.url;
+      const name = document.createElement('span');
+      name.textContent = `${item.monitor} — ${item.host}`;
+      const status = document.createElement('span');
+      status.className = `badge ms-1 ${item.workflow_status === 'Resuelto' ? 'bg-success' : item.workflow_status === 'Reconocido' ? 'bg-primary' : 'bg-warning text-dark'}`;
+      status.textContent = item.workflow_status;
+      name.append(status);
+      const time = document.createElement('span');
+      time.className = 'text-nowrap';
+      time.textContent = formatTime(item.started_at);
+      link.append(name, time);
+      list.append(link);
+    }
+  }
+
+  async function refresh() {
+    if (inFlight || document.hidden) return;
+    inFlight = true;
+    try {
+      const response = await fetch(liveUrl, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('No se pudo consultar el estado');
+      const data = await response.json();
+      connectionLabel.innerHTML = '<span class="live-dot"></span>Vista conectada';
+      const workerStatus = document.getElementById('worker-status');
+      workerStatus.textContent = data.worker_label;
+      workerStatus.className = data.worker_healthy ? 'text-success' : 'text-warning';
+      document.getElementById('worker-last-cycle').textContent = formatTime(data.last_cycle_at);
+      document.getElementById('worker-overdue').textContent = data.overdue_count;
+      document.getElementById('monitor-count').textContent = data.monitors.length;
+      if (data.monitors.length !== rows.size) { window.location.reload(); return; }
+      document.getElementById('incident-count').textContent = data.incident_count;
+      document.getElementById('healthy-count').textContent = data.monitors.filter(item => item.enabled && item.badge === 'success').length;
+      document.getElementById('attention-count').textContent = data.monitors.filter(item => item.enabled && ['danger', 'warning', 'secondary'].includes(item.badge)).length;
+      for (const item of data.monitors) {
+        const row = rows.get(item.id);
+        if (!row) continue;
+        const badge = row.querySelector('[data-role="status"]');
+        badge.className = `badge bg-${item.badge}`;
+        badge.textContent = item.label;
+        row.dataset.filterState = !item.enabled ? 'paused' : item.badge === 'success' ? 'healthy' : ['danger', 'warning', 'secondary'].includes(item.badge) ? 'attention' : 'other';
+        row.querySelector('[data-role="check-reason"]').textContent = item.last_detail || '';
+        const monitorName = row.dataset.monitorName;
+        const toggle = row.querySelector('[data-role="toggle-button"]');
+        const toggleLabel = item.enabled ? 'Detener' : 'Iniciar';
+        toggle.className = `btn btn-sm monitor-action ${item.enabled ? 'btn-outline-danger' : 'btn-outline-success'}`;
+        toggle.title = toggleLabel;
+        toggle.setAttribute('aria-label', `${toggleLabel} ${monitorName}`);
+        toggle.querySelector('i').className = `fa-solid ${item.enabled ? 'fa-stop' : 'fa-play'}`;
+        const maintenance = row.querySelector('[data-role="maintenance-button"]');
+        const maintenanceLabel = item.manual_maintenance ? 'Finalizar mantenimiento' : 'Mantenimiento por 1 hora';
+        maintenance.title = maintenanceLabel;
+        maintenance.setAttribute('aria-label', `${maintenanceLabel} de ${monitorName}`);
+        maintenance.querySelector('i').className = `fa-solid ${item.manual_maintenance ? 'fa-check' : 'fa-screwdriver-wrench'}`;
+        row.querySelector('[data-role="maintenance-hours"]').value = item.manual_maintenance ? '0' : '1';
+        row.querySelector('[data-role="last-check"]').textContent = formatTime(item.last_checked_at);
+        row.querySelector('[data-role="latency"]').textContent = item.last_latency_ms === null ? '—' : `${item.last_latency_ms} ms`;
+      }
+      applyFilters();
+      drawRecent(data.recent);
+      drawIncidents(data.incidents);
+    } catch (error) {
+      connectionLabel.innerHTML = '<span class="live-dot disconnected"></span>Actualización interrumpida';
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  refresh();
+  refreshHistory();
+  setInterval(refresh, 1500);
+  setInterval(refreshHistory, 5000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); refreshHistory(); } });
+})();
+</script>
+{% endblock %}

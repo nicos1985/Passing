@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/forms.css' %}">{% endblock %}
+{% block content %}
+<div class="container py-3 monitor-form" style="max-width:760px">
+  <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3">{% if monitor %}Editar monitoreo{% else %}Nuevo monitoreo{% endif %}</h1><a href="{% url 'monitoring:dashboard' %}">Volver</a></div>
+  <div class="alert alert-info mb-3"><strong>¿Qué se configura acá?</strong> Elegí cómo se comprueba el servicio, cuándo una falla abre un incidente y a quién se avisa. Los iconos <i class="fa-regular fa-circle-question" aria-hidden="true"></i> explican cada campo.<div class="small mt-2" id="kind-description" aria-live="polite"></div></div>
+  <form method="post" class="card card-body">{% csrf_token %}
+    {% for field in form %}<div class="mb-3{% if field.name == 'expected_http_codes' or field.name == 'max_latency_ms' or field.name == 'json_path' or field.name == 'json_expected_value' %} http-option{% endif %}{% if field.name == 'tls_min_days' %} tls-option{% endif %}{% if field.name == 'heartbeat_interval_minutes' or field.name == 'heartbeat_grace_minutes' %} heartbeat-option{% endif %}{% if field.name == 'host' or field.name == 'interval_seconds' or field.name == 'timeout_seconds' or field.name == 'failure_threshold' or field.name == 'recovery_threshold' %} probe-option{% endif %}">{% include 'monitoring/form_field.html' with field=field %}</div>{% endfor %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div><button class="btn btn-primary">Guardar</button></div>
+  </form>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+(() => {
+  const kind = document.getElementById('id_kind');
+  const descriptions = {
+    ping: 'Ping comprueba si el servidor responde por ICMP. No confirma que la aplicación web funcione.',
+    http: 'HTTP consulta una URL y permite comprobar códigos, tiempo de respuesta y un valor JSON.',
+    tcp: 'TCP intenta abrir un puerto; sirve para bases de datos y otros servicios de red.',
+    tls: 'TLS revisa el certificado del servidor y avisa antes de su vencimiento.',
+    heartbeat: 'La tarea envía una señal al terminar bien. Se alerta si no llega dentro del intervalo más el margen.'
+  };
+  function update() {
+    document.getElementById('kind-description').textContent = descriptions[kind.value] || '';
+    for (const field of document.querySelectorAll('.http-option')) field.hidden = kind.value !== 'http';
+    for (const field of document.querySelectorAll('.tls-option')) field.hidden = kind.value !== 'tls';
+    for (const field of document.querySelectorAll('.heartbeat-option')) field.hidden = kind.value !== 'heartbeat';
+    for (const field of document.querySelectorAll('.probe-option')) field.hidden = kind.value === 'heartbeat';
+  }
+  kind.addEventListener('change', update);
+  update();
+})();
+</script>
+{% endblock %}

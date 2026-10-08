@@ -1,18 +1,21 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django_tenants.test.cases import TenantTestCase
 from django_tenants.test.client import TenantClient
 from django_tenants.utils import get_tenant_model
-from django.urls import reverse
+from django.urls import reverse, set_urlconf
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from resources.models import Treatment, TreatmentStage, RiskEvaluation, InformationAssets, RiskEvaluation, AssetAction
+from resources.models import Treatment, TreatmentStage, RiskEvaluation, InformationAssets, RiskEvaluation, AssetAction, AssetType, Threat, Vulnerability
 from resources.forms import TreatmentForm, RiskEvaluationForm
 from django.utils import timezone
 
 User = get_user_model()
 
+@override_settings(ROOT_URLCONF="passing.urls_tenant")
 class TreatmentFlowTests(TenantTestCase):
     def setUp(self):
+        set_urlconf("passing.urls_tenant")
+        self.addCleanup(set_urlconf, None)
         # create users
         self.staff = User.objects.create_user('staff', 'staff@example.com', 'pass')
         self.staff.is_staff = True
@@ -21,7 +24,9 @@ class TreatmentFlowTests(TenantTestCase):
         self.resp = User.objects.create_user('resp', 'resp@example.com', 'pass')
 
         # create an information asset to link to
-        self.asset = InformationAssets.objects.create(name='Test Asset', owner=self.staff)
+        self.asset = InformationAssets.objects.create(name='Test Asset', owner=self.staff, asset_type=AssetType.PC_OR_NOTEBOOK)
+        self.threat = Threat.objects.create(name='Amenaza de prueba')
+        self.vulnerability = Vulnerability.objects.create(name='Vulnerabilidad de prueba')
 
         # create a treatment
         ct = ContentType.objects.get_for_model(self.asset)
@@ -33,7 +38,7 @@ class TreatmentFlowTests(TenantTestCase):
             treatment_responsible=self.resp,
         )
 
-        self.client = TenantClient(schema_name=self.tenant.schema_name)
+        self.client = TenantClient(self.tenant)
 
     @classmethod
     def setUpClass(cls):
@@ -74,8 +79,8 @@ class TreatmentFlowTests(TenantTestCase):
         base = RiskEvaluation.objects.create(
             evaluated_type=self.treatment.content_type,
             evaluated_id=self.treatment.object_id,
-            threat_id=1 if hasattr(self, 'threat') else None,
-            vulnerability_id=1 if hasattr(self, 'vulnerability') else None,
+            threat=self.threat,
+            vulnerability=self.vulnerability,
             description='base',
         )
         # advance stage to IMPLEMENTED which should trigger a follow-up
@@ -84,16 +89,19 @@ class TreatmentFlowTests(TenantTestCase):
         self.assertTrue(RiskEvaluation.objects.filter(description__icontains='Re-evaluación').exists())
 
 
+@override_settings(ROOT_URLCONF="passing.urls_tenant")
 class AssetActionFlowTests(TenantTestCase):
     def setUp(self):
+        set_urlconf("passing.urls_tenant")
+        self.addCleanup(set_urlconf, None)
         User = get_user_model()
-        self.client = TenantClient(schema_name=self.tenant.schema_name)
+        self.client = TenantClient(self.tenant)
         # create users
-        self.perf = User.objects.create_user(username='actor2', email='actor2@example.com', password='pass')
-        self.benef = User.objects.create_user(username='benef2', email='benef2@example.com', password='pass')
-        self.other = User.objects.create_user(username='other2', email='other2@example.com', password='pass')
+        self.perf = User.objects.create_user(username='actor2', email='actor2@example.com', password='pass', client=self.tenant)
+        self.benef = User.objects.create_user(username='benef2', email='benef2@example.com', password='pass', client=self.tenant)
+        self.other = User.objects.create_user(username='other2', email='other2@example.com', password='pass', client=self.tenant)
         # create an asset
-        self.asset = InformationAssets.objects.create(name='Laptop B', owner=self.perf)
+        self.asset = InformationAssets.objects.create(name='Laptop B', owner=self.perf, asset_type=AssetType.PC_OR_NOTEBOOK)
 
     @classmethod
     def setUpClass(cls):
@@ -114,7 +122,7 @@ class AssetActionFlowTests(TenantTestCase):
         self.assertIsNotNone(aa)
         self.assertEqual(aa.status, 'PENDING')
         # confirm via token
-        confirm_url = reverse('asset-action-confirm', args=[str(aa.confirmation_token)])
+        confirm_url = reverse('asset-action-confirm', args=[str(aa.confirmation_token)], urlconf="passing.urls_tenant")
         resp2 = self.client.get(confirm_url)
         self.assertEqual(resp2.status_code, 200)
         aa.refresh_from_db()
@@ -126,23 +134,15 @@ class AssetActionFlowTests(TenantTestCase):
         self.assertTrue(self.asset.is_loaned)
 
     def test_return_without_confirmed_loan_rejected_on_confirm(self):
-        # create a pending return
+        # The form rejects returns for assets without a confirmed loan.
         self.client.force_login(self.perf)
         url = reverse('asset-return')
         resp = self.client.post(url, {
             'asset': self.asset.pk,
             'description': 'Devolución solicitada',
         })
-        self.assertIn(resp.status_code, (302, 200))
-        aa = AssetAction.objects.filter(asset=self.asset).order_by('-timestamp').first()
-        self.assertEqual(aa.action_type, 1)  # RETURN
-        self.assertEqual(aa.status, 'PENDING')
-        # try to confirm -> should be rejected because no confirmed loan exists
-        confirm_url = reverse('asset-action-confirm', args=[str(aa.confirmation_token)])
-        resp2 = self.client.get(confirm_url)
-        self.assertEqual(resp2.status_code, 400)
-        aa.refresh_from_db()
-        self.assertEqual(aa.status, 'REJECTED')
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(AssetAction.objects.filter(asset=self.asset).exists())
         self.assertFalse(self.asset.is_loaned)
 
     def test_double_confirmed_loan_rejected(self):
@@ -157,14 +157,7 @@ class AssetActionFlowTests(TenantTestCase):
             'description': 'Segundo préstamo',
         })
         self.assertIn(resp.status_code, (302, 200))
-        aa = AssetAction.objects.filter(asset=self.asset).order_by('-timestamp').first()
-        self.assertEqual(aa.status, 'PENDING')
-        # confirm second -> should be rejected because asset already confirmed loaned
-        confirm_url = reverse('asset-action-confirm', args=[str(aa.confirmation_token)])
-        resp2 = self.client.get(confirm_url)
-        self.assertEqual(resp2.status_code, 400)
-        aa.refresh_from_db()
-        self.assertEqual(aa.status, 'REJECTED')
+        self.assertEqual(AssetAction.objects.filter(asset=self.asset).count(), 1)
         # holder remains original
         holder = self.asset.get_current_holder()
         self.assertEqual(holder.pk, self.benef.pk)

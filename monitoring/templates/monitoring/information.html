@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+  .info-hero { background: linear-gradient(120deg, #123d73, #3157a7 60%, #347fbc); color: #fff; border-radius: 1rem; padding: 1.6rem 1.8rem; }
+  .info-hero a { color: #d9edff; }
+  .info-nav a { text-decoration: none; border-radius: 999px; padding: .35rem .8rem; background: #eef4ff; color: #194775; font-size: .88rem; font-weight: 600; }
+  .info-nav a:hover { background: #dbeafe; }
+  .info-card { border: 1px solid #e5eaf0; border-radius: .75rem; padding: 1rem; background: #fff; height: 100%; box-shadow: 0 2px 10px rgba(31,53,87,.04); }
+  .info-card.ok { border-left: 5px solid #22c55e; }
+  .info-card.fail { border-left: 5px solid #dc3545; }
+  .info-card.error { border-left: 5px solid #f59e0b; }
+  .info-card.empty { border-left: 5px solid #adb5bd; }
+  .info-icon { width: 2.2rem; height: 2.2rem; border-radius: .6rem; display: inline-flex; align-items: center; justify-content: center; margin-right: .5rem; }
+  .info-icon.ok { background: #dcfce7; color: #16803d; }
+  .info-icon.fail { background: #fee2e2; color: #b4232f; }
+  .info-icon.error { background: #fff1cf; color: #a66300; }
+  .info-icon.empty { background: #edf0f3; color: #66717e; }
+  .info-section { scroll-margin-top: 1rem; }
+  .info-section .card { border-color: #e5eaf0; border-radius: .85rem; overflow: hidden; }
+  .info-section .card-header { background: #f7faff; border-bottom-color: #e5eaf0; padding: .85rem 1.1rem; }
+  .info-table td { vertical-align: top; padding: .7rem; }
+  .info-table th { color: #536273; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+  .info-example { background: #f4f7fb; border: 1px solid #e0e7ef; border-radius: .6rem; padding: .8rem 1rem; }
+  .info-example code { color: #174f82; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-3" style="max-width:1050px">
+  <div class="info-hero mb-3">
+    <a href="{% url 'monitoring:dashboard' %}" class="small text-decoration-none">← Volver a monitorización</a>
+    <div class="d-flex gap-3 align-items-center mt-3"><i class="fa-solid fa-circle-info fa-2x" aria-hidden="true"></i><div><h1 class="h3 mb-1">Entender los resultados</h1><p class="mb-0 opacity-75">Qué indica cada estado, código y motivo, y qué revisar cuando aparece una falla.</p></div></div>
+  </div>
+  <nav class="info-nav d-flex flex-wrap gap-2 mb-4" aria-label="Secciones de ayuda"><a href="#estados">Estados</a><a href="#http">Códigos HTTP</a><a href="#json">Reglas JSON</a><a href="#red">Ping, TCP y TLS</a></nav>
+
+  <section id="estados" class="info-section mb-4">
+    <h2 class="h5 mb-3">Estados de un check</h2>
+    <div class="row g-3">
+      <div class="col-md-6"><div class="info-card ok"><div class="fw-semibold mb-2"><span class="info-icon ok"><i class="fa-solid fa-check" aria-hidden="true"></i></span>OK</div><div class="text-muted small">El servicio cumplió las reglas configuradas: código, JSON, latencia o conectividad, según el tipo de monitor.</div></div></div>
+      <div class="col-md-6"><div class="info-card fail"><div class="fw-semibold mb-2"><span class="info-icon fail"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>Falla</div><div class="text-muted small">El destino no cumplió una regla o no respondió. Al alcanzar el umbral de fallas consecutivas se abre un incidente.</div></div></div>
+      <div class="col-md-6"><div class="info-card error"><div class="fw-semibold mb-2"><span class="info-icon error"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i></span>Error del monitor</div><div class="text-muted small">No se pudo ejecutar bien la comprobación. No confirma una caída del destino ni abre un incidente de servicio.</div></div></div>
+      <div class="col-md-6"><div class="info-card empty"><div class="fw-semibold mb-2"><span class="info-icon empty"><i class="fa-solid fa-pause" aria-hidden="true"></i></span>Sin check o detenido</div><div class="text-muted small">No hay una medición para ese tramo o el monitor está pausado. Las barras grises indican falta de datos.</div></div></div>
+    </div>
+  </section>
+
+  <section id="http" class="info-section mb-4"><div class="card"><div class="card-header"><h2 class="h5 mb-0"><i class="fa-solid fa-globe text-primary me-2" aria-hidden="true"></i>Códigos HTTP</h2></div><div class="card-body">
+    <p class="small text-muted">El código indica qué respondió el servidor. Cada monitor define cuáles acepta; el valor inicial es <code>200-299</code>. Incluso un código aceptado puede fallar por una regla JSON o de latencia.</p>
+    <div class="table-responsive"><table class="table table-sm info-table mb-0"><thead><tr><th>Resultado</th><th>Significado</th><th>Qué revisar</th></tr></thead><tbody>
+      <tr><td><span class="badge bg-success">2xx</span></td><td>Solicitud aceptada.</td><td>Reglas JSON y latencia, si están configuradas.</td></tr>
+      <tr><td><span class="badge bg-info text-dark">3xx</span></td><td>Redirección.</td><td>El check no la sigue. Usá la URL final o aceptá ese código si es esperado.</td></tr>
+      <tr><td><span class="badge bg-warning text-dark">401 / 403</span></td><td>Requiere autenticación o prohíbe el acceso.</td><td>Permisos del endpoint desde el servidor monitor.</td></tr>
+      <tr><td><span class="badge bg-warning text-dark">404</span></td><td>Ruta no encontrada.</td><td>URL y ruta configuradas.</td></tr>
+      <tr><td><span class="badge bg-warning text-dark">429</span></td><td>Demasiadas solicitudes.</td><td>Intervalo del check y límites del servicio.</td></tr>
+      <tr><td><span class="badge bg-danger">5xx</span></td><td>Error informado por el servidor.</td><td>Aplicación y dependencias del destino.</td></tr>
+    </tbody></table></div>
+  </div></div></section>
+
+  <section id="json" class="info-section mb-4"><div class="card"><div class="card-header"><h2 class="h5 mb-0"><i class="fa-solid fa-code text-primary me-2" aria-hidden="true"></i>JSON y latencia</h2></div><div class="card-body">
+    <div class="info-example mb-3"><div class="small text-muted mb-1">Si la respuesta empieza con una lista:</div><code>[{"name":"Leanne Graham"}, ...]</code><div class="small mt-2">Ruta <code>0.name</code> · Valor esperado <code>"Leanne Graham"</code>. Los índices empiezan en cero; no agregues <code>json.</code> al principio.</div></div>
+    <div class="row g-3">
+      <div class="col-md-6"><div class="info-card"><strong>La respuesta no es JSON válido</strong><p class="small text-muted mb-0 mt-1">Llegó un cuerpo, pero no se pudo interpretar como JSON. Comprobá qué devuelve el endpoint desde el servidor monitor.</p></div></div>
+      <div class="col-md-6"><div class="info-card"><strong>Ruta JSON no encontrada</strong><p class="small text-muted mb-0 mt-1">El JSON sí es válido, pero la ruta configurada no existe. Revisá claves e índices.</p></div></div>
+      <div class="col-md-6"><div class="info-card"><strong>Valor JSON inesperado</strong><p class="small text-muted mb-0 mt-1">La ruta existe, pero el valor o su tipo es distinto. Los textos esperados se escriben entre comillas.</p></div></div>
+      <div class="col-md-6"><div class="info-card"><strong>Respuesta JSON demasiado grande</strong><p class="small text-muted mb-0 mt-1">Supera el límite de lectura de 16 KiB. Usá un endpoint de salud pequeño o quitá la regla JSON.</p></div></div>
+    </div>
+    <div class="alert alert-primary small mt-3 mb-0"><strong>Latencia:</strong> si supera el máximo configurado, cuenta como falla aunque el código sea aceptado. Cuando hay un incidente HTTP, se puede ver una muestra JSON breve y cifrada en su detalle; se ocultan campos habituales de credenciales y contacto.</div>
+  </div></div></section>
+
+  <section id="red" class="info-section mb-4"><div class="card"><div class="card-header"><h2 class="h5 mb-0"><i class="fa-solid fa-network-wired text-primary me-2" aria-hidden="true"></i>Conectividad y certificados</h2></div><div class="card-body"><div class="row g-3">
+    <div class="col-md-6"><div class="info-card"><strong>Ping sin respuesta</strong><p class="small text-muted mb-0 mt-1">No hubo respuesta ICMP. El servidor puede estar caído o un firewall puede bloquear ping.</p></div></div>
+    <div class="col-md-6"><div class="info-card"><strong>Puerto TCP inaccesible</strong><p class="small text-muted mb-0 mt-1">No se pudo abrir una conexión al host y puerto configurados. Revisá servicio, puerto y firewall.</p></div></div>
+    <div class="col-md-6"><div class="info-card"><strong>Certificado TLS inválido o por vencer</strong><p class="small text-muted mb-0 mt-1">La cadena, el nombre o la vigencia no pasó la verificación, o faltan menos días que el umbral configurado.</p></div></div>
+    <div class="col-md-6"><div class="info-card"><strong>Worker sin actividad</strong><p class="small text-muted mb-0 mt-1">El proceso de checks no actualizó su latido en 3 minutos. Los resultados pueden estar desactualizados.</p></div></div>
+  </div></div></div></section>
+</div>
+{% endblock %}

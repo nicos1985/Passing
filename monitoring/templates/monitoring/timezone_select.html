@@ -1,0 +1,31 @@
+<div class="container-fluid py-2 mt-4 border-top d-flex justify-content-end">
+  <form id="monitor-timezone-form" method="post" action="{% url 'monitoring:timezone' %}" class="d-flex align-items-center gap-2 small" data-current-zone="{{ request.monitoring_timezone }}" data-has-zone="{% if request.COOKIES.monitoring_tz %}1{% else %}0{% endif %}">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <label for="monitor-timezone" class="text-muted">Horarios en</label>
+    <select id="monitor-timezone" name="timezone" class="form-select form-select-sm" style="width:auto" aria-label="Zona horaria de monitorización">
+      <option value="Europe/Rome">Italia</option>
+      <option value="America/Argentina/Buenos_Aires">Argentina</option>
+      <option value="UTC">UTC</option>
+    </select>
+  </form>
+</div>
+<script>
+(() => {
+  const form = document.getElementById('monitor-timezone-form');
+  const select = document.getElementById('monitor-timezone');
+  const current = form.dataset.currentZone;
+  const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (browserZone && ![...select.options].some(option => option.value === browserZone)) {
+    const option = new Option(`Este equipo (${browserZone})`, browserZone);
+    select.add(option, 0);
+  }
+  if (![...select.options].some(option => option.value === current)) select.add(new Option(current, current), 0);
+  select.value = current;
+  window.monitoringTimeZone = current;
+  select.addEventListener('change', () => form.requestSubmit());
+  if (form.dataset.hasZone === '0' && browserZone) {
+    select.value = browserZone;
+    form.requestSubmit();
+  }
+})();
+</script>

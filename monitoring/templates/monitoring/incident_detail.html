@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 monitor-screen incident-screen">
+  <header class="monitor-hero mb-3">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div>
+        <a class="hero-back" href="{% url 'monitoring:incidents' %}">← Historial de incidentes</a>
+        <div class="monitor-eyebrow mt-3 mb-1">Incidente #{{ incident.pk }}</div>
+        <h1 class="mb-2">{{ incident.monitor.name }}</h1>
+        <div class="small incident-hero-target">{{ incident.monitor.get_kind_display }} · {{ incident.monitor.host }}</div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'monitoring:detail' incident.monitor.pk %}"><i class="fa-solid fa-chart-line me-1" aria-hidden="true"></i>Ver monitor</a>
+        {% if bitrix_deal_url %}<a class="btn btn-sm btn-light fw-semibold" href="{{ bitrix_deal_url }}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square me-1" aria-hidden="true"></i>Abrir en Bitrix24</a>{% endif %}
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-4">
+      <span class="incident-hero-pill"><span class="incident-state-dot {% if incident.recovered_at %}ok{% else %}bad{% endif %}"></span>{% if incident.recovered_at %}Servicio recuperado{% else %}Falla activa{% endif %}</span>
+      <span class="incident-hero-pill"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i>{{ incident.workflow_status }}</span>
+    </div>
+  </header>
+
+  <nav class="detail-mini-nav d-flex flex-wrap gap-2 mb-4" aria-label="Secciones del incidente"><a href="#diagnostico">Diagnóstico</a><a href="#gestion">Gestión</a><a href="#notificaciones">Notificaciones</a><a href="#resultados">Resultados</a></nav>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="monitor-kpi incident-summary-card"><div class="monitor-kpi-label">Inicio</div><div class="incident-summary-value">{{ incident.started_at|date:"d/m/Y H:i:s" }}</div><div class="monitor-kpi-hint">Detección del incidente</div></div></div>
+    <div class="col-md-4"><div class="monitor-kpi incident-summary-card"><div class="monitor-kpi-label">Servicio</div><div class="incident-summary-value">{% if incident.recovered_at %}Recuperado{% else %}En falla{% endif %}</div><div class="monitor-kpi-hint">{% if incident.recovered_at %}{{ incident.recovered_at|date:"d/m/Y H:i:s" }}{% else %}Esperando checks correctos{% endif %}</div></div></div>
+    <div class="col-md-4"><div class="monitor-kpi incident-summary-card"><div class="monitor-kpi-label">Gestión</div><div class="incident-summary-value">{{ incident.workflow_status }}</div><div class="monitor-kpi-hint">{% if incident.bitrix_resolved_at %}Cierre detectado {{ incident.bitrix_resolved_at|date:"d/m/Y H:i" }}{% elif incident.acknowledged_at %}Reconocido {{ incident.acknowledged_at|date:"d/m/Y H:i" }}{% else %}Pendiente de reconocimiento{% endif %}</div></div></div>
+  </div>
+
+  <div class="row g-3 mb-4" id="diagnostico">
+    <div class="col-xl-7"><section class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Qué ocurrió</h2><p class="monitor-section-subtitle">Primer resultado guardado desde el inicio del incidente.</p></div><div class="card-body">
+      {% if opening_result %}
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-3"><span class="badge {% if opening_result.status == 'ok' %}bg-success{% else %}bg-danger{% endif %}">{{ opening_result.get_status_display }}</span>{% if opening_result.http_status_code %}<span class="incident-code">HTTP {{ opening_result.http_status_code }}</span>{% endif %}<span class="detail-muted">{{ opening_result.checked_at|date:"d/m/Y H:i:s" }}</span></div>
+        <p class="incident-reason mb-2">{{ opening_result.detail|default:"Sin detalle adicional del check." }}</p>
+        <span class="detail-muted">Latencia: {% if opening_result.latency_ms is not None %}{{ opening_result.latency_ms }} ms{% else %}sin medición{% endif %}</span>
+      {% else %}<p class="detail-muted mb-0">El resultado inicial ya no está disponible.</p>{% endif %}
+    </div></section></div>
+    <div class="col-xl-5"><section class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Seguimiento</h2><p class="monitor-section-subtitle">Hitos de detección, atención y cierre.</p></div><div class="card-body"><ol class="incident-timeline mb-0">
+      <li class="done"><strong>Detectado</strong><span>{{ incident.started_at|date:"d/m/Y H:i" }}</span></li>
+      <li class="{% if incident.acknowledged_at %}done{% endif %}"><strong>{% if incident.acknowledged_at %}Reconocido{% else %}Sin reconocer{% endif %}</strong><span>{% if incident.acknowledged_at %}{{ incident.acknowledged_at|date:"d/m/Y H:i" }}{% if incident.acknowledged_by %} · {{ incident.acknowledged_by }}{% endif %}{% else %}Pendiente de un administrador{% endif %}</span></li>
+      <li class="{% if incident.recovered_at %}done{% endif %}"><strong>{% if incident.recovered_at %}Servicio recuperado{% else %}Servicio en falla{% endif %}</strong><span>{% if incident.recovered_at %}{{ incident.recovered_at|date:"d/m/Y H:i" }}{% else %}El monitor sigue comprobando el destino{% endif %}</span></li>
+      <li class="{% if incident.bitrix_resolved_at %}done{% endif %}"><strong>{% if incident.bitrix_resolved_at %}Gestión resuelta{% else %}Gestión pendiente{% endif %}</strong><span>{% if incident.bitrix_resolved_at %}{{ incident.bitrix_resolved_at|date:"d/m/Y H:i" }}{% else %}Según el estado de Bitrix24{% endif %}</span></li>
+    </ol></div></section></div>
+  </div>
+
+  {% if incident.monitor.kind == 'http' %}<section class="card monitor-panel mb-4"><div class="card-header"><h2 class="monitor-section-title"><i class="fa-solid fa-code text-primary me-2" aria-hidden="true"></i>Muestra JSON de la falla</h2><p class="monitor-section-subtitle">Primera respuesta disponible durante el incidente.</p></div><div class="card-body">
+    {% if json_evidence %}<p class="detail-muted mb-2">Se ocultaron campos habituales de credenciales y contacto. La muestra se guarda cifrada y se muestra solo a administradores.{% if incident.json_evidence_truncated %} Se recortó para limitar su tamaño.{% endif %}</p><pre class="incident-json mb-0">{{ json_evidence }}</pre>
+    {% else %}<p class="detail-muted mb-0">No hay una muestra JSON guardada. Es posible que la respuesta no fuera JSON válido, superara 16 KiB o que el incidente sea anterior a esta función.</p>{% endif %}
+  </div></section>{% endif %}
+
+  <section class="card monitor-panel mb-4" id="gestion"><div class="card-header"><h2 class="monitor-section-title">Gestión del incidente</h2><p class="monitor-section-subtitle">El cierre de la negociación se consulta en Bitrix24; la recuperación del servicio es independiente.</p></div><div class="card-body"><div class="row g-3 align-items-start">
+    <div class="col-lg-7"><dl class="row mb-0 detail-config"><dt class="col-sm-5">Estado</dt><dd class="col-sm-7"><span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span></dd><dt class="col-sm-5">Negociación Bitrix24</dt><dd class="col-sm-7">{% if bitrix_deal_url %}<a href="{{ bitrix_deal_url }}" target="_blank" rel="noopener noreferrer">#{{ incident.bitrix_deal_id }} <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>{% else %}{{ incident.bitrix_deal_id|default:"Pendiente de creación" }}{% endif %}</dd><dt class="col-sm-5">Última consulta</dt><dd class="col-sm-7">{{ incident.bitrix_synced_at|date:"d/m/Y H:i"|default:"Pendiente" }}</dd></dl>{% if incident.bitrix_sync_error %}<div class="alert alert-warning small mb-0 mt-3">{{ incident.bitrix_sync_error }}</div>{% endif %}</div>
+    <div class="col-lg-5">{% if not incident.acknowledged_at and not incident.bitrix_resolved_at %}<form method="post" action="{% url 'monitoring:acknowledge' incident.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>Reconocer incidente</button></form><p class="detail-muted mt-2 mb-0">Registra quién tomó conocimiento de la falla.</p>{% else %}<div class="incident-managed"><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{% if incident.bitrix_resolved_at %}La gestión figura resuelta en Bitrix24.{% else %}Incidente reconocido por {{ incident.acknowledged_by|default:"un administrador" }}.{% endif %}</div>{% endif %}</div>
+  </div></div></section>
+
+  <section class="card monitor-panel mb-4" id="notificaciones"><div class="card-header"><h2 class="monitor-section-title">Notificaciones</h2><p class="monitor-section-subtitle">Estado de los envíos y reintentos de este incidente.</p></div><div class="card-body">
+    <div class="row g-3">{% for delivery in deliveries %}<div class="col-md-6 col-xl-4"><div class="incident-delivery h-100"><div class="d-flex justify-content-between align-items-start gap-2"><div><div class="incident-delivery-icon"><i class="fa-solid {% if delivery.channel == 'email' %}fa-envelope{% else %}fa-arrow-up-right-from-square{% endif %}" aria-hidden="true"></i></div><strong>{{ delivery.get_channel_display }}</strong><div class="detail-muted">{{ delivery.get_event_display }}</div></div><span class="badge {% if delivery.status == 'sent' %}bg-success{% elif delivery.status == 'failed' %}bg-danger{% elif delivery.status == 'sending' %}bg-primary{% else %}bg-warning text-dark{% endif %}">{% if delivery.status == 'sent' %}Enviado{% elif delivery.status == 'failed' %}Agotado{% elif delivery.status == 'sending' %}En curso{% else %}Pendiente{% endif %}</span></div>
+      <div class="incident-delivery-meta mt-3">{% if delivery.status == 'sent' %}Enviado {{ delivery.sent_at|date:"d/m/Y H:i:s" }}{% elif delivery.status == 'pending' %}Próximo intento {{ delivery.next_attempt_at|date:"d/m/Y H:i:s" }}{% else %}{{ delivery.attempts }} intentos{% endif %}</div>
+      {% if delivery.error_display %}<div class="small text-danger mt-2">{{ delivery.error_display }}</div>{% endif %}
+      {% if delivery.status == 'pending' or delivery.status == 'failed' %}<form method="post" action="{% url 'monitoring:retry_delivery' delivery.pk %}" class="mt-3">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-primary">Reintentar ahora</button></form>{% endif %}
+    </div></div>{% empty %}<div class="col-12"><p class="detail-muted mb-0">No se programaron notificaciones para este incidente.</p></div>{% endfor %}</div>
+    <details class="incident-tools mt-4"><summary>Herramientas de diagnóstico</summary><div class="pt-3"><div class="d-flex gap-2 flex-wrap mb-3"><form method="post" action="{% url 'monitoring:test_notification' incident.pk 'email' %}">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-secondary">Probar conexión SMTP</button></form><form method="post" action="{% url 'monitoring:test_notification' incident.pk 'bitrix' %}">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-secondary">Probar conexión Bitrix24</button></form></div><form method="post" action="{% url 'monitoring:test_email' incident.pk %}" class="d-flex align-items-end gap-2 flex-wrap">{% csrf_token %}<div><label class="form-label small mb-1" for="test-email-address">Correo de prueba</label><input id="test-email-address" name="email" type="email" class="form-control form-control-sm" value="{{ test_email_default }}" required></div><button type="submit" class="btn btn-sm btn-outline-primary">Enviar correo de prueba</button></form><p class="detail-muted mt-2 mb-0">Las pruebas de conexión no crean negociaciones ni envían correos. El correo de prueba solo puede enviarse a tu usuario o a un destinatario configurado.</p></div></details>
+  </div></section>
+
+  <section class="card monitor-panel mb-4" id="resultados"><div class="card-header"><h2 class="monitor-section-title">Resultados desde el inicio</h2><p class="monitor-section-subtitle">Los 100 checks más recientes de este incidente.</p></div><div class="table-responsive"><table class="table table-sm mb-0 incident-results"><thead><tr><th>Fecha</th><th>Resultado</th><th>HTTP</th><th>Latencia</th><th>Detalle</th></tr></thead><tbody>{% for result in results %}<tr><td class="text-nowrap">{{ result.checked_at|date:"d/m/Y H:i:s" }}</td><td><span class="{% if result.status == 'ok' %}check-ok{% else %}check-bad{% endif %}">{{ result.get_status_display }}</span></td><td>{{ result.http_status_code|default:"—" }}</td><td class="text-nowrap">{% if result.latency_ms is not None %}{{ result.latency_ms }} ms{% else %}—{% endif %}</td><td>{{ result.detail|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5" class="detail-muted text-center py-4">Sin resultados recientes.</td></tr>{% endfor %}</tbody></table></div></section>
+</div>
+{% include 'monitoring/timezone_select.html' %}
+{% endblock %}

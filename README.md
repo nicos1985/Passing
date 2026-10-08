@@ -26,7 +26,12 @@ Instalación y ejecución (desarrollo)
 
 ```bash
 python -m venv .venv
-source .venv/Scripts/activate
+```
+
+En PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
 ```
 
 2. Instalar dependencias:
@@ -40,6 +45,12 @@ pip install -r requirements.txt
 ```bash
 python manage.py migrate
 # Cree y configure tenants según su flujo con django-tenants
+```
+
+4. Iniciar el servidor de desarrollo:
+
+```powershell
+python manage.py runserver
 ```
 
 Ejecutar tests

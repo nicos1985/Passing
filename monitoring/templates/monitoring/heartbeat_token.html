@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width:800px">
+  <h1 class="h3">Señal de {{ monitor.name }}</h1>
+  <div class="alert alert-warning">Copiá el token ahora: solo se muestra una vez. Si lo perdés, generá uno nuevo desde el detalle del monitor.</div>
+  <p>Al finalizar correctamente la tarea, enviá un POST a esta dirección. No incluyas el token en la URL ni envíes la salida del proceso.</p>
+  <dl class="row"><dt class="col-sm-3">Dirección</dt><dd class="col-sm-9"><code>{{ signal_url }}</code></dd><dt class="col-sm-3">Token</dt><dd class="col-sm-9"><code>{{ token }}</code></dd></dl>
+  <h2 class="h6 mt-4">Windows (CMD o PowerShell)</h2>
+  <p class="small text-muted">Usá comillas dobles y copiá la URL tal como aparece, sin corchetes ni paréntesis.</p>
+  <div class="text-end mb-1"><button type="button" class="btn btn-sm btn-outline-primary" data-copy-command="windows-command">Copiar comando</button></div>
+  <pre class="bg-light border rounded p-3 text-wrap" style="overflow-wrap:anywhere"><code id="windows-command">curl.exe --fail --include --request POST --header "X-Monitoring-Token: {{ token }}" "{{ signal_url }}"</code></pre>
+  <h2 class="h6 mt-4">Linux</h2>
+  <div class="text-end mb-1"><button type="button" class="btn btn-sm btn-outline-primary" data-copy-command="linux-command">Copiar comando</button></div>
+  <pre class="bg-light border rounded p-3 text-wrap" style="overflow-wrap:anywhere"><code id="linux-command">curl --fail --include --request POST --header 'X-Monitoring-Token: {{ token }}' '{{ signal_url }}'</code></pre>
+  <p class="small text-muted">Una señal aceptada responde HTTP 204. Si el token o la URL no coinciden, la señal se rechaza.</p>
+  <p class="text-muted">Guardá el token como secreto en la tarea. El servidor almacena solo su hash.</p>
+  <a class="btn btn-primary" href="{% url 'monitoring:detail' monitor.pk %}">Ir al monitor</a>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+document.querySelectorAll('[data-copy-command]').forEach(button => {
+  button.addEventListener('click', async () => {
+    const command = document.getElementById(button.dataset.copyCommand).textContent.trim();
+    try {
+      await navigator.clipboard.writeText(command);
+      button.textContent = 'Copiado';
+      setTimeout(() => { button.textContent = 'Copiar comando'; }, 2000);
+    } catch (_) {
+      button.textContent = 'Seleccioná el texto para copiarlo';
+    }
+  });
+});
+</script>
+{% endblock %}

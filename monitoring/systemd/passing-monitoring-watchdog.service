@@ -1,0 +1,16 @@
+[Unit]
+Description=Passing monitoring worker watchdog
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=passing
+Group=passing
+WorkingDirectory=/opt/passing
+EnvironmentFile=/etc/passing/monitoring.env
+ExecStart=/opt/passing/.venv/bin/python manage.py check_monitoring_worker
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true

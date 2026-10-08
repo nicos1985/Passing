@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 monitor-screen incident-list-screen">
+  <header class="monitor-hero mb-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div><a class="hero-back" href="{% url 'monitoring:dashboard' %}">← Monitorización</a><div class="monitor-eyebrow mt-3 mb-1">Seguimiento</div><h1 class="mb-2">Incidentes</h1><p class="mb-0">Historial de fallas, recuperaciones y gestiones en Bitrix24.</p></div>
+      <div class="monitor-live-pill"><i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i>Últimos 365 días</div>
+    </div>
+  </header>
+  <div class="card monitor-panel">
+    <div class="card-header"><h2 class="monitor-section-title">Todos los incidentes</h2><p class="monitor-section-subtitle">La recuperación del servicio y la resolución de la gestión son estados independientes.</p></div>
+    <div class="p-3 border-bottom">
+      <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+        <label class="visually-hidden" for="incident-search">Buscar monitor</label>
+        <div class="input-group input-group-sm monitor-search"><span class="input-group-text"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span><input id="incident-search" class="form-control" type="search" name="q" value="{{ query }}" placeholder="Buscar monitor"></div>
+        <input type="hidden" name="estado" value="{{ state }}">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Buscar</button>
+        {% if query %}<a class="btn btn-sm btn-link" href="?estado={{ state }}">Limpiar</a>{% endif %}
+      </form>
+      <nav class="d-flex flex-wrap gap-1 mt-3" aria-label="Filtrar incidentes">
+        <a class="filter-chip {% if state == 'todos' %}active{% endif %}" href="?estado=todos&q={{ query|urlencode }}">Todos</a>
+        <a class="filter-chip {% if state == 'activos' %}active{% endif %}" href="?estado=activos&q={{ query|urlencode }}">Falla activa</a>
+        <a class="filter-chip {% if state == 'recuperados' %}active{% endif %}" href="?estado=recuperados&q={{ query|urlencode }}">Servicio recuperado</a>
+        <a class="filter-chip {% if state == 'pendientes' %}active{% endif %}" href="?estado=pendientes&q={{ query|urlencode }}">Gestión pendiente</a>
+        <a class="filter-chip {% if state == 'resueltos' %}active{% endif %}" href="?estado=resueltos&q={{ query|urlencode }}">Gestión resuelta</a>
+      </nav>
+    </div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0 incident-list-table">
+      <thead><tr><th>Incidente</th><th>Monitor</th><th>Inicio</th><th>Servicio</th><th>Gestión</th><th>Bitrix24</th></tr></thead>
+      <tbody>{% for incident in page %}
+        <tr>
+          <td><a class="fw-semibold text-decoration-none" href="{% url 'monitoring:incident' incident.pk %}">#{{ incident.pk }} <i class="fa-solid fa-arrow-right small ms-1" aria-hidden="true"></i></a></td>
+          <td><a class="service-name" href="{% url 'monitoring:detail' incident.monitor.pk %}">{{ incident.monitor.name }}</a></td>
+          <td class="text-nowrap">{{ incident.started_at|date:"d/m/Y H:i" }}</td>
+          <td><span class="badge {% if incident.recovered_at %}bg-success{% else %}bg-danger{% endif %}">{% if incident.recovered_at %}Recuperado{% else %}Falla activa{% endif %}</span>{% if incident.recovered_at %}<small class="d-block detail-muted mt-1">{{ incident.recovered_at|date:"d/m/Y H:i" }}</small>{% endif %}</td>
+          <td><span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span></td>
+          <td>{% if incident.bitrix_deal_id %}#{{ incident.bitrix_deal_id }}{% else %}<span class="detail-muted">Pendiente</span>{% endif %}</td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="text-center detail-muted py-4">No hay incidentes para este filtro.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% if page.paginator.num_pages > 1 %}<div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2"><span class="detail-muted">Página {{ page.number }} de {{ page.paginator.num_pages }}</span><div class="d-flex gap-2">{% if page.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?estado={{ state }}&q={{ query|urlencode }}&pagina={{ page.previous_page_number }}">Anterior</a>{% endif %}{% if page.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?estado={{ state }}&q={{ query|urlencode }}&pagina={{ page.next_page_number }}">Siguiente</a>{% endif %}</div></div>{% endif %}
+  </div>
+</div>
+{% include 'monitoring/timezone_select.html' %}
+{% endblock %}

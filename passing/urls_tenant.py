@@ -28,6 +28,7 @@ urlpatterns = [
     path("pass/", include("passbase.urls")),
     path("notifications/", include("notifications.urls")),
     path("docmanager/", include("docmanager.urls")),
+    path("monitoring/", include("monitoring.urls")),
     path("perm/", include("permission.urls")),
     path("test_send_email/", test_send_email, name="test_send_email"),
     path("update_email_config/", UpdateEmailConfigView.as_view(), name="update_email_config"),

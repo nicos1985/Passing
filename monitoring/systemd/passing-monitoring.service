@@ -1,0 +1,21 @@
+[Unit]
+Description=Passing monitoring worker
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=passing
+Group=passing
+WorkingDirectory=/opt/passing
+EnvironmentFile=/etc/passing/monitoring.env
+ExecStart=/opt/passing/.venv/bin/python manage.py run_monitoring
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -251,6 +251,11 @@
       <li>
           <li><a href="{% url 'config' %}" class="nav-link text-white"><i class="fa fa-gear me-2"></i>{% trans "Configuración" %}</a></li>
           {% endif %}
+          {% if request.user.is_superuser or perms.monitoring.manage_monitoring %}
+          <li><a href="{% url 'monitoring:dashboard' %}" class="nav-link text-white"><i class="fa fa-heart-pulse me-2"></i>{% trans "Monitorización" %}</a></li>
+          {% else %}
+          <li><a href="{% url 'monitoring:status' %}" class="nav-link text-white"><i class="fa fa-signal me-2"></i>Estado de servicios</a></li>
+          {% endif %}
           <li class="mt-3"> 
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}
               <button class="btn btn-outline-light w-100"><i class="fa fa-right-from-bracket me-2"></i>{% trans "Salir" %}</button>
