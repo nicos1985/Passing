@@ -21,7 +21,8 @@
       </form>
       <nav class="d-flex flex-wrap gap-1 mt-3" aria-label="Filtrar incidentes">
         <a class="filter-chip {% if state == 'todos' %}active{% endif %}" href="?estado=todos&q={{ query|urlencode }}">Todos</a>
-        <a class="filter-chip {% if state == 'activos' %}active{% endif %}" href="?estado=activos&q={{ query|urlencode }}">Falla activa</a>
+        <a class="filter-chip {% if state == 'activos' %}active{% endif %}" href="?estado=activos&q={{ query|urlencode }}">Incidente activo</a>
+        <a class="filter-chip {% if state == 'lentos' %}active{% endif %}" href="?estado=lentos&q={{ query|urlencode }}">Respuesta lenta</a>
         <a class="filter-chip {% if state == 'recuperados' %}active{% endif %}" href="?estado=recuperados&q={{ query|urlencode }}">Servicio recuperado</a>
         <a class="filter-chip {% if state == 'pendientes' %}active{% endif %}" href="?estado=pendientes&q={{ query|urlencode }}">Gestión pendiente</a>
         <a class="filter-chip {% if state == 'resueltos' %}active{% endif %}" href="?estado=resueltos&q={{ query|urlencode }}">Gestión resuelta</a>
@@ -32,9 +33,9 @@
       <tbody>{% for incident in page %}
         <tr>
           <td><a class="fw-semibold text-decoration-none" href="{% url 'monitoring:incident' incident.pk %}">#{{ incident.pk }} <i class="fa-solid fa-arrow-right small ms-1" aria-hidden="true"></i></a></td>
-          <td><a class="service-name" href="{% url 'monitoring:detail' incident.monitor.pk %}">{{ incident.monitor.name }}</a></td>
+          <td><a class="service-name" href="{% url 'monitoring:detail' incident.monitor.pk %}">{{ incident.monitor.name }}</a>{% if incident.kind == 'slow' %}<small class="d-block text-warning-emphasis">Respuesta lenta</small>{% endif %}</td>
           <td class="text-nowrap">{{ incident.started_at|date:"d/m/Y H:i" }}</td>
-          <td><span class="badge {% if incident.recovered_at %}bg-success{% else %}bg-danger{% endif %}">{% if incident.recovered_at %}Recuperado{% else %}Falla activa{% endif %}</span>{% if incident.recovered_at %}<small class="d-block detail-muted mt-1">{{ incident.recovered_at|date:"d/m/Y H:i" }}</small>{% endif %}</td>
+          <td><span class="badge {% if incident.recovered_at %}bg-success{% elif incident.kind == 'slow' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{% if incident.recovered_at %}{% if incident.end_reason == 'recovered' %}Recuperado{% else %}Finalizado{% endif %}{% elif incident.kind == 'slow' %}Respuesta lenta{% else %}Caído{% endif %}</span>{% if incident.recovered_at %}<small class="d-block detail-muted mt-1">{{ incident.end_label }} · {{ incident.recovered_at|date:"d/m/Y H:i" }}</small>{% endif %}</td>
           <td><span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span></td>
           <td>{% if incident.bitrix_deal_id %}#{{ incident.bitrix_deal_id }}{% else %}<span class="detail-muted">Pendiente</span>{% endif %}</td>
         </tr>

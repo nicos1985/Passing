@@ -27,6 +27,9 @@ def execute_monitor(monitor_id):
     except Exception:
         # A failed local probe must remain visible, without declaring the target down.
         status, latency, detail, http_status_code, evidence = CheckResult.Status.ERROR, None, "Error al ejecutar el check", None, None
+    if status == CheckResult.Status.OK and monitor.max_latency_ms is not None and latency is not None and latency > monitor.max_latency_ms:
+        status = CheckResult.Status.SLOW
+        detail = f"Latencia {latency} ms supera {monitor.max_latency_ms} ms" + (f" ({detail})" if detail else "")
     return _save_result(monitor_id, status, latency, detail, http_status_code, evidence)
 
 
@@ -54,6 +57,7 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
             return None
         if monitor.kind == Monitor.Kind.HEARTBEAT and not signal and monitor.next_check_at > now:
             return None
+        previous_status = monitor.last_status
         result = CheckResult.objects.create(monitor=monitor, checked_at=now, status=status, latency_ms=latency, detail=detail, http_status_code=http_status_code)
         monitor.last_checked_at = now
         monitor.check_started_at = None
@@ -71,7 +75,7 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
         if status == CheckResult.Status.OK:
             monitor.consecutive_successes += 1
             monitor.consecutive_failures = 0
-            if monitor.state == Monitor.State.DOWN and monitor.consecutive_successes >= monitor.recovery_threshold:
+            if monitor.state in (Monitor.State.DOWN, Monitor.State.SLOW) and monitor.consecutive_successes >= monitor.recovery_threshold:
                 monitor.state = Monitor.State.UP
                 incident = Incident.objects.filter(monitor=monitor, recovered_at__isnull=True).first()
                 if incident:
@@ -83,19 +87,31 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
                         queue_monitoring_event(incident.pk, "recovered")
             elif monitor.state == Monitor.State.UNKNOWN:
                 monitor.state = Monitor.State.UP
-        elif status == CheckResult.Status.FAILURE:
-            monitor.consecutive_failures += 1
+        elif status in (CheckResult.Status.FAILURE, CheckResult.Status.SLOW):
+            target_state = Monitor.State.SLOW if status == CheckResult.Status.SLOW else Monitor.State.DOWN
+            monitor.consecutive_failures = monitor.consecutive_failures + 1 if previous_status == status else 1
             monitor.consecutive_successes = 0
             incident = None
-            if monitor.state != Monitor.State.DOWN and monitor.consecutive_failures >= monitor.failure_threshold:
-                monitor.state = Monitor.State.DOWN
-                incident, created = Incident.objects.get_or_create(monitor=monitor, recovered_at__isnull=True, defaults={"started_at": now})
-                if created and not in_maintenance:
+            if monitor.state != target_state and monitor.consecutive_failures >= monitor.failure_threshold:
+                previous_incident = Incident.objects.filter(monitor=monitor, recovered_at__isnull=True).first()
+                if previous_incident:
+                    previous_incident.recovered_at = now
+                    previous_incident.end_reason = (
+                        Incident.EndReason.ESCALATED if target_state == Monitor.State.DOWN
+                        else Incident.EndReason.SLOWED
+                    )
+                    previous_incident.save(update_fields=["recovered_at", "end_reason"])
+                monitor.state = target_state
+                incident = Incident.objects.create(
+                    monitor=monitor, started_at=now,
+                    kind=Incident.Kind.SLOW if status == CheckResult.Status.SLOW else Incident.Kind.FAILURE,
+                )
+                if not in_maintenance:
                     if monitor.recipients_list:
                         Delivery.objects.get_or_create(incident=incident, channel=Delivery.Channel.EMAIL, event="opened")
                     Delivery.objects.get_or_create(incident=incident, channel=Delivery.Channel.BITRIX, event="opened")
                     queue_monitoring_event(incident.pk, "opened")
-            elif evidence and monitor.state == Monitor.State.DOWN:
+            elif monitor.state == target_state:
                 incident = Incident.objects.filter(monitor=monitor, recovered_at__isnull=True).first()
             if evidence and incident and not incident.json_evidence_encrypted:
                 incident.json_evidence_encrypted = encrypt_evidence(evidence[0])

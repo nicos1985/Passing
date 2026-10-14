@@ -39,6 +39,7 @@
 .monitor-screen .availability-slot { height: 2.7rem; }
 .monitor-screen .health-slot.ok, .monitor-screen .detail-slot.ok { background: var(--monitor-green); }
 .monitor-screen .health-slot.bad, .monitor-screen .detail-slot.bad { background: var(--monitor-red); }
+.monitor-screen .health-slot.slow, .monitor-screen .detail-slot.slow { background: #f59e0b; }
 .monitor-screen .health-summary, .monitor-screen .detail-muted, .monitor-screen .availability-legend { color: var(--monitor-muted); font-size: .8rem; }
 .monitor-screen .health-summary { display: block; margin-top: .4rem; }
 .monitor-screen .service-table { margin-bottom: 0; }
@@ -75,6 +76,7 @@
 .monitor-screen .recent-check { font-size: .8rem; color: var(--monitor-muted); padding: .58rem 1rem; }
 .monitor-screen .recent-check .check-ok, .monitor-screen .detail-recent .check-ok { color: #15934e; font-weight: 700; }
 .monitor-screen .recent-check .check-bad, .monitor-screen .detail-recent .check-bad { color: #d94654; font-weight: 700; }
+.monitor-screen .check-slow { color: #b86a00; font-weight: 700; }
 .monitor-screen .list-group-item { border-color: #edf1f5; }
 .monitor-screen .detail-recent td { font-size: .82rem; padding: .6rem .75rem; }
 .monitor-screen .detail-recent thead th { color: #718398; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; }
@@ -94,6 +96,7 @@
 .monitor-screen .incident-state-dot { width: .55rem; height: .55rem; border-radius: 50%; }
 .monitor-screen .incident-state-dot.ok { background: #31e577; }
 .monitor-screen .incident-state-dot.bad { background: #ff7580; }
+.monitor-screen .incident-state-dot.slow { background: #f59e0b; }
 .monitor-screen .incident-summary-card { min-height: 112px; }
 .monitor-screen .incident-summary-value { font-size: 1.15rem; font-weight: 700; margin-top: .45rem; line-height: 1.25; }
 .monitor-screen .incident-code { background: #e8f2ff; color: #1c639d; border-radius: .4rem; padding: .2rem .45rem; font-size: .78rem; font-weight: 700; }

@@ -149,6 +149,9 @@ class ValidationTests(SimpleTestCase):
         tcp_form = MonitorForm(data={**common, "kind": "tcp", "host": "example.com:5432"})
         tls_form = MonitorForm(data={**common, "kind": "tls", "host": "example.com", "tls_min_days": 14})
         self.assertTrue(tcp_form.is_valid(), tcp_form.errors)
+        ping_form = MonitorForm(data={**common, "kind": "ping", "host": "example.com", "max_latency_ms": 200})
+        self.assertTrue(ping_form.is_valid(), ping_form.errors)
+        self.assertEqual(ping_form.cleaned_data["max_latency_ms"], 200)
         self.assertTrue(tls_form.is_valid(), tls_form.errors)
         self.assertEqual(tls_form.cleaned_data["host"], "example.com:443")
 
@@ -256,10 +259,10 @@ class ValidationTests(SimpleTestCase):
 
     @patch("monitoring.checks.time.monotonic", side_effect=[0, 0.3])
     @patch("monitoring.checks.requests.Session")
-    def test_http_latency_limit_marks_successful_code_as_failure(self, session_class, monotonic):
+    def test_http_latency_limit_marks_successful_code_as_slow(self, session_class, monotonic):
         session_class.return_value.get.return_value.status_code = 200
         result = http_check("https://example.com/health", 3, max_latency_ms=250)
-        self.assertEqual((result[0], result[1], result[3]), (CheckResult.Status.FAILURE, 300, 200))
+        self.assertEqual((result[0], result[1], result[3]), (CheckResult.Status.SLOW, 300, 200))
 
     @patch("monitoring.checks.socket.create_connection")
     def test_tcp_check_classifies_open_and_refused_port(self, create_connection):
@@ -305,6 +308,51 @@ class ValidationTests(SimpleTestCase):
 
 
 class IncidentStateTests(TenantTestCase):
+    @patch("monitoring.services.run_check")
+    def test_slow_response_opens_distinct_incident_and_recovers(self, check):
+        monitor = Monitor.objects.create(
+            name="Ping lento", kind=Monitor.Kind.PING, host="example.com",
+            max_latency_ms=200, failure_threshold=2, recovery_threshold=2,
+        )
+        check.return_value = (CheckResult.Status.OK, 280, "")
+        first = execute_monitor(monitor.pk)
+        self.assertEqual((first.status, first.latency_ms), (CheckResult.Status.SLOW, 280))
+        self.assertEqual(Incident.objects.count(), 0)
+        execute_monitor(monitor.pk)
+        monitor.refresh_from_db()
+        self.assertEqual(monitor.state, Monitor.State.SLOW)
+        incident = Incident.objects.get(monitor=monitor)
+        self.assertEqual(incident.kind, Incident.Kind.SLOW)
+        self.assertEqual(Delivery.objects.filter(incident=incident, event='opened', channel='bitrix').count(), 1)
+        self.assertEqual(availability_history(monitor, 1)['totals']['downtime_seconds'], 0)
+        check.return_value = (CheckResult.Status.OK, 80, "")
+        execute_monitor(monitor.pk)
+        execute_monitor(monitor.pk)
+        incident.refresh_from_db()
+        self.assertIsNotNone(incident.recovered_at)
+        monitor.refresh_from_db()
+        self.assertEqual(monitor.state, Monitor.State.UP)
+
+    @patch("monitoring.services.run_check")
+    def test_slow_response_escalates_to_outage_without_mixing_incidents(self, check):
+        monitor = Monitor.objects.create(
+            name="API", kind=Monitor.Kind.HTTP, host="https://example.com",
+            max_latency_ms=200, failure_threshold=1,
+        )
+        check.return_value = (CheckResult.Status.SLOW, 350, "Latencia alta", 200)
+        execute_monitor(monitor.pk)
+        slow = Incident.objects.get(monitor=monitor)
+        check.return_value = (CheckResult.Status.FAILURE, 350, "HTTP 500", 500)
+        execute_monitor(monitor.pk)
+        slow.refresh_from_db()
+        self.assertIsNotNone(slow.recovered_at)
+        self.assertEqual(slow.end_reason, Incident.EndReason.ESCALATED)
+        self.assertEqual(slow.end_label, "Escaló a caída")
+        outage = Incident.objects.get(monitor=monitor, recovered_at__isnull=True)
+        self.assertEqual(outage.kind, Incident.Kind.FAILURE)
+        monitor.refresh_from_db()
+        self.assertEqual(monitor.state, Monitor.State.DOWN)
+
     @patch("monitoring.services.run_check")
     def test_incident_keeps_first_encrypted_json_sample(self, check):
         monitor = Monitor.objects.create(name="API", kind=Monitor.Kind.HTTP, host="https://example.com", failure_threshold=1)
@@ -709,3 +757,57 @@ class IncidentStateTests(TenantTestCase):
     def test_bitrix_deal_link_omits_webhook_secret(self, getenv):
         self.assertEqual(bitrix_deal_url("123"), "https://example.bitrix24.com/crm/deal/details/123/")
         self.assertIsNone(bitrix_deal_url("123/?secret"))
+
+
+class IncidentEmailTests(TenantTestCase):
+    @patch("monitoring.deliveries.get_connection")
+    @patch("monitoring.deliveries.send_mail", return_value=1)
+    def test_email_variants_have_html_and_plain_text(self, send_mail_mock, get_connection_mock):
+        from monitoring.deliveries import _send_email
+
+        monitor = Monitor.objects.create(
+            name="API <Interna>", kind=Monitor.Kind.HTTP, host="https://example.test/private",
+            max_latency_ms=200, recipients="admin@example.test, guardia@example.test",
+        )
+        start = timezone.now() - timedelta(minutes=3)
+        for kind, opened_title, recovered_title in (
+            (Incident.Kind.SLOW, "Respuesta lenta", "Latencia normalizada"),
+            (Incident.Kind.FAILURE, "Servicio caído", "Servicio recuperado"),
+        ):
+            with self.subTest(kind=kind):
+                incident = Incident.objects.create(monitor=monitor, kind=kind, started_at=start)
+                CheckResult.objects.create(
+                    monitor=monitor, checked_at=start, status=CheckResult.Status.SLOW if kind == Incident.Kind.SLOW else CheckResult.Status.FAILURE,
+                    latency_ms=360, http_status_code=503 if kind == Incident.Kind.FAILURE else 200,
+                    detail="HTTP <503>" if kind == Incident.Kind.FAILURE else "Latencia alta",
+                )
+                opened = Delivery.objects.create(incident=incident, channel=Delivery.Channel.EMAIL, event="opened")
+                _send_email(opened)
+                args, kwargs = send_mail_mock.call_args
+                self.assertIn(opened_title, args[0])
+                self.assertEqual(args[3], ["admin@example.test", "guardia@example.test"])
+                self.assertIn(opened_title, kwargs["html_message"])
+                self.assertIn(opened_title, args[1])
+                self.assertIn("360 ms", kwargs["html_message"])
+                self.assertIn("&lt;Interna&gt;", kwargs["html_message"])
+                self.assertNotIn("API <Interna>", kwargs["html_message"])
+                self.assertIn("Ver incidente en Passing", kwargs["html_message"])
+                self.assertNotIn("Duración", kwargs["html_message"])
+                if kind == Incident.Kind.FAILURE:
+                    self.assertIn("HTTP &lt;503&gt;", kwargs["html_message"])
+                else:
+                    self.assertIn("Umbral de latencia", kwargs["html_message"])
+
+                recovery_at = start + timedelta(minutes=3)
+                incident.recovered_at = recovery_at
+                incident.save(update_fields=["recovered_at"])
+                CheckResult.objects.create(monitor=monitor, checked_at=recovery_at, status=CheckResult.Status.OK, latency_ms=80, http_status_code=200)
+                recovered = Delivery.objects.create(incident=incident, channel=Delivery.Channel.EMAIL, event="recovered")
+                _send_email(recovered)
+                args, kwargs = send_mail_mock.call_args
+                self.assertIn(recovered_title, args[0])
+                self.assertIn("Duración", kwargs["html_message"])
+                self.assertIn("3 min", kwargs["html_message"])
+                self.assertIn("80 ms", kwargs["html_message"])
+                self.assertNotIn("HTTP &lt;503&gt;", kwargs["html_message"])
+                start += timedelta(minutes=10)

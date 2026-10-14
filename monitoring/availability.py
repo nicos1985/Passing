@@ -14,12 +14,12 @@ PERIODS = {1: (24, timedelta(hours=1)), 7: (7, timedelta(days=1)), 30: (30, time
 
 
 def _metrics(bucket):
-    measured = bucket["ok"] + bucket["failure"]
+    measured = bucket["ok"] + bucket["slow"] + bucket["failure"]
     latency_count = bucket["latency_count"]
     covered = sum(bucket["histogram"].values())
     return {
-        "ok": bucket["ok"], "failure": bucket["failure"], "error": bucket["error"],
-        "availability_pct": round(100 * bucket["ok"] / measured, 2) if measured else None,
+        "ok": bucket["ok"], "slow": bucket["slow"], "failure": bucket["failure"], "error": bucket["error"],
+        "availability_pct": round(100 * (bucket["ok"] + bucket["slow"]) / measured, 2) if measured else None,
         "latency_avg_ms": round(bucket["latency_sum"] / latency_count) if latency_count else None,
         "latency_p95_ms": p95_upper_bound(bucket["histogram"]),
         "p95_coverage_pct": round(100 * covered / latency_count) if latency_count else None,
@@ -36,7 +36,7 @@ def availability_history(monitor, days, now=None):
     start = current - step * (count - 1)
     slots = []
     for index in range(count):
-        slots.append({"start": start + step * index, "ok": 0, "failure": 0, "error": 0,
+        slots.append({"start": start + step * index, "ok": 0, "slow": 0, "failure": 0, "error": 0,
                       "latency_sum": 0, "latency_count": 0, "histogram": {}})
 
     def slot_at(when):
@@ -62,15 +62,24 @@ def availability_history(monitor, days, now=None):
 
     truncation = TruncHour("checked_at", tzinfo=datetime_timezone.utc) if days == 1 else TruncDay("checked_at", tzinfo=datetime_timezone.utc)
     failed = CheckResult.objects.filter(
-        monitor=monitor, status__in=[CheckResult.Status.FAILURE, CheckResult.Status.ERROR],
+        monitor=monitor, status__in=[CheckResult.Status.SLOW, CheckResult.Status.FAILURE, CheckResult.Status.ERROR],
         checked_at__gte=start, checked_at__lte=now,
     ).annotate(period=truncation).values("period", "status").annotate(total=Count("pk"))
     for group in failed:
         slot_at(group["period"])[group["status"]] += group["total"]
 
-    total = {"ok": 0, "failure": 0, "error": 0, "latency_sum": 0, "latency_count": 0, "histogram": {}}
+    for checked_at, latency in CheckResult.objects.filter(
+        monitor=monitor, status=CheckResult.Status.SLOW, checked_at__gte=start, checked_at__lte=now,
+    ).values_list("checked_at", "latency_ms").iterator():
+        slot = slot_at(checked_at)
+        if latency is not None:
+            slot["latency_sum"] += latency
+            slot["latency_count"] += 1
+            add_latency(slot["histogram"], latency)
+
+    total = {"ok": 0, "slow": 0, "failure": 0, "error": 0, "latency_sum": 0, "latency_count": 0, "histogram": {}}
     for slot in slots:
-        for key in ("ok", "failure", "error", "latency_sum", "latency_count"):
+        for key in ("ok", "slow", "failure", "error", "latency_sum", "latency_count"):
             total[key] += slot[key]
         merge_histograms(total["histogram"], slot["histogram"])
 
@@ -86,10 +95,11 @@ def availability_history(monitor, days, now=None):
         if not overlap:
             continue
         incident_count += 1
-        downtime_seconds += overlap
+        if incident.kind == Incident.Kind.FAILURE:
+            downtime_seconds += overlap
         if len(recent_incidents) < 20:
             recent_incidents.append({
-                "id": incident.pk, "started_at": incident.started_at.isoformat(),
+                "id": incident.pk, "kind": incident.kind, "started_at": incident.started_at.isoformat(),
                 "recovered_at": incident.recovered_at.isoformat() if incident.recovered_at else None,
                 "duration_seconds": max(0, round((end - incident.started_at).total_seconds())),
                 "period_seconds": overlap,

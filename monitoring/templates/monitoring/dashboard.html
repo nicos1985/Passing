@@ -27,6 +27,7 @@
       <div><h2 class="monitor-section-title">Servicios</h2><p class="monitor-section-subtitle">Cada barra representa un minuto de la última hora.</p></div>
       <span class="health-legend" aria-label="Leyenda de salud">
         <span><i style="background:#22c55e"></i>OK</span>
+        <span><i style="background:#f59e0b"></i>Respuesta lenta</span>
         <span><i style="background:#dc3545"></i>Falla o error</span>
         <span><i style="background:#adb5bd"></i>Sin check</span>
       </span>
@@ -71,10 +72,10 @@
   </div>
   <div class="row g-3">
     <div class="col-xl-7"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Actividad reciente</h2><p class="monitor-section-subtitle">Los 10 checks más recientes de todos los servicios.</p></div><div class="list-group list-group-flush" id="recent-checks"><div class="list-group-item text-muted">Esperando resultados…</div></div></div></div>
-    <div class="col-xl-5"><div class="card monitor-panel h-100"><div class="card-header d-flex justify-content-between align-items-center gap-2"><div><h2 class="monitor-section-title">Fallas activas</h2><p class="monitor-section-subtitle">Los recuperados siguen disponibles en el historial.</p></div><a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:incidents' %}">Ver todos</a></div><div class="list-group list-group-flush" id="open-incidents">
+    <div class="col-xl-5"><div class="card monitor-panel h-100"><div class="card-header d-flex justify-content-between align-items-center gap-2"><div><h2 class="monitor-section-title">Incidentes activos</h2><p class="monitor-section-subtitle">Los recuperados siguen disponibles en el historial.</p></div><a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:incidents' %}">Ver todos</a></div><div class="list-group list-group-flush" id="open-incidents">
       {% for incident in incidents %}
-        <a class="list-group-item list-group-item-action d-flex justify-content-between gap-2" href="{% url 'monitoring:incident' incident.pk %}"><span>{{ incident.monitor.name }} — {{ incident.monitor.host }}<span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %} ms-1">{{ incident.workflow_status }}</span></span><span class="text-nowrap small text-muted">{{ incident.started_at|date:"d/m/Y H:i" }}</span></a>
-      {% empty %}<div class="list-group-item text-muted">No hay fallas activas. Consultá el historial para ver incidentes anteriores.</div>{% endfor %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between gap-2" href="{% url 'monitoring:incident' incident.pk %}"><span>{% if incident.kind == 'slow' %}Respuesta lenta · {% endif %}{{ incident.monitor.name }} — {{ incident.monitor.host }}<span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %} ms-1">{{ incident.workflow_status }}</span></span><span class="text-nowrap small text-muted">{{ incident.started_at|date:"d/m/Y H:i" }}</span></a>
+      {% empty %}<div class="list-group-item text-muted">No hay incidentes activos. Consultá el historial para ver incidentes anteriores.</div>{% endfor %}
     </div></div></div>
   </div>
 </div>
@@ -208,6 +209,7 @@
       const summary = row.querySelector('[data-role="health-summary"]');
       const fragment = document.createDocumentFragment();
       let ok = 0;
+      let slow = 0;
       let bad = 0;
       history.slots.forEach((slot, index) => {
         const minute = timeFormatter.format(new Date((firstMinute + index) * 60000));
@@ -219,6 +221,11 @@
             segment.classList.add('ok');
             ok += 1;
             description = 'OK';
+          } else if (slot.status === 'slow') {
+            segment.classList.add('slow');
+            segment.style.backgroundColor = '#f59e0b';
+            slow += 1;
+            description = 'Respuesta lenta';
           } else {
             segment.classList.add('bad');
             bad += 1;
@@ -234,8 +241,8 @@
         fragment.append(segment);
       });
       container.replaceChildren(fragment);
-      const checks = ok + bad;
-      summary.textContent = checks ? `${Math.round(ok * 100 / checks)}% OK · ${ok} de ${checks} checks` : 'Sin checks en la última hora';
+      const checks = ok + slow + bad;
+      summary.textContent = checks ? `${Math.round(ok * 100 / checks)}% OK · ${ok} correctos · ${slow} lentos · ${bad} fallas` : 'Sin checks en la última hora';
     }
   }
 
@@ -273,7 +280,7 @@
       const description = document.createElement('span');
       description.append(document.createTextNode(`${item.monitor} · `));
       const status = document.createElement('span');
-      status.className = item.status_code === 'ok' ? 'check-ok' : 'check-bad';
+      status.className = item.status_code === 'ok' ? 'check-ok' : item.status_code === 'slow' ? 'check-slow' : 'check-bad';
       status.textContent = item.status;
       description.append(status);
       if (item.detail) description.append(document.createTextNode(` · ${item.detail}`));
@@ -292,7 +299,7 @@
     if (!items.length) {
       const empty = document.createElement('div');
       empty.className = 'list-group-item text-muted';
-      empty.textContent = 'No hay fallas activas. Consultá el historial para ver incidentes anteriores.';
+      empty.textContent = 'No hay incidentes activos. Consultá el historial para ver incidentes anteriores.';
       list.append(empty);
       return;
     }
@@ -301,7 +308,7 @@
       link.className = 'list-group-item list-group-item-action d-flex justify-content-between gap-2';
       link.href = item.url;
       const name = document.createElement('span');
-      name.textContent = `${item.monitor} — ${item.host}`;
+      name.textContent = `${item.kind === 'slow' ? 'Respuesta lenta · ' : ''}${item.monitor} — ${item.host}`;
       const status = document.createElement('span');
       status.className = `badge ms-1 ${item.workflow_status === 'Resuelto' ? 'bg-success' : item.workflow_status === 'Reconocido' ? 'bg-primary' : 'bg-warning text-dark'}`;
       status.textContent = item.workflow_status;

@@ -3,12 +3,14 @@ import re
 import smtplib
 import unicodedata
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 from urllib.parse import urlsplit
 
 import requests
 from django.conf import settings
 from django.core.mail import get_connection, send_mail
 from django.db import connection, models, transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.urls import reverse
 from notifications.service import record_email_notice
@@ -147,6 +149,35 @@ def _bitrix_incident_fields(webhook, title):
     return extra
 
 
+def _mail_timestamp(value):
+    if not value:
+        return ""
+    local = timezone.localtime(value, ZoneInfo("America/Argentina/Buenos_Aires"))
+    return local.strftime("%d/%m/%Y %H:%M") + " (Argentina, UTC-3)"
+
+
+def _mail_duration(incident):
+    if not incident.recovered_at:
+        return ""
+    seconds = max(0, int((incident.recovered_at - incident.started_at).total_seconds()))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours} h {minutes} min"
+    if minutes:
+        return f"{minutes} min {seconds} s"
+    return f"{seconds} s"
+
+
+def _incident_mail_url(incident):
+    tenant = getattr(connection, "tenant", None)
+    domain = tenant.get_primary_domain() if tenant else None
+    if not domain:
+        return ""
+    path = reverse("monitoring:incident", args=[incident.pk], urlconf="passing.urls_tenant")
+    return f"{settings.TENANT_SCHEME}://{domain.domain}{path}"
+
+
 def _send_email(delivery):
     incident = delivery.incident
     monitor = incident.monitor
@@ -154,19 +185,71 @@ def _send_email(delivery):
     if not recipients:
         return
     recovered = delivery.event == "recovered"
-    subject = f"[Monitorización] {'Recuperado' if recovered else 'Caído'}: {monitor.name}"
+    slow = incident.kind == Incident.Kind.SLOW
+    if recovered:
+        label = "Latencia normalizada" if slow else "Servicio recuperado"
+        summary = ("La respuesta volvió a estar dentro del umbral configurado." if slow
+                   else "El servicio volvió a responder correctamente.")
+        accent = "#16834b"
+    else:
+        label = "Respuesta lenta" if slow else "Servicio caído"
+        summary = ("La latencia superó el umbral configurado." if slow
+                   else "El monitor detectó una falla y abrió un incidente.")
+        accent = "#b86b12" if slow else "#c7353a"
+    subject = f"[Passing · Monitorización] {label}: {monitor.name}"
+
+    first_result = CheckResult.objects.filter(
+        monitor=monitor, checked_at__gte=incident.started_at
+    ).order_by("checked_at").first()
+    recovery_result = None
+    if recovered and incident.recovered_at:
+        recovery_result = CheckResult.objects.filter(
+            monitor=monitor, checked_at__lte=incident.recovered_at,
+        ).order_by("-checked_at").first()
+    relevant_result = recovery_result if recovered else first_result
+    reason = first_result.detail if first_result and not recovered else ""
+    context = {
+        "monitor": monitor,
+        "incident": incident,
+        "label": label,
+        "summary": summary,
+        "accent": accent,
+        "recovered": recovered,
+        "slow": slow,
+        "reason": reason,
+        "http_status_code": relevant_result.http_status_code if relevant_result else None,
+        "latency_ms": relevant_result.latency_ms if relevant_result else None,
+        "started_at_label": _mail_timestamp(incident.started_at),
+        "recovered_at_label": _mail_timestamp(incident.recovered_at),
+        "duration_label": _mail_duration(incident),
+        "incident_url": _incident_mail_url(incident),
+    }
     message = (
-        f"Servicio: {monitor.name}\nDestino: {monitor.host}\n"
-        f"Incidente: {incident.pk}\nInicio: {incident.started_at.isoformat()}\n"
-        f"Estado: {'recuperado' if recovered else 'caído'}\n"
+        f"{label}: {monitor.name}\n{summary}\n\n"
+        f"Destino: {monitor.host}\nIncidente: #{incident.pk}\n"
+        f"Inicio: {context['started_at_label']}\n"
     )
-    if not recovered:
-        message += f"Motivo: {_incident_reason(incident)}\n"
-    sent = send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False, connection=get_connection(timeout=10))
+    if reason:
+        message += f"Resultado del check: {reason}\n"
+    if monitor.max_latency_ms and slow:
+        message += f"Umbral de latencia: {monitor.max_latency_ms} ms\n"
+    if context["latency_ms"] is not None:
+        message += f"Latencia {'al recuperarse' if recovered else 'detectada'}: {context['latency_ms']} ms\n"
+    if context["http_status_code"] is not None:
+        message += f"HTTP: {context['http_status_code']}\n"
+    if recovered:
+        message += f"Recuperación: {context['recovered_at_label']}\nDuración: {context['duration_label']}\n"
+    if context["incident_url"]:
+        message += f"Ver incidente: {context['incident_url']}\n"
+    html_message = render_to_string("monitoring/email/incident.html", context)
+    sent = send_mail(
+        subject, message, settings.DEFAULT_FROM_EMAIL, recipients,
+        fail_silently=False, connection=get_connection(timeout=10), html_message=html_message,
+    )
     if sent:
         record_email_notice(
             recipients, category='monitoring', source_id=incident.pk, event=delivery.event,
-            title='Incidente de monitorización' if delivery.event == 'opened' else 'Servicio recuperado',
+            title=('Respuesta lenta' if slow else 'Incidente de monitorización') if delivery.event == 'opened' else ('Latencia normalizada' if slow else 'Servicio recuperado'),
             target_path=reverse('monitoring:incident', args=[incident.pk], urlconf='passing.urls_tenant'),
             permissions=('monitoring.manage_monitoring', 'monitoring.read_monitoring'),
         )
@@ -179,7 +262,8 @@ def _send_bitrix(delivery):
     webhook = os.getenv("MONITORING_BITRIX_WEBHOOK_URL", "").rstrip("/")
     if not webhook.startswith("https://"):
         raise RuntimeError("Webhook Bitrix24 HTTPS no configurado")
-    title = f"[Monitorización] {incident.monitor.name} caído (incidente {incident.pk})"
+    issue = 'respuesta lenta' if incident.kind == Incident.Kind.SLOW else 'caído'
+    title = f"[Monitorización] {incident.monitor.name} {issue} (incidente {incident.pk})"
     origin_id = f"{connection.schema_name}:{incident.pk}"
     list_response = requests.post(
         f"{webhook}/crm.item.list.json",

@@ -26,6 +26,10 @@ def _eligible(recipient, category):
 
 
 def _queue(category, source_id, event):
+    slow = False
+    if category == TelegramEventDelivery.Category.MONITORING:
+        from monitoring.models import Incident
+        slow = Incident.objects.filter(pk=source_id, kind=Incident.Kind.SLOW).exists()
     for recipient in TelegramRecipient.objects.filter(active=True, user__is_active=True).select_related('user'):
         if _eligible(recipient, category):
             TelegramEventDelivery.objects.get_or_create(
@@ -34,7 +38,7 @@ def _queue(category, source_id, event):
             if category == TelegramEventDelivery.Category.MONITORING:
                 record_inbox_notice(
                     recipient.user, category='monitoring', source_id=source_id, event=event,
-                    title='Incidente de monitorización' if event == 'opened' else 'Servicio recuperado',
+                    title=('Respuesta lenta' if slow else 'Incidente de monitorización') if event == 'opened' else ('Latencia normalizada' if slow else 'Servicio recuperado'),
                     target_path=reverse('monitoring:incident', args=[source_id], urlconf='passing.urls_tenant'),
                     channel='telegram',
                 )
@@ -83,7 +87,8 @@ def _message(delivery):
         incident = Incident.objects.select_related('monitor').filter(pk=delivery.source_id).first()
         if not incident:
             return None
-        label = 'Incidente detectado' if delivery.event == 'opened' else 'Servicio recuperado'
+        slow = incident.kind == Incident.Kind.SLOW
+        label = ('Respuesta lenta' if delivery.event == 'opened' else 'Latencia normalizada') if slow else ('Incidente detectado' if delivery.event == 'opened' else 'Servicio recuperado')
         return f'{label}: {incident.monitor.name}\nAbrir en Passing: {_absolute_url(reverse("monitoring:incident", args=[incident.pk], urlconf="passing.urls_tenant"))}'
     if delivery.category == TelegramEventDelivery.Category.PASSWORD_REQUEST:
         from notifications.models import AdminNotification

@@ -118,7 +118,7 @@ def http_check(url, timeout_seconds, expected_codes="200-299", max_latency_ms=No
     finally:
         session.close()
     if code in accepted and max_latency_ms is not None and latency > max_latency_ms:
-        return _with_evidence((CheckResult.Status.FAILURE, latency, f"Latencia {latency} ms supera {max_latency_ms} ms (HTTP {code})", code), document, capture_json)
+        return _with_evidence((CheckResult.Status.SLOW, latency, f"Latencia {latency} ms supera {max_latency_ms} ms (HTTP {code})", code), document, capture_json)
     if code in accepted:
         return CheckResult.Status.OK, latency, f"HTTP {code}", code
     if 200 <= code < 300:

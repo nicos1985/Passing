@@ -53,8 +53,12 @@ def _monitor_live_state(monitor, now):
         label, badge = "Esperando señal", "secondary"
     elif monitor.last_status == "error":
         label, badge = "Error del monitor", "warning"
+    elif monitor.last_status == CheckResult.Status.SLOW and monitor.state != Monitor.State.DOWN:
+        label, badge = "Respuesta lenta", "warning"
     elif monitor.state == Monitor.State.UP:
         label, badge = "Saludable", "success"
+    elif monitor.state == Monitor.State.SLOW:
+        label, badge = "Respuesta lenta", "warning"
     elif monitor.state == Monitor.State.DOWN:
         label, badge = "Caído", "danger"
     else:
@@ -89,12 +93,14 @@ def incident_list(request):
     if not _authorized(request.user):
         return HttpResponseForbidden()
     state = request.GET.get("estado", "todos")
-    if state not in {"todos", "activos", "recuperados", "resueltos", "pendientes"}:
+    if state not in {"todos", "activos", "lentos", "recuperados", "resueltos", "pendientes"}:
         state = "todos"
     query = request.GET.get("q", "").strip()[:120]
     incidents = Incident.objects.select_related("monitor", "acknowledged_by").order_by("-started_at")
     if state == "activos":
         incidents = incidents.filter(recovered_at__isnull=True)
+    elif state == "lentos":
+        incidents = incidents.filter(kind=Incident.Kind.SLOW)
     elif state == "recuperados":
         incidents = incidents.filter(recovered_at__isnull=False)
     elif state == "resueltos":
@@ -146,7 +152,7 @@ def live_status(request):
     ]
     open_incidents = Incident.objects.filter(recovered_at__isnull=True)
     incidents = [
-        {"monitor": incident.monitor.name, "host": incident.monitor.host, "started_at": incident.started_at.isoformat(), "url": reverse("monitoring:incident", args=[incident.pk]), "workflow_status": incident.workflow_status}
+        {"monitor": incident.monitor.name, "host": incident.monitor.host, "started_at": incident.started_at.isoformat(), "url": reverse("monitoring:incident", args=[incident.pk]), "workflow_status": incident.workflow_status, "kind": incident.kind}
         for incident in open_incidents.select_related("monitor").order_by("-started_at")[:20]
     ]
     return JsonResponse({"server_time": now.isoformat(), "monitors": monitors, "recent": recent, "incidents": incidents, "incident_count": open_incidents.count(), "worker_label": health["worker_label"], "worker_healthy": health["worker_healthy"], "last_cycle_at": health["last_cycle_at"].isoformat() if health["last_cycle_at"] else None, "overdue_count": health["overdue_count"]})
@@ -162,7 +168,7 @@ def hourly_history(request):
     first_minute = current_minute - 59
     monitor_ids = list(Monitor.objects.values_list("pk", flat=True))
     slots = {monitor_id: [None] * 60 for monitor_id in monitor_ids}
-    priority = {CheckResult.Status.OK: 1, CheckResult.Status.FAILURE: 2, CheckResult.Status.ERROR: 2}
+    priority = {CheckResult.Status.OK: 1, CheckResult.Status.SLOW: 2, CheckResult.Status.FAILURE: 3, CheckResult.Status.ERROR: 3}
     results = CheckResult.objects.filter(
         monitor_id__in=monitor_ids,
         checked_at__gte=datetime.fromtimestamp(first_minute * 60, tz=datetime_timezone.utc),
@@ -209,7 +215,7 @@ def monitor_detail_data(request, pk):
     now = timezone.now()
     first_minute = int(now.timestamp() // 60) - 59
     slots = [None] * 60
-    priority = {CheckResult.Status.OK: 1, CheckResult.Status.FAILURE: 2, CheckResult.Status.ERROR: 2}
+    priority = {CheckResult.Status.OK: 1, CheckResult.Status.SLOW: 2, CheckResult.Status.FAILURE: 3, CheckResult.Status.ERROR: 3}
     recent_hour = CheckResult.objects.filter(
         monitor=monitor,
         checked_at__gte=datetime.fromtimestamp(first_minute * 60, tz=datetime_timezone.utc),

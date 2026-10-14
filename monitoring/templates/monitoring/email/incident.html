@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ label }} · Passing</title>
+</head>
+<body style="margin:0;padding:0;background:#f2f5fa;color:#1f2b3d;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f2f5fa;border-collapse:collapse;">
+    <tr><td align="center" style="padding:24px 12px 36px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="width:100%;max-width:600px;border-collapse:collapse;">
+        <tr><td style="background:#102342;padding:28px 32px;border-radius:14px 14px 0 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+            <tr>
+              <td style="font-size:24px;font-weight:800;letter-spacing:2px;color:#fff;">PASSING<span style="color:#5dcded;">.</span></td>
+              <td align="right" style="font-size:12px;color:#b8cae4;">MONITORIZACIÓN</td>
+            </tr>
+          </table>
+          <div style="margin-top:30px;display:inline-block;padding:7px 12px;border-radius:20px;background:{{ accent }};color:#fff;font-size:12px;font-weight:700;">{{ label|upper }}</div>
+          <h1 style="margin:14px 0 0;color:#fff;font-size:27px;line-height:1.25;word-break:break-word;">{{ monitor.name }}</h1>
+          <p style="margin:10px 0 0;color:#d7e5f5;font-size:15px;line-height:1.5;">{{ summary }}</p>
+        </td></tr>
+        <tr><td style="background:#fff;padding:28px 32px;border:1px solid #e3e9f1;border-top:0;border-radius:0 0 14px 14px;">
+          <h2 style="margin:0 0 18px;font-size:16px;color:#102342;">Detalle del incidente #{{ incident.pk }}</h2>
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;background:#f6f8fb;border-radius:10px;">
+            <tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Monitor</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:14px;color:#1f2b3d;word-break:break-word;">{{ monitor.name }}</td></tr>
+            <tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Destino</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:13px;color:#1f2b3d;word-break:break-all;">{{ monitor.host }}</td></tr>
+            {% if reason %}<tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Resultado del check</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:13px;color:#1f2b3d;word-break:break-word;">{{ reason }}</td></tr>{% endif %}
+            {% if http_status_code != None %}<tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Código HTTP</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:14px;color:#1f2b3d;">{{ http_status_code }}</td></tr>{% endif %}
+            {% if slow and monitor.max_latency_ms %}<tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Umbral de latencia</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:14px;color:#1f2b3d;">{{ monitor.max_latency_ms }} ms</td></tr>{% endif %}
+            {% if latency_ms != None %}<tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Latencia {% if recovered %}al recuperarse{% else %}detectada{% endif %}</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:14px;color:{{ accent }};font-weight:700;">{{ latency_ms }} ms</td></tr>{% endif %}
+            <tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Inicio</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:13px;color:#1f2b3d;">{{ started_at_label }}</td></tr>
+            {% if recovered %}<tr><td style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:12px;color:#60718a;">Recuperación</td><td align="right" style="padding:12px 16px;border-bottom:1px solid #e3e9f1;font-size:13px;color:#1f2b3d;">{{ recovered_at_label }}</td></tr>
+            <tr><td style="padding:12px 16px;font-size:12px;color:#60718a;">Duración</td><td align="right" style="padding:12px 16px;font-size:14px;color:#1f2b3d;">{{ duration_label }}</td></tr>{% endif %}
+          </table>
+          {% if incident_url %}<p style="margin:26px 0 0;"><a href="{{ incident_url }}" style="display:inline-block;padding:12px 19px;border-radius:8px;background:#1765b3;color:#fff;font-size:14px;font-weight:700;text-decoration:none;">Ver incidente en Passing →</a></p>{% endif %}
+        </td></tr>
+        <tr><td style="padding:20px 12px;text-align:center;color:#667891;font-size:12px;line-height:1.5;">Aviso automático de Passing. Los horarios se muestran en hora de Argentina (UTC-3).</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

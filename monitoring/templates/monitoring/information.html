@@ -36,6 +36,7 @@
     <h2 class="h5 mb-3">Estados de un check</h2>
     <div class="row g-3">
       <div class="col-md-6"><div class="info-card ok"><div class="fw-semibold mb-2"><span class="info-icon ok"><i class="fa-solid fa-check" aria-hidden="true"></i></span>OK</div><div class="text-muted small">El servicio cumplió las reglas configuradas: código, JSON, latencia o conectividad, según el tipo de monitor.</div></div></div>
+      <div class="col-md-6"><div class="info-card"><div class="fw-semibold mb-2"><span class="info-icon" style="color:#b86a00"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></span>Respuesta lenta</div><div class="text-muted small">El destino responde, pero supera el máximo de latencia. Se distingue de una caída y puede abrir su propio incidente tras el umbral de checks consecutivos.</div></div></div>
       <div class="col-md-6"><div class="info-card fail"><div class="fw-semibold mb-2"><span class="info-icon fail"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>Falla</div><div class="text-muted small">El destino no cumplió una regla o no respondió. Al alcanzar el umbral de fallas consecutivas se abre un incidente.</div></div></div>
       <div class="col-md-6"><div class="info-card error"><div class="fw-semibold mb-2"><span class="info-icon error"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i></span>Error del monitor</div><div class="text-muted small">No se pudo ejecutar bien la comprobación. No confirma una caída del destino ni abre un incidente de servicio.</div></div></div>
       <div class="col-md-6"><div class="info-card empty"><div class="fw-semibold mb-2"><span class="info-icon empty"><i class="fa-solid fa-pause" aria-hidden="true"></i></span>Sin check o detenido</div><div class="text-muted small">No hay una medición para ese tramo o el monitor está pausado. Las barras grises indican falta de datos.</div></div></div>
@@ -43,7 +44,7 @@
   </section>
 
   <section id="http" class="info-section mb-4"><div class="card"><div class="card-header"><h2 class="h5 mb-0"><i class="fa-solid fa-globe text-primary me-2" aria-hidden="true"></i>Códigos HTTP</h2></div><div class="card-body">
-    <p class="small text-muted">El código indica qué respondió el servidor. Cada monitor define cuáles acepta; el valor inicial es <code>200-299</code>. Incluso un código aceptado puede fallar por una regla JSON o de latencia.</p>
+    <p class="small text-muted">El código indica qué respondió el servidor. Cada monitor define cuáles acepta; el valor inicial es <code>200-299</code>. Incluso un código aceptado puede fallar por una regla JSON. Si supera el umbral de latencia se clasifica como respuesta lenta.</p>
     <div class="table-responsive"><table class="table table-sm info-table mb-0"><thead><tr><th>Resultado</th><th>Significado</th><th>Qué revisar</th></tr></thead><tbody>
       <tr><td><span class="badge bg-success">2xx</span></td><td>Solicitud aceptada.</td><td>Reglas JSON y latencia, si están configuradas.</td></tr>
       <tr><td><span class="badge bg-info text-dark">3xx</span></td><td>Redirección.</td><td>El check no la sigue. Usá la URL final o aceptá ese código si es esperado.</td></tr>
@@ -62,7 +63,7 @@
       <div class="col-md-6"><div class="info-card"><strong>Valor JSON inesperado</strong><p class="small text-muted mb-0 mt-1">La ruta existe, pero el valor o su tipo es distinto. Los textos esperados se escriben entre comillas.</p></div></div>
       <div class="col-md-6"><div class="info-card"><strong>Respuesta JSON demasiado grande</strong><p class="small text-muted mb-0 mt-1">Supera el límite de lectura de 16 KiB. Usá un endpoint de salud pequeño o quitá la regla JSON.</p></div></div>
     </div>
-    <div class="alert alert-primary small mt-3 mb-0"><strong>Latencia:</strong> si supera el máximo configurado, cuenta como falla aunque el código sea aceptado. Cuando hay un incidente HTTP, se puede ver una muestra JSON breve y cifrada en su detalle; se ocultan campos habituales de credenciales y contacto.</div>
+    <div class="alert alert-primary small mt-3 mb-0"><strong>Latencia:</strong> para ping, HTTP, TCP y TLS podés definir un máximo en milisegundos. Si lo supera, el check aparece en ámbar como respuesta lenta. Tras la cantidad de checks consecutivos configurada se abre un incidente distinto de una caída y se avisa por los canales habilitados. Cuando hay un incidente HTTP, se puede ver una muestra JSON breve y cifrada en su detalle; se ocultan campos habituales de credenciales y contacto.</div>
   </div></div></section>
 
   <section id="red" class="info-section mb-4"><div class="card"><div class="card-header"><h2 class="h5 mb-0"><i class="fa-solid fa-network-wired text-primary me-2" aria-hidden="true"></i>Conectividad y certificados</h2></div><div class="card-body"><div class="row g-3">

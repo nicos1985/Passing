@@ -15,6 +15,7 @@ class Monitor(models.Model):
     class State(models.TextChoices):
         UNKNOWN = "unknown", "Sin datos"
         UP = "up", "Saludable"
+        SLOW = "slow", "Respuesta lenta"
         DOWN = "down", "Caído"
 
     name = models.CharField(max_length=120)
@@ -106,6 +107,7 @@ class DeploymentMarker(models.Model):
 class CheckResult(models.Model):
     class Status(models.TextChoices):
         OK = "ok", "Correcto"
+        SLOW = "slow", "Respuesta lenta"
         FAILURE = "failure", "Falla"
         ERROR = "error", "Error del monitor"
 
@@ -134,6 +136,17 @@ class HourlySummary(models.Model):
 
 
 class Incident(models.Model):
+    class Kind(models.TextChoices):
+        FAILURE = "failure", "Falla"
+        SLOW = "slow", "Respuesta lenta"
+
+    class EndReason(models.TextChoices):
+        RECOVERED = "recovered", "Recuperado"
+        ESCALATED = "escalated", "Escaló a caída"
+        SLOWED = "slowed", "Pasó a respuesta lenta"
+
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.FAILURE)
+    end_reason = models.CharField(max_length=12, choices=EndReason.choices, default=EndReason.RECOVERED)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE, related_name="incidents")
     started_at = models.DateTimeField(default=timezone.now)
     recovered_at = models.DateTimeField(null=True, blank=True)
@@ -150,6 +163,14 @@ class Incident(models.Model):
     class Meta:
         ordering = ["-started_at"]
         constraints = [models.UniqueConstraint(fields=["monitor"], condition=models.Q(recovered_at__isnull=True), name="monitoring_one_open_incident")]
+
+    @property
+    def end_label(self):
+        if self.end_reason == self.EndReason.ESCALATED:
+            return "Escaló a caída"
+        if self.end_reason == self.EndReason.SLOWED:
+            return "Pasó a respuesta lenta"
+        return "Latencia normalizada" if self.kind == self.Kind.SLOW else "Servicio recuperado"
 
     @property
     def workflow_status(self):

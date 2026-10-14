@@ -21,7 +21,7 @@
     <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Regla de incidente</div><div class="fw-semibold mt-2">{{ monitor.failure_threshold }} fallas / {{ monitor.recovery_threshold }} OK</div><div class="monitor-kpi-hint">Timeout {{ monitor.timeout_seconds }} segundos</div></div></div>
   </div>
   <div class="card monitor-panel mb-4" id="ultima-hora">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="monitor-section-title">Última hora</h2><p class="monitor-section-subtitle">Un segmento por minuto para detectar cortes recientes.</p></div><span class="health-legend"><span><i style="background:#22c55e"></i>OK</span><span><i style="background:#dc3545"></i>Falla</span><span><i style="background:#adb5bd"></i>Sin check</span></span></div>
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="monitor-section-title">Última hora</h2><p class="monitor-section-subtitle">Un segmento por minuto para detectar fallas y respuestas lentas.</p></div><span class="health-legend"><span><i style="background:#22c55e"></i>OK</span><span><i style="background:#f59e0b"></i>Respuesta lenta</span><span><i style="background:#dc3545"></i>Falla</span><span><i style="background:#adb5bd"></i>Sin check</span></span></div>
     <div class="card-body"><div id="detail-bars" class="detail-bars" aria-label="Resultados por minuto durante la última hora"></div><div id="detail-summary" class="detail-muted mt-2">Cargando historial…</div></div>
   </div>
   <div class="card monitor-panel mb-4" id="disponibilidad">
@@ -83,9 +83,9 @@
   <div class="row g-3" id="actividad">
     <div class="col-xl-7"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Últimos 30 checks</h2><p class="monitor-section-subtitle">Resultados recientes para investigar cambios de estado.</p></div><div class="table-responsive"><table class="table table-sm mb-0 detail-recent"><thead><tr><th>Fecha</th><th>Resultado</th><th>Latencia</th><th>Detalle</th></tr></thead><tbody id="detail-results"><tr><td colspan="4" class="text-muted">Cargando…</td></tr></tbody></table></div></div></div>
     <div class="col-xl-5"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Configuración e incidentes</h2><p class="monitor-section-subtitle">Reglas activas y seguimiento del servicio.</p></div><div class="card-body">
-      <dl class="row mb-3 detail-config"><dt class="col-sm-5">Notificaciones</dt><dd class="col-sm-7">{{ monitor.recipients|default:"Sin destinatarios" }}</dd>{% if monitor.kind == 'http' %}<dt class="col-sm-5">HTTP aceptados</dt><dd class="col-sm-7">{{ monitor.expected_http_codes }}</dd><dt class="col-sm-5">Latencia máxima</dt><dd class="col-sm-7">{% if monitor.max_latency_ms %}{{ monitor.max_latency_ms }} ms{% else %}Sin límite{% endif %}</dd>{% if monitor.json_path %}<dt class="col-sm-5">JSON esperado</dt><dd class="col-sm-7"><code>{{ monitor.json_path }}</code> = <code>{{ monitor.json_expected_value }}</code></dd>{% endif %}{% endif %}{% if monitor.kind == 'tls' %}<dt class="col-sm-5">Aviso TLS</dt><dd class="col-sm-7">{{ monitor.tls_min_days }} días antes del vencimiento</dd>{% endif %}<dt class="col-sm-5">Mantenimiento</dt><dd class="col-sm-7">{{ monitor.maintenance_until|default:"No" }}</dd><dt class="col-sm-5">Creado</dt><dd class="col-sm-7">{{ monitor.created_at|date:"d/m/Y H:i" }}</dd></dl>
+      <dl class="row mb-3 detail-config"><dt class="col-sm-5">Notificaciones</dt><dd class="col-sm-7">{{ monitor.recipients|default:"Sin destinatarios" }}</dd>{% if monitor.kind != 'heartbeat' %}<dt class="col-sm-5">Latencia máxima</dt><dd class="col-sm-7">{% if monitor.max_latency_ms %}{{ monitor.max_latency_ms }} ms{% else %}Sin límite{% endif %}</dd>{% endif %}{% if monitor.kind == 'http' %}<dt class="col-sm-5">HTTP aceptados</dt><dd class="col-sm-7">{{ monitor.expected_http_codes }}</dd>{% if monitor.json_path %}<dt class="col-sm-5">JSON esperado</dt><dd class="col-sm-7"><code>{{ monitor.json_path }}</code> = <code>{{ monitor.json_expected_value }}</code></dd>{% endif %}{% endif %}{% if monitor.kind == 'tls' %}<dt class="col-sm-5">Aviso TLS</dt><dd class="col-sm-7">{{ monitor.tls_min_days }} días antes del vencimiento</dd>{% endif %}<dt class="col-sm-5">Mantenimiento</dt><dd class="col-sm-7">{{ monitor.maintenance_until|default:"No" }}</dd><dt class="col-sm-5">Creado</dt><dd class="col-sm-7">{{ monitor.created_at|date:"d/m/Y H:i" }}</dd></dl>
       <h2 class="h6">Incidentes recientes</h2>
-      <ul class="list-unstyled mb-0">{% for incident in incidents %}<li class="mb-2"><a href="{% url 'monitoring:incident' incident.pk %}">#{{ incident.pk }} · {{ incident.started_at|date:"d/m/Y H:i" }}</a> <span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span> <span class="detail-muted">{% if incident.recovered_at %}Servicio recuperado{% else %}Falla activa{% endif %}</span></li>{% empty %}<li class="detail-muted">Sin incidentes.</li>{% endfor %}</ul>
+      <ul class="list-unstyled mb-0">{% for incident in incidents %}<li class="mb-2"><a href="{% url 'monitoring:incident' incident.pk %}">#{{ incident.pk }} · {{ incident.started_at|date:"d/m/Y H:i" }}</a> <span class="badge {% if incident.bitrix_resolved_at %}bg-success{% elif incident.acknowledged_at %}bg-primary{% else %}bg-warning text-dark{% endif %}">{{ incident.workflow_status }}</span> <span class="detail-muted">{% if incident.recovered_at %}{{ incident.end_label }}{% elif incident.kind == 'slow' %}Respuesta lenta activa{% else %}Falla activa{% endif %}</span></li>{% empty %}<li class="detail-muted">Sin incidentes.</li>{% endfor %}</ul>
     </div></div></div>
   </div>
 </div>
@@ -119,8 +119,8 @@
       const segment = document.createElement('span');
       segment.className = 'detail-slot';
       const time = new Date((data.first_minute + index) * 60000);
-      const label = slot ? (slot.status === 'ok' ? 'OK' : slot.status === 'error' ? 'Error del monitor' : 'Falla') : 'Sin check';
-      if (slot) { if (slot.status === 'ok') { segment.classList.add('ok'); ok++; } else { segment.classList.add('bad'); bad++; } }
+      const label = slot ? (slot.status === 'ok' ? 'OK' : slot.status === 'slow' ? 'Respuesta lenta' : slot.status === 'error' ? 'Error del monitor' : 'Falla') : 'Sin check';
+      if (slot) { if (slot.status === 'ok') { segment.classList.add('ok'); ok++; } else if (slot.status === 'slow') { segment.classList.add('slow'); segment.style.backgroundColor = '#f59e0b'; bad++; } else { segment.classList.add('bad'); bad++; } }
       segment.title = `${formatTime(time)} · ${label}${slot && slot.detail ? ` · ${slot.detail}` : ''}${slot && slot.latency_ms !== null ? ` · ${slot.latency_ms} ms` : ''}`;
       segment.setAttribute('role', 'img');
       segment.setAttribute('aria-label', segment.title);
@@ -169,7 +169,7 @@
       run = [];
     }
     for (const point of points) {
-      if (point.status === 'ok' && point.latency_ms !== null) {
+      if ((point.status === 'ok' || point.status === 'slow') && point.latency_ms !== null) {
         run.push(point);
       } else {
         appendSmoothRun();
@@ -179,6 +179,7 @@
     appendSmoothRun();
     svg.append(svgElement('path', { d: path, fill: 'none', stroke: '#0d6efd', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }));
     if (values.length <= 120) for (const point of values) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: 2.5, fill: '#0d6efd' }));
+    for (const point of points.filter(item => item.status === 'slow' && item.latency_ms !== null)) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: 4, fill: '#f59e0b', stroke: '#ffffff', 'stroke-width': 1.5 }));
     for (const marker of data.deployments || []) {
       const time = new Date(marker.deployed_at).getTime();
       if (time < start || time > end) continue;
@@ -196,7 +197,7 @@
     document.getElementById('axis-mid').textContent = `${ceiling / 2} ms`;
     document.getElementById('axis-start').textContent = formatTime(start);
     document.getElementById('axis-end').textContent = formatTime(end);
-    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Rojo: falla/error` : 'No hay checks en este período.';
+    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error` : 'No hay checks en este período.';
   }
   svg.addEventListener('mousemove', event => {
     const deployment = event.target.getAttribute('data-deployment-label');
@@ -208,7 +209,7 @@
     let low = 0, high = plotted.length - 1;
     while (low < high) { const mid = Math.floor((low + high) / 2); if (plotted[mid].time < time) low = mid + 1; else high = mid; }
     const point = low && Math.abs(plotted[low - 1].time - time) < Math.abs(plotted[low].time - time) ? plotted[low - 1] : plotted[low];
-    document.getElementById('chart-hover').textContent = `${formatTime(point.checked_at)} · ${point.status === 'ok' ? 'OK' : point.status === 'error' ? 'Error del monitor' : 'Falla'}${point.detail ? ` · ${point.detail}` : ''} · ${point.latency_ms === null ? 'Sin latencia' : `${point.latency_ms} ms`}`;
+    document.getElementById('chart-hover').textContent = `${formatTime(point.checked_at)} · ${point.status === 'ok' ? 'OK' : point.status === 'slow' ? 'Respuesta lenta' : point.status === 'error' ? 'Error del monitor' : 'Falla'}${point.detail ? ` · ${point.detail}` : ''} · ${point.latency_ms === null ? 'Sin latencia' : `${point.latency_ms} ms`}`;
   });
   svg.addEventListener('focusin', event => {
     const deployment = event.target.getAttribute('data-deployment-label');
@@ -222,8 +223,8 @@
       const row = body.insertRow();
       row.insertCell().textContent = formatTime(item.checked_at);
       const status = row.insertCell();
-      status.textContent = item.status === 'ok' ? 'OK' : item.status === 'error' ? 'Error' : 'Falla';
-      status.className = item.status === 'ok' ? 'check-ok' : 'check-bad';
+      status.textContent = item.status === 'ok' ? 'OK' : item.status === 'slow' ? 'Lenta' : item.status === 'error' ? 'Error' : 'Falla';
+      status.className = item.status === 'ok' ? 'check-ok' : item.status === 'slow' ? 'check-slow' : 'check-bad';
       row.insertCell().textContent = item.latency_ms === null ? '—' : `${item.latency_ms} ms`;
       row.insertCell().textContent = item.detail || '—';
     }
@@ -287,21 +288,26 @@
       bar.className = 'availability-slot';
       const label = days === 1 ? dateTime.format(new Date(bucket.start)) : dateOnly.format(new Date(bucket.start));
       const pct = bucket.availability_pct;
-      if (pct !== null) bar.style.background = `linear-gradient(to top, #22c55e ${pct}%, #dc3545 ${pct}%)`;
-      bar.title = `${label} · ${pct === null ? 'Sin checks' : `${number.format(pct)}% OK (${bucket.ok} OK, ${bucket.failure} fallas)`} · ${bucket.error} errores de monitor · Promedio ${bucket.latency_avg_ms === null ? '—' : `${bucket.latency_avg_ms} ms`} · p95 ${bucket.latency_p95_ms === null ? '—' : `${bucket.latency_p95_ms} ms`}`;
+      if (pct !== null) {
+        const count = bucket.ok + bucket.slow + bucket.failure;
+        const failureEnd = 100 * bucket.failure / count;
+        const slowEnd = 100 * (bucket.failure + bucket.slow) / count;
+        bar.style.background = `linear-gradient(to top, #e45460 0%, #e45460 ${failureEnd}%, #f59e0b ${failureEnd}%, #f59e0b ${slowEnd}%, #20c766 ${slowEnd}%, #20c766 100%)`;
+      }
+      bar.title = `${label} · ${pct === null ? 'Sin checks' : `${number.format(pct)}% disponible (${bucket.ok} OK, ${bucket.slow} lentos, ${bucket.failure} fallas)`} · ${bucket.error} errores de monitor · Promedio ${bucket.latency_avg_ms === null ? '—' : `${bucket.latency_avg_ms} ms`} · p95 ${bucket.latency_p95_ms === null ? '—' : `${bucket.latency_p95_ms} ms`}`;
       bar.setAttribute('role', 'img');
       bar.setAttribute('aria-label', bar.title);
       fragment.append(bar);
     }
     bars.replaceChildren(fragment);
-    document.getElementById('availability-note').textContent = `${totals.ok} OK · ${totals.failure} fallas · ${totals.error} errores del monitor. Disponibilidad = OK / (OK + fallas); los errores locales se muestran aparte. Verde: OK · Rojo: falla · Gris: sin checks.`;
+    document.getElementById('availability-note').textContent = `${totals.ok} OK · ${totals.slow} lentos · ${totals.failure} fallas · ${totals.error} errores del monitor. Disponibilidad = (OK + lentos) / (OK + lentos + fallas); los errores locales se muestran aparte. Verde: OK · Amarillo: respuesta lenta · Rojo: falla · Gris: sin checks.`;
     const list = document.getElementById('availability-incident-list');
     list.replaceChildren();
     if (!data.incidents.length) {
       const row = list.insertRow(); const cell = row.insertCell(); cell.colSpan = 4; cell.textContent = 'Sin incidentes en este período.'; cell.className = 'text-muted';
     } else for (const incident of data.incidents) {
       const row = list.insertRow();
-      row.insertCell().textContent = dateTime.format(new Date(incident.started_at));
+      row.insertCell().textContent = `${incident.kind === 'slow' ? 'Respuesta lenta · ' : ''}${dateTime.format(new Date(incident.started_at))}`;
       row.insertCell().textContent = incident.recovered_at ? dateTime.format(new Date(incident.recovered_at)) : 'En curso';
       row.insertCell().textContent = duration(incident.duration_seconds);
       row.insertCell().textContent = duration(incident.period_seconds);

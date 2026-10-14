@@ -121,7 +121,7 @@ class MonitorForm(forms.ModelForm):
             "interval_seconds": "Tiempo entre comprobaciones automáticas del destino. No se usa en tareas con señal.",
             "timeout_seconds": "Tiempo máximo de espera de cada comprobación antes de contarla como falla.",
             "expected_http_codes": "Ejemplo: 200-299,301. Se usa 200-299 si no se cambia.",
-            "max_latency_ms": "Opcional. Una respuesta más lenta cuenta como falla.",
+            "max_latency_ms": "Opcional para ping, HTTP, TCP y TLS. Si supera este valor en milisegundos, cuenta como respuesta lenta; tras las fallas consecutivas configuradas se abre un incidente y se avisa.",
             "json_path": "Opcional. Claves e índices separados por puntos: health.status, items.0.status o 0.status si el JSON empieza con una lista.",
             "json_expected_value": 'Escribí un literal JSON: "ok", true, 1 o null. Se compara el tipo y el valor.',
             "tls_min_days": "Se comprueba la cadena y el nombre del certificado, además de su vencimiento.",
@@ -186,10 +186,11 @@ class MonitorForm(forms.ModelForm):
         path = (cleaned.get("json_path") or "").strip()
         expected = (cleaned.get("json_expected_value") or "").strip()
         if cleaned.get("kind") != Monitor.Kind.HTTP:
-            cleaned.update(expected_http_codes="200-299", max_latency_ms=None, json_path="", json_expected_value="")
+            cleaned.update(expected_http_codes="200-299", json_path="", json_expected_value="")
         if cleaned.get("kind") != Monitor.Kind.TLS:
             cleaned["tls_min_days"] = 30
         if cleaned.get("kind") == Monitor.Kind.HEARTBEAT:
+            cleaned["max_latency_ms"] = None
             cleaned["failure_threshold"] = 1
             cleaned["recovery_threshold"] = 1
         if cleaned.get("kind") != Monitor.Kind.HTTP:
