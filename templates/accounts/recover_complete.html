@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-5 passing-form-page auth-form-page">
+  <div class="row justify-content-center"><div class="col-12 col-md-7 col-lg-5">
+    <div class="card shadow-sm" style="border-radius:1rem;"><div class="card-body p-4">
+      {% include "includes/auth_brand.html" %}
+      <h1 class="h4 mb-3">{% trans "Contraseña actualizada" %}</h1>
+      <p class="text-secondary">{% trans "Ya podés ingresar con tu contraseña nueva." %}</p>
+      <a class="btn btn-primary" href="{% url 'accounts:login' %}">{% trans "Ir al ingreso" %}</a>
+    </div></div>
+  </div></div>
+</div>
+{% endblock %}

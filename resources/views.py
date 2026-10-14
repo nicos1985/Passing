@@ -48,6 +48,7 @@ from accounts.models import TenantSettings
 from .models import AssetAction, AssetActionType
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from notifications.service import record_email_notice
 from django.conf import settings
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
@@ -321,7 +322,12 @@ class LoanCreateView(ResourceWriteMixin, CreateView):
             subject = f"Confirmación de préstamo: {obj.asset.name}"
             body = f"Se ha solicitado un préstamo del activo '{obj.asset.name}'.\n\nDescripción: {obj.description or '-'}\nFecha estimada de devolución: {obj.due_date or '-'}\nSolicitado por: {obj.performed_by.get_full_name() or obj.performed_by.username}\n\nPara confirmar el préstamo haga click en el siguiente enlace:\n{confirm_url}\n\nSi no reconoce esta solicitud, ignore este correo."
             if obj.user and obj.user.email:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [obj.user.email])
+                if send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [obj.user.email]):
+                    record_email_notice(
+                        [obj.user.email], category='resources', source_id=obj.pk, event='loan',
+                        title='Confirmación de préstamo pendiente',
+                        target_path=reverse('asset-tracking'), permissions=('resources.view_informationassets',),
+                    )
         except Exception:
             logger.exception('Error enviando email de confirmación de préstamo')
 
@@ -391,7 +397,12 @@ class ReturnCreateView(ResourceWriteMixin, CreateView):
                 recipient = None
 
             if recipient:
-                send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient])
+                if send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [recipient]):
+                    record_email_notice(
+                        [recipient], category='resources', source_id=obj.pk, event='return',
+                        title='Confirmación de devolución pendiente',
+                        target_path=reverse('asset-tracking'), permissions=('resources.view_informationassets',),
+                    )
         except Exception:
             logger.exception('Error enviando email de confirmación de devolución')
 

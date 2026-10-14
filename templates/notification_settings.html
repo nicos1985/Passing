@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/config-dashboard.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 passing-config passing-settings">
+  <header class="config-hero"><div><span class="config-eyebrow">Passing · Administración</span><h1>Notificaciones</h1><p>Canales de correo y Telegram de la empresa.</p></div><div class="config-hero-actions"><a class="btn btn-outline-light" href="{% url 'config' %}">Volver a configuración</a></div></header>
+
+  <section class="card settings-panel mb-4"><div class="card-header"><div class="settings-panel-icon"><i class="fa-solid fa-envelope" aria-hidden="true"></i></div><div><h2>Correo</h2><p>Configuración del servidor</p></div></div><div class="card-body">
+    <p class="text-muted">Las credenciales SMTP se administran en el <code>.env</code> del servidor. Aquí solo se muestra el estado, sin exponer la contraseña.</p>
+    <div class="mb-2">Estado: <span class="badge {% if smtp_ready %}text-bg-success{% else %}text-bg-warning{% endif %}">{% if smtp_ready %}SMTP configurado{% else %}SMTP no configurado{% endif %}</span></div>
+    <div class="small text-muted mb-3">Servidor: {{ email_host }}:{{ email_port }} · Remitente: {{ email_from }}</div>
+    <form method="post" action="{% url 'test_notification_email' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit" {% if not smtp_ready or not request.user.email %}disabled{% endif %}>Enviar prueba a mi correo</button></form>
+  </div></section>
+
+  <section class="card settings-panel mb-4"><div class="card-header"><div class="settings-panel-icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></div><div><h2>Telegram</h2><p>Bot y cuentas vinculadas</p></div></div><div class="card-body">
+    <p class="text-muted">Un bot para los avisos de la empresa. Cada usuario vincula su chat y elige sus suscripciones desde Mi perfil.</p>
+    <div class="mb-3">Estado: <span class="badge {% if telegram_bot_source %}text-bg-success{% else %}text-bg-warning{% endif %}">{% if telegram_bot_source == 'passing' %}Token cifrado en Passing{% elif telegram_bot_source == 'environment' %}Token configurado en el servidor{% else %}Sin token configurado{% endif %}</span></div>
+    <form method="post" action="{% url 'supporthub:bot_edit' %}" class="mb-3">
+      {% csrf_token %}<label class="form-label" for="id_token">Token de BotFather</label>{{ telegram_bot_form.token }}
+      <div class="form-text">Se cifra al guardar y nunca se vuelve a mostrar. Dejá este campo vacío si no querés cambiarlo.</div>
+      <button type="submit" class="btn btn-primary mt-2">Guardar token</button>
+    </form>
+    <div class="d-flex gap-2 flex-wrap mb-4">
+      <form method="post" action="{% url 'supporthub:bot_test' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" {% if not telegram_bot_source %}disabled{% endif %}>Comprobar bot</button></form>
+      <form method="post" action="{% url 'supporthub:telegram_chats_discover' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" {% if not telegram_bot_source %}disabled{% endif %}>Buscar IDs de chats privados</button></form>
+    </div>
+    {% if telegram_discovered_chats is not None %}<div class="settings-discovery mb-4"><h3 class="h6">Chats privados recientes</h3>{% for chat in telegram_discovered_chats %}<div>{{ chat.name }} {% if chat.username %}<span class="text-muted">@{{ chat.username }}</span>{% endif %} · <code>{{ chat.id }}</code></div>{% empty %}<p class="text-muted mb-0">No hay chats recientes. Primero enviá /start al bot.</p>{% endfor %}</div>{% endif %}
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2"><h3 class="h6 mb-0">Cuentas vinculadas</h3><a class="btn btn-outline-primary btn-sm" href="{% url 'supporthub:recipient_new' %}">Agregar cuenta</a></div>
+    {% for recipient in telegram_recipients %}
+      <div class="settings-recipient mb-2 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div><strong>{{ recipient }}</strong><span class="text-muted small"> · ID {{ recipient.chat_id }}{% if not recipient.active %} · Desactivada{% endif %}</span><div class="text-muted small">{% if recipient.notify_support %}Ticket de soporte · {% endif %}{% if recipient.notify_monitoring %}Monitoreo · {% endif %}{% if recipient.notify_risks %}Riesgos · {% endif %}{% if recipient.notify_password_requests %}Pedido de contraseñas{% endif %}</div></div>
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'supporthub:recipient_test' recipient.pk %}">{% csrf_token %}<button class="btn btn-outline-success btn-sm" title="Enviar prueba" aria-label="Probar cuenta de {{ recipient }}"><i class="fa-solid fa-paper-plane"></i></button></form>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'supporthub:recipient_edit' recipient.pk %}" title="Editar cuenta" aria-label="Editar cuenta de {{ recipient }}"><i class="fa-solid fa-pen-to-square"></i></a>
+          <a class="btn btn-outline-danger btn-sm" href="{% url 'supporthub:delete_item' 'recipient' recipient.pk %}" title="Eliminar cuenta" aria-label="Eliminar cuenta de {{ recipient }}"><i class="fa-solid fa-trash"></i></a>
+        </div>
+      </div>
+    {% empty %}<p class="text-muted">Todavía no hay cuentas vinculadas.</p>{% endfor %}
+  </div></section>
+</div>
+{% endblock %}

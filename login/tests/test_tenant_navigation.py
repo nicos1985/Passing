@@ -22,12 +22,18 @@ class TenantNavigationTests(TenantTestCase):
         self.client = TenantClient(self.tenant)
         self.client.force_login(self.user)
 
+    def test_logout_clears_tenant_session_and_continues_to_hub(self):
+        response = self.client.post('/login/logout/')
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['Location'].endswith('/accounts/logout/'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
     def test_regular_user_sees_vault_but_not_restricted_modules(self):
         response = self.client.get('/login/home/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="passwordsubmenu"')
         self.assertNotContains(response, 'id="resourcesubmenu"')
-        self.assertContains(response, '/notifications/list-notif-user')
+        self.assertContains(response, 'href="/notifications/"')
         self.assertNotContains(response, 'id="risksubmenu"')
         self.assertNotContains(response, 'data-sidebar-label="Configuración"')
         self.assertContains(response, 'id="monitoringsubmenu"')

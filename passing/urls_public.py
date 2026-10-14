@@ -16,13 +16,13 @@ urlpatterns = [
     path("accounts/google/start/", google_start, name="google_start"),
     path("accounts/post-login/", post_login_redirect, name="post_login"),
     path("accounts/choose-tenant/", choose_tenant_view, name="choose_tenant_view"),
-    path("__where/", where_am_i),
     path("accounts/", include("accounts.urls")),   # google_start, post-login, etc.
     path("accounts/", include("allauth.urls")),    # allauth
     path("client-register/", client_register, name="client_register"),
 ]
 
 if settings.DEBUG:
+    urlpatterns += [path("__where/", where_am_i)]
     urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

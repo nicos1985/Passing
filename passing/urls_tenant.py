@@ -17,7 +17,7 @@ from django.conf import settings
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
-from .views import home_tenant, test_send_email, UpdateEmailConfigView, set_language
+from .views import home_tenant, set_language
 
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
@@ -30,8 +30,6 @@ urlpatterns = [
     path("monitoring/", include("monitoring.urls")),
     path("support/", include("supporthub.urls")),
     path("perm/", include("permission.urls")),
-    path("test_send_email/", test_send_email, name="test_send_email"),
-    path("update_email_config/", UpdateEmailConfigView.as_view(), name="update_email_config"),
     path(
         "mockups/dashboard/",
         TemplateView.as_view(template_name="mockups/dashboard.html"),

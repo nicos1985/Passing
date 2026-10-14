@@ -130,6 +130,19 @@
                     </div>
                 </a>
             </div>
+            {% if request.user.is_superuser %}
+            <div class="col">
+                <a href="{% url 'notification_settings' %}" class="admin-link">
+                    <div class="card admin-card" style="--accent-color: #18a2ca;">
+                        <div class="card-body">
+                            <div class="admin-card-icon"><i class="fa-solid fa-bell"></i></div>
+                            <h5>Notificaciones</h5>
+                            <small class="text-muted">Correo y Telegram</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
             
             <div class="col">
                 <a href="{% url 'upload-csv' %}" class="admin-link">

@@ -1,6 +1,8 @@
 """Vistas y helpers que generan las notificaciones de compartición de contraseñas."""
 
 from django.contrib import messages
+from django.conf import settings
+from django.core.mail import get_connection, send_mail
 from django.db.models.query import QuerySet
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,8 +16,6 @@ from notifications.models import AdminNotification, InboxNotification, UserNotif
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from passbase.models import Contrasena
 from permission.models import ContraPermission
@@ -68,6 +68,54 @@ def open_inbox_notice(request, pk):
 def mark_inbox_read(request):
     InboxNotification.objects.filter(user=request.user, viewed=False).update(viewed=True)
     return redirect('notification_inbox')
+
+
+@login_required
+def notification_settings(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    import os
+    from supporthub.forms import BotTokenForm
+    from supporthub.models import TelegramBotConfig, TelegramRecipient
+
+    bot = TelegramBotConfig.objects.filter(pk=1).first()
+    source = ('passing' if bot and bot.token_encrypted else
+              'environment' if os.getenv('SUPPORT_TELEGRAM_BOT_TOKEN', '').strip() else None)
+    return render(request, 'notification_settings.html', {
+        'telegram_bot_source': source,
+        'telegram_bot_form': BotTokenForm(),
+        'telegram_recipients': TelegramRecipient.objects.select_related('user').all(),
+        'telegram_discovered_chats': request.session.pop('telegram_discovered_chats', None),
+        'smtp_ready': settings.EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend'
+                      and bool(settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD),
+        'email_host': settings.EMAIL_HOST,
+        'email_port': settings.EMAIL_PORT,
+        'email_from': settings.DEFAULT_FROM_EMAIL,
+    })
+
+
+@login_required
+@require_POST
+def test_notification_email(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    if not request.user.email:
+        messages.error(request, 'Tu cuenta no tiene una dirección de correo para recibir la prueba.')
+        return redirect('notification_settings')
+    try:
+        sent = send_mail(
+            '[Passing] Correo de prueba',
+            'Esta es una prueba de las notificaciones por correo de Passing.',
+            settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=False,
+            connection=get_connection(timeout=10),
+        )
+        if sent != 1:
+            raise RuntimeError('Correo no aceptado')
+    except Exception:
+        messages.error(request, 'No se pudo enviar el correo de prueba. Revisá SMTP en el servidor y sus registros.')
+    else:
+        messages.success(request, 'Se envió un correo de prueba a tu cuenta.')
+    return redirect('notification_settings')
 
 @login_required
 def share_contrasena_form(request, contrasena):
@@ -128,7 +176,6 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
     
 class MarkNotificationsViewed(LoginRequiredMixin, View):
     """Marca como vistas las notificaciones del usuario vía AJAX."""
-    @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 

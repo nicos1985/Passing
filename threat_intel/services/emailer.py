@@ -7,6 +7,8 @@ import os
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import escape
+from django.urls import reverse
+from notifications.service import record_email_notice
 from threat_intel.models import Report
 
 
@@ -124,6 +126,12 @@ def send_report_email(
     if use_brevo or backend == "brevo":
         try:
             result = send_report_email_brevo(report, attachments)
+            record_email_notice(
+                report.recipients or [], category='threat_intel', source_id=report.pk, event='report_sent',
+                title='Nuevo reporte de inteligencia de amenazas',
+                target_path=reverse('threat_intel:report-detail', args=[report.pk], urlconf='passing.urls_tenant'),
+                permissions=('threat_intel.view_report',),
+            )
             return {
                 "status": "success",
                 "message": f"Email sent via Brevo to {len(report.recipients or [])} recipients",
@@ -138,6 +146,12 @@ def send_report_email(
         # Default: SMTP
         try:
             send_report_email_smtp(report, attachments)
+            record_email_notice(
+                report.recipients or [], category='threat_intel', source_id=report.pk, event='report_sent',
+                title='Nuevo reporte de inteligencia de amenazas',
+                target_path=reverse('threat_intel:report-detail', args=[report.pk], urlconf='passing.urls_tenant'),
+                permissions=('threat_intel.view_report',),
+            )
             return {
                 "status": "success",
                 "message": f"Email sent via SMTP to {len(report.recipients or [])} recipients"

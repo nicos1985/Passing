@@ -101,7 +101,7 @@ def recipient_form(request, pk=None):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
     return _form_view(request, model=TelegramRecipient, form_class=RecipientForm, pk=pk,
-                      title='Cuenta de Telegram', return_url='configuracion-global')
+                      title='Cuenta de Telegram', return_url='notification_settings')
 
 
 @login_required
@@ -114,18 +114,18 @@ def bot_form(request):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
     if request.method != 'POST':
-        return redirect('configuracion-global')
+        return redirect('notification_settings')
     form = BotTokenForm(request.POST)
     if request.method == 'POST' and form.is_valid():
         config, _ = TelegramBotConfig.objects.get_or_create(pk=1)
         config.set_token(form.cleaned_data['token'])
         config.save()
         messages.success(request, 'Token del bot guardado de forma cifrada. Probá la conexión antes de usarlo.')
-        return redirect('configuracion-global')
+        return redirect('notification_settings')
     for errors in form.errors.values():
         for error in errors:
             messages.error(request, error)
-    return redirect('configuracion-global')
+    return redirect('notification_settings')
 
 
 @login_required
@@ -141,7 +141,7 @@ def bot_test(request):
         messages.error(request, str(exc))
     else:
         messages.success(request, 'Conexión con el bot confirmada por Telegram.')
-    return redirect('configuracion-global')
+    return redirect('notification_settings')
 
 
 @login_required
@@ -153,9 +153,9 @@ def discover_telegram_chats(request):
         chats = list_private_telegram_chats()
     except SupportIntegrationError as exc:
         messages.error(request, str(exc))
-        return redirect('configuracion-global')
+        return redirect('notification_settings')
     request.session['telegram_discovered_chats'] = chats
-    return redirect('configuracion-global')
+    return redirect('notification_settings')
 
 
 @login_required
@@ -189,7 +189,7 @@ def test_recipient(request, pk):
         messages.error(request, str(exc))
     else:
         messages.success(request, 'Telegram recibió el aviso de prueba.')
-    return redirect('configuracion-global')
+    return redirect('notification_settings')
 
 
 @login_required
@@ -199,7 +199,7 @@ def delete_item(request, kind, pk):
     choices = {
         'portal': (BitrixPortal, 'portal Bitrix24', 'supporthub:settings'),
         'chat': (SupportChat, 'grupo de chat', 'supporthub:settings'),
-        'recipient': (TelegramRecipient, 'cuenta de Telegram', 'configuracion-global'),
+        'recipient': (TelegramRecipient, 'cuenta de Telegram', 'notification_settings'),
         'shift': (DutyShift, 'turno de guardia', 'supporthub:settings'),
     }
     if kind not in choices:

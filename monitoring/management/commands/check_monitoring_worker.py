@@ -10,7 +10,9 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from django.urls import reverse
 from django_tenants.utils import get_tenant_model, tenant_context
+from notifications.service import record_email_notice
 
 from monitoring.deliveries import BITRIX_CLIENT_FIELD, BITRIX_CLIENT_OPTION_ID, delivery_error_message
 from monitoring.models import Monitor, WorkerHeartbeat
@@ -104,6 +106,13 @@ class Command(BaseCommand):
                         self.stderr.write(f"{tenant.schema_name}: correo: {delivery_error_message(exc, 'email')}")
                     else:
                         WorkerHeartbeat.objects.filter(pk=1, alert_email_sent_at__isnull=True).update(alert_email_sent_at=timezone.now())
+                        record_email_notice(
+                            recipients, category='monitoring',
+                            source_id=int(heartbeat.alert_opened_at.timestamp()), event='worker_unhealthy',
+                            title='El worker de monitorización necesita atención',
+                            target_path=reverse('monitoring:dashboard', urlconf='passing.urls_tenant'),
+                            permissions=('monitoring.manage_monitoring', 'monitoring.read_monitoring'),
+                        )
                 if bitrix_enabled and not heartbeat.alert_bitrix_deal_id:
                     try:
                         deal_id = _send_bitrix(tenant.schema_name, heartbeat)

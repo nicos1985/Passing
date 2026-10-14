@@ -9,6 +9,7 @@ from django_tenants.test.cases import TenantTestCase
 from django_tenants.test.client import TenantClient
 
 from accounts.models import CustomUser
+from notifications.models import InboxNotification
 from passing.logging_utils import RedactingFilter
 from .forms import BotTokenForm, PortalForm, ShiftForm
 from .models import BitrixPortal, DutyShift, SupportChat, SupportMessage, SupportNotice, TelegramBotConfig, TelegramRecipient, TelegramEventDelivery
@@ -117,6 +118,9 @@ class SupportHubTests(TenantTestCase):
         notice = SupportNotice.objects.get()
         self.assertEqual(notice.status, SupportNotice.Status.SENT)
         self.assertEqual(notice.deliveries.get().recipient, recipient)
+        inbox_notice = InboxNotification.objects.get(user=user, category='support')
+        self.assertEqual(inbox_notice.title, 'Nuevo aviso de soporte')
+        self.assertNotIn(self.portal.base_url, str(inbox_notice.__dict__))
         payload = post.call_args.args[1]
         self.assertIn('3 mensajes nuevos', payload['text'])
         self.assertIn('Argentina', payload['text'])
@@ -240,6 +244,7 @@ class SupportHubTests(TenantTestCase):
         queue_monitoring_event(99999, 'opened')
         queue_password_request(99999)
         self.assertEqual(TelegramEventDelivery.objects.count(), 2)
+        self.assertEqual(InboxNotification.objects.filter(user=user, category='monitoring').count(), 1)
         recipient.notify_monitoring = False
         recipient.save(update_fields=['notify_monitoring'])
         with patch('supporthub.telegram_events._telegram_call') as send:
@@ -275,6 +280,7 @@ class SupportHubTests(TenantTestCase):
         _save_result(monitor.pk, CheckResult.Status.FAILURE, 100, 'falló')
         _save_result(monitor.pk, CheckResult.Status.OK, 80, 'bien')
         self.assertEqual(set(TelegramEventDelivery.objects.values_list('event', flat=True)), {'opened', 'recovered'})
+        self.assertEqual(InboxNotification.objects.filter(user=user, category='monitoring').count(), 2)
         with patch('supporthub.telegram_events._telegram_call') as send:
             dispatch_event_deliveries()
         self.assertEqual(send.call_count, 2)
@@ -301,16 +307,17 @@ class SupportHubTests(TenantTestCase):
         self.assertIn('/notifications/list-notif-admin', message)
         self.assertNotIn('123', message)
 
-    def test_general_settings_contains_bot_configuration_and_support_does_not(self):
+    def test_notification_settings_contains_bot_configuration_and_support_does_not(self):
         admin = CustomUser.objects.create_user(
             username='admin_config_tg', email='admin_config@example.test', password='example-secret',
             client=self.tenant, is_superuser=True,
         )
         client = TenantClient(self.tenant)
         client.force_login(admin)
-        general = client.get('/login/configuracion-global/')
-        self.assertEqual(general.status_code, 200)
-        self.assertContains(general, 'Token de BotFather')
+        notification_settings = client.get('/notifications/settings/')
+        self.assertEqual(notification_settings.status_code, 200)
+        self.assertContains(notification_settings, 'Token de BotFather')
+        self.assertNotContains(client.get('/login/configuracion-global/'), 'Token de BotFather')
         support = client.get('/support/settings/')
         self.assertEqual(support.status_code, 200)
         self.assertNotContains(support, 'Token de BotFather')

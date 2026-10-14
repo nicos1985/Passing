@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
+from django.urls import reverse
+from notifications.service import record_email_notice
 from django_tenants.utils import get_tenant_model, schema_context
 from django.utils import timezone
 
@@ -87,7 +89,13 @@ class Command(BaseCommand):
                 self.stdout.write(f"  [dry-run] Recordatorio para {owner.email} -> {url}")
             else:
                 try:
-                    send_mail(subject, message, sender, [owner.email], fail_silently=False)
+                    if send_mail(subject, message, sender, [owner.email], fail_silently=False):
+                        record_email_notice(
+                            [owner.email], category='resources', source_id=evaluation.pk, event='vendor_reminder',
+                            title='Evaluación de proveedor pendiente',
+                            target_path=reverse('vendor-evaluation-detail', args=[evaluation.pk], urlconf='passing.urls_tenant'),
+                            permissions=('resources.view_vendor',),
+                        )
                     self.stdout.write(f"  Recordatorio enviado a {owner.email} para evaluación {evaluation.pk}")
                 except Exception as exc:
                     self.stderr.write(f"  Error al enviar recordatorio a {owner.email}: {exc}")

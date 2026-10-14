@@ -56,7 +56,7 @@ Configurar SMTP y webhook Bitrix24 únicamente si se habilitan sus funciones.
 La integración con Google Drive y el registro web de nuevos tenants están
 deshabilitados en esta versión. El primer tenant se crea de forma controlada
 durante la instalación; no se necesitan credenciales ni worker de Drive.
-`RECAPTCHA_TESTING=1` impide el arranque de producción.
+`RECAPTCHA_TESTING=1` impide el arranque de producción. Configurar claves de reCAPTCHA v3 para el dominio del hub público; el login y la recuperación validan el token, la acción y un puntaje mínimo de 0.5 en el servidor. En producción, la aplicación no arranca si falta alguna clave.
 
 ## Esquema y arranque
 

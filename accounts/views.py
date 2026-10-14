@@ -66,6 +66,7 @@ def _branch_after_hub_login(request, user, next_path: str):
         return redirect_to_tenant_with_token(request, user, client, next_path)
 
     # múltiples cuentas → selector
+    request.session.pop("tenant_select_google", None)
     request.session["tenant_select_next"] = next_path
     return redirect(reverse("choose_tenant_view"))
 
@@ -86,12 +87,15 @@ def choose_tenant_view(request):
     mems = TenantMembership.objects.select_related("client")\
                                    .filter(user=user, is_active=True)\
                                    .order_by("client__client_name", "client__schema_name")
+    if request.session.get("tenant_select_google"):
+        mems = mems.filter(client__settings__is_active=True, client__settings__sso_google_enabled=True)
     if request.method == "POST":
         client_slug = request.POST.get("client_slug")
         m = mems.filter(client__schema_name=client_slug).first()
         if not m:
             messages.error(request, "No tenés acceso a esa cuenta.")
             return redirect(reverse("accounts:choose_tenant_view"))
+        request.session.pop("tenant_select_google", None)
         return redirect_to_tenant_with_token(request, request.user, m.client, next_path)
 
     # GET: mostrar selector de tenants
@@ -159,7 +163,10 @@ def post_login_redirect(request):
             messages.error(request, "No se pudo iniciar sesión.")
             return redirect(f"{reverse('login')}?next={next_path}")
 
-        mems = TenantMembership.objects.select_related("client").filter(user=user, is_active=True)
+        mems = TenantMembership.objects.select_related("client").filter(
+            user=user, is_active=True, client__settings__is_active=True,
+            client__settings__sso_google_enabled=True,
+        )
 
         count = mems.count()
         if count == 0:
@@ -174,10 +181,16 @@ def post_login_redirect(request):
 
 
         # múltiples cuentas → selector
+        request.session["tenant_select_google"] = True
         request.session["tenant_select_next"] = next_path
         return redirect(reverse("choose_tenant_view"))
 
-    # Si SÍ hay client_slug (tu caso original) → seguimos como ya lo hacías
+    # El destino solicitado también debe admitir Google para este usuario.
+    if not TenantMembership.objects.filter(
+        user=request.user, client__schema_name=client_slug, is_active=True,
+        client__settings__is_active=True, client__settings__sso_google_enabled=True,
+    ).exists():
+        return HttpResponse("El acceso con Google no está habilitado para este espacio.", status=403)
     dest = _resolve_tenant_base_url(request, client_slug)
     logger.debug("dest=%s", dest)
     token = build_sso_token(

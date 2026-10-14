@@ -4,6 +4,7 @@ from django.test import RequestFactory
 from django.core.management import call_command
 from django.urls import Resolver404, resolve
 from django_tenants.test.cases import TenantTestCase
+from django_tenants.test.client import TenantClient
 
 from accounts.models import CustomUser, MultiFactorStatus, TenantSettings
 from login.middleware import TwoFactorAuthMiddleware
@@ -44,6 +45,76 @@ class TenantMfaPolicyTests(TenantTestCase):
         self.user.otp_secret = 'JBSWY3DPEHPK3PXP'
         self.user.save(update_fields=['otp_secret'])
         self.assertIn('show-qr-code-2fa', self._response()['Location'])
+
+    def test_enabling_2fa_from_profile_shows_png_qr(self):
+        self.settings.multifactor_status = MultiFactorStatus.OPTIONAL
+        self.settings.save(update_fields=['multifactor_status'])
+        client = TenantClient(self.tenant)
+        client.force_login(self.user)
+
+        response = client.post('/login/profile/', {
+            'first_name': 'MFA',
+            'last_name': 'User',
+            'email': self.user.email,
+            'position': 'Analista',
+            'menu_color': '#212629',
+            'is_2fa_enabled': 'on',
+            'language': 'es',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/login/show-qr-code-2fa/')
+
+        response = client.get(response['Location'])
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'src="data:image/png;base64,')
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.otp_secret)
+
+    def test_disabled_policy_does_not_let_profile_enable_2fa(self):
+        self.settings.multifactor_status = MultiFactorStatus.DISABLED
+        self.settings.save(update_fields=['multifactor_status'])
+        client = TenantClient(self.tenant)
+        client.force_login(self.user)
+
+        response = client.post('/login/profile/', {
+            'first_name': 'MFA',
+            'last_name': 'User',
+            'email': self.user.email,
+            'position': 'Analista',
+            'menu_color': '#212629',
+            'is_2fa_enabled': 'on',
+            'language': 'es',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/login/profile/')
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_2fa_enabled)
+        self.assertContains(client.get('/login/profile/'), 'Deshabilitada para este espacio')
+
+    def test_optional_2fa_is_required_again_after_logout(self):
+        import pyotp
+
+        self.settings.multifactor_status = MultiFactorStatus.OPTIONAL
+        self.settings.save(update_fields=['multifactor_status'])
+        self.user.otp_secret = pyotp.random_base32()
+        self.user.is_2fa_enabled = True
+        self.user.save(update_fields=['otp_secret', 'is_2fa_enabled'])
+        client = TenantClient(self.tenant)
+        client.force_login(self.user)
+
+        first_access = client.get('/login/home/')
+        self.assertEqual(first_access.status_code, 302)
+        self.assertIn('/login/verify-2fa/', first_access['Location'])
+        verification = client.post('/login/verify-2fa/', {
+            'otp_code': pyotp.TOTP(self.user.otp_secret).now(),
+        })
+        self.assertEqual(verification.status_code, 302)
+
+        client.post('/login/logout/')
+        client.force_login(self.user)
+        next_access = client.get('/login/home/')
+        self.assertEqual(next_access.status_code, 302)
+        self.assertIn('/login/verify-2fa/', next_access['Location'])
 
     def test_verified_session_is_bound_to_user_and_tenant(self):
         self.settings.multifactor_status = MultiFactorStatus.REQUIRED

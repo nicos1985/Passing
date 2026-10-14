@@ -11,7 +11,7 @@ from django.core.mail import get_connection, send_mail
 from django.db import connection, models, transaction
 from django.utils import timezone
 from django.urls import reverse
-from notifications.service import internal_users_for_emails, record_inbox_notice
+from notifications.service import record_email_notice
 
 from .models import CheckResult, Delivery, Incident
 
@@ -164,14 +164,12 @@ def _send_email(delivery):
         message += f"Motivo: {_incident_reason(incident)}\n"
     sent = send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False, connection=get_connection(timeout=10))
     if sent:
-        for user in internal_users_for_emails(recipients):
-            if user.is_superuser or user.has_perm('monitoring.manage_monitoring') or user.has_perm('monitoring.read_monitoring'):
-                record_inbox_notice(
-                    user, category='monitoring', source_id=incident.pk, event=delivery.event,
-                    title='Incidente de monitorización' if delivery.event == 'opened' else 'Servicio recuperado',
-                    target_path=reverse('monitoring:incident', args=[incident.pk], urlconf='passing.urls_tenant'),
-                    channel='email',
-                )
+        record_email_notice(
+            recipients, category='monitoring', source_id=incident.pk, event=delivery.event,
+            title='Incidente de monitorización' if delivery.event == 'opened' else 'Servicio recuperado',
+            target_path=reverse('monitoring:incident', args=[incident.pk], urlconf='passing.urls_tenant'),
+            permissions=('monitoring.manage_monitoring', 'monitoring.read_monitoring'),
+        )
 
 
 def _send_bitrix(delivery):

@@ -33,7 +33,6 @@ from django.db import transaction
 from urllib.parse import quote as urlquote
 from io import BytesIO
 from django.contrib.auth import login
-from passing.config import EMAIL_SETTINGS
 from django.core.mail import EmailMessage
 from django.utils.html import format_html
 from email.mime.image import MIMEImage
@@ -349,7 +348,8 @@ class LogoutFormView(LogoutView):
 
     def post(self, request, *args, **kwargs):
         # Maneja la solicitud POST para cerrar sesión
-        return super().post(request, *args, **kwargs)
+        super().post(request, *args, **kwargs)
+        return redirect(f'{settings.HUB_ORIGIN}/accounts/logout/')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -363,6 +363,7 @@ class LogoutFormView(LogoutView):
 def profile_view(request):
     """Actualiza datos del perfil y el avatar del usuario autenticado, incluyendo 2FA."""
     user = CustomUser.objects.get(id=request.user.id)
+    tenant_policy = TenantSettings.for_client(get_tenant(request))
     if request.method == 'POST': 
         logger = logging.getLogger(__name__)
         logger.debug("profile_view POST: files=%s", list(request.FILES.keys()))
@@ -373,10 +374,14 @@ def profile_view(request):
         if valid and profile_form.is_bound:
             is_2fa_enabled = profile_form.cleaned_data.get('is_2fa_enabled')
             initial_2fa = profile_form.initial.get('is_2fa_enabled')
-            policy = TenantSettings.for_client(get_tenant(request))
-            if policy and policy.multifactor_status == MultiFactorStatus.REQUIRED:
+            status = tenant_policy.multifactor_status if tenant_policy else MultiFactorStatus.DISABLED
+            if status == MultiFactorStatus.REQUIRED:
                 profile_form.instance.is_2fa_enabled = True
                 is_2fa_enabled = True
+            elif status == MultiFactorStatus.DISABLED:
+                # La política del espacio prevalece sobre el checkbox enviado.
+                profile_form.instance.is_2fa_enabled = bool(initial_2fa)
+                is_2fa_enabled = bool(initial_2fa)
             # Determine whether we need to show QR after saving (newly enabled 2FA)
             qr_generate = initial_2fa != True and is_2fa_enabled == True and user.otp_secret is None
 
@@ -398,7 +403,7 @@ def profile_view(request):
 
                 # Mantener al usuario en su perfil para revisar los cambios.
                 if qr_generate:
-                    response = render(request, 'generate-qr-code.html')
+                    response = redirect('show-qr-code-2fa')
                 else:
                     response = redirect('profile')
 
@@ -424,7 +429,8 @@ def profile_view(request):
         'user_profile': user,
         'profile_form': profile_form,
         'has_otp_secret': user.has_otp_secret(),
-        'mfa_required': getattr(TenantSettings.for_client(get_tenant(request)), 'multifactor_status', None) == MultiFactorStatus.REQUIRED,
+        'mfa_required': bool(tenant_policy and tenant_policy.multifactor_status == MultiFactorStatus.REQUIRED),
+        'mfa_disabled': not tenant_policy or tenant_policy.multifactor_status == MultiFactorStatus.DISABLED,
         'telegram_recipient': TelegramRecipient.objects.filter(user=user).first(),
         'can_monitor_alerts': user.is_superuser or user.has_perm('monitoring.manage_monitoring') or user.has_perm('monitoring.read_monitoring'),
     }
@@ -847,20 +853,6 @@ class TenantSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
         # Pass request so the form can scope `set_admins` to tenant users
         kwargs['request'] = self.request
         return kwargs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        import os
-        from supporthub.forms import BotTokenForm
-        from supporthub.models import TelegramBotConfig, TelegramRecipient
-
-        bot = TelegramBotConfig.objects.filter(pk=1).first()
-        context['telegram_bot_source'] = ('passing' if bot and bot.token_encrypted else
-                                          'environment' if os.getenv('SUPPORT_TELEGRAM_BOT_TOKEN', '').strip() else None)
-        context['telegram_bot_form'] = BotTokenForm()
-        context['telegram_recipients'] = TelegramRecipient.objects.select_related('user').all()
-        context['telegram_discovered_chats'] = self.request.session.pop('telegram_discovered_chats', None)
-        return context
 
     def form_valid(self, form):
         instance = form.save(commit=False)

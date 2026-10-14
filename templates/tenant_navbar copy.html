@@ -180,6 +180,7 @@
     <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
       <i class="fa fa-bars"></i>
     </button>
+    {% if request.user.is_authenticated %}<a href="{% url 'notification_inbox' %}" class="text-white position-relative me-2" aria-label="Notificaciones"><i class="fa-solid fa-bell fa-lg"></i>{% if contador_notis %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">{{ contador_notis }}</span>{% endif %}</a>{% endif %}
   </div>    
 </nav>
 

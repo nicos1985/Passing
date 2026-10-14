@@ -312,5 +312,7 @@ def dispatch_notices(limit=50):
 def purge_old_history(days=90):
     SupportNotice.objects.filter(last_at__lt=timezone.now() - timedelta(days=days)).delete()
     from .models import TelegramEventDelivery, TelegramPairing
+    from notifications.models import InboxNotification
     TelegramEventDelivery.objects.filter(created_at__lt=timezone.now() - timedelta(days=days)).delete()
     TelegramPairing.objects.filter(expires_at__lt=timezone.now() - timedelta(days=1)).delete()
+    InboxNotification.objects.filter(created_at__lt=timezone.now() - timedelta(days=365)).delete()
