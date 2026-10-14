@@ -222,7 +222,7 @@ SSO_LOGIN_BACKEND = "django.contrib.auth.backends.ModelBackend"
 # Sesiones / Cookies DEV
 # =========================
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_AGE = 15 * 60  # 15 min
+SESSION_COOKIE_AGE = 24 * 60 * 60  # 24 horas desde la última actividad
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Sesión / Cookies: en producción habilitar flags de seguridad
