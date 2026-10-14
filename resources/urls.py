@@ -5,10 +5,14 @@ from .views import confirm_asset_action
 from .views import ProjectListView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView
 from .views import ClientListView, ClientCreateView, ClientUpdateView, ClientDeleteView
 from . import views
+from . import risk_assistant_views
 from .models import ClientCompany, InformationAssets, Threat, Treatment, Vendor, Project, Vulnerability
 from django.urls import path
 
 urlpatterns = [
+    path('assistant/', risk_assistant_views.dashboard, name='risk-assistant'),
+    path('assistant/telegram/preview/', risk_assistant_views.send_telegram_preview, name='risk-assistant-telegram-preview'),
+    path('assistant/<int:pk>/action/', risk_assistant_views.update_insight, name='risk-assistant-action'),
     # Asset URLs
     path('asset-list/', AssetListView.as_view(), name='informationassets-list'),
     path('asset-create/', AssetCreateView.as_view(), name='informationassets-create'),

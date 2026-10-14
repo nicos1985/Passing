@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/vault.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 vault-page passing-form-page">
+  <header class="form-hero">
     <h4 class="mb-0 fw-semibold text-danger"><i class="fas fa-trash me-2"></i>{{ title }}</h4>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'listpass' %}">
       <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Cancelar" %}
     </a>
-  </div>
+  </header>
 
   <div class="card ui-accent-card" style="--accent-color: #dc3545;">
     <div class="card-header">

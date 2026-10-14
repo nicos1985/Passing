@@ -1,100 +1,81 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
-
-{% block head %}
-{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/profile.css' %}">{% endblock %}
 {% block content %}
+<div class="container-fluid py-3 passing-profile">
+  <header class="profile-hero mb-4">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      {% if user_profile.avatar %}<img class="profile-avatar" src="{{ user_profile.avatar.url }}" alt="Foto de perfil de {{ user_profile.username }}">
+      {% else %}<span class="profile-avatar-icon" aria-hidden="true"><i class="fa-solid fa-user"></i></span>{% endif %}
+      <div class="flex-grow-1">
+        <div class="profile-eyebrow mb-1">Mi cuenta</div>
+        <h1 class="mb-1">{{ user_profile.get_full_name|default:user_profile.username }}</h1>
+        <p class="mb-0">{{ user_profile.email }}{% if user_profile.position %} · {{ user_profile.position }}{% endif %}</p>
+      </div>
+      <a class="btn btn-outline-light btn-sm" href="{% url 'home_tenant' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Volver al inicio</a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-4">
+      <span class="profile-hero-pill"><i class="fa-solid fa-user-shield" aria-hidden="true"></i>{% if user_profile.is_superuser %}Administrador{% else %}Usuario{% endif %}</span>
+      <span class="profile-hero-pill"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Segundo factor {% if user_profile.is_2fa_enabled %}activo{% else %}desactivado{% endif %}</span>
+      <span class="profile-hero-pill"><i class="fa-brands fa-telegram" aria-hidden="true"></i>Telegram {% if telegram_recipient and telegram_recipient.active %}conectado{% else %}sin avisos{% endif %}</span>
+    </div>
+  </header>
 
-<div class="container" style="height: 60px;">
-    <h2>{{ title }}</h2>
-</div>
+  <div class="row g-4 align-items-start">
+    <div class="col-xl-8">
+      <form method="post" enctype="multipart/form-data" action="{% url 'profile' %}">
+        {% csrf_token %}
+        {% if profile_form.non_field_errors %}<div class="alert alert-danger">{{ profile_form.non_field_errors }}</div>{% endif %}
+        <section class="profile-panel mb-4">
+          <div class="profile-panel-header"><div><h2>Datos personales</h2><p>Información visible en tu cuenta de Passing.</p></div><span class="profile-row-icon"><i class="fa-solid fa-address-card" aria-hidden="true"></i></span></div>
+          <div class="profile-panel-body"><div class="row g-3">
+            <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.first_name.id_for_label }}">Nombre</label>{{ profile_form.first_name }}{% for error in profile_form.first_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+            <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.last_name.id_for_label }}">Apellido</label>{{ profile_form.last_name }}{% for error in profile_form.last_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+            <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.email.id_for_label }}">Correo electrónico</label>{{ profile_form.email }}{% for error in profile_form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+            <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.position.id_for_label }}">Puesto</label>{{ profile_form.position }}{% for error in profile_form.position.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+            <div class="col-12"><label class="profile-field-label" for="{{ profile_form.avatar.id_for_label }}">Foto de perfil</label>{{ profile_form.avatar }}<div class="profile-hint mt-1">Elegí una imagen nueva para cambiar la foto actual.</div>{% for error in profile_form.avatar.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          </div></div>
+        </section>
 
-{% if request.user.is_authenticated %}
-    <div class='container'>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="form-card card shadow-sm">
-                    <div class="card-header">
-                        <h5>{% trans "Mi Perfil" %}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-4">
-                            <div class="position-relative">
-                                {% if user_profile.avatar %}
-                                    <img src="{{ user_profile.avatar.url }}" alt="{% trans 'Avatar' %}" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
-                                {% else %}
-                                    <img src="{% static 'default-avatar.jpg' %}" alt="{% trans 'Default Avatar' %}" class="rounded-circle" width="120" height="120" style="object-fit:cover; border:4px solid #fff; box-shadow:0 6px 18px rgba(0,0,0,0.12)">
-                                {% endif %}
-                                <div style="position:absolute; bottom:0; right:0;">
-                                    <label for="id_avatar" class="btn btn-sm btn-light border"><i class="fa fa-camera"></i></label>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h4 class="mb-0">{{ user_profile.get_full_name }}</h4>
-                                <p class="text-muted mb-0">{% trans "Correo" %}: {{ user_profile.email }}</p>
-                                <p class="text-muted mb-0">{% trans "Posición" %}: {{ user_profile.position }}</p>
-                                <p class="text-muted mb-0">{% trans "Idioma" %}: {% if user_profile.language == 'es' %} <img src="{% static 'img/spain.png' %}" alt="Español" width="20" height="20">{% else %} <img src="{% static 'img/united-kingdom.png' %}" alt="English" width="20" height="20">{% endif %}</p>
-                                
-                            </div>
-                        </div>
-
-                        <form method="POST" enctype="multipart/form-data" action="{% url 'profile' %}">
-                            {% csrf_token %}
-                            {{ profile_form.non_field_errors }}
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">{% trans "Nombre" %}</label>
-                                    {{ profile_form.first_name }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{% trans "Apellido" %}</label>
-                                    {{ profile_form.last_name }}
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">{% trans "Correo" %}</label>
-                                    {{ profile_form.email }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{% trans "Puesto" %}</label>
-                                    {{ profile_form.position }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{% trans "Idioma" %}</label>
-                                    {{ profile_form.language }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{% trans "Avatar" %}</label>
-                                    {{ profile_form.avatar }}
-                                </div>
-                                <div class="col-12 d-flex align-items-center">
-                                    <div class="form-check form-switch me-3">
-                                        {{ profile_form.is_2fa_enabled }}
-                                    </div>
-                                    <div>
-                                        <label class="form-check-label">{% trans "2do factor de autenticación" %}</label>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">{% trans "Color del menú" %}</label>
-                                    {{ profile_form.menu_color }}
-                                </div>
-                            </div>
-
-                            <div class="btn-group-submit mt-4">
-                                <button type="submit" class="btn btn-submit btn-submit-primary">{% trans "Guardar cambios" %}</button>
-                                <a href="/login/home/" class="btn btn-submit btn-submit-secondary">{% trans "Volver" %}</a>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+        <section class="profile-panel mb-4">
+          <div class="profile-panel-header"><div><h2>Preferencias y seguridad</h2><p>Personalizá tu experiencia y protegé el acceso.</p></div><span class="profile-row-icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></span></div>
+          <div class="profile-panel-body">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.language.id_for_label }}">Idioma</label>{{ profile_form.language }}{% for error in profile_form.language.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+              <div class="col-md-6"><label class="profile-field-label" for="{{ profile_form.menu_color.id_for_label }}">Color del menú</label>{{ profile_form.menu_color }}{% for error in profile_form.menu_color.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
             </div>
-        </div>
+            <label class="profile-row" for="{{ profile_form.is_2fa_enabled.id_for_label }}"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span><span><strong>Verificación en dos pasos</strong><small>{% if mfa_required %}Obligatoria para todos en esta empresa.{% else %}Agregá un código temporal al iniciar sesión.{% endif %}{% if has_otp_secret %} Tu dispositivo ya está configurado.{% endif %}</small></span></span>{% if mfa_required %}<input class="form-check-input" type="checkbox" id="{{ profile_form.is_2fa_enabled.id_for_label }}" checked disabled aria-label="Verificación en dos pasos obligatoria">{% else %}{{ profile_form.is_2fa_enabled }}{% endif %}</label>
+            {% for error in profile_form.is_2fa_enabled.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+          </div>
+        </section>
+        <button type="submit" class="btn btn-primary profile-save"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>Guardar cambios</button>
+      </form>
     </div>
-{% else %}
-    <div class="container text-center">
-        <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario para ver el perfil." %}</h5>
-    </div>
-{% endif %}
 
+    <aside class="col-xl-4">
+      <section class="profile-panel">
+        <div class="profile-panel-header"><div><h2>Notificaciones</h2><p>Elegí los avisos que llegan a Telegram.</p></div><span class="profile-row-icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></span></div>
+        <div class="profile-panel-body">
+          {% if telegram_recipient and telegram_recipient.active %}<span class="profile-status connected"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>Chat conectado</span>
+          {% elif telegram_recipient %}<span class="profile-status off"><i class="fa-solid fa-pause" aria-hidden="true"></i>Avisos pausados</span>
+          {% else %}<span class="profile-status pending"><i class="fa-solid fa-link" aria-hidden="true"></i>Vinculación pendiente</span>{% endif %}
+          {% if telegram_recipient %}
+            <div class="profile-summary mt-3"><span class="profile-summary-label">Chat privado</span><span class="profile-summary-value">ID {{ telegram_recipient.chat_id }}</span></div>
+            <p class="profile-hint mt-3 mb-2">Suscripciones activas:</p>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+              {% if telegram_recipient.active and telegram_recipient.notify_support %}<span class="badge text-bg-primary">Ticket de soporte</span>{% endif %}
+              {% if telegram_recipient.active and telegram_recipient.notify_monitoring and can_monitor_alerts %}<span class="badge text-bg-info">Monitoreo</span>{% endif %}
+              {% if telegram_recipient.active and telegram_recipient.notify_risks %}<span class="badge text-bg-success">Asistente de riesgos</span>{% endif %}
+              {% if telegram_recipient.active and telegram_recipient.notify_password_requests and user_profile.is_superuser %}<span class="badge text-bg-warning">Pedido de contraseñas</span>{% endif %}
+              {% if not telegram_recipient.active %}<span class="profile-hint">Ninguna mientras los avisos estén pausados.</span>{% endif %}
+              {% if telegram_recipient.active and not telegram_recipient.notify_support and not telegram_recipient.notify_monitoring and not telegram_recipient.notify_password_requests and not telegram_recipient.notify_risks %}<span class="profile-hint">Todavía no elegiste ninguna.</span>{% endif %}
+            </div>
+          {% else %}<p class="profile-hint mt-3">Vinculá tu chat para recibir avisos y administrar cada suscripción.</p>{% endif %}
+          <a class="btn btn-primary w-100" href="{% url 'supporthub:telegram_profile' %}">Administrar notificaciones <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i></a>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
 {% endblock %}

@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
-<div class="container mt-4">
-  <h3>{% blocktrans with cid=item.canonical_id %}Vincular Amenaza a IntelItem {{ cid }}{% endblocktrans %}</h3>
-  <p class="text-muted">{{ item.title }}</p>
+<div class="container mt-4 passing-form-page">
+  <header class="form-hero"><div><h3>{% blocktrans with cid=item.canonical_id %}Vincular Amenaza a IntelItem {{ cid }}{% endblocktrans %}</h3><p>{{ item.title }}</p></div><a class="btn btn-outline-secondary" href="{{ back_url }}">{% trans "Volver" %}</a></header>
 
   <form method="get" class="mb-3">
     <div class="input-group">

@@ -2,10 +2,10 @@
 {% load static %}
 {% block head %}<link rel="stylesheet" href="{% static 'monitoring/forms.css' %}">{% endblock %}
 {% block content %}
-<div class="container py-4 monitor-form" style="max-width:700px">
-  <h1 class="h3">{% if window %}Editar{% else %}Nueva{% endif %} ventana de mantenimiento</h1>
+<div class="container py-4 monitor-form passing-form-page" style="max-width:700px">
+  <header class="form-hero"><div><div class="ui-muted-title">Monitoreo / Mantenimientos</div><h1>{% if window %}Editar{% else %}Nueva{% endif %} ventana de mantenimiento</h1></div><a class="btn btn-outline-light" href="{% url 'monitoring:maintenance_windows' %}">Volver</a></header>
   <div class="alert alert-info">Programá un período durante el cual los checks siguen registrándose, pero se silencian las notificaciones. Puede repetirse cada día o semana. Ingresá las horas en <strong>{{ request.monitoring_timezone }}</strong>.</div>
-  <form method="post" class="card card-body">{% csrf_token %}
+  <form method="post" class="form-surface p-4">{% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
     {% for field in form %}<div class="mb-3">{% include 'monitoring/form_field.html' with field=field %}</div>{% endfor %}
     <div><button class="btn btn-primary">Guardar</button> <a href="{% url 'monitoring:maintenance_windows' %}">Cancelar</a></div>

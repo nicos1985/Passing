@@ -33,7 +33,8 @@
 {% endblock %}
 
 {% block content %}
-    <div class="form-container">
+    <div class="form-container passing-form-page">
+      <header class="form-hero">
         <a href="{% url 'threat_intel:run-detail' run.id %}" class="back-button">
             <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Run" %}
         </a>
@@ -42,6 +43,7 @@
             <h2 style="color: #333; font-weight: 700;">{% trans "Crear Nuevo Reporte" %}</h2>
             <p class="text-muted">{% blocktrans with rid=run.id start=run.period_start|date:"Y-m-d" end=run.period_end|date:"Y-m-d" %}Para Run #{{ rid }} ({{ start }} - {{ end }}){% endblocktrans %}</p>
         </div>
+      </header>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
@@ -114,14 +116,14 @@
                             <div class="analysis-item">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
-                                        <div class="cve-id"><i class="fa-solid fa-virus"></i> {{ analysis.item.cve_id }}</div>
+                                        <div class="cve-id"><i class="fa-solid fa-virus"></i> {{ analysis.item.canonical_id }}</div>
                                         <p class="mb-2 mt-2">{{ analysis.summary_es|truncatewords:30 }}</p>
                                         <small class="text-muted">
                                             {% trans "Severidad:" %}
                                             <span class="severity" style="background: 
-                                                {% if analysis.item.severity == 'CRITICAL' %}#dc3545
-                                                {% elif analysis.item.severity == 'HIGH' %}#fd7e14
-                                                {% elif analysis.item.severity == 'MEDIUM' %}#ffc107
+                                                {% if analysis.item.severity == 'critical' %}#dc3545
+                                                {% elif analysis.item.severity == 'high' %}#fd7e14
+                                                {% elif analysis.item.severity == 'medium' %}#ffc107
                                                 {% else %}#28a745{% endif %}; color: white;">
                                                 {{ analysis.item.severity }}
                                             </span>

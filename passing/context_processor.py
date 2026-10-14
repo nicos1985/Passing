@@ -1,4 +1,4 @@
-from notifications.models import AdminNotification, UserNotifications
+from notifications.models import AdminNotification, InboxNotification, UserNotifications
 from accounts.models import TenantSettings
 import logging
 
@@ -28,6 +28,11 @@ def counter_admin_notifications(request):
                 return {'contador_notis': 0}
     else:
         contador_notis = 0
+    if request.user.is_authenticated:
+        try:
+            contador_notis += InboxNotification.objects.filter(user=request.user, viewed=False).count()
+        except Exception:
+            logger.exception('Error en contador de avisos internos')
     return {'contador_notis': contador_notis}
 
 def menu_color(request):

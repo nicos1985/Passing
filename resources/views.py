@@ -3,7 +3,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import PermissionDenied
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse, JsonResponse
 from .models import (
@@ -36,6 +38,7 @@ from django.db.models import F, Q, Count
 import logging
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -46,6 +49,8 @@ from .models import AssetAction, AssetActionType
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.forms import inlineformset_factory
 from .models import ChecklistTemplate, ChecklistItem, VendorChecklist
 from .forms import ChecklistTemplateForm, ChecklistItemForm, VendorChecklistForm
@@ -63,30 +68,118 @@ except Exception:
 # Create your views here.
 
 logger = logging.getLogger(__name__)
+
+EVALUABLE_MODELS = {
+    'informationassets', 'vendor', 'project', 'clientcompany',
+}
+
+
+def _evaluable_content_type(type_id):
+    """Only resource models may be queried through the evaluation selectors."""
+    try:
+        return ContentType.objects.get(
+            pk=type_id, app_label='resources', model__in=EVALUABLE_MODELS,
+        )
+    except (ContentType.DoesNotExist, ValueError, TypeError):
+        return None
+
+
+def can_manage_resource(user, model, action='change'):
+    if not user.is_authenticated or not user.is_active:
+        return False
+    return user.is_staff or user.is_superuser or user.has_perm(
+        f'{model._meta.app_label}.{action}_{model._meta.model_name}'
+    )
+
+
+class ResourceWriteMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Require a model permission for all create, update and delete views."""
+    raise_exception = True
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect_to_login(self.request.get_full_path(), self.get_login_url())
+        raise PermissionDenied
+
+    def test_func(self):
+        if isinstance(self, CreateView):
+            action = 'add'
+        elif isinstance(self, DeleteView):
+            action = 'delete'
+        else:
+            action = 'change'
+        return can_manage_resource(self.request.user, self.model, action)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['resource_form_access'] = True
+        return context
+
+    def form_valid(self, form):
+        if isinstance(self, DeleteView):
+            try:
+                return super().form_valid(form)
+            except ProtectedError:
+                messages.error(self.request, 'No se puede eliminar: el registro forma parte del historial de riesgos o tiene relaciones activas.')
+                return redirect(self.get_success_url())
+        return super().form_valid(form)
+
+
+class ResourceReadMixin(ResourceWriteMixin):
+    """Exige permiso de lectura también en accesos directos a listados y detalles."""
+
+    def test_func(self):
+        return can_manage_resource(self.request.user, self.model, 'view')
+
+
+class RiskReadMixin(ResourceReadMixin):
+    """Conserva el nombre usado por las vistas de riesgos."""
 ################################### Asset Views ###########################
 
 class DynamicModelListView(ListView):
     """Lista cualquier modelo con filtros e información dinámica basada en su meta."""
     template_name = 'list_resource.html'
     EXCLUDED_FIELDS = ['created', 'updated', 'id']
+    DISPLAY_FIELDS = None
+    # Cada listado muestra lo necesario para identificar y priorizar el registro.
+    # El detalle conserva todos los campos del modelo.
+    LIST_COLUMNS = {
+        'informationassets': ('name', 'asset_type', 'status', 'information_classification', 'owner'),
+        'vendor': ('name', 'vendor_type', 'criticality', 'control_period', 'owner'),
+        'project': ('name', 'proyect_type', 'status', 'owner', 'finish_date'),
+        'clientcompany': ('name', 'status', 'owner', 'email'),
+        'threat': ('name', 'type_threat'),
+        'vulnerability': ('name', 'type_vulnerability'),
+        'treatment': ('name', 'object_id', 'stage', 'treatment_responsible', 'priority', 'deadline'),
+    }
+    COLUMN_LABELS = {'object_id': 'Recurso asociado', 'id': 'ID'}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         model = self.model
         fields = model._meta.fields
+        field_by_name = {field.name: field for field in fields}
+        column_names = self.DISPLAY_FIELDS or self.LIST_COLUMNS.get(model._meta.model_name)
+        visible_fields = (
+            [field_by_name[name] for name in column_names if name in field_by_name]
+            if column_names else
+            [field for field in fields if field.name not in self.EXCLUDED_FIELDS]
+        )
 
         # Campos mostrados
         context['fields'] = [
-            {'name': field.name, 'verbose': field.verbose_name.title()}
-            for field in fields if field.name not in self.EXCLUDED_FIELDS
+            {
+                'name': field.name,
+                'verbose': self.COLUMN_LABELS.get(field.name, field.verbose_name.title()),
+                'is_date': isinstance(field, models.DateField),
+            }
+            for field in visible_fields
         ]
 
         # Filtros: choices, booleanos, foreign keys
         filters = {}
 
-        for field in fields:
-            if field.name in self.EXCLUDED_FIELDS:
-                continue
+        for field in visible_fields:
 
             # Campos con choices
             if field.choices:
@@ -102,7 +195,7 @@ class DynamicModelListView(ListView):
             # ForeignKey
             elif isinstance(field, models.ForeignKey):
                 related = field.related_model.objects.all()
-                filters[field.name] = [{'value': str(obj.pk), 'label': str(obj)} for obj in related]
+                filters[field.name] = [{'value': str(obj), 'label': str(obj)} for obj in related]
             
             # si es datetime o date, solo marcamos el tipo
             elif isinstance(field, models.DateField) or isinstance(field, models.DateTimeField):
@@ -112,11 +205,14 @@ class DynamicModelListView(ListView):
         context['verbose_name_plural'] = model._meta.verbose_name_plural.title()
         # Expose model_name for templates (avoid accessing _meta from templates)
         context['model_name'] = model._meta.model_name
+        context['can_create'] = can_manage_resource(self.request.user, model, 'add')
+        context['can_change'] = can_manage_resource(self.request.user, model, 'change')
+        context['can_delete'] = can_manage_resource(self.request.user, model, 'delete')
         return context
 
     
 
-class AssetListView(LoginRequiredMixin, DynamicModelListView):
+class AssetListView(ResourceReadMixin, DynamicModelListView):
     """Expone los activos de información junto con indicadores de acciones pendientes."""
     model = InformationAssets
     login_url = 'login'
@@ -146,7 +242,7 @@ class AssetListView(LoginRequiredMixin, DynamicModelListView):
         return context
 
 
-class AssetCreateView(LoginRequiredMixin, CreateView):
+class AssetCreateView(ResourceWriteMixin, CreateView):
     """Permite crear activos de información conservando enlaces relacionados."""
     model = InformationAssets
     form_class = InformationAssetsForm
@@ -170,7 +266,7 @@ class AssetCreateView(LoginRequiredMixin, CreateView):
             context['related_links'] = []
         return context
 
-class AssetUpdateView(LoginRequiredMixin, UpdateView):
+class AssetUpdateView(ResourceWriteMixin, UpdateView):
     """Gestiona la edición de activos de información con contexto enriquecido."""
     model = InformationAssets
     form_class = InformationAssetsForm
@@ -193,14 +289,14 @@ class AssetUpdateView(LoginRequiredMixin, UpdateView):
             context['related_links'] = []
         return context
 
-class AssetDetailView(LoginRequiredMixin, DetailView):
+class AssetDetailView(ResourceReadMixin, DetailView):
     """Muestra el detalle completo de un activo de información."""
     model=InformationAssets
     template_name = 'detail-resource.html'
     login_url = 'login'
 
 
-class LoanCreateView(LoginRequiredMixin, CreateView):
+class LoanCreateView(ResourceWriteMixin, CreateView):
     """Solicita un préstamo de activo y envía el correo de confirmación al destinatario."""
     model = AssetAction
     form_class = LoanForm
@@ -262,7 +358,7 @@ class LoanCreateView(LoginRequiredMixin, CreateView):
         return ctx
 
 
-class ReturnCreateView(LoginRequiredMixin, CreateView):
+class ReturnCreateView(ResourceWriteMixin, CreateView):
     """Solicita la devolución de un activo y notifica al encargado actual."""
     model = AssetAction
     form_class = ReturnForm
@@ -329,7 +425,7 @@ class ReturnCreateView(LoginRequiredMixin, CreateView):
         return ctx
 
 
-class AssetActionListView(LoginRequiredMixin, ListView):
+class AssetActionListView(ResourceReadMixin, ListView):
     """Lista las acciones realizadas sobre un activo específico."""
     model = AssetAction
     template_name = 'asset-actions-list.html'
@@ -382,7 +478,7 @@ class AssetActionListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class AssetActionAllListView(LoginRequiredMixin, ListView):
+class AssetActionAllListView(ResourceReadMixin, ListView):
     """Muestra el historial global de acciones sobre activos, con filtro opcional por usuario."""
     model = AssetAction
     template_name = 'asset-actions-list.html'
@@ -444,6 +540,8 @@ class AssetActionAllListView(LoginRequiredMixin, ListView):
 @login_required
 def asset_tracking(request):
     """Lista de activos con su titular actual y el historial reciente."""
+    if not can_manage_resource(request.user, InformationAssets, 'view'):
+        raise PermissionDenied
     assets = InformationAssets.objects.all()
     data = []
     for a in assets:
@@ -454,35 +552,40 @@ def asset_tracking(request):
 
 
 @login_required
+@require_http_methods(['GET', 'POST'])
 def confirm_asset_action(request, token):
     """Confirma la acción de un activo mediante token y actualiza su estado."""
-    try:
-        aa = AssetAction.objects.get(confirmation_token=token)
-    except AssetAction.DoesNotExist:
-        return HttpResponse('Token inválido o acción no encontrada.', status=404)
+    with transaction.atomic():
+        aa = get_object_or_404(AssetAction.objects.select_for_update(), confirmation_token=token)
+        if aa.user_id != request.user.pk and not (request.user.is_staff or request.user.is_superuser):
+            raise PermissionDenied
+        if aa.status != AssetAction.AssetActionStatus.PENDING:
+            return HttpResponse('Esta acción ya fue procesada.', status=400)
+        if request.method == 'GET':
+            return render(request, 'asset_action_confirm.html', {'action': aa})
 
-    if aa.status != AssetAction.AssetActionStatus.PENDING:
-        return HttpResponse('Esta acción ya fue procesada.', status=400)
-
-    # mark confirmed and save
-    aa.status = AssetAction.AssetActionStatus.CONFIRMED
-    aa.timestamp = timezone.now()
-    try:
-        aa.save()
-    except ValidationError as e:
-        # If the action cannot be confirmed due to business validation (e.g., trying to return without loan),
-        # mark it as rejected and return a 400 with the error message.
-        aa.status = AssetAction.AssetActionStatus.REJECTED
-        aa.save(update_fields=['status'])
-        return HttpResponse(f'No se pudo confirmar la acción: {e.messages}', status=400)
-
-    # Simple response page
+        InformationAssets.objects.select_for_update().get(pk=aa.asset_id)
+        aa.status = AssetAction.AssetActionStatus.CONFIRMED
+        aa.timestamp = timezone.now()
+        try:
+            aa.save()
+        except ValidationError as exc:
+            AssetAction.objects.filter(pk=aa.pk).update(status=AssetAction.AssetActionStatus.REJECTED)
+            return HttpResponse(f'No se pudo confirmar la acción: {exc.messages}', status=400)
+        AssetAction.objects.filter(pk=aa.pk).update(confirmation_token=None)
     return HttpResponse('Acción confirmada correctamente. Puede cerrar esta ventana.')
 
-class GenericResourceDetailView(DetailView):
+class GenericResourceDetailView(LoginRequiredMixin, DetailView):
     """Detalle genérico basado en el modelo indicado, incluyendo campos y acciones auxiliares."""
     template_name = 'detail-resource.html'
     model = None  # importante: por compatibilidad, aunque se setea dinámicamente
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and self.model in (InformationAssets, Vendor, Project, ClientCompany, RiskEvaluation, Treatment, Threat, Vulnerability):
+            if not can_manage_resource(request.user, self.model, 'view'):
+                if self.model is not Treatment or self.get_object().treatment_responsible_id != request.user.pk:
+                    raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
     @classmethod
     def as_view(cls, **initkwargs):
@@ -501,7 +604,7 @@ class GenericResourceDetailView(DetailView):
         # Campos visibles (excluyendo ID, campos sensibles o FK pesados si querés)
         visible_fields = []
         for field in meta.get_fields():
-            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'password']:
+            if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['id', 'password', 'implementation_status']:
                 if field.choices:
                     display_method = f"get_{field.name}_display"
                     value = getattr(obj, display_method)()
@@ -527,11 +630,14 @@ class GenericResourceDetailView(DetailView):
                 except Exception:
                     evaluation = None
                 context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
+                context['followup_evaluation'] = RiskEvaluation.objects.filter(followup_for=obj).first()
+                context['can_view_evaluations'] = can_manage_resource(self.request.user, RiskEvaluation, 'view')
+                context['can_add_evaluations'] = can_manage_resource(self.request.user, RiskEvaluation, 'add')
         except Exception:
             context['stage_choices'] = []
         try:
-            context['edit_url'] = reverse(f'{model_name}-update', args=[obj.pk])
-            context['delete_url'] = reverse(f'{model_name}-delete', args=[obj.pk])
+            context['edit_url'] = reverse(f'{model_name}-update', args=[obj.pk]) if can_manage_resource(self.request.user, self.model, 'change') else None
+            context['delete_url'] = reverse(f'{model_name}-delete', args=[obj.pk]) if can_manage_resource(self.request.user, self.model, 'delete') else None
             context['back_url'] = reverse(f'{model_name}-list')
         except:
             context['edit_url'] = None
@@ -551,7 +657,7 @@ class GenericResourceDetailView(DetailView):
 
 
 
-class AssetDeleteView(LoginRequiredMixin, DeleteView):
+class AssetDeleteView(ResourceWriteMixin, DeleteView):
     """Borra un activo de información mostrando un resumen antes de confirmar."""
     model = InformationAssets
     template_name = 'delete-resource.html'
@@ -567,7 +673,7 @@ class AssetDeleteView(LoginRequiredMixin, DeleteView):
 
 ####################################### Vendor Views ###########################
 
-class VendorListView(LoginRequiredMixin, DynamicModelListView):
+class VendorListView(ResourceReadMixin, DynamicModelListView):
     """Lista proveedores con las mismas herramientas dinámicas que para otros recursos."""
     model = Vendor
     login_url = 'login'
@@ -581,7 +687,7 @@ class VendorListView(LoginRequiredMixin, DynamicModelListView):
         return context
 
 
-class VendorCreateView(LoginRequiredMixin, CreateView):
+class VendorCreateView(ResourceWriteMixin, CreateView):
     """Permite registrar proveedores y vincular plantillas de checklist iniciales."""
     model = Vendor
     form_class = VendorForm
@@ -603,7 +709,8 @@ class VendorCreateView(LoginRequiredMixin, CreateView):
         vendor = form.instance
         vendor.criticality = vendor.compute_criticality()
         vendor.control_period = vendor.compute_control_period()
-        response = super().form_valid(form)
+        with transaction.atomic():
+            response = super().form_valid(form)
         try:
             template = form.cleaned_data.get('initial_checklist_template')
             if template and self.object:
@@ -616,13 +723,18 @@ class VendorCreateView(LoginRequiredMixin, CreateView):
             messages.info(self.request, f'Primera evaluación pendiente programada para {scheduled.scheduled_date}')
         return response
 
-class VendorUpdateView(LoginRequiredMixin, UpdateView):
+class VendorUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza los datos de un proveedor conservando enlaces contextuales siempre."""
     model = Vendor
     form_class = VendorForm
     template_name = 'CU-resource.html'
     success_url = reverse_lazy('vendor-list')
     login_url = 'login'
+
+    def form_valid(self, form):
+        form.instance.criticality = form.instance.compute_criticality()
+        form.instance.control_period = form.instance.compute_control_period()
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -638,13 +750,13 @@ class VendorUpdateView(LoginRequiredMixin, UpdateView):
         context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
 
-class VendorDetailView(LoginRequiredMixin, DetailView):
+class VendorDetailView(ResourceReadMixin, DetailView):
     """Presenta los detalles de un proveedor junto a sus métricas recientes."""
     model=Vendor
     template_name = 'detail-vendor.html'
     login_url = 'login'
 
-class VendorDeleteView(LoginRequiredMixin, DeleteView):
+class VendorDeleteView(ResourceWriteMixin, DeleteView):
     """Confirma la eliminación de un proveedor y redirige al listado."""
     model = Vendor
     template_name = 'delete-resource.html'
@@ -661,7 +773,7 @@ class VendorDeleteView(LoginRequiredMixin, DeleteView):
 
 ############################# Project Views ###########################
 
-class ProjectListView(LoginRequiredMixin, DynamicModelListView):
+class ProjectListView(ResourceReadMixin, DynamicModelListView):
     """Expone el listado de proyectos con filtros automáticos."""
     model = Project
     login_url = 'login'
@@ -674,7 +786,7 @@ class ProjectListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
     
-class ProjectCreateView(LoginRequiredMixin, CreateView):
+class ProjectCreateView(ResourceWriteMixin, CreateView):
     """Formulario para crear proyectos con atributos temporales necesarios."""
     model = Project
     form_class = ProjectAssetsForm
@@ -691,7 +803,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         context['action_type'] = 'Crear'
         return context
 
-class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+class ProjectUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza proyectos y reusa la plantilla de formulario base."""
     model = Project
     form_class = ProjectAssetsForm
@@ -713,7 +825,7 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
     
-class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+class ProjectDeleteView(ResourceWriteMixin, DeleteView):
     """Confirma la eliminación de un proyecto mostrando su nombre."""
     model = Project
     template_name = 'delete-resource.html'
@@ -729,7 +841,7 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
 ############################# Client Views ###########################
 
-class ClientListView(LoginRequiredMixin, DynamicModelListView):
+class ClientListView(ResourceReadMixin, DynamicModelListView):
     """Lista clientes utilizando los filtros dinámicos heredados."""
     model = ClientCompany
     login_url = 'login'
@@ -742,7 +854,7 @@ class ClientListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
     
-class ClientCreateView(LoginRequiredMixin, CreateView):
+class ClientCreateView(ResourceWriteMixin, CreateView):
     """Creación guiada de clientes con campos de fecha y lista relacionada."""
     model = ClientCompany
     form_class = ClientAssetsForm
@@ -759,7 +871,7 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         context['action_type'] = 'Crear'
         return context
 
-class ClientUpdateView(LoginRequiredMixin, UpdateView):
+class ClientUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza clientes y conserva el comportamiento de formularios estándar."""
     model = ClientCompany
     form_class = ClientAssetsForm
@@ -781,7 +893,7 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         context['evaluation_meta'] = _build_evaluation_metadata(evaluation)
         return context
     
-class ClientDeleteView(LoginRequiredMixin, DeleteView):
+class ClientDeleteView(ResourceWriteMixin, DeleteView):
     """Elimina un cliente después de confirmar sus datos básicos."""
     model = ClientCompany
     template_name = 'delete-resource.html'
@@ -797,11 +909,16 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
 
 ############################ Evaluation Views ###########################
 
+@login_required
 def get_objects_by_type(request):
     """Devuelve instancias de un modelo dado para llenar selects vía AJAX."""
     # Check if the request is an AJAX request
     content_type_id = request.GET.get('type_id')
-    ct = ContentType.objects.get(id=content_type_id)
+    ct = _evaluable_content_type(content_type_id)
+    if ct is None:
+        return JsonResponse({'error': 'Tipo de recurso inválido'}, status=400)
+    if not any(can_manage_resource(request.user, RiskEvaluation, action) for action in ('add', 'change')):
+        raise PermissionDenied
     model_class = ct.model_class()
 
     data = []
@@ -811,8 +928,11 @@ def get_objects_by_type(request):
     return JsonResponse({'objects': data})
 
 
+@login_required
 def get_object_metadata(request):
     """Devuelve metadatos resumidos del objeto evaluado (para panel lateral)."""
+    if not any(can_manage_resource(request.user, RiskEvaluation, action) for action in ('add', 'change')):
+        raise PermissionDenied
     type_id = request.GET.get('type_id')
     object_id = request.GET.get('object_id')
     if not type_id or not object_id:
@@ -828,7 +948,9 @@ def get_object_metadata(request):
 def _build_evaluated_metadata(model_type_id, object_pk):
     """Devuelve metadatos básicos del objeto evaluado para mostrarlos en la UI."""
     try:
-        ct = ContentType.objects.get(pk=model_type_id)
+        ct = _evaluable_content_type(model_type_id)
+        if ct is None:
+            return None
         model_class = ct.model_class()
         obj = model_class.objects.filter(pk=object_pk).first()
         if obj is None:
@@ -901,10 +1023,13 @@ def _build_evaluation_metadata(evaluation: RiskEvaluation):
     }
 
 
+@login_required
 def crear_evaluacion(request):
     """Prepara y procesa el formulario para generar una evaluación de riesgo."""
     
-    model_types = ContentType.objects.filter(model__in=[
+    if not can_manage_resource(request.user, RiskEvaluation, 'add'):
+        raise PermissionDenied
+    model_types = ContentType.objects.filter(app_label='resources', model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
     ])
     model_choices = []
@@ -918,14 +1043,41 @@ def crear_evaluacion(request):
     # allow pre-filling from GET (e.g., after a Treatment was implemented)
     type_id = request.GET.get('type_id') or request.GET.get('model_type')
     object_id = request.GET.get('object_id')
-    from_treatment = request.GET.get('from_treatment')
+    from_treatment = request.GET.get('from_treatment') or request.POST.get('from_treatment')
     intel_item_id = request.GET.get('intel_item_id')
+    source_treatment = None
+    if from_treatment:
+        source_treatment = get_object_or_404(Treatment, pk=from_treatment)
+        if source_treatment.stage != TreatmentStage.IMPLEMENTED:
+            raise Http404('La reevaluación se inicia cuando el tratamiento está implementado.')
+        existing_followup = RiskEvaluation.objects.filter(followup_for=source_treatment).first()
+        if existing_followup:
+            return redirect('evaluation-update' if existing_followup.is_draft else 'evaluation-detail', pk=existing_followup.pk)
+        type_id = source_treatment.content_type_id
+        object_id = source_treatment.object_id
 
     if request.method == 'POST':
         form = RiskEvaluationForm(request.POST)
         if form.is_valid():
-            evaluacion = form.save()
-            return redirect('evaluation-detail', pk=evaluacion.pk)
+            if source_treatment and form.cleaned_data.get('treatment'):
+                form.add_error('treatment', 'La reevaluación no puede reutilizar un tratamiento existente.')
+            elif source_treatment and (
+                form.cleaned_data['model_type'].pk != source_treatment.content_type_id
+                or int(form.cleaned_data['object_id']) != source_treatment.object_id
+            ):
+                form.add_error('object_id', 'La reevaluación debe corresponder al recurso del tratamiento.')
+            else:
+                with transaction.atomic():
+                    if source_treatment:
+                        Treatment.objects.select_for_update().get(pk=source_treatment.pk)
+                        existing_followup = RiskEvaluation.objects.filter(followup_for=source_treatment).first()
+                        if existing_followup:
+                            return redirect('evaluation-detail', pk=existing_followup.pk)
+                    evaluacion = form.save(commit=False)
+                    if source_treatment:
+                        evaluacion.followup_for = source_treatment
+                    evaluacion.save()
+                return redirect('evaluation-detail', pk=evaluacion.pk)
         else:
             # Surface validation errors to user
             messages.error(request, 'Errores en el formulario: ' + '; '.join(
@@ -966,7 +1118,9 @@ def crear_evaluacion(request):
         # If type_id provided, restrict choices for object_id to that model
         if type_id:
             try:
-                ct = ContentType.objects.get(pk=type_id)
+                ct = _evaluable_content_type(type_id)
+                if ct is None:
+                    raise ContentType.DoesNotExist
                 model_class = ct.model_class()
                 # build choices for object_id field
                 choices = [(str(obj.pk), str(obj)) for obj in model_class.objects.all()]
@@ -1025,15 +1179,17 @@ def crear_evaluacion(request):
 
     return render(request, 'evaluacion_form.html', {
         'form': form,
+        'resource_form_access': True,
         'model_types': model_types,
         'evaluated_meta': evaluated_meta,
+        'from_treatment': source_treatment,
         'related_links': [
             (reverse('evaluation-list'), 'Lista de evaluaciones'),
             (reverse('checklist-templates'), 'Plantillas de checklist'),
         ],
     })
 
-class RiskEvaluationDetailView(DetailView):
+class RiskEvaluationDetailView(RiskReadMixin, DetailView):
     """Muestra la evaluación de riesgo y los campos del objeto evaluado."""
     model = RiskEvaluation
     template_name = 'evaluation_detail.html'
@@ -1045,7 +1201,7 @@ class RiskEvaluationDetailView(DetailView):
 
         # Obtener campos comunes del objeto evaluado (heredado de RiskEvaluableObject)
         base_fields = []
-        for field in evaluated._meta.get_fields():
+        for field in evaluated._meta.get_fields() if evaluated is not None else ():
             if field.concrete and not field.many_to_many and not field.auto_created and field.name not in ['updated']:
                 value = getattr(evaluated, field.name, None)
 
@@ -1059,6 +1215,9 @@ class RiskEvaluationDetailView(DetailView):
                 })
 
         context['evaluated_fields'] = base_fields
+        context['evaluated_missing'] = evaluated is None
+        context['can_edit'] = can_manage_resource(self.request.user, RiskEvaluation, 'change')
+        context['can_create_treatment'] = can_manage_resource(self.request.user, Treatment, 'add')
         # Metadata del objeto evaluado para enlaces y cabeceras
         try:
             ct = self.object.evaluated_type
@@ -1094,7 +1253,7 @@ class RiskEvaluationDetailView(DetailView):
         return context
 
 
-class RiskEvaluationUpdateView(LoginRequiredMixin, UpdateView):
+class RiskEvaluationUpdateView(ResourceWriteMixin, UpdateView):
     """Permite editar una evaluación existente reutilizando el formulario base."""
     model = RiskEvaluation
     form_class = RiskEvaluationForm
@@ -1112,9 +1271,17 @@ class RiskEvaluationUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('evaluation-detail', args=[self.object.pk])
 
+    def form_valid(self, form):
+        # Los valores copiados en una reevaluación solo quedan vigentes al confirmarlos.
+        if form.instance.is_draft:
+            form.instance.is_draft = False
+            form.instance.reviewed_at = timezone.now()
+            form.instance.reviewed_by = self.request.user
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        model_types = ContentType.objects.filter(model__in=[
+        model_types = ContentType.objects.filter(app_label='resources', model__in=[
             'informationassets', 'vendor', 'project', 'clientcompany'
         ])
         ctx['model_types'] = model_types
@@ -1124,6 +1291,7 @@ class RiskEvaluationUpdateView(LoginRequiredMixin, UpdateView):
             (reverse('checklist-templates'), 'Plantillas de checklist'),
         ]
         ctx['action_type'] = 'Editar'
+        ctx['resource_form_access'] = True
         return ctx
 
 
@@ -1131,45 +1299,54 @@ class RiskEvaluationUpdateView(LoginRequiredMixin, UpdateView):
 @require_POST
 def force_create_treatment(request, pk):
     """Genera manualmente un tratamiento vinculado a una evaluación específica."""
-    evaluation = get_object_or_404(RiskEvaluation, pk=pk)
-
-    if evaluation.treatment is not None:
-        messages.info(request, 'La evaluación ya tiene un tratamiento asociado.')
-        return redirect('evaluation-detail', pk=pk)
+    if not can_manage_resource(request.user, Treatment, 'add'):
+        raise PermissionDenied
     try:
-        treatment = Treatment.objects.create(
-            name=f"Tratamiento forzado para evaluación {evaluation.pk}",
-            treatment_type=TypeTreatment.REDUCE,
-            description=f"Tratamiento creado manualmente desde la evaluación #{evaluation.pk}.",
-            controls=Controls.A5_INFORMATION_SECURITY_POLICIES,
-            content_type=evaluation.evaluated_type,
-            object_id=evaluation.evaluated_id,
-            deadline=timezone.now().date() + timedelta(days=30),
-            treatment_responsible=CustomUser.for_current_tenant().first(),
-            treatment_oportunity=TreatmentOportunity.PREVENTIVE,
-            application_periodicity=ApplicationPeriodicity.PERMANENT,
-            control_automation=ControlAutomation.MANUAL,
-            priority=Priority.NO_PRIORITY,
-        )
-
-        # link evaluation -> treatment
-        evaluation.treatment = treatment
-        evaluation.save(update_fields=['treatment'])
+        with transaction.atomic():
+            evaluation = get_object_or_404(RiskEvaluation.objects.select_for_update(), pk=pk)
+            if evaluation.treatment_id:
+                messages.info(request, 'La evaluación ya tiene un tratamiento asociado.')
+                return redirect('evaluation-detail', pk=pk)
+            if evaluation.is_draft:
+                messages.error(request, 'Confirmá la reevaluación antes de crear un tratamiento.')
+                return redirect('evaluation-detail', pk=pk)
+            responsible = CustomUser.for_current_tenant().filter(is_active=True).first()
+            if responsible is None:
+                raise ValidationError('Se necesita un responsable activo para el tratamiento.')
+            treatment = Treatment.objects.create(
+                name=f"Tratamiento forzado para evaluación {evaluation.pk}",
+                treatment_type=TypeTreatment.REDUCE,
+                description=f"Tratamiento creado manualmente desde la evaluación #{evaluation.pk}.",
+                controls=Controls.A5_INFORMATION_SECURITY_POLICIES,
+                content_type=evaluation.evaluated_type,
+                object_id=evaluation.evaluated_id,
+                deadline=timezone.now().date() + timedelta(days=30),
+                treatment_responsible=responsible,
+                treatment_oportunity=TreatmentOportunity.PREVENTIVE,
+                application_periodicity=ApplicationPeriodicity.PERMANENT,
+                control_automation=ControlAutomation.MANUAL,
+                priority=Priority.NO_PRIORITY,
+            )
+            evaluation.treatment = treatment
+            evaluation.save(update_fields=['treatment'])
 
         messages.success(request, 'Tratamiento forzado creado y vinculado correctamente.')
-    except Exception as e:
-        messages.error(request, f'No se pudo crear el tratamiento: {e}')
+    except Exception:
+        logger.exception('No se pudo crear el tratamiento para evaluación %s', pk)
+        messages.error(request, 'No se pudo crear el tratamiento. Revisá el responsable y la evaluación.')
 
     return redirect('evaluation-detail', pk=pk)
     
-class RiskEvaluationListView(LoginRequiredMixin, ListView):
+class RiskEvaluationListView(RiskReadMixin, ListView):
     """Lista las evaluaciones de riesgo con filtros por nivel y tratamiento."""
     model = RiskEvaluation
     template_name = 'evaluation_list.html'
     context_object_name = 'evaluations'
     fields = model._meta.fields  
     login_url = 'login'
-    EXCLUDED_FIELDS = ['updated', 'id']
+    EXCLUDED_FIELDS = ['updated', 'id', 'reviewed_at', 'reviewed_by']
+    LIST_COLUMNS = ('evaluated_id', 'threat', 'vulnerability', 'risk_level', 'is_draft', 'treatment')
+    COLUMN_LABELS = {'evaluated_id': 'Recurso', 'is_draft': 'Revisión'}
 
     def get_queryset(self):
         qs = (
@@ -1197,26 +1374,33 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
         not_impl = self.request.GET.get('not_implemented')
         if str(not_impl) in ('1', 'true', 'True'):
             # Return evaluations that have a treatment and are NOT in IMPLEMENTED stage
-            qs = qs.filter(treatment__isnull=False).exclude(treatment__stage=TreatmentStage.IMPLEMENTED)
+            qs = qs.filter(Q(is_draft=True) | Q(treatment__isnull=False)).exclude(
+                treatment__stage=TreatmentStage.IMPLEMENTED, is_draft=False,
+            )
 
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         model = self.model
-        fields = model._meta.fields
+        context['can_create'] = can_manage_resource(self.request.user, self.model, 'add')
+        context['can_delete'] = can_manage_resource(self.request.user, self.model, 'delete')
+        fields = {field.name: field for field in model._meta.fields}
+        visible_fields = [fields[name] for name in self.LIST_COLUMNS]
          # Campos mostrado
         context['fields'] = [
-            {'name': field.name, 'verbose': field.verbose_name.title()}
-            for field in self.fields if field.name not in self.EXCLUDED_FIELDS
+            {
+                'name': field.name,
+                'verbose': self.COLUMN_LABELS.get(field.name, field.verbose_name.title()),
+                'is_date': isinstance(field, models.DateField),
+            }
+            for field in visible_fields
         ]
         
         # Filtros: choices, booleanos, foreign keys
         filters = {}
 
-        for field in fields:
-            if field.name in self.EXCLUDED_FIELDS:
-                continue
+        for field in visible_fields:
 
             # Campos con choices
             if field.choices:
@@ -1224,15 +1408,21 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
 
             # BooleanField
             elif isinstance(field, models.BooleanField):
-                filters[field.name] = [
-                    {'value': 'True', 'label': 'Sí'},
-                    {'value': 'False', 'label': 'No'},
-                ]
+                if field.name == 'is_draft':
+                    filters[field.name] = [
+                        {'value': 'Pendiente de revisión', 'label': 'Pendiente de revisión'},
+                        {'value': 'Confirmada', 'label': 'Confirmada'},
+                    ]
+                else:
+                    filters[field.name] = [
+                        {'value': 'True', 'label': 'Sí'},
+                        {'value': 'False', 'label': 'No'},
+                    ]
 
             # ForeignKey
             elif isinstance(field, models.ForeignKey):
                 related = field.related_model.objects.all()
-                filters[field.name] = [{'value': str(obj.pk), 'label': str(obj)} for obj in related]
+                filters[field.name] = [{'value': str(obj), 'label': str(obj)} for obj in related]
             
             # si es datetime o date, solo marcamos el tipo
             elif isinstance(field, models.DateField) or isinstance(field, models.DateTimeField):
@@ -1248,7 +1438,7 @@ class RiskEvaluationListView(LoginRequiredMixin, ListView):
         context['delete_view'] = 'evaluation-delete'
         return context
    
-class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
+class RiskEvaluationDeleteView(ResourceWriteMixin, DeleteView):
     """Elimina evaluaciones de riesgo tras mostrar una confirmación."""
     model = RiskEvaluation
     template_name = 'delete-resource.html'
@@ -1266,9 +1456,10 @@ class RiskEvaluationDeleteView(LoginRequiredMixin, DeleteView):
 
 ############################ Treatment Views ###########################
 
-class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
+class TreatmentListView(RiskReadMixin, DynamicModelListView):
     """Lista tratamientos con filtros por etapa y vista dinámica."""
     model = Treatment
+    EXCLUDED_FIELDS = DynamicModelListView.EXCLUDED_FIELDS + ['implementation_status']
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
@@ -1292,9 +1483,12 @@ class TreatmentListView(LoginRequiredMixin, DynamicModelListView):
 
         return qs
 
+@login_required
 def crear_tratamiento(request):
     """Gestiona el formulario para crear un tratamiento asociado a un recurso."""
-    model_types = ContentType.objects.filter(model__in=[
+    if not can_manage_resource(request.user, Treatment, 'add'):
+        raise PermissionDenied
+    model_types = ContentType.objects.filter(app_label='resources', model__in=[
         'informationassets', 'vendor', 'project', 'clientcompany'
     ])
     evaluation_id = request.GET.get('evaluation_id') or request.POST.get('evaluation_id')
@@ -1302,7 +1496,7 @@ def crear_tratamiento(request):
     evaluation_meta = None
 
     if evaluation_id:
-        evaluation_obj = RiskEvaluation.objects.filter(pk=evaluation_id).select_related('evaluated_type').first()
+        evaluation_obj = get_object_or_404(RiskEvaluation.objects.select_related('evaluated_type'), pk=evaluation_id)
         evaluation_meta = _build_evaluation_metadata(evaluation_obj)
     
     if request.method == 'POST':
@@ -1314,15 +1508,26 @@ def crear_tratamiento(request):
             model_type = form.cleaned_data.get('model_type')
             object_id = form.cleaned_data.get('object_id')
 
-            treatment = form.save(commit=False)
-
-            if model_type and object_id:
-                treatment.content_type = model_type
-                treatment.object_id = int(object_id)
-
-            treatment.save()
-            
-            return redirect('treatment-detail', pk=treatment.pk)
+            if evaluation_obj and (
+                evaluation_obj.evaluated_type_id != model_type.pk
+                or evaluation_obj.evaluated_id != int(object_id)
+            ):
+                form.add_error('object_id', 'El recurso debe coincidir con el de la evaluación.')
+            else:
+                with transaction.atomic():
+                    if evaluation_obj:
+                        evaluation_obj = RiskEvaluation.objects.select_for_update().get(pk=evaluation_obj.pk)
+                        if evaluation_obj.treatment_id:
+                            form.add_error('object_id', 'Esta evaluación ya tiene un tratamiento.')
+                    if not form.errors:
+                        treatment = form.save(commit=False)
+                        treatment.content_type = model_type
+                        treatment.object_id = int(object_id)
+                        treatment.save()
+                        if evaluation_obj:
+                            evaluation_obj.treatment = treatment
+                            evaluation_obj.save(update_fields=['treatment'])
+                        return redirect('treatment-detail', pk=treatment.pk)
         else:
             messages.error(request, "Formulario inválido.")
             logger.warning("Formulario inválido en crear_tratamiento para user %s", request.user)
@@ -1347,6 +1552,7 @@ def crear_tratamiento(request):
 
     return render(request, 'treatment-create.html', {
         'form': form,
+        'resource_form_access': True,
         'model_types': model_types,
         'related_links': [
             (reverse('treatment-list'), 'Lista de tratamientos'),
@@ -1359,7 +1565,7 @@ def crear_tratamiento(request):
 
     
 
-class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
+class TreatmentDeleteView(ResourceWriteMixin, DeleteView):
     """Borra un tratamiento después de confirmar su contexto."""
     model = Treatment
     template_name = 'delete-resource.html'
@@ -1374,7 +1580,7 @@ class TreatmentDeleteView(LoginRequiredMixin, DeleteView):
         return context
     
 
-class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
+class TreatmentUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza los detalles del tratamiento y registra cambios de etapa."""
     model = Treatment
     form_class = TreatmentForm
@@ -1404,47 +1610,25 @@ class TreatmentUpdateView(LoginRequiredMixin, UpdateView):
             form.instance.content_type = model_type
             form.instance.object_id = int(object_id)
 
-        # Capture previous stage to detect changes made via the form
-        old_stage = None
-        if hasattr(self, 'object') and self.get_object():
-            try:
-                old_stage = self.get_object().stage
-            except Exception:
-                old_stage = None
+        old_stage = Treatment.objects.filter(pk=form.instance.pk).values_list('stage', flat=True).first()
+        new_stage = form.cleaned_data.get('stage')
+        if old_stage is not None and new_stage != old_stage:
+            form.instance.stage_changed_at = timezone.now()
+            form.instance.stage_changed_by = self.request.user
 
-        # If stage changed via the form, use the model helper to record timestamp/user
-        new_stage = form.cleaned_data.get('stage', None)
-
-        if old_stage is not None and new_stage is not None and new_stage != old_stage:
-            # Apply form changes without committing so `form.instance` has the new values
-            form.save(commit=False)
-            try:
-                user = self.request.user if getattr(self.request, 'user', None) and self.request.user.is_authenticated else None
-                form.instance.set_stage(new_stage, user=user)
-            except Exception:
-                # Fallback: if set_stage fails, attempt the previous behavior
-                try:
-                    form.instance.stage_changed_at = timezone.now()
-                    if getattr(self.request, 'user', None) and self.request.user.is_authenticated:
-                        form.instance.stage_changed_by = self.request.user
-                    form.instance.save(update_fields=['stage_changed_at', 'stage_changed_by'])
-                except Exception:
-                    pass
-            # Now persist the rest of the form (this will not overwrite stage_changed_* fields)
-            response = super().form_valid(form)
-        else:
-            response = super().form_valid(form)
+        response = super().form_valid(form)
 
         messages.success(self.request, "Tratamiento actualizado con éxito.")
         return response
     
 
+@login_required
 def test_colreorder(request):
     """Renderiza una tabla de prueba con columnas reordenables."""
     return render(request, 'test_table.html')
 
 
-class ClientListView(LoginRequiredMixin, DynamicModelListView):
+class ClientListView(ResourceReadMixin, DynamicModelListView):
     """Lista clientes con filtros automáticos reutilizando la vista dinámica."""
     model = ClientCompany
     login_url = 'login'
@@ -1457,7 +1641,7 @@ class ClientListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
     
-class ThreatCreateView(LoginRequiredMixin, CreateView):
+class ThreatCreateView(ResourceWriteMixin, CreateView):
     """Permite crear amenazas y mantener los campos de descripción."""
     model = Threat
     form_class = ThreatForm
@@ -1475,7 +1659,7 @@ class ThreatCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
-class ThreatListView(LoginRequiredMixin, DynamicModelListView):
+class ThreatListView(RiskReadMixin, DynamicModelListView):
     """Expone el listado de amenazas con metadatos dinámicos."""
     model = Threat
     login_url = 'login'
@@ -1488,7 +1672,7 @@ class ThreatListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
     
-class ThreatUpdateView(LoginRequiredMixin, UpdateView):
+class ThreatUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza una amenaza manteniendo el contexto original."""
     model = Threat
     form_class = ThreatForm
@@ -1505,7 +1689,7 @@ class ThreatUpdateView(LoginRequiredMixin, UpdateView):
         context['action_type'] = 'Editar'
         return context
     
-class ThreatDetailView(LoginRequiredMixin, DetailView):
+class ThreatDetailView(RiskReadMixin, DetailView):
     """Detalle para una amenaza con campos visibles y enlaces auxiliares."""
     model = Threat
     template_name = 'detail-resource.html'
@@ -1548,7 +1732,7 @@ class ThreatDetailView(LoginRequiredMixin, DetailView):
 
         return context
     
-class ThreatDeleteView(LoginRequiredMixin, DeleteView):
+class ThreatDeleteView(ResourceWriteMixin, DeleteView):
     """Elimina una amenaza tras confirmar sus datos."""
     model = Threat
     template_name = 'delete-resource.html'
@@ -1563,7 +1747,7 @@ class ThreatDeleteView(LoginRequiredMixin, DeleteView):
         return context
 
 
-class VulnerabilityListView(LoginRequiredMixin, DynamicModelListView):
+class VulnerabilityListView(RiskReadMixin, DynamicModelListView):
     """Lista vulnerabilidades con filtros automáticos similares a otras vistas."""
     model = Vulnerability
     login_url = 'login'
@@ -1576,7 +1760,7 @@ class VulnerabilityListView(LoginRequiredMixin, DynamicModelListView):
         context['detail_view'] = f'{self.model._meta.model_name}-detail'
         return context
     
-class VulnerabilityCreateView(LoginRequiredMixin, CreateView):
+class VulnerabilityCreateView(ResourceWriteMixin, CreateView):
     """Formulario para crear vulnerabilidades con descripción detallada."""
     model = Vulnerability
     form_class = VulnerabilityForm
@@ -1593,7 +1777,7 @@ class VulnerabilityCreateView(LoginRequiredMixin, CreateView):
         context['action_type'] = 'Crear'
         return context
     
-class VulnerabilityUpdateView(LoginRequiredMixin, UpdateView):
+class VulnerabilityUpdateView(ResourceWriteMixin, UpdateView):
     """Actualiza vulnerabilidades reutilizando el mismo formulario."""
     model = Vulnerability
     form_class = VulnerabilityForm
@@ -1610,7 +1794,7 @@ class VulnerabilityUpdateView(LoginRequiredMixin, UpdateView):
         context['action_type'] = 'Editar'
         return context
 
-class VulnerabilityDetailView(LoginRequiredMixin, DetailView):
+class VulnerabilityDetailView(RiskReadMixin, DetailView):
     """Muestra los detalles de una vulnerabilidad y sus campos asociados."""
     model = Vulnerability
     template_name = 'detail-resource.html'
@@ -1653,7 +1837,7 @@ class VulnerabilityDetailView(LoginRequiredMixin, DetailView):
 
         return context
 
-class VulnerabilityDeleteView(LoginRequiredMixin, DeleteView):
+class VulnerabilityDeleteView(ResourceWriteMixin, DeleteView):
     """Elimina una vulnerabilidad luego de confirmar su contexto."""
     model = Vulnerability
     template_name = 'delete-resource.html'
@@ -1686,32 +1870,42 @@ def advance_treatment_stage(request, pk):
         messages.error(request, "Etapa inválida.")
         return redirect('treatment-detail', pk=pk)
 
+    if new_stage not in TreatmentStage.values:
+        messages.error(request, "Etapa inválida.")
+        return redirect('treatment-detail', pk=pk)
+
     # Optional notes
     analysis_notes = request.POST.get('analysis_notes')
     immediate_actions = request.POST.get('immediate_actions')
     corrective_actions = request.POST.get('corrective_actions')
 
+    changed_fields = []
     if analysis_notes is not None:
         treatment.analysis_notes = analysis_notes
+        changed_fields.append('analysis_notes')
     if immediate_actions is not None:
         treatment.immediate_actions = immediate_actions
+        changed_fields.append('immediate_actions')
     if corrective_actions is not None:
         treatment.corrective_actions = corrective_actions
+        changed_fields.append('corrective_actions')
 
     treatment.set_stage(new_stage, user=user)
+    if changed_fields:
+        treatment.save(update_fields=[*changed_fields, 'updated'])
 
     messages.success(request, f"Etapa actualizada a {treatment.get_stage_display()}.")
     return redirect('treatment-detail', pk=pk)
 
 
-class ChecklistTemplateListView(LoginRequiredMixin, ListView):
+class ChecklistTemplateListView(ResourceReadMixin, ListView):
     """Lista las plantillas de checklist disponibles para asignar a recursos."""
     model = ChecklistTemplate
     template_name = 'checklist_templates_list.html'
     login_url = 'login'
 
 
-class ChecklistTemplateCreateView(LoginRequiredMixin, CreateView):
+class ChecklistTemplateCreateView(ResourceWriteMixin, CreateView):
     """Permite crear plantillas de checklist y navegar hacia listas relacionadas."""
     model = ChecklistTemplate
     form_class = ChecklistTemplateForm
@@ -1728,7 +1922,7 @@ class ChecklistTemplateCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
-class VendorEvaluationCreateView(LoginRequiredMixin, CreateView):
+class VendorEvaluationCreateView(ResourceWriteMixin, CreateView):
     """Formulario para ingresar evaluaciones de proveedores y registrar responsables."""
     model = VendorEvaluation
     form_class = VendorEvaluationForm
@@ -1739,10 +1933,8 @@ class VendorEvaluationCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy('vendor-evaluation-detail', args=[self.object.pk])
 
     def form_valid(self, form):
-        obj = form.save(commit=False)
-        if not obj.performed_by:
-            obj.performed_by = self.request.user
-        obj.save()
+        if not form.instance.performed_by:
+            form.instance.performed_by = self.request.user
         return super().form_valid(form)
 
     def get_initial(self):
@@ -1762,7 +1954,7 @@ class VendorEvaluationCreateView(LoginRequiredMixin, CreateView):
         return ctx
 
 
-class VendorEvaluationDetailView(LoginRequiredMixin, DetailView):
+class VendorEvaluationDetailView(ResourceReadMixin, DetailView):
     """Detalle de evaluación con posibilidad de editar ítems y marcar completada."""
     model = VendorEvaluation
     template_name = 'vendor_evaluation_detail.html'
@@ -1786,6 +1978,8 @@ class VendorEvaluationDetailView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        if not can_manage_resource(request.user, VendorEvaluation):
+            raise PermissionDenied
         formset = VendorEvaluationItemFormSet(request.POST, queryset=self.object.items.all())
         if formset.is_valid():
             formset.save()
@@ -1846,7 +2040,7 @@ def build_pending_evaluations_context(request, queryset):
     }
 
 
-class VendorEvaluationPendingOwnerListView(LoginRequiredMixin, ListView):
+class VendorEvaluationPendingOwnerListView(ResourceReadMixin, ListView):
     """Lista evaluaciones pendientes para el dueño o el staff, con contexto de recordatorios."""
     model = VendorEvaluation
     template_name = 'vendor_evaluation_pending_list.html'
@@ -1864,8 +2058,13 @@ class VendorEvaluationPendingOwnerListView(LoginRequiredMixin, ListView):
         return context
 
 
+@login_required
 def checklist_template_detail(request, pk):
     """Ver y editar una plantilla y sus items (inline formset)."""
+    if not can_manage_resource(request.user, ChecklistTemplate, 'view'):
+        raise PermissionDenied
+    if request.method == 'POST' and not can_manage_resource(request.user, ChecklistTemplate):
+        raise PermissionDenied
     template = get_object_or_404(ChecklistTemplate, pk=pk)
     ChecklistItemFormSet = inlineformset_factory(ChecklistTemplate, ChecklistItem, form=ChecklistItemForm, extra=1, can_delete=True)
 
@@ -1892,7 +2091,7 @@ def checklist_template_detail(request, pk):
     })
 
 
-class VendorChecklistCreateView(LoginRequiredMixin, CreateView):
+class VendorChecklistCreateView(ResourceWriteMixin, CreateView):
     """Asigna o actualiza la checklist de seguridad asociada a un proveedor."""
     model = VendorChecklist
     form_class = VendorChecklistForm
@@ -1950,6 +2149,7 @@ class VendorChecklistCreateView(LoginRequiredMixin, CreateView):
         return ctx
 
 
+@login_required
 def i18n_demo(request):
     """Vista de demostración para i18n: muestra textos marcados para traducción."""
     message = _("Bienvenido al demo de internacionalización (UI)")

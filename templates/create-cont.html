@@ -1,12 +1,11 @@
 ﻿{% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/vault.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h4 class="mb-0 fw-semibold"><i class="fas fa-plus me-2"></i>{{ title }}</h4>
-    </div>
+<div class="container py-4 vault-page passing-form-page">
+  <div class="form-hero">
+    <div><span class="vault-eyebrow text-primary">PASSING · BÓVEDA</span><h1 class="h3 fw-bold mb-0">Nueva contraseña</h1><p class="text-muted mb-0">Guardá un acceso y asignalo a una sección.</p></div>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'listpass' %}">
       <i class="fa-solid fa-bars me-1"></i>{% trans "Lista" %}
     </a>
@@ -24,7 +23,7 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="nombre_contra" class="form-label">{% trans "Nombre de Contrasena:" %}</label>
-            <input id="nombre_contra" type="text" class="form-control" name="nombre_contra" maxlength="100" required>
+            <input id="nombre_contra" type="text" class="form-control" name="nombre_contra" maxlength="100" value="{{ form.nombre_contra.value|default_if_none:'' }}" required>
           </div>
 
           <div class="col-md-6">
@@ -32,7 +31,7 @@
             <div class="input-group">
               <select name="seccion" class="form-control" autocomplete="off" required id="id_seccion">
                 {% for section in sections %}
-                  <option value="{{ section.id }}">{{ section.nombre_seccion }}</option>
+                  <option value="{{ section.id }}" {% if form.seccion.value == section.id|stringformat:'s' %}selected{% endif %}>{{ section.nombre_seccion }}</option>
                 {% endfor %}
               </select>
               <a class="btn btn-outline-primary" href="{% url 'createsection' %}">
@@ -43,12 +42,12 @@
 
           <div class="col-md-6">
             <label for="link" class="form-label">{% trans "Link:" %}</label>
-            <input id="link" type="text" class="form-control" name="link" maxlength="100" required>
+            <input id="link" type="text" class="form-control" name="link" maxlength="265" value="{{ form.link.value|default_if_none:'' }}" required>
           </div>
 
           <div class="col-md-6">
             <label for="usuario" class="form-label">{% trans "Usuario:" %}</label>
-            <input id="usuario" type="text" class="form-control" name="usuario" maxlength="100" required autocomplete="username">
+            <input id="usuario" type="text" class="form-control" name="usuario" maxlength="255" value="{{ form.usuario.value|default_if_none:'' }}" required autocomplete="username">
           </div>
 
           <div class="col-12">
@@ -63,7 +62,7 @@
                 <div class="row g-2 align-items-end">
                   <div class="col-auto">
                     <label for="longitud" class="form-label small mb-1">{% trans "Longitud:" %}</label>
-                    <input class="form-control form-control-sm" type="number" id="longitud" name="longitud" value="12" min="6" max="32" style="width:80px;">
+                    <input class="form-control form-control-sm" type="number" id="longitud" name="longitud" value="20" min="12" max="64" style="width:80px;">
                   </div>
                   <div class="col-auto d-flex flex-column gap-1">
                     <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirMayusculas" checked>{% trans "Mayusculas" %}</label>
@@ -81,7 +80,7 @@
             </div>
             <label for="contraseña" class="form-label">{% trans "Contraseña:" %}</label>
             <div class="input-group">
-              <input id="contraseña" type="password" class="form-control" name="contraseña" maxlength="100" required autocomplete="new-password">
+              <input id="contraseña" type="password" class="form-control" name="contraseña" maxlength="500" value="{{ form.contraseña.value|default_if_none:'' }}" required autocomplete="new-password">
               <button class="btn btn-outline-secondary" type="button" id="passwordToggle">
                 <i class="fas fa-eye" id="eyeIcon"></i>
               </button>
@@ -90,12 +89,12 @@
 
           <div class="col-md-6">
             <label for="actualizacion" class="form-label">{% trans "Actualizacion (dias):" %}</label>
-            <input id="actualizacion" type="number" pattern="[0-9]+" class="form-control" name="actualizacion" maxlength="100" required>
+            <input id="actualizacion" type="number" min="1" class="form-control" name="actualizacion" value="{{ form.actualizacion.value|default:'30' }}" required>
           </div>
 
           <div class="col-md-6">
             <label for="info" class="form-label">{% trans "Info:" %}</label>
-            <input id="info" type="text" class="form-control" name="info" maxlength="100">
+            <input id="info" type="text" class="form-control" name="info" maxlength="260" value="{{ form.info.value|default_if_none:'' }}">
           </div>
 
           <div class="col-md-6">
@@ -144,15 +143,16 @@
     if (incluirMinusculas) chars += 'abcdefghijklmnopqrstuvwxyz';
     if (incluirNumeros) chars += '0123456789';
     if (incluirSimbolos) chars += '!@#$%^&_+=|:"<>?/~';
+    if (!chars || !window.crypto || !window.crypto.getRandomValues) { mostrarMensajeTemporal('Seleccioná caracteres y usá una conexión segura.', 3000); return; }
     var pass = '';
-    for (var i = 0; i < longitud; i++) {
-      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    var buffer = new Uint32Array(1);
+    var limit = Math.floor(4294967296 / chars.length) * chars.length;
+    while (pass.length < Number(longitud)) {
+      crypto.getRandomValues(buffer);
+      if (buffer[0] < limit) pass += chars[buffer[0] % chars.length];
     }
-    document.getElementById('contraseña').setAttribute('value', pass);
-    navigator.clipboard.writeText(pass).then(function() {
-      var tpl = document.getElementById('msgTemplates');
-      mostrarMensajeTemporal(tpl ? tpl.dataset.copied : 'Copiada', 2000);
-    }).catch(function() {});
+    document.getElementById('contraseña').value = pass;
+    mostrarMensajeTemporal('Contraseña generada', 2000);
   });
 
   function mostrarMensajeTemporal(mensaje, duracion) {

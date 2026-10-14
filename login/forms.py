@@ -89,21 +89,24 @@ class UserForm(forms.ModelForm):
     """Formulario de administración para crear o editar usuarios dentro del tenant."""
     admission_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
     birth_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control' }),required=False)
-    is_superuser = forms.RadioSelect()
-    is_staff = forms.RadioSelect()
-    is_active = forms.RadioSelect()
-    documento = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    documento = forms.CharField(required=False, max_length=8, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(required=False, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(required=False, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    position = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    address = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    tel_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    position = forms.CharField(required=False, max_length=80, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    address = forms.CharField(required=False, max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    tel_number = forms.CharField(required=False, max_length=13, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date','address', 'tel_number','is_superuser', 'is_staff',  'is_active' ,'position', 'admission_date']
+        fields = ['username', 'email', 'first_name', 'last_name', 'documento', 'birth_date',
+                  'address', 'tel_number', 'position', 'admission_date', 'is_staff']
+
+    def __init__(self, *args, actor=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if actor is None or not actor.is_superuser:
+            self.fields.pop('is_staff', None)
         
 
 class UserDepartureForm(forms.ModelForm):

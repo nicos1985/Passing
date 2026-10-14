@@ -2,14 +2,27 @@
 
 {% load static %}
 {% load i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">{% endblock %}
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+<div class="container py-4 passing-detail">
+    <header class="detail-hero">
+        <div class="detail-hero-main">
+            <span class="detail-hero-eyebrow">{% trans "Hallazgo" %}</span>
             <h4 class="mb-0 fw-semibold">{{ item.canonical_id }} &ndash; {{ item.title }}</h4>
             <p class="text-muted mb-0 small">{% trans "Tipo" %}: {{ item.get_kind_display }} | {% trans "Creado" %}: {{ item.created_at|date:"Y-m-d H:i" }}</p>
         </div>
-    </div>
+        <div class="detail-hero-actions">
+            {% if run %}
+            <a href="{{ back_url }}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Volver a ítems" %}</a>
+            {% if perms.threat_intel.add_review %}<a href="{% url 'threat_intel:review-create' run.id item.id %}" class="btn btn-success"><i class="fas fa-check-circle" aria-hidden="true"></i> {% trans "Crear revisión" %}</a>{% endif %}
+            <a href="{% url 'threat_intel:run-detail' run.id %}" class="btn btn-info"><i class="fas fa-link" aria-hidden="true"></i> {% trans "Ver ejecución" %}</a>
+            {% if perms.resources.add_riskevaluation %}<a href="{% url 'evaluation-create' %}?intel_item_id={{ item.id }}" class="btn btn-warning"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {% trans "Crear evaluación" %}</a>{% endif %}
+            {% else %}
+            <a href="{% url 'threat_intel:run-list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% trans "Volver a ejecuciones" %}</a>
+            {% if analysis %}<a href="{% url 'threat_intel:analysis-detail' analysis.id %}" class="btn btn-info"><i class="fas fa-microscope" aria-hidden="true"></i> {% trans "Ver análisis" %}</a>{% endif %}
+            {% endif %}
+        </div>
+    </header>
 
         <!-- Información principal -->
         <div class="row mt-3">
@@ -170,33 +183,5 @@
         </div>
         {% endif %}
 
-        <!-- Acciones -->
-        <div class="row mt-3 mb-3">
-            <div class="col-12 d-flex gap-2">
-                {% if run %}
-                <a href="{{ back_url }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Items" %}
-                </a>
-                <a href="{% url 'threat_intel:review-create' run.id item.id %}" class="btn btn-success">
-                    <i class="fas fa-check-circle"></i> {% trans "Crear Review" %}
-                </a>
-                <a href="{% url 'threat_intel:run-detail' run.id %}" class="btn btn-info">
-                    <i class="fas fa-link"></i> {% trans "Ver Run" %}
-                </a>
-                <a href="{% url 'evaluation-create' %}?intel_item_id={{ item.id }}" class="btn btn-warning">
-                    <i class="fas fa-exclamation-triangle"></i> {% trans "Crear Evaluación" %}
-                </a>
-                {% else %}
-                <a href="{% url 'threat_intel:run-list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> {% trans "Volver a Runs" %}
-                </a>
-                {% if analysis %}
-                <a href="{% url 'threat_intel:analysis-detail' analysis.id %}" class="btn btn-info">
-                    <i class="fas fa-microscope"></i> {% trans "Ver Análisis" %}
-                </a>
-                {% endif %}
-                {% endif %}
-            </div>
-        </div>
     </div>
 {% endblock %}

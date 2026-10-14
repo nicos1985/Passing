@@ -2,6 +2,7 @@
 from __future__ import annotations
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import escape
 from threat_intel.models import Run, RunItem, IntelItem
 from threat_intel.models import AIAnalysis
 
@@ -102,6 +103,6 @@ def build_report_for_run(run):
     body_md = "\n".join(lines)
 
     # Si ya tenés conversión md->html, úsala. Si no, html básico:
-    body_html = body_md.replace("\n", "<br>")
+    body_html = escape(body_md).replace("\n", "<br>")
 
     return subject, body_md, body_html

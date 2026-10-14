@@ -1,17 +1,20 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+<div class="container py-4 passing-detail passing-form-page">
+  <header class="detail-hero">
+    <div class="detail-hero-main">
+      <span class="detail-hero-eyebrow">{% trans "Proveedores" %}</span>
       <h4 class="mb-0 fw-semibold"><i class="fa-solid fa-clipboard-check me-2"></i>{% trans "Evaluación" %} #{{ object.pk }}</h4>
       <small class="text-muted">
         {% trans "Proveedor" %}: {{ object.vendor }} &middot; {% trans "Estado" %}: {{ object.get_status_display }}
         {% if object.assigned_template_name %} &middot; {% trans "Plantilla" %}: {{ object.assigned_template_name }}{% endif %}
       </small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="detail-hero-actions">
       <a class="btn btn-outline-secondary btn-sm" href="{% url 'vendor-list' %}">
         <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver" %}
       </a>
@@ -19,7 +22,7 @@
         <a class="btn btn-outline-secondary btn-sm" href="{{ link }}">{{ label }}</a>
       {% endfor %}
     </div>
-  </div>
+  </header>
 
   <div class="row g-3">
     <!-- Metadatos -->

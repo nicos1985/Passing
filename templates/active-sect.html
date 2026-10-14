@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/vault.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 vault-page passing-form-page">
+  <div class="form-hero">
     <h4 class="mb-0 fw-semibold"><i class="fas fa-power-off me-2"></i>{{ title }}</h4>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'listsection' %}">
       <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Cancelar" %}

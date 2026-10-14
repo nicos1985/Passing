@@ -9,13 +9,14 @@
 <script src="{% static 'lib/DataTables-1.13.1/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'lib/DataTables-1.13.1/plugins/responsive-2.4.0/js/responsive.bootstrap5.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>{% blocktrans %}Detalle de {{ verbose_model_name }}{% endblocktrans %}</h2>
-        <div class="d-flex align-items-center gap-2">
+<div class="container mt-4 passing-detail">
+    <header class="detail-hero">
+        <div class="detail-hero-main"><span class="detail-hero-eyebrow">{% trans "Recursos" %}</span><h2>{% blocktrans %}Detalle de {{ verbose_model_name }}{% endblocktrans %}</h2></div>
+        <div class="detail-hero-actions">
             {% if edit_url %}
             <a class="btn btn-warning" href="{{ edit_url }}">
                 <i class="fa-solid fa-pen-to-square"></i> {% trans "Editar" %}
@@ -25,7 +26,7 @@
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}
             </a>
         </div>
-    </div>
+    </header>
 
     {% if model_name == 'treatment' %}
     <div class="row g-3 mt-3">
@@ -217,9 +218,15 @@
  
 {% if model_name == 'treatment' and request.user.is_authenticated %}
 <div class="container mt-2">
-    <a href="{% url 'evaluation-create' %}?type_id={{ object.content_type.pk }}&object_id={{ object.object_id }}&from_treatment={{ object.pk }}" class="btn btn-primary">
-        <i class="fa-solid fa-arrow-rotate-left"></i> {% trans "Crear Re-evaluación" %}
-    </a>
+    {% if followup_evaluation and can_view_evaluations %}
+        <a href="{% url 'evaluation-detail' followup_evaluation.pk %}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-rotate-left"></i> {% trans "Ver reevaluación" %}{% if followup_evaluation.is_draft %} · {% trans "Pendiente" %}{% endif %}
+        </a>
+    {% elif object.stage == 3 and can_add_evaluations %}
+        <a href="{% url 'evaluation-create' %}?from_treatment={{ object.pk }}" class="btn btn-primary">
+            <i class="fa-solid fa-arrow-rotate-left"></i> {% trans "Crear reevaluación" %}
+        </a>
+    {% endif %}
 </div>
 <!-- Treatment quick actions/modal -->
 <div class="modal fade" id="advanceStageModal" tabindex="-1" aria-hidden="true">

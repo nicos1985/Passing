@@ -1,5 +1,5 @@
 # threat_intel/sources/aws_bulletins.py
-import feedparser
+import requests
 from datetime import datetime, timezone as dt_timezone
 from django.utils import timezone
 
@@ -9,7 +9,13 @@ class AwsBulletinsConnector:
     code = "AWS"
 
     def fetch(self, start_dt, end_dt, cursor=None):
-        feed = feedparser.parse(AWS_BULLETINS_FEED)
+        import feedparser
+
+        response = requests.get(AWS_BULLETINS_FEED, timeout=(10, 30))
+        response.raise_for_status()
+        feed = feedparser.parse(response.content)
+        if feed.bozo and not feed.entries:
+            raise RuntimeError('La fuente AWS devolvió un feed inválido')
 
         items = []
         for e in feed.entries:

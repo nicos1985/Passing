@@ -26,11 +26,22 @@ from .models import (
 )
 from .models import AssetAction, AssetActionType
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import OuterRef, Q, Subquery
 from django import forms
 import logging
 from login.models import CustomUser
 
 logger = logging.getLogger(__name__)
+EVALUABLE_MODEL_NAMES = ('informationassets', 'vendor', 'project', 'clientcompany')
+
+
+def evaluable_content_type(type_id):
+    try:
+        return ContentType.objects.get(
+            pk=type_id, app_label='resources', model__in=EVALUABLE_MODEL_NAMES,
+        )
+    except (ContentType.DoesNotExist, ValueError, TypeError):
+        return None
 from itertools import chain
 
 
@@ -84,7 +95,7 @@ def apply_default_widget_attrs(form_instance):
 class RiskEvaluationForm(forms.ModelForm):
     """Formulario para crear o editar evaluaciones de riesgo ligadas a distintos recursos."""
     model_type = forms.ModelChoiceField(
-        queryset=ContentType.objects.filter(model__in=[
+        queryset=ContentType.objects.filter(app_label='resources', model__in=[
             'informationassets', 'vendor', 'project', 'clientcompany'
         ]),
         label="Objeto evaluable"
@@ -120,14 +131,16 @@ class RiskEvaluationForm(forms.ModelForm):
                 model_type_id = data.get('model_type')
                 if model_type_id:
                     try:
-                        ct = ContentType.objects.get(pk=model_type_id)
+                        ct = evaluable_content_type(model_type_id)
+                        if ct is None:
+                            raise ValueError('Tipo de recurso inválido')
                         model_class = ct.model_class()
                         self.fields['object_id'].choices = [(str(obj.pk), str(obj)) for obj in model_class.objects.all()]
                     except Exception:
                         self.fields['object_id'].choices = []
 
             # If form is bound to an instance (edit), populate choices from that instance's content type
-            if hasattr(self, 'instance') and self.instance and getattr(self.instance, 'pk', None):
+            if not data and hasattr(self, 'instance') and self.instance and getattr(self.instance, 'pk', None):
                 try:
                     ct = self.instance.evaluated_type if hasattr(self.instance, 'evaluated_type') else None
                     if ct is None and getattr(self.instance, 'evaluated_type_id', None):
@@ -145,14 +158,6 @@ class RiskEvaluationForm(forms.ModelForm):
 
         # Improve widget attrs consistently (placeholders, icons, classes)
         for fname, field in self.fields.items():
-            # If editing an existing Vendor, prefill with the currently assigned template (if any)
-            try:
-                if getattr(self, 'instance', None) and getattr(self.instance, 'pk', None):
-                    assignment = VendorChecklist.objects.filter(vendor=self.instance).first()
-                    if assignment and assignment.template_id:
-                        self.fields['initial_checklist_template'].initial = assignment.template_id
-            except Exception:
-                pass
             widget = field.widget
             if isinstance(widget, (CheckboxInput, RadioSelect)):
                 widget.attrs['class'] = widget.attrs.get('class', '') + ' form-check-input'
@@ -167,6 +172,26 @@ class RiskEvaluationForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+    def clean(self):
+        cleaned = super().clean()
+        treatment = cleaned.get('treatment')
+        model_type = cleaned.get('model_type')
+        object_id = cleaned.get('object_id')
+        if treatment and model_type and object_id and (
+            treatment.content_type_id != model_type.pk or treatment.object_id != int(object_id)
+        ):
+            self.add_error('treatment', 'El tratamiento corresponde a otro recurso.')
+        if self.instance.pk and self.instance.treatment_id and (
+            treatment is None or treatment.pk != self.instance.treatment_id
+        ):
+            self.add_error('treatment', 'No se puede reemplazar el tratamiento de una evaluación histórica.')
+        if self.instance.pk and model_type and object_id and (
+            model_type.pk != self.instance.evaluated_type_id
+            or int(object_id) != self.instance.evaluated_id
+        ):
+            self.add_error('object_id', 'El recurso de una evaluación existente no se puede cambiar.')
+        return cleaned
 
 class InformationAssetsForm(ModelForm):
     """Formulario para gestionar activos de información con estilizado uniforme."""
@@ -192,22 +217,18 @@ class VendorForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # extra helper field to allow selecting a checklist template at vendor creation
-        try:
+        if not self.instance.pk:
             from django.urls import reverse
             from django.utils.safestring import mark_safe
 
             link = reverse('checklist-templates')
             help_html = mark_safe(f'<a href="{link}" target="_blank">Ver plantillas</a>')
-
             self.fields['initial_checklist_template'] = forms.ModelChoiceField(
                 queryset=ChecklistTemplate.objects.filter(active=True),
                 required=True,
                 label='Plantilla de checklist de requisitos de seguridad',
                 help_text=help_html,
             )
-        except Exception:
-            # safe fallback if model not ready at import
-            pass
         # Ensure computed fields are not editable in the form
         self.fields.pop('criticality', None)
         self.fields.pop('control_period', None)
@@ -222,8 +243,7 @@ class VendorForm(ModelForm):
             if 'owner' in self.fields:
                 self.fields['owner'].queryset = CustomUser.for_current_tenant()
         except Exception:
-            # Fallback: leave default queryset if tenant resolution fails
-            pass
+            self.fields['owner'].queryset = CustomUser.objects.none()
 
     
     class Meta:
@@ -281,7 +301,7 @@ class TreatmentForm(ModelForm):
     """Formulario que permite definir tratamientos y asociarlos a un recurso específico."""
 
     model_type = forms.ModelChoiceField(
-        queryset=ContentType.objects.filter(model__in=[
+        queryset=ContentType.objects.filter(app_label='resources', model__in=[
             'informationassets', 'vendor', 'project', 'clientcompany'
         ]),
         label="Tipo de Recurso",
@@ -293,6 +313,13 @@ class TreatmentForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        responsible_qs = CustomUser.for_current_tenant()
+        if self.instance.pk and self.instance.treatment_responsible_id:
+            self.fields['treatment_responsible'].queryset = responsible_qs.filter(
+                Q(is_active=True) | Q(pk=self.instance.treatment_responsible_id)
+            )
+        else:
+            self.fields['treatment_responsible'].queryset = responsible_qs.filter(is_active=True)
         
         self.fields['deadline'].input_formats = ['%Y-%m-%d']
 
@@ -322,7 +349,9 @@ class TreatmentForm(ModelForm):
             model_type_id = data.get('model_type')
             if model_type_id:
                 try:
-                    ct = ContentType.objects.get(pk=model_type_id)
+                    ct = evaluable_content_type(model_type_id)
+                    if ct is None:
+                        raise ValueError('Tipo de recurso inválido')
                     model_class = ct.model_class()
                     self.fields['object_id'].choices = [
                         (str(obj.pk), str(obj)) for obj in model_class.objects.all()
@@ -330,8 +359,7 @@ class TreatmentForm(ModelForm):
                 except Exception as e:
                     logger.exception('Error al cargar object_id choices dinámicamente')
                     self.fields['object_id'].choices = []
-        else:
-            # En GET inicial, dejarlo vacío
+        elif not self.instance.pk:
             self.fields['object_id'].choices = []
         
 
@@ -344,7 +372,7 @@ class TreatmentForm(ModelForm):
 
     class Meta:
         model = Treatment
-        exclude = ['content_type','object_id','created', 'updated']
+        exclude = ['content_type', 'object_id', 'created', 'updated', 'implementation_status']
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'},format='%Y-%m-%d'),
             'analysis_notes': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
@@ -352,6 +380,16 @@ class TreatmentForm(ModelForm):
             'corrective_actions': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'stage': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        model_type = cleaned.get('model_type')
+        object_id = cleaned.get('object_id')
+        if self.instance.pk and model_type and object_id:
+            linked = RiskEvaluation.objects.filter(treatment=self.instance).exists() or RiskEvaluation.objects.filter(followup_for=self.instance).exists()
+            if linked and (self.instance.content_type_id != model_type.pk or self.instance.object_id != int(object_id)):
+                self.add_error('object_id', 'No se puede cambiar el recurso de un tratamiento vinculado a una evaluación.')
+        return cleaned
     
 
 class ThreatForm(ModelForm):
@@ -408,16 +446,18 @@ class LoanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Only allow assets that are not currently loaned
-        available_assets = InformationAssets.objects.all()
-        # filter out assets that are currently loaned
-        available_assets = [a for a in available_assets if not a.is_loaned]
-        self.fields['asset'].queryset = InformationAssets.objects.filter(pk__in=[a.pk for a in available_assets])
+        latest_action = AssetAction.objects.filter(
+            asset_id=OuterRef('pk'), status=AssetAction.AssetActionStatus.CONFIRMED,
+        ).order_by('-timestamp', '-pk').values('action_type')[:1]
+        self.fields['asset'].queryset = InformationAssets.objects.annotate(
+            latest_action_type=Subquery(latest_action),
+        ).filter(Q(latest_action_type__isnull=True) | Q(latest_action_type=AssetActionType.RETURN))
         # user choices: solo usuarios del tenant actual
         try:
             self.fields['user'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
         except Exception:
             # fallback seguro por si no existe el helper
-            self.fields['user'].queryset = CustomUser.objects.filter(is_active=True)
+            self.fields['user'].queryset = CustomUser.objects.none()
 
         for fname, field in self.fields.items():
             widget = field.widget
@@ -487,7 +527,7 @@ class VendorEvaluationForm(ModelForm):
         try:
             self.fields['performed_by'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
         except Exception:
-            self.fields['performed_by'].queryset = CustomUser.objects.filter(is_active=True)
+            self.fields['performed_by'].queryset = CustomUser.objects.none()
 
     class Meta:
         model = VendorEvaluation
@@ -533,8 +573,12 @@ class ReturnForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Only allow assets that are currently loaned
-        loaned = [a for a in InformationAssets.objects.all() if a.is_loaned]
-        self.fields['asset'].queryset = InformationAssets.objects.filter(pk__in=[a.pk for a in loaned])
+        latest_action = AssetAction.objects.filter(
+            asset_id=OuterRef('pk'), status=AssetAction.AssetActionStatus.CONFIRMED,
+        ).order_by('-timestamp', '-pk').values('action_type')[:1]
+        self.fields['asset'].queryset = InformationAssets.objects.annotate(
+            latest_action_type=Subquery(latest_action),
+        ).filter(latest_action_type=AssetActionType.LOAN)
 
         for fname, field in self.fields.items():
             widget = field.widget

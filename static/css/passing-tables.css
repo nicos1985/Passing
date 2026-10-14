@@ -1,0 +1,185 @@
+/* Shared table surface for the tenant interface. Existing DataTables instances keep their own behaviour. */
+:root {
+  --passing-table-heading: #f3f7fc;
+  --passing-table-heading-text: #496481;
+  --passing-table-border: #e1e9f3;
+  --passing-table-row-border: #eaf0f6;
+  --passing-table-hover: #f8fbff;
+  --passing-table-text: #29435e;
+  --passing-table-control: #276798;
+}
+
+[data-theme="dark"] {
+  --passing-table-heading: #202f43;
+  --passing-table-heading-text: #c7d8ec;
+  --passing-table-border: #35475b;
+  --passing-table-row-border: #2e4053;
+  --passing-table-hover: #203247;
+  --passing-table-text: #e2eaf3;
+  --passing-table-control: #9ed9ff;
+}
+
+.main-content table.table:not(.vault-table) {
+  width: 100%;
+  border: 1px solid var(--passing-table-border);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  color: var(--passing-table-text);
+  background: var(--ui-surface, #fff);
+  box-shadow: 0 7px 22px rgba(22, 48, 88, .055);
+}
+
+.main-content table.table:not(.vault-table) > thead,
+.main-content table.table:not(.vault-table) > thead.table-dark {
+  --bs-table-bg: var(--passing-table-heading);
+  --bs-table-color: var(--passing-table-heading-text);
+  --bs-table-border-color: var(--passing-table-border);
+  --bs-table-accent-bg: transparent;
+}
+
+.main-content table.table:not(.vault-table) > thead > tr > th {
+  padding: 12px 14px;
+  border-top: 0;
+  border-bottom: 1px solid var(--passing-table-border);
+  background: var(--passing-table-heading);
+  color: var(--passing-table-heading-text);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.main-content table.table:not(.vault-table) > thead > tr > th:first-child { border-top-left-radius: 13px; }
+.main-content table.table:not(.vault-table) > thead > tr > th:last-child { border-top-right-radius: 13px; }
+.main-content table.table:not(.vault-table) > tbody > tr > td,
+.main-content table.table:not(.vault-table) > tbody > tr > th {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--passing-table-row-border);
+  color: var(--passing-table-text);
+  font-size: .84rem;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.main-content table.table.table-sm:not(.vault-table) > thead > tr > th,
+.main-content table.table.table-sm:not(.vault-table) > tbody > tr > td,
+.main-content table.table.table-sm:not(.vault-table) > tbody > tr > th { padding: 9px 11px; }
+
+.main-content table.table:not(.vault-table) > tbody > tr:last-child > * { border-bottom: 0; }
+.main-content table.table:not(.vault-table) > tbody > tr:last-child > :first-child { border-bottom-left-radius: 13px; }
+.main-content table.table:not(.vault-table) > tbody > tr:last-child > :last-child { border-bottom-right-radius: 13px; }
+.main-content table.table.table-striped:not(.vault-table) { --bs-table-striped-bg: transparent; }
+.main-content table.table.table-hover:not(.vault-table) > tbody > tr:hover > * { --bs-table-bg-state: var(--passing-table-hover); }
+.main-content table.table.dataTable:not(.vault-table) { border-bottom: 1px solid var(--passing-table-border) !important; }
+
+/* Existing action links gain the same compact controls as the vault. */
+.main-content table.table:not(.vault-table) > tbody > tr > td:last-child > a:not(.btn):has(> i[class*="fa-"]),
+.main-content table.table:not(.vault-table) > tbody > tr > td:last-child > form > button:not(.btn):has(> i[class*="fa-"]) {
+  align-items: center;
+  background: var(--ui-surface-muted, #f8fbff);
+  border: 1px solid var(--passing-table-border);
+  border-radius: 9px;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  margin: 2px;
+  padding: 0;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 32px;
+}
+.main-content table.table:not(.vault-table) > tbody > tr > td:last-child > a:not(.btn):has(> i[class*="fa-"]):hover,
+.main-content table.table:not(.vault-table) > tbody > tr > td:last-child > form > button:not(.btn):has(> i[class*="fa-"]):hover {
+  background: #e6f5ff;
+  border-color: #abd9e9;
+}
+
+.main-content .passing-table-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.main-content .passing-table-actions .btn { align-items: center; display: inline-flex; height: 34px; justify-content: center; padding: 0; width: 34px; }
+
+.main-content .dataTables_wrapper .dataTables_length,
+.main-content .dataTables_wrapper .dataTables_filter,
+.main-content .dataTables_wrapper .dataTables_info,
+.main-content .dataTables_wrapper .dataTables_paginate { color: #71839b; font-size: .82rem; }
+.main-content .dataTables_wrapper .dataTables_length,
+.main-content .dataTables_wrapper .dataTables_filter { margin-bottom: 12px; }
+.main-content .dataTables_wrapper .dataTables_info,
+.main-content .dataTables_wrapper .dataTables_paginate { margin-top: 12px; }
+.main-content .dataTables_wrapper .dataTables_filter input,
+.main-content .dataTables_wrapper .dataTables_length select {
+  background: var(--ui-surface, #fff);
+  border: 1px solid var(--passing-table-border);
+  border-radius: 9px;
+  color: var(--passing-table-text);
+  font-size: .84rem;
+  margin-left: 8px;
+  padding: 6px 10px;
+}
+.main-content .dataTables_wrapper .dataTables_filter input:focus,
+.main-content .dataTables_wrapper .dataTables_length select:focus { border-color: #28a4cb; box-shadow: 0 0 0 3px rgba(40, 164, 203, .14); outline: none; }
+.main-content .dataTables_wrapper .pagination .page-link {
+  border: 1px solid var(--passing-table-border);
+  border-radius: 8px;
+  color: var(--passing-table-control);
+  margin-left: 4px;
+}
+.main-content .dataTables_wrapper .pagination .page-item.active .page-link { background: #168eb8; border-color: #168eb8; color: #fff; }
+.main-content .dataTables_wrapper .pagination .page-item.disabled .page-link { color: #97a6b7; }
+.main-content #filtrosCollapse > .container-fluid { background: var(--passing-table-heading) !important; border: 1px solid var(--passing-table-border); border-radius: 12px !important; }
+
+@media (max-width: 767px) {
+  .main-content table.table:not(.vault-table) > thead > tr > th { padding: 10px; font-size: .68rem; }
+  .main-content table.table:not(.vault-table) > tbody > tr > td { padding: 10px; }
+  .main-content .dataTables_wrapper .dataTables_length,
+  .main-content .dataTables_wrapper .dataTables_filter { float: none; text-align: left; }
+}
+
+/* Shared heading for list screens. Actions and filter trigger belong to the heading. */
+.main-content .passing-list-hero {
+  align-items: flex-end;
+  background: linear-gradient(125deg, #122c57, #244c86 70%, #31649e);
+  border-radius: 22px;
+  box-shadow: 0 16px 36px rgba(26, 58, 104, .16);
+  color: #fff;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  max-width: 1500px;
+  padding: 28px 32px;
+}
+.main-content .passing-list-hero h1 { color: #fff; font-size: clamp(1.65rem, 2.5vw, 2.25rem); font-weight: 760; letter-spacing: -.025em; margin: 3px 0 5px; }
+.main-content .passing-list-hero h4 { color: #fff; font-size: clamp(1.65rem, 2.5vw, 2.25rem); font-weight: 760; letter-spacing: -.025em; margin: 3px 0 5px !important; }
+.main-content .passing-list-hero h2 { color: #fff; font-size: clamp(1.65rem, 2.5vw, 2.25rem); font-weight: 760; letter-spacing: -.025em; margin: 3px 0 5px !important; }
+.main-content .passing-list-hero p { color: #d6e5fa; font-size: .88rem; margin: 0; }
+.main-content .passing-list-hero-description { color: #d6e5fa; display: block; font-size: .88rem; }
+.main-content .passing-list-hero-eyebrow { color: #9ed9ff; font-size: .68rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.main-content .passing-list-hero-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.main-content .passing-list-hero .btn { border-radius: 10px; font-size: .82rem; font-weight: 700; padding: 8px 12px; white-space: nowrap; }
+.main-content .passing-list-hero .btn-primary { background: #16a8dc; border-color: #16a8dc; color: #fff; }
+.main-content .passing-list-hero .btn-primary:hover { background: #078cbf; border-color: #078cbf; }
+.main-content .passing-list-hero .btn-light,
+.main-content .passing-list-hero .btn-outline-light,
+.main-content .passing-list-hero .btn-outline-secondary,
+.main-content .passing-list-hero .btn-secondary { background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.35); color: #fff; }
+.main-content .passing-list-hero .btn-outline-primary,
+.main-content .passing-list-hero .btn-outline-success { background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.35); color: #fff; }
+.main-content .passing-list-hero .btn-light:hover,
+.main-content .passing-list-hero .btn-outline-light:hover,
+.main-content .passing-list-hero .btn-outline-secondary:hover,
+.main-content .passing-list-hero .btn-secondary:hover { background: rgba(255,255,255,.24); }
+.main-content .passing-list-hero .btn-outline-primary:hover,
+.main-content .passing-list-hero .btn-outline-success:hover { background: rgba(255,255,255,.24); }
+.main-content .passing-list-filters { background: var(--ui-surface, #fff); border: 1px solid var(--passing-table-border); border-radius: 14px; box-shadow: 0 8px 22px rgba(22,48,88,.06); margin-bottom: 20px; padding: 18px; }
+.main-content .passing-list-filters .form-label { color: #36516b; font-size: .82rem; font-weight: 700; }
+.main-content .passing-list-filters .container-fluid { background: transparent !important; border: 0 !important; padding: 0 !important; }
+.main-content .passing-list-hero .input-group { max-width: 300px; }
+.main-content .passing-list-hero .input-group .form-control { min-width: 130px; }
+@media (max-width: 767px) {
+  .main-content .passing-list-hero { align-items: flex-start; display: block; padding: 22px; }
+  .main-content .passing-list-hero-actions { justify-content: flex-start; margin-top: 18px; }
+}

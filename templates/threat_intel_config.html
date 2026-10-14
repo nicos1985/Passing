@@ -33,9 +33,6 @@
                             <a href="{% url 'threat_intel:source-list' %}" class="btn btn-primary btn-sm">
                                 <i class="fa-solid fa-list"></i> {% trans "Ver Todas" %}
                             </a>
-                            <a href="{% url 'threat_intel:source-create' %}" class="btn btn-success btn-sm">
-                                <i class="fa-solid fa-plus"></i> {% trans "Nueva" %}
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -51,9 +48,9 @@
                             <a href="{% url 'threat_intel:techtag-list' %}" class="btn btn-primary btn-sm">
                                 <i class="fa-solid fa-list"></i> {% trans "Ver Todas" %}
                             </a>
-                            <a href="{% url 'threat_intel:techtag-create' %}" class="btn btn-success btn-sm">
+                            {% if perms.threat_intel.add_techtag %}<a href="{% url 'threat_intel:techtag-create' %}" class="btn btn-success btn-sm">
                                 <i class="fa-solid fa-plus"></i> {% trans "Nueva" %}
-                            </a>
+                            </a>{% endif %}
                         </div>
                     </div>
                 </div>

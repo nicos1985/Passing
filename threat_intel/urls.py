@@ -42,7 +42,6 @@ urlpatterns = [
     path('config/', views.ConfigView.as_view(), name='config'),
     path('sources/', views.SourceListView.as_view(), name='source-list'),
     path('sources/<int:pk>/', views.SourceDetailView.as_view(), name='source-detail'),
-    path('sources/create/', views.SourceCreateView.as_view(), name='source-create'),
     path('sources/<int:pk>/edit/', views.SourceUpdateView.as_view(), name='source-update'),
     path('techtags/', views.TechTagListView.as_view(), name='techtag-list'),
     path('techtags/<int:pk>/', views.TechTagDetailView.as_view(), name='techtag-detail'),

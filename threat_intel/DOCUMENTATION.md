@@ -24,7 +24,15 @@ Este módulo centraliza el pipeline de inteligencia de amenazas: ingestión de f
 - **Análisis IA:** `AIAnalysisListView`, `AIAnalysisDetailView`, `AIAnalysisRerunView`, `AIAnalysisExportView` resumen y re-ejecutan modelos sobre cada item.
 - **Reportes:** `ReportListView`, `ReportDetailView`, `ReportCreateView`, `ReportSendView` cubren creación, previsualización y envío.
 - **Revisiones:** `ReviewCreateView`, `ReviewListView`, `ReviewDetailView`, `ReviewUpdateView` registran/quitan decisiones de gestión.
-- **Configuración:** vistas CRUD para `Source` y `TechTag`, junto con `ConfigView` que muestra métricas agregadas.
+- **Configuración:** las fuentes NVD y AWS se crean con `threatintel_seed`; en la interfaz se puede cambiar su nombre y activar o desactivar cada una. Agregar otro conector requiere implementación en código. Las etiquetas se administran desde la interfaz.
+
+## Seguridad y ejecución
+- Las pantallas exigen los permisos Django `view_*`; cambios, revisiones, reanálisis y envíos exigen `add_*` o `change_*` del modelo correspondiente. Los superusuarios conservan acceso.
+- El contenido de reportes se conserva como texto. La vista, el correo HTML y el PDF escapan el texto antes de mostrarlo.
+- Una corrida termina en `failed` si falla alguna fuente activa o el análisis IA. Un informe solo recibe `sent_at` tras una confirmación de envío.
+- El prompt de IA incluye únicamente nombres de tecnologías públicas reconocidas entre las etiquetas activas. Las etiquetas privadas o desconocidas no se envían como descripción del stack.
+- Instalar las dependencias de `requirements.txt` antes de ejecutar el conector AWS; incluye `feedparser`.
+- Ejecutar `python manage.py threatintel_run --tenant empresa1 --days 30 --dry-run` para ese tenant. En un cron o timer, usar siempre `--tenant`; el esquema público se rechaza.
 
 ## URLs relevantes
 - `runs/` (listado), `runs/<pk>/` (detalle), `runs/<pk>/rerun`, `runs/<pk>/export`

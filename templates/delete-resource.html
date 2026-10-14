@@ -2,8 +2,8 @@
 {% load i18n %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="container py-4 passing-form-page">
+    <header class="form-hero">
         <div>
             <div class="text-uppercase text-muted small">{% trans "Confirmación" %}</div>
             <h2 class="mb-0"><i class="fa-solid fa-trash"></i> {% trans "Eliminar" %} {{ verbose_name }}</h2>
@@ -11,7 +11,7 @@
         <a class="btn btn-outline-secondary" href="{% url list_view %}">
             <i class="fa-solid fa-arrow-left"></i> {% trans "Cancelar" %}
         </a>
-    </div>
+    </header>
 
     <div class="card ui-accent-card" style="--accent-color: #dc3545;">
         <div class="card-header d-flex align-items-center gap-2">

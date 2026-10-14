@@ -1,44 +1,44 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/config-dashboard.css' %}">{% endblock %}
 {% block content %}
-<div class='justify-content-sm-center' style="margin-top: 80px;">
-<div class="d-flex justify-content-center" >
+<div class="container-fluid py-3 passing-config passing-settings">
+  <header class="config-hero"><div><span class="config-eyebrow">Passing · {% trans "Administración" %}</span><h1>{% trans "Configuración general" %}</h1><p>{% trans "Datos de la plataforma y avisos para la empresa." %}</p></div><div class="config-hero-actions"><a class="btn btn-outline-light" href="{% url 'config' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>{% trans "Volver a configuración" %}</a></div></header>
+  <div class="card settings-panel mb-4"><div class="card-header"><div class="settings-panel-icon"><i class="fa-solid fa-building" aria-hidden="true"></i></div><div><h2>{% trans "Plataforma" %}</h2><p>{% trans "Identidad y datos generales" %}</p></div></div><div class="card-body">
+    <form method="post" action="{% url 'configuracion-global' %}" enctype="multipart/form-data">
+      {% csrf_token %}{{ form.non_field_errors }}
+      {% if form.company_logo.value and form.instance.company_logo %}<div class="mb-3"><label class="form-label">Logo actual</label><br><img src="{{ form.instance.company_logo.url }}" style="max-height:64px;width:auto" alt="Logo de la empresa"></div>{% endif %}
+      <div class="row g-3">{% for field in form %}<div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}</div>
+      <button type="submit" class="btn btn-primary mt-3"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar configuración</button>
+    </form>
+  </div></div>
 
-    <div class="card center">
-            <div class="card-title">
-                <div class="container" style="height: 85px; padding-top: 20px; ">
-                    <h2><i class="fas fa-sign-in-alt"></i> {% trans "Configuración Global" %}</h2>
-                    
-                </div>
-            </div>
-
-            <div class="card-body "style="background-color: #F7F7F7; width: 35rem;">
-
-
-                    <form class = 'form' method="POST" action="{% url 'configuracion-global'%}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                    {% if form.company_logo.value and form.instance and form.instance.company_logo %}
-                        <div class="mb-2">
-                            <label class="form-label">{% trans "Logo actual" %}</label><br>
-                            <img src="{{ form.instance.company_logo.url }}" style="height:64px; width:auto;" alt="Logo" />
-                        </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                        <div class="mb-2">{{ field.label_tag }} {{ field }}</div>
-                    {% endfor %}
-
-                        <button type="submit" class="btn btn-primary btn-sm" style="margin-top:20px;">
-                            <i class="fas fa-save"></i> {% trans "Guardar" %}
-                        </button>
-                    </form>
-                        
-                        
-                    
-            </div>
-            
-        </div>
+  <section class="card settings-panel mb-4" id="notificaciones"><div class="card-header"><div class="settings-panel-icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></div><div><h2>{% trans "Notificaciones" %}</h2><p>{% trans "Bot de Telegram y destinatarios" %}</p></div></div><div class="card-body">
+    <p class="text-muted">Un bot de Telegram para los avisos de la empresa. Cada usuario vincula su chat y elige sus suscripciones desde Mi perfil.</p>
+    <div class="mb-3">Estado: <span class="badge {% if telegram_bot_source %}text-bg-success{% else %}text-bg-warning{% endif %}">{% if telegram_bot_source == 'passing' %}Token cifrado en Passing{% elif telegram_bot_source == 'environment' %}Token configurado en el servidor{% else %}Sin token configurado{% endif %}</span></div>
+    <form method="post" action="{% url 'supporthub:bot_edit' %}" class="mb-3">
+      {% csrf_token %}<label class="form-label" for="id_token">Token de BotFather</label>{{ telegram_bot_form.token }}
+      <div class="form-text">Se cifra al guardar y nunca se vuelve a mostrar. Dejá este campo vacío si no querés cambiarlo.</div>
+      <button type="submit" class="btn btn-primary mt-2">Guardar token</button>
+    </form>
+    <div class="d-flex gap-2 flex-wrap mb-4">
+      <form method="post" action="{% url 'supporthub:bot_test' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" {% if not telegram_bot_source %}disabled{% endif %}>Comprobar bot</button></form>
+      <form method="post" action="{% url 'supporthub:telegram_chats_discover' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" {% if not telegram_bot_source %}disabled{% endif %}>Buscar IDs de chats privados</button></form>
     </div>
+    {% if telegram_discovered_chats is not None %}<div class="settings-discovery mb-4"><h3 class="h6">Chats privados recientes</h3>{% for chat in telegram_discovered_chats %}<div>{{ chat.name }} {% if chat.username %}<span class="text-muted">@{{ chat.username }}</span>{% endif %} · <code>{{ chat.id }}</code></div>{% empty %}<p class="text-muted mb-0">No hay chats recientes. Primero enviá /start al bot.</p>{% endfor %}</div>{% endif %}
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2"><h3 class="h6 mb-0">Cuentas vinculadas</h3><a class="btn btn-outline-primary btn-sm" href="{% url 'supporthub:recipient_new' %}">Agregar cuenta</a></div>
+    {% for recipient in telegram_recipients %}
+      <div class="settings-recipient mb-2 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div><strong>{{ recipient }}</strong><span class="text-muted small"> · ID {{ recipient.chat_id }}{% if not recipient.active %} · Desactivada{% endif %}</span><div class="text-muted small">{% if recipient.notify_support %}Ticket de soporte · {% endif %}{% if recipient.notify_monitoring %}Monitoreo · {% endif %}{% if recipient.notify_password_requests %}Pedido de contraseñas{% endif %}</div></div>
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'supporthub:recipient_test' recipient.pk %}">{% csrf_token %}<button class="btn btn-outline-success btn-sm" title="Enviar prueba" aria-label="Probar cuenta de {{ recipient }}"><i class="fa-solid fa-paper-plane"></i></button></form>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'supporthub:recipient_edit' recipient.pk %}" title="Editar cuenta" aria-label="Editar cuenta de {{ recipient }}"><i class="fa-solid fa-pen-to-square"></i></a>
+          <a class="btn btn-outline-danger btn-sm" href="{% url 'supporthub:delete_item' 'recipient' recipient.pk %}" title="Eliminar cuenta" aria-label="Eliminar cuenta de {{ recipient }}"><i class="fa-solid fa-trash"></i></a>
+        </div>
+      </div>
+    {% empty %}<p class="text-muted">Todavía no hay cuentas vinculadas.</p>{% endfor %}
+    <p class="small text-muted mb-0 mt-3">Categorías disponibles: monitoreo, ticket de soporte y pedido de contraseñas (solo superusuarios). Más categorías podrán agregarse después.</p>
+  </div></section>
 </div>
 {% endblock %}

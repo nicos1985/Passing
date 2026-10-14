@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/profile.css' %}">{% endblock %}
+{% block content %}
+<div class="container-fluid py-3 passing-profile">
+  <header class="profile-hero mb-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div><div class="profile-eyebrow mb-2">Mi cuenta / Notificaciones</div><h1 class="mb-2">Avisos por Telegram</h1><p class="mb-0">Elegí qué eventos querés recibir en tu chat privado.</p></div>
+      <a class="btn btn-outline-light btn-sm" href="{% url 'profile' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Volver al perfil</a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-4"><span class="profile-hero-pill"><i class="fa-brands fa-telegram" aria-hidden="true"></i>{% if recipient and recipient.active %}Chat conectado{% elif recipient %}Avisos pausados{% else %}Chat pendiente{% endif %}</span><span class="profile-hero-pill"><i class="fa-solid fa-lock" aria-hidden="true"></i>Vinculación verificada por código</span></div>
+  </header>
+
+  <div class="row g-4 align-items-start">
+    {% if recipient %}
+    <div class="col-xl-8">
+      <section class="profile-panel">
+        <div class="profile-panel-header"><div><h2>Mis suscripciones</h2><p>Podés cambiarlas cuando quieras. El cambio se aplica a los próximos avisos.</p></div><span class="profile-row-icon"><i class="fa-solid fa-bell" aria-hidden="true"></i></span></div>
+        <div class="profile-panel-body">
+          <form method="post" action="{% url 'supporthub:telegram_preferences' %}">
+            {% csrf_token %}
+            <label class="profile-row" for="tg_active"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-power-off" aria-hidden="true"></i></span><span><strong>Recibir avisos</strong><small>Pausá o reanudá todos los mensajes de Telegram.</small></span></span><input class="form-check-input" type="checkbox" name="active" id="tg_active" {% if recipient.active %}checked{% endif %}></label>
+            <hr class="profile-divider">
+            <p class="profile-hint mb-3">Elegí los temas que te interesan:</p>
+            {% if can_monitor %}<label class="profile-row" for="tg_monitor"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span><span><strong>Monitoreo</strong><small>Incidentes nuevos y recuperación de servicios.</small></span></span><input class="form-check-input" type="checkbox" name="notify_monitoring" id="tg_monitor" {% if recipient.notify_monitoring %}checked{% endif %}></label>{% endif %}
+            {% if can_risks %}<label class="profile-row" for="tg_risks"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span><span><strong>Asistente de riesgos</strong><small>Resumen diario de sugerencias nuevas.</small></span></span><input class="form-check-input" type="checkbox" name="notify_risks" id="tg_risks" {% if recipient.notify_risks %}checked{% endif %}></label>{% endif %}
+            <label class="profile-row" for="tg_support"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-headset" aria-hidden="true"></i></span><span><strong>Ticket de soporte</strong><small>Mensajes según tu turno de guardia o respaldo.</small></span></span><input class="form-check-input" type="checkbox" name="notify_support" id="tg_support" {% if recipient.notify_support %}checked{% endif %}></label>
+            {% if can_password %}<label class="profile-row" for="tg_password"><span class="d-flex gap-3"><span class="profile-row-icon"><i class="fa-solid fa-key" aria-hidden="true"></i></span><span><strong>Pedido de contraseñas</strong><small>Solicitudes de acceso reservadas a administración.</small></span></span><input class="form-check-input" type="checkbox" name="notify_password_requests" id="tg_password" {% if recipient.notify_password_requests %}checked{% endif %}></label>{% endif %}
+            <button class="btn btn-primary profile-save mt-4" type="submit"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>Guardar preferencias</button>
+          </form>
+        </div>
+      </section>
+    </div>
+    {% endif %}
+
+    <div class="{% if recipient %}col-xl-4{% else %}col-xl-7{% endif %}">
+      <section class="profile-panel">
+        <div class="profile-panel-header"><div><h2>Mi chat privado</h2><p>La cuenta donde llegarán tus notificaciones.</p></div><span class="profile-row-icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></span></div>
+        <div class="profile-panel-body">
+          {% if recipient %}
+            <span class="profile-status {% if recipient.active %}connected{% else %}off{% endif %}">{% if recipient.active %}<i class="fa-solid fa-circle-check" aria-hidden="true"></i>Conectado{% else %}<i class="fa-solid fa-pause" aria-hidden="true"></i>Pausado{% endif %}</span>
+            <div class="profile-summary mt-3"><span class="profile-summary-label">ID de chat</span><span class="profile-summary-value">{{ recipient.chat_id }}</span></div>
+            <p class="profile-hint mt-3">Tu chat ya está vinculado. Usá las opciones de la izquierda para suscribirte o dejar de recibir cada tipo de aviso.</p>
+            <details class="profile-details mt-3" {% if pairing %}open{% endif %}><summary>Cambiar chat de Telegram</summary><div class="profile-details-body">
+          {% else %}
+            <span class="profile-status pending"><i class="fa-solid fa-link" aria-hidden="true"></i>Sin chat vinculado</span>
+            <p class="profile-hint mt-3">Enviá <code>/start</code> al bot de la empresa. Pedile al administrador tu ID en Configuración general → Notificaciones → Buscar IDs de chats privados.</p>
+            <p class="profile-hint">Si tu chat está asociado a otra cuenta de Passing, el código te permitirá recuperarlo.</p>
+          {% endif %}
+
+          <form method="post" action="{% url 'supporthub:telegram_link' %}" class="mt-2">
+            {% csrf_token %}<label class="profile-field-label" for="chat_id">ID numérico del chat</label><input id="chat_id" name="chat_id" type="number" min="1" class="form-control" placeholder="Ej.: 123456789" required>
+            <button class="btn btn-outline-primary btn-sm mt-2" type="submit">Enviar código de verificación</button>
+          </form>
+          {% if pairing %}<form method="post" action="{% url 'supporthub:telegram_confirm' %}" class="mt-3">
+            {% csrf_token %}<label class="profile-field-label" for="code">Código recibido en Telegram</label><input id="code" name="code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" class="form-control" required>
+            <button class="btn btn-primary btn-sm mt-2" type="submit">Confirmar chat</button>
+          </form>{% endif %}
+          {% if recipient %}</div></details>{% endif %}
+          {% if recipient %}<hr class="profile-divider"><form method="post" action="{% url 'supporthub:telegram_disable' %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm" type="submit">Desactivar todos los avisos</button></form>{% endif %}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

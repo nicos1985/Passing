@@ -34,6 +34,8 @@ class RedactingFilter(logging.Filter):
         joined = "|".join(re.escape(f) for f in self.fields)
         # capture key then the separator and the value token (non-greedy)
         self._pattern = re.compile(rf'(?i)(?:"?\b({joined})\b"?\s*[:=]\s*)([\"\']?)([^\s,\]\}};]+)\2')
+        self._bitrix_webhook = re.compile(r'(?i)(/rest/[1-9][0-9]*/)[A-Za-z0-9_-]{8,}(?=/)')
+        self._telegram_bot = re.compile(r'(?i)(/bot)[0-9]+:[A-Za-z0-9_-]+(?=/)')
 
     def filter(self, record: logging.LogRecord) -> bool:
         try:
@@ -41,6 +43,8 @@ class RedactingFilter(logging.Filter):
             message = record.getMessage()
             if message:
                 redacted = self._pattern.sub(lambda m: f"{m.group(1)}=[REDACTED]", message)
+                redacted = self._bitrix_webhook.sub(r'\1[REDACTED]', redacted)
+                redacted = self._telegram_bot.sub(r'\1[REDACTED]', redacted)
                 # Replace the msg and clear args so formatting isn't reapplied
                 record.msg = redacted
                 record.args = ()

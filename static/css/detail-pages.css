@@ -1,0 +1,32 @@
+.passing-detail { max-width: 1500px; margin-left: auto; margin-right: auto; color: var(--ui-text); }
+.passing-detail .detail-hero { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px; padding: 27px 32px; margin-bottom: 22px; border-radius: 22px; background: linear-gradient(125deg, #122c57, #244c86 70%, #31649e); box-shadow: 0 16px 36px rgba(26,58,104,.16); color: #fff; }
+.passing-detail .detail-hero-main { min-width: 0; flex: 1 1 320px; }
+.passing-detail .detail-hero-eyebrow { display: block; margin-bottom: 6px; color: #9ed9ff; font-size: .68rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.passing-detail .detail-hero h1, .passing-detail .detail-hero h2, .passing-detail .detail-hero h4 { color: #fff; font-size: clamp(1.6rem, 2.4vw, 2.2rem); font-weight: 760; letter-spacing: -.025em; line-height: 1.2; margin: 0 0 6px !important; overflow-wrap: anywhere; }
+.passing-detail .detail-hero p, .passing-detail .detail-hero small, .passing-detail .detail-hero .text-muted { color: #d6e5fa !important; font-size: .84rem; margin: 0; }
+.passing-detail .detail-hero .badge { font-size: .7rem; }
+.passing-detail .detail-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.passing-detail .detail-hero .btn { border-radius: 10px; font-size: .81rem; font-weight: 700; padding: 8px 12px; white-space: nowrap; }
+.passing-detail .detail-hero .btn-outline-secondary, .passing-detail .detail-hero .btn-secondary, .passing-detail .detail-hero .btn-warning, .passing-detail .detail-hero .btn-info, .passing-detail .detail-hero .btn-outline-primary, .passing-detail .detail-hero .btn-outline-danger, .passing-detail .detail-hero .btn-success { color: #fff; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.35); }
+.passing-detail .detail-hero .btn-outline-secondary:hover, .passing-detail .detail-hero .btn-secondary:hover, .passing-detail .detail-hero .btn-warning:hover, .passing-detail .detail-hero .btn-info:hover, .passing-detail .detail-hero .btn-outline-primary:hover, .passing-detail .detail-hero .btn-outline-danger:hover, .passing-detail .detail-hero .btn-success:hover { color: #fff; background: rgba(255,255,255,.24); }
+.passing-detail .detail-hero .btn-primary { background: #16a8dc; border-color: #16a8dc; color: #fff; }
+.passing-detail .detail-hero .btn-primary:hover { background: #078cbf; border-color: #078cbf; }
+.passing-detail .detail-hero .rounded-circle { border: 2px solid rgba(255,255,255,.75); object-fit: cover; }
+.passing-detail .card:not(.modal-content) { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 17px; box-shadow: 0 7px 22px rgba(22,48,88,.055); overflow: hidden; }
+.passing-detail .card:not(.modal-content) > .card-header { background: var(--ui-surface-muted); border-bottom: 1px solid var(--ui-border); color: var(--ui-text); padding: 15px 19px; font-size: .9rem; font-weight: 750; }
+.passing-detail .card:not(.modal-content) > .card-header h5, .passing-detail .card:not(.modal-content) > .card-header h4 { color: var(--ui-text); font-size: .9rem; font-weight: 750; margin: 0; }
+.passing-detail .card:not(.modal-content) > .card-body { color: var(--ui-text); padding: 19px; }
+.passing-detail .card:not(.modal-content) > .card-body.p-0 { padding: 0; }
+.passing-detail .card:not(.modal-content) > .card-footer { border-top: 1px solid var(--ui-border); }
+.passing-detail .card .text-muted { color: var(--ui-text-muted) !important; }
+.passing-detail dl { margin-bottom: 0; }
+.passing-detail dl dt, .passing-detail dl dd { padding-top: 10px; padding-bottom: 10px; margin-bottom: 0; border-bottom: 1px solid var(--ui-border); overflow-wrap: anywhere; }
+.passing-detail dl dt { color: var(--ui-text-muted); font-size: .77rem; font-weight: 700; }
+.passing-detail dl dd { color: var(--ui-text); font-size: .86rem; }
+.passing-detail dl dt:last-of-type, .passing-detail dl dd:last-of-type { border-bottom: 0; }
+.passing-detail .card-body > p:last-child { margin-bottom: 0; }
+.passing-detail pre { background: var(--ui-surface-muted) !important; color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 10px !important; padding: 16px !important; max-width: 100%; overflow: auto; }
+.passing-detail code { overflow-wrap: anywhere; }
+.passing-detail .form-label { color: var(--ui-text); font-size: .82rem; font-weight: 700; }
+.passing-detail .form-control, .passing-detail .form-select { background: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); border-radius: 9px; }
+@media (max-width: 767px) { .passing-detail .detail-hero { align-items: flex-start; flex-direction: column; padding: 22px; } .passing-detail .detail-hero-actions { justify-content: flex-start; } }

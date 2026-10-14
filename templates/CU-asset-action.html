@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% if not request.user.is_superuser and not request.user.is_staff %}
+{% if not resource_form_access %}
 <div class="container-fluid text-center">
     <h5 style="color: darkgrey">{% trans "Acceso restringido. Necesitas un usuario administrador." %}</h5>
     <div class="row justify-content-center mt-4">
@@ -15,33 +15,16 @@
 </div>
 {% else %}
 
-<div class="container pt-4">
-    <div class="col-lg-10 col-xl-8 mx-auto" style="background-color:rgb(248, 248, 248); border-radius: 12px;">
-        <div class="container-fluid p-4">
-            <div class="row mb-3">
-                <div class="col-12">
-                    <a class="btn btn-secondary" href="{% url 'informationassets-list' %}">{% trans "Volver a lista" %}</a>
-                </div>
-            </div>
-
-            <div class="card">
+<div class="container pt-4 passing-form-page">
+    <header class="form-hero"><div><span class="ui-muted-title">{% trans "Activos" %}</span><h1>{{ action_label|default:"Acción" }}</h1><p>{% trans "Registrá el movimiento y verificá los datos antes de guardar." %}</p></div><div class="form-hero-actions"><a class="btn btn-outline-secondary" href="{% url 'informationassets-list' %}">{% trans "Volver a la lista" %}</a>{% for rl in related_links %}<a class="btn btn-outline-info" href="{{ rl.0 }}">{{ rl.1 }}</a>{% endfor %}</div></header>
+    <div class="col-lg-10 col-xl-8 mx-auto">
+        <div class="container-fluid p-0">
+            <div class="card ui-accent-card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <i class="fa-solid {{ action_icon }}" style="font-size:1.2rem; color:#667eea;"></i>
                         <h5 class="mb-0">{{ action_label|default:"Acción" }}</h5>
                     </div>
                 <div class="card-body">
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <div>
-                            <a class="btn btn-outline-secondary" href="{% url 'informationassets-list' %}"><i class="fa-solid fa-arrow-left me-2"></i> {% trans "Volver" %}</a>
-                        </div>
-                        <div>
-                            {% if related_links %}
-                                {% for rl in related_links %}
-                                    <a class="btn btn-outline-info ms-2" href="{{ rl.0 }}">{{ rl.1 }}</a>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    </div>
                     <form method="post">
                         {% csrf_token %}
                         {{ form.non_field_errors }}

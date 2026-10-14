@@ -9,6 +9,7 @@ from .checks import run_check
 from .evidence import encrypt_evidence
 from .maintenance import monitor_in_maintenance
 from .models import CheckResult, Delivery, Incident, Monitor
+from supporthub.telegram_events import queue_monitoring_event
 
 
 def execute_monitor(monitor_id):
@@ -78,6 +79,8 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
                     incident.save(update_fields=["recovered_at"])
                     if not in_maintenance and monitor.recipients_list:
                         Delivery.objects.get_or_create(incident=incident, channel=Delivery.Channel.EMAIL, event="recovered")
+                    if not in_maintenance:
+                        queue_monitoring_event(incident.pk, "recovered")
             elif monitor.state == Monitor.State.UNKNOWN:
                 monitor.state = Monitor.State.UP
         elif status == CheckResult.Status.FAILURE:
@@ -91,6 +94,7 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
                     if monitor.recipients_list:
                         Delivery.objects.get_or_create(incident=incident, channel=Delivery.Channel.EMAIL, event="opened")
                     Delivery.objects.get_or_create(incident=incident, channel=Delivery.Channel.BITRIX, event="opened")
+                    queue_monitoring_event(incident.pk, "opened")
             elif evidence and monitor.state == Monitor.State.DOWN:
                 incident = Incident.objects.filter(monitor=monitor, recovered_at__isnull=True).first()
             if evidence and incident and not incident.json_evidence_encrypted:

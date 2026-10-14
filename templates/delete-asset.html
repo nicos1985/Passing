@@ -2,15 +2,15 @@
 {% load i18n %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 passing-form-page">
+  <header class="form-hero">
     <div>
       <h4 class="mb-0 fw-semibold text-danger"><i class="fa-solid fa-trash me-2"></i>{% trans "Eliminar activo" %}</h4>
     </div>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-list' %}">
       <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Cancelar" %}
     </a>
-  </div>
+  </header>
 
   <div class="card ui-accent-card" style="--accent-color: #dc3545;">
     <div class="card-header">

@@ -6,6 +6,7 @@ from typing import Optional, List, Tuple
 import os
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.utils.html import escape
 from threat_intel.models import Report
 
 
@@ -26,8 +27,8 @@ def send_report_email_smtp(
     )
     
     # Attach HTML alternative
-    if report.body_html:
-        msg.attach_alternative(report.body_html, "text/html")
+    if report.body_md:
+        msg.attach_alternative(escape(report.body_md).replace("\n", "<br>"), "text/html")
     
     # Attach files (PDF, images, etc.)
     if attachments:
@@ -77,7 +78,7 @@ def send_report_email_brevo(
     # Prepare email object
     email_data = SendSmtpEmail(
         subject=report.subject,
-        html_content=report.body_html or f"<p>{report.body_md}</p>",
+        html_content=escape(report.body_md).replace("\n", "<br>"),
         sender={
             "name": getattr(settings, "DEFAULT_FROM_NAME", "Threat Intel"),
             "email": getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@example.com")

@@ -25,6 +25,7 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 import json
+from smtplib import SMTPAuthenticationError, SMTPConnectError, SMTPRecipientsRefused, SMTPSenderRefused, SMTPServerDisconnected
 from django.utils.html import escape
 import pyotp
 import qrcode
@@ -52,16 +53,17 @@ from accounts.models import TenantMembership, TenantSettings, AuthEvent
 from accounts.utils import get_ip, get_ua
 from django.contrib.auth import login as auth_login
 from django.core.exceptions import PermissionDenied
-from .utils import user_belongs_to_current_tenant
+from .utils import user_belongs_to_current_tenant, users_for_current_tenant
 from .mixins import TenantScopedUserMixin
 from .mixins import Safe404RedirectMixin
 import logging
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from datetime import timedelta
 
 # Funcion para user_passes_test 
 def is_administrator(user):
-    return user.is_superuser or user.is_staff
+    return user.is_authenticated and (user.is_superuser or user.is_staff) and user_belongs_to_current_tenant(user)
 
 def is_superadmin(user):
     return user.is_superuser
@@ -73,6 +75,8 @@ User = get_user_model()
 PENDING_EVALUATION_WINDOW_DAYS = 14
 
 def _pending_vendor_evaluations_for_dashboard(request):
+    if not (request.user.is_staff or request.user.is_superuser or request.user.has_perm('resources.view_vendorevaluation')):
+        return VendorEvaluation.objects.none()
     include_all = request.user.is_staff or request.user.is_superuser
     today = timezone.localdate()
     end_date = today + timedelta(days=PENDING_EVALUATION_WINDOW_DAYS)
@@ -102,35 +106,45 @@ def login_alias_to_hub(request):
 @login_required
 def home_tenant(request):
     """Dashboard tenant con métricas de treatments, riesgos y threat intelligence recientes."""
+    can_view_treatments = request.user.is_staff or request.user.is_superuser or request.user.has_perm('resources.view_treatment')
+    can_view_risks = request.user.is_staff or request.user.is_superuser or request.user.has_perm('resources.view_riskevaluation')
+    can_view_vendor_evaluations = request.user.is_staff or request.user.is_superuser or request.user.has_perm('resources.view_vendorevaluation')
     # Dashboard data: treatment counts by stage and recent pending treatments
-    stages_count = Treatment.objects.values('stage').annotate(count=Count('id'))
+    stages_count = Treatment.objects.values('stage').annotate(count=Count('id')) if can_view_treatments else []
     # Build a mapping of stage -> count
     stage_counts = {item['stage']: item['count'] for item in stages_count}
 
-    recent_pending = Treatment.objects.filter(stage=0).order_by('deadline')[:8]
+    recent_pending = Treatment.objects.filter(stage=0).order_by('deadline')[:8] if can_view_treatments else []
 
     # Risk evaluations grouped by risk_level (0..4)
     risk_counts = (
-        RiskEvaluation.objects.values('risk_level')
+        RiskEvaluation.objects.filter(is_draft=False).values('risk_level')
         .annotate(count=Count('id'))
-    )
+    ) if can_view_risks else []
     # ensure we expose all levels (0..4)
     risk_map = {item['risk_level']: item['count'] for item in risk_counts}
 
     # Critical evaluations (high/very high)
-    critical_evals = RiskEvaluation.objects.filter(risk_level__gte=3).select_related('evaluated_type')[:8]
+    critical_evals = RiskEvaluation.objects.filter(is_draft=False, risk_level__gte=3).select_related('evaluated_type')[:8] if can_view_risks else []
 
     # Evaluations with treatments not implemented (treatment exists and treatment.stage != IMPLEMENTED)
     # Count evaluations that have an associated treatment and whose treatment
     # is NOT in IMPLEMENTED stage.
     evaluations_not_implemented = (
-        RiskEvaluation.objects.filter(treatment__isnull=False)
+        RiskEvaluation.objects.filter(is_draft=False, treatment__isnull=False)
         .exclude(treatment__stage=TreatmentStage.IMPLEMENTED)
         .count()
-    )
+    ) if can_view_risks else 0
 
     # Threat Intel: counts for the latest run (relevant items with AI analysis in that run)
-    last_run = Run.objects.filter(status='success').order_by('-finished_at').first() or Run.objects.order_by('-started_at').first()
+    can_view_threat_intel = request.user.is_superuser or all(
+        request.user.has_perm(f'threat_intel.view_{model}')
+        for model in ('run', 'runitem', 'intelitem', 'aianalysis', 'report')
+    )
+    last_run = (
+        Run.objects.filter(status='success').order_by('-finished_at').first()
+        or Run.objects.order_by('-started_at').first()
+    ) if can_view_threat_intel else None
     ti_counts = {}
     recent_threats = []
     if last_run:
@@ -142,7 +156,7 @@ def home_tenant(request):
         # recent list: keep items that also have an AIAnalysis in that run for richer context
         items_qs = IntelItem.objects.filter(runitem__run=last_run, is_relevant=True, aianalysis__run=last_run).distinct()
         recent_threats = items_qs.order_by('-runitem__detected_at')[:8]
-    else:
+    elif can_view_threat_intel:
         # fallback: any relevant items with AI analysis
         items_qs = IntelItem.objects.filter(is_relevant=True, aianalysis__isnull=False).distinct()
         ti_counts_qs = items_qs.values('severity').annotate(count=Count('id'))
@@ -155,6 +169,8 @@ def home_tenant(request):
 
     return render(request, 'home_tenant.html', {
         'stage_counts': stage_counts,
+        'can_view_treatments': can_view_treatments,
+        'can_view_risks': can_view_risks,
         'recent_pending': recent_pending,
         'risk_map': risk_map,
         'critical_evals': critical_evals,
@@ -162,81 +178,97 @@ def home_tenant(request):
         'ti_counts': ti_counts,
         'recent_threats': recent_threats,
         'last_run_pk': last_run.pk if last_run else None,
+        'can_view_threat_intel': can_view_threat_intel,
         'pending_evals_card_count': pending_evals_card_count,
+        'can_view_vendor_evaluations': can_view_vendor_evaluations,
         'pending_evals_card_list': pending_evals_card_list,
         'pending_evals_window_days': PENDING_EVALUATION_WINDOW_DAYS,
     })
 
 
+class ActivationEmailNotAccepted(Exception):
+    """El backend no aceptó ningún mensaje, aunque no haya lanzado una excepción."""
+
+
+def _activation_mail_failure_message(exc):
+    if isinstance(exc, SMTPAuthenticationError):
+        return 'El servidor SMTP rechazó las credenciales. Revisá el usuario y la contraseña de correo.'
+    if isinstance(exc, (SMTPConnectError, SMTPServerDisconnected, TimeoutError, ConnectionError, OSError)):
+        return 'No se pudo conectar al servidor SMTP. Revisá el host, puerto, TLS y las reglas de red.'
+    if isinstance(exc, SMTPSenderRefused):
+        return 'El servidor SMTP rechazó el remitente configurado.'
+    if isinstance(exc, SMTPRecipientsRefused):
+        return 'El servidor SMTP rechazó la dirección del destinatario.'
+    return 'El servidor de correo no aceptó la invitación. Revisá la configuración SMTP.'
+
+
+def _send_activation_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    activation_url = request.build_absolute_uri(
+        reverse('password_reset_confirm', args=[uid, token])
+    )
+    accepted = send_mail(
+        'Activa tu cuenta de usuario',
+        render_to_string('activation_email.html', {'user': user, 'activation_url': activation_url}),
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+    )
+    if accepted != 1:
+        raise ActivationEmailNotAccepted()
+
+
+def _log_activation_mail_failure(user, exc):
+    logger.warning(
+        'No se pudo enviar la activación del usuario %s: %s (SMTP %s)',
+        user.pk, type(exc).__name__, getattr(exc, 'smtp_code', '-'),
+    )
+
+
+@user_passes_test(is_administrator)
 def register(request):
-    """Crea usuarios nuevos dentro del tenant actual y les envía el email de activación."""
-    if request.method == 'POST':
-        form = UserForm(request.POST)
-        
-        if form.is_valid():
-            try:
+    """Crea un usuario inactivo y su membresía en una única transacción."""
+    form = UserForm(request.POST or None, actor=request.user)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            with transaction.atomic():
                 user = form.save(commit=False)
+                user.client = get_tenant(request)
                 user.is_active = False
-
-                username = form.cleaned_data['username']
-                # Resolve current tenant's Client (public model) and attach membership
-                client = Client.objects.get(schema_name=request.tenant.schema_name)
-                user.client = client
+                user.is_superuser = False  # Los superusuarios se crean por consola.
+                user.set_unusable_password()
                 user.save()
-
-                # Ensure TenantMembership exists so the user is associated to this tenant
-                try:
-                    TenantMembership.objects.update_or_create(
-                        user=user, client=client, defaults={"is_active": True}
-                    )
-                except Exception:
-                    # non-fatal: continue but log could be added
-                    pass
-                # Ensure tenant settings exist (idempotent)
-                try:
-                    TenantSettings.objects.get_or_create(client=client)
-                except Exception:
-                    pass
-            except Exception as e:
-                messages.warning(request, 'La creacion de usuario ha tenido un problema save. error: {e}')
-
-            try:
-                # Generar token de activación
-                token = default_token_generator.make_token(user)
-                uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-                # Construir la URL de activación
-                activation_url = f"http://{request.get_host()}/login/reset-password/confirm/{uid}/{token}/" #prestar atencion cuando pase a https
-            except Exception as e:
-                messages.warning(request, 'La creacion de usuario ha tenido un problema token. error: {e}')
-
-            # Enviar correo electrónico
-            subject = 'Activa tu cuenta de usuario'
-            message = render_to_string('activation_email.html', {
-                'user': user,
-                'activation_url': activation_url,
-            })
-
-            try:
-                send_mail(subject, message, 'noreply@anima.bot', [user.email])
-            except Exception as e:
-                messages.warning(request, f'No se ha podido enviar el mail a {user.email}')
-
-            messages.success(request, f'El usuario {username} ha sido creado exitosamente')
-            return redirect('userlist')
+                TenantMembership.objects.create(user=user, client=user.client, is_active=True)
+        except Exception:
+            logger.exception('No se pudo crear el usuario en el tenant actual')
+            form.add_error(None, 'No se pudo crear el usuario. Revisá los datos e intentá nuevamente.')
         else:
-            messages.warning(request, 'La creacion de usuario ha tenido un problema.')
+            try:
+                _send_activation_email(request, user)
+            except Exception as exc:
+                _log_activation_mail_failure(user, exc)
+                messages.warning(request, 'El usuario se creó, pero no llegó a enviarse la invitación. ' + _activation_mail_failure_message(exc))
+            messages.success(request, f'El usuario {user.username} se creó en este tenant y está pendiente de activación.')
+            return redirect('userlist')
 
+    return render(request, 'register.html', {'form': form, 'title': 'Crear usuario'})
+
+
+@user_passes_test(is_administrator)
+@require_POST
+def resend_activation(request, pk):
+    user = get_object_or_404(users_for_current_tenant(), pk=pk, is_active=False)
+    if user.password and user.has_usable_password():
+        messages.warning(request, 'Este usuario ya tiene contraseña. Usá la opción de activación de la lista.')
+        return redirect('userlist')
+    try:
+        _send_activation_email(request, user)
+    except Exception as exc:
+        _log_activation_mail_failure(user, exc)
+        messages.error(request, _activation_mail_failure_message(exc))
     else:
-        form = UserForm()
-        
-    context = { 
-        'form' : form,
-        'title': 'Registrarse',
-        'Action': 'create',
-    }
-
-    return render(request, 'register.html', context)
+        messages.success(request, f'El servidor de correo aceptó la invitación para {user.email}.')
+    return redirect('userlist')
 
 User = get_user_model()
 
@@ -345,18 +377,16 @@ def profile_view(request):
             if policy and policy.multifactor_status == MultiFactorStatus.REQUIRED:
                 profile_form.instance.is_2fa_enabled = True
                 is_2fa_enabled = True
-            # If user had 2FA enabled and turned it off, handle disable first
-            if initial_2fa == True and is_2fa_enabled == False:
-                disable_2fa(request)
-
             # Determine whether we need to show QR after saving (newly enabled 2FA)
             qr_generate = initial_2fa != True and is_2fa_enabled == True and user.otp_secret is None
 
             try:
                 profile_form.save()
+                if initial_2fa is True and is_2fa_enabled is False:
+                    disable_2fa(request)
                 user.refresh_from_db()
                 logger.debug("After save: user.avatar.name=%s", getattr(user.avatar, 'name', None))
-                messages.success(request, f"Avatar guardado: {getattr(user.avatar, 'name', None)}")
+                messages.success(request, "Perfil actualizado correctamente.")
 
 
                 # Aplicar preferencia de idioma guardada en el perfil del usuario
@@ -366,11 +396,11 @@ def profile_view(request):
                     request.session[session_key] = new_lang
                     translation.activate(new_lang)
 
-                # Construir la respuesta real y setear la cookie en ella
+                # Mantener al usuario en su perfil para revisar los cambios.
                 if qr_generate:
                     response = render(request, 'generate-qr-code.html')
                 else:
-                    response = render(request, 'listpass.html')
+                    response = redirect('profile')
 
                 try:
                     response.set_cookie(getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language'), new_lang or '')
@@ -381,27 +411,24 @@ def profile_view(request):
 
             except Exception as exc:
                 logger.exception("Error saving profile form/avatar: %s", exc)
-                messages.error(request, f"Excepción al guardar avatar: {str(exc)}")
-
-            if qr_generate:
-                return render(request, 'generate-qr-code.html')
-            else:
-                return render(request, 'listpass.html')
+                messages.error(request, 'No se pudieron guardar los cambios del perfil.')
         else:
             logger.warning("Profile form invalid: %s", profile_form.errors)
-            messages.error(request, f"Error al guardar perfil: {profile_form.errors}")
+            messages.error(request, 'Revisá los campos marcados para guardar el perfil.')
         
     else:
         profile_form = ProfileForm(instance=user)
         
-        context = {
-            'user_profile': user,
-            'profile_form': profile_form,
-            'has_otp_secret': user.has_otp_secret(),
-        }
-            
-        return render(request, 'profile.html', context)
-    return render(request, 'listpass.html')
+    from supporthub.models import TelegramRecipient
+    context = {
+        'user_profile': user,
+        'profile_form': profile_form,
+        'has_otp_secret': user.has_otp_secret(),
+        'mfa_required': getattr(TenantSettings.for_client(get_tenant(request)), 'multifactor_status', None) == MultiFactorStatus.REQUIRED,
+        'telegram_recipient': TelegramRecipient.objects.filter(user=user).first(),
+        'can_monitor_alerts': user.is_superuser or user.has_perm('monitoring.manage_monitoring') or user.has_perm('monitoring.read_monitoring'),
+    }
+    return render(request, 'profile.html', context)
 
 
 class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
@@ -437,8 +464,7 @@ class UserListView(ListView):
     context_object_name = 'users'
 
     def get_queryset(self):
-        obj = CustomUser.objects.filter(client=self.request.user.client).order_by('is_active')
-        return obj
+        return users_for_current_tenant().order_by('-is_active', 'username')
     
 @method_decorator(user_passes_test(is_administrator), name='dispatch')
 class UserUpdateView(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
@@ -449,6 +475,17 @@ class UserUpdateView(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
     success_url = reverse_lazy('userlist')
     not_found_message = "No se encontró el usuario a editar."
     redirect_url_name = "userlist"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(is_staff=False, is_superuser=False)
+        return queryset
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['actor'] = self.request.user
+        return kwargs
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)  # puede lanzar Http404 → lo captura el mixin
@@ -472,6 +509,11 @@ class DepartureUser(Safe404RedirectMixin, TenantScopedUserMixin, UpdateView):
     not_found_message = "No se encontró el usuario a dar de baja."
     redirect_url_name = "userlist"
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(is_staff=False, is_superuser=False)
+        return queryset
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -524,7 +566,9 @@ class UserDetailView(Safe404RedirectMixin, TenantScopedUserMixin, DetailView):
 def deactivate_user(request, pk):
     """Inactiva un usuario asegurando que no sea el único superusuario activo."""
     try:
-        user = get_object_or_404(CustomUser.for_current_tenant(), pk=pk)
+        user = get_object_or_404(users_for_current_tenant(), pk=pk)
+        if not request.user.is_superuser and (user.is_staff or user.is_superuser):
+            raise PermissionDenied('No podés desactivar administradores.')
 
         if not user_belongs_to_current_tenant(user):
             messages.error(request, "No podés operar usuarios de otro tenant.")
@@ -534,7 +578,7 @@ def deactivate_user(request, pk):
             messages.error(request, "No podés eliminar el mismo usuario con el que estás logueado.")
             return redirect('userlist')
 
-        superusers = CustomUser.for_current_tenant().filter(is_superuser=True, is_active=True).count()
+        superusers = users_for_current_tenant().filter(is_superuser=True, is_active=True).count()
         if user.is_superuser and superusers <= 1:
             messages.error(request, f'No se puede eliminar al usuario {user.username} ya que es el único administrador.')
             return redirect('userlist')
@@ -548,10 +592,16 @@ def deactivate_user(request, pk):
         return redirect('userlist')
 
 @user_passes_test(is_administrator)
+@require_POST
 def activate_user(request, pk):
     """Re-activa un usuario previamente desactivado y registra el mensaje de éxito."""
     try:
-        user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
+        user = get_object_or_404(users_for_current_tenant(), id=pk)
+        if not request.user.is_superuser and (user.is_staff or user.is_superuser):
+            raise PermissionDenied('No podés activar administradores.')
+        if not user.password or not user.has_usable_password():
+            messages.warning(request, 'El usuario todavía debe definir su contraseña. Reenviá la invitación.')
+            return redirect('userlist')
 
         if not user_belongs_to_current_tenant(user):
             messages.error(request, "No podés operar usuarios de otra cuenta.")
@@ -749,9 +799,13 @@ def send_qr_code_email_cid(user):
 
     email.send()
     
+@user_passes_test(is_administrator)
+@require_POST
 def send_qr_email_for_user_ondemand(request, pk):
     """Envía el QR por email cuando el admin lo solicita explícitamente."""
-    user = get_object_or_404(CustomUser.for_current_tenant(), id=pk)
+    user = get_object_or_404(users_for_current_tenant(), id=pk)
+    if not request.user.is_superuser and (user.is_staff or user.is_superuser):
+        return HttpResponseForbidden('No podés enviar el QR de un administrador.')
     try:
         send_qr_code_email_cid(user)
         messages.success(request, f"El código QR a {user} se ha enviado correctamente al correo {user.email}.")
@@ -793,6 +847,20 @@ class TenantSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
         # Pass request so the form can scope `set_admins` to tenant users
         kwargs['request'] = self.request
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        import os
+        from supporthub.forms import BotTokenForm
+        from supporthub.models import TelegramBotConfig, TelegramRecipient
+
+        bot = TelegramBotConfig.objects.filter(pk=1).first()
+        context['telegram_bot_source'] = ('passing' if bot and bot.token_encrypted else
+                                          'environment' if os.getenv('SUPPORT_TELEGRAM_BOT_TOKEN', '').strip() else None)
+        context['telegram_bot_form'] = BotTokenForm()
+        context['telegram_recipients'] = TelegramRecipient.objects.select_related('user').all()
+        context['telegram_discovered_chats'] = self.request.session.pop('telegram_discovered_chats', None)
+        return context
 
     def form_valid(self, form):
         instance = form.save(commit=False)

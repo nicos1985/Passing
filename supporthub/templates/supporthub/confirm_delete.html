@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4 passing-form-page" style="max-width:680px">
+  <header class="form-hero"><div><div class="ui-muted-title">Central de soporte / Confirmación</div><h1>Eliminar {{ label }}</h1></div><a class="btn btn-outline-light" href="{% url return_url %}">Volver</a></header>
+  <div class="card ui-accent-card border-danger">
+    <div class="card-body p-4">
+      <p>Vas a eliminar <strong>{{ item }}</strong>.</p>
+      {% if kind == 'portal' %}<p class="text-muted">También se eliminarán {{ related_count }} grupo{{ related_count|pluralize }} y el historial de avisos asociado.</p>{% endif %}
+      {% if kind == 'chat' %}<p class="text-muted">También se eliminarán sus {{ related_count }} avisos y mensajes registrados.</p>{% endif %}
+      {% if kind == 'recipient' %}<p class="text-muted">Se eliminarán sus entregas de Telegram. La persona conservará su usuario de Passing.</p>{% endif %}
+      {% if has_shifts %}<div class="alert alert-warning">Esta cuenta figura en turnos de guardia. Eliminá esos turnos antes de borrarla.</div>{% endif %}
+      <div class="d-flex gap-2">
+        <form method="post">{% csrf_token %}<button type="submit" class="btn btn-danger" {% if has_shifts %}disabled{% endif %}>Eliminar definitivamente</button></form>
+        <a class="btn btn-outline-secondary" href="{% url return_url %}">Cancelar</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

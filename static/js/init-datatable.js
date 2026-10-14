@@ -211,21 +211,22 @@ $('.filtro-fecha').on('change', function () {
 
 // Filtro de fechas para DataTables
 $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+  if (settings.nTable.id !== 'data') return true;
   for (let colname in filtrosFecha) {
     const colIndex = colIndexMap[colname];
     if (colIndex === undefined) continue;
 
-    const rawDate = data[colIndex]?.trim();
-    if (!rawDate || !/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return false;
-
-    const [year, month, day] = rawDate.split('-');
-    const rowDate = resetTime(new Date(year, month - 1, day));
-
     const minRaw = filtrosFecha[colname].min;
     const maxRaw = filtrosFecha[colname].max;
+    if (!minRaw && !maxRaw) continue;
 
-    const min = minRaw && /^\d{4}-\d{2}-\d{2}$/.test(minRaw) ? resetTime(new Date(minRaw)) : null;
-    const max = maxRaw && /^\d{4}-\d{2}-\d{2}$/.test(maxRaw) ? resetTime(new Date(maxRaw)) : null;
+    const cell = settings.aoData[dataIndex]?.nTr?.cells[colIndex];
+    const rawDate = cell?.dataset.date || data[colIndex]?.trim();
+    if (!rawDate || !/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return false;
+
+    const rowDate = parseLocalDate(rawDate);
+    const min = minRaw && /^\d{4}-\d{2}-\d{2}$/.test(minRaw) ? parseLocalDate(minRaw) : null;
+    const max = maxRaw && /^\d{4}-\d{2}-\d{2}$/.test(maxRaw) ? parseLocalDate(maxRaw) : null;
 
     //console.log(`🔎 Comparando fila: ${rowDate.toISOString()} | Min: ${min?.toISOString()} | Max: ${max?.toISOString()}`);
 
@@ -240,8 +241,9 @@ $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
 });
 
 // Función para eliminar hora de un objeto Date
-function resetTime(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+function parseLocalDate(isoDate) {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 

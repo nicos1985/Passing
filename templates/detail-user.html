@@ -1,32 +1,34 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-3">
+<div class="container py-4 passing-detail">
+  <header class="detail-hero">
+    <div class="detail-hero-main d-flex align-items-center gap-3">
       {% if object.avatar %}
         <img src="{{ object.avatar.url }}" alt="{% blocktrans %}Avatar de {{ object.email }}{% endblocktrans %}" class="rounded-circle" width="52" height="52">
       {% else %}
         <img src="{% static 'default-avatar.jpg' %}" alt="{% trans "Avatar predeterminado" %}" class="rounded-circle" width="52" height="52">
       {% endif %}
       <div>
+        <span class="detail-hero-eyebrow">{% trans "Usuario" %}</span>
         <h4 class="mb-0 fw-semibold">{{ object.first_name }} {{ object.last_name }}</h4>
         <small class="text-muted">{{ object.email }}</small>
       </div>
     </div>
-    <div class="d-flex gap-2">
+    <div class="detail-hero-actions">
       <a class="btn btn-outline-secondary btn-sm" href="{% url 'userlist' %}">
         <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Lista de Usuarios" %}
       </a>
-      {% if request.user.is_authenticated %}
+      {% if request.user.is_superuser or not object.is_staff and not object.is_superuser %}
         <a class="btn btn-outline-primary btn-sm" href="{% url 'updateuser' object.pk %}">
           <i class="fa-solid fa-pen me-1"></i>{% trans "Editar" %}
         </a>
       {% endif %}
     </div>
-  </div>
+  </header>
 
   <div class="row g-3">
     <div class="col-lg-8">

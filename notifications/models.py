@@ -1,6 +1,7 @@
 """Modelos que registran alertas sobre contraseñas para usuarios y administradores."""
 
 from django.db import models
+from django.conf import settings
 from passbase.models import Contrasena
 from login.models import CustomUser
 from django.utils.translation import gettext_lazy as _
@@ -42,3 +43,23 @@ class AdminNotification(models.Model):
     class Meta:
         verbose_name = _("Notificaciones a admin")
     ordering = ('viewed',)
+
+
+class InboxNotification(models.Model):
+    """Aviso interno breve, individual e independiente del canal externo."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='inbox_notifications')
+    category = models.CharField(max_length=32)
+    source_id = models.BigIntegerField()
+    event = models.CharField(max_length=24)
+    title = models.CharField(max_length=120)
+    target_path = models.CharField(max_length=240, blank=True)
+    channels = models.CharField(max_length=32, blank=True)
+    viewed = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+        constraints = [models.UniqueConstraint(
+            fields=['user', 'category', 'source_id', 'event'], name='inbox_notification_once',
+        )]

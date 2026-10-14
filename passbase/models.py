@@ -8,6 +8,7 @@ from django.db import models
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
 import re
+from urllib.parse import urlsplit
 from cryptography.fernet import Fernet
 from django.utils.translation import gettext_lazy as _
 from login.models import CustomUser
@@ -57,6 +58,20 @@ class Contrasena(models.Model):
         
     def __str__(self):
         return str(self.id)
+
+    @property
+    def safe_link(self):
+        """URL externa apta para enlaces HTML (solo HTTP/HTTPS)."""
+        if not self.link:
+            return ''
+        value = self.link.strip()
+        if '://' not in value:
+            value = f'https://{value}'
+        try:
+            parsed = urlsplit(value)
+            return value if parsed.scheme in ('http', 'https') and parsed.hostname else ''
+        except ValueError:
+            return ''
     
     def toJSON(self):
         item = model_to_dict(self)

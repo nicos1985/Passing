@@ -26,7 +26,8 @@
 {% endblock %}
 
 {% block content %}
-    <div class="form-container">
+    <div class="form-container passing-form-page">
+      <header class="form-hero">
             <a href="{% url 'threat_intel:source-detail' source.id %}" class="back-button">
             <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Detalles" %}
         </a>
@@ -35,6 +36,7 @@
             <h2 style="color: #333; font-weight: 700;">{% trans "Editar Fuente" %}: {{ source.name }}</h2>
             <p class="text-muted">{% trans "Actualizar parámetros de" %} {{ source.code }}</p>
         </div>
+      </header>
 
         {% if request.user.is_authenticated %}
             <div class="card form-card">
@@ -45,18 +47,7 @@
                     <form method="post" class="form" novalidate>
                         {% csrf_token %}
                         
-                        <div class="form-group mb-4">
-                            <label for="id_code">
-                                <i class="fa-solid fa-code" style="color: #17a2b8;"></i> {% trans "Código (Único)" %}
-                            </label>
-                            {% if form.code.errors %}
-                                {{ form.code }}
-                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.code.errors.0 }}</div>
-                            {% else %}
-                                {{ form.code }}
-                            {% endif %}
-                            <small class="form-text">{% trans "ej: NVD, CISA, AWS, MSRC, GITHUB" %}</small>
-                        </div>
+                        <p class="text-muted small">{% trans "Conector" %}: {{ source.code }} · {{ source.base_url }}. {% trans "La dirección y el tipo se definen en el conector de la aplicación." %}</p>
 
                         <div class="form-group mb-4">
                             <label for="id_name">
@@ -69,32 +60,6 @@
                                 {{ form.name }}
                             {% endif %}
                             <small class="form-text">{% trans "Nombre descriptivo de la fuente" %}</small>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label for="id_kind">
-                                <i class="fa-solid fa-cog" style="color: #17a2b8;"></i> {% trans "Tipo de Fuente" %}
-                            </label>
-                            {% if form.kind.errors %}
-                                {{ form.kind }}
-                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.kind.errors.0 }}</div>
-                            {% else %}
-                                {{ form.kind }}
-                            {% endif %}
-                            <small class="form-text">{% trans "Método de obtención: API REST, RSS Feed, o Web Scraping" %}</small>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label for="id_base_url">
-                                <i class="fa-solid fa-link" style="color: #17a2b8;"></i> {% trans "URL Base" %}
-                            </label>
-                            {% if form.base_url.errors %}
-                                {{ form.base_url }}
-                                <div class="alert alert-danger mt-2"><i class="fa-solid fa-circle-exclamation"></i> {{ form.base_url.errors.0 }}</div>
-                            {% else %}
-                                {{ form.base_url }}
-                            {% endif %}
-                            <small class="form-text">{% trans "ej: https://services.nvd.nist.gov/rest/json/" %}</small>
                         </div>
 
                         <div class="form-group mb-4">

@@ -4,11 +4,13 @@ from django.contrib import messages
 from django.db.models.query import QuerySet
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 from django.views import View
 from login.models import CustomUser
 from notifications.forms import CreateNotificationForm
-from notifications.models import AdminNotification, UserNotifications
+from notifications.models import AdminNotification, InboxNotification, UserNotifications
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
@@ -18,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from passbase.models import Contrasena
 from permission.models import ContraPermission
 from django.db.models import Case, When, Value, IntegerField
+from supporthub.telegram_events import queue_password_request
 
 
 def can_view_contrasena(user, request):
@@ -29,6 +32,42 @@ def can_view_contrasena(user, request):
 def is_administrator(user):
     """Determina si el usuario pertenece al staff o es superusuario."""
     return user.is_superuser or user.is_staff
+
+
+@login_required
+def notification_inbox(request):
+    notices = InboxNotification.objects.filter(user=request.user).order_by('-created_at')
+    page = Paginator(notices, 20).get_page(request.GET.get('page'))
+    if is_administrator(request.user):
+        legacy_count = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+        legacy_url = reverse('listnotifadmin')
+        legacy_label = 'Solicitudes de contraseñas pendientes'
+    else:
+        legacy_count = UserNotifications.objects.filter(id_user=request.user, viewed=False).count()
+        legacy_url = reverse('listnotifuser')
+        legacy_label = 'Avisos de contraseñas sin leer'
+    return render(request, 'notification_inbox.html', {
+        'page': page, 'legacy_count': legacy_count,
+        'legacy_url': legacy_url, 'legacy_label': legacy_label,
+    })
+
+
+@login_required
+@require_POST
+def open_inbox_notice(request, pk):
+    notice = get_object_or_404(InboxNotification, pk=pk, user=request.user)
+    if not notice.viewed:
+        notice.viewed = True
+        notice.save(update_fields=['viewed'])
+    destination = notice.target_path
+    return redirect(destination if destination.startswith('/') and not destination.startswith('//') else 'notification_inbox')
+
+
+@login_required
+@require_POST
+def mark_inbox_read(request):
+    InboxNotification.objects.filter(user=request.user, viewed=False).update(viewed=True)
+    return redirect('notification_inbox')
 
 @login_required
 def share_contrasena_form(request, contrasena):
@@ -42,7 +81,7 @@ def share_contrasena_form(request, contrasena):
 
             obj_permission = ContraPermission.objects.filter(user_id=share, contra_id=contrasena, permission=True).first()
             if not obj_permission:
-                _, created = AdminNotification.objects.get_or_create(
+                notification, created = AdminNotification.objects.get_or_create(
                     id_contrasena=contrasena_obj,
                     id_user_share=share,
                     defaults={
@@ -55,6 +94,7 @@ def share_contrasena_form(request, contrasena):
                 )
                
                 if created:
+                    queue_password_request(notification.pk)
                     message = f'Se ha solicitado compartir la contraseña "{contrasena_obj.nombre_contra}" con el usuario {share}.'
                     messages.success(request, message)
                 else:

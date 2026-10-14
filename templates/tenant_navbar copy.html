@@ -52,7 +52,8 @@
       @media (min-width: 768px) {
         #sidebar {
           width: 200px;
-          min-height: 100vh;
+          height: 100vh;
+          overflow-y: auto;
           position: fixed;
           top: 0;
           left: 0;
@@ -96,6 +97,59 @@
         outline: none;
         box-shadow: none;
       }
+
+      .sidebar-compact-brand { display: none; }
+      .sidebar-toggle {
+        align-self: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+      }
+      .sidebar-toggle:hover { background: rgba(255, 255, 255, .12); }
+      .sidebar-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .sidebar-tooltip {
+        position: fixed;
+        z-index: 1100;
+        padding: 7px 11px;
+        border-radius: 8px;
+        background: #172940;
+        box-shadow: 0 8px 20px rgba(13, 28, 47, .22);
+        color: #fff;
+        font-size: .83rem;
+        font-weight: 600;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @media (min-width: 768px) {
+        .main-content { margin-left: 200px; }
+        html.sidebar-collapsed #sidebar { width: 72px; }
+        html.sidebar-collapsed .topbar-fixed { left: 72px; }
+        html.sidebar-collapsed .main-content { margin-left: 72px; }
+        html.sidebar-collapsed #sidebar .sidebar-brand-full,
+        html.sidebar-collapsed #sidebar .sidebar-label { display: none; }
+        html.sidebar-collapsed #sidebar .sidebar-compact-brand { display: inline; }
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > a,
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > button,
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > form > button {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 42px;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          text-align: center;
+        }
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > a i,
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > button i,
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > form > button i { margin-right: 0 !important; }
+        html.sidebar-collapsed #sidebar .sidebar-menu > li > .collapse { display: none !important; }
+      }
       
   .hover-underline:hover {
     text-decoration: underline;
@@ -134,8 +188,9 @@
   <div class="d-flex align-items-center gap-4">
     {% if request.user.is_authenticated %}
     <!-- Notificaciones -->
-    <a href="{% url 'listnotifadmin' %}" class="text-dark position-relative">
+    <a href="{% url 'notification_inbox' %}" class="text-dark position-relative" aria-label="Notificaciones">
       <i class="fa-solid fa-bell fa-lg"></i>
+      {% if contador_notis %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">{{ contador_notis }}<span class="visually-hidden"> avisos pendientes</span></span>{% endif %}
     </a>
 
     <!-- Quick password generator -->
@@ -166,33 +221,34 @@
   {% endif %}
 </nav>
 
-<!-- CONTENEDOR PRINCIPAL -->
-<div class="d-flex">
-
   <!-- SIDEBAR -->
   <div id="sidebar" class="offcanvas-md offcanvas-start d-flex flex-column flex-shrink-0 p-3 bg-dark text-white" tabindex="-1">
-    <a href="{% url 'listpass' %}" class="d-flex align-items-center mb-3 mb-md-0 text-white text-decoration-none justify-content-center" style="width:100%;">
+    <a href="{% url 'listpass' %}" class="d-flex align-items-center mb-3 mb-md-0 text-white text-decoration-none justify-content-center" style="width:100%;" aria-label="Contraseñas" data-sidebar-label="Contraseñas">
+        <span class="sidebar-brand-full">
         {% if company_logo %}
           <img src="{{ company_logo }}" alt="Logo" style="height:36px; width:auto;"/>
         {% else %}
           <span class="fs-5">{{ company|default:"Passing" }}</span>
         {% endif %}
+        </span>
+        <span class="sidebar-compact-brand fw-bold fs-4">P</span>
       </a>
+    <button id="sidebar-toggle" class="sidebar-toggle d-none d-md-flex align-items-center justify-content-center mt-3" type="button" aria-label="Reducir menú" aria-expanded="true" data-sidebar-label="Reducir menú">
+      <i class="fa fa-angles-left" aria-hidden="true"></i>
+    </button>
     <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
+    <ul class="nav nav-pills flex-column mb-auto sidebar-menu">
         <li>
-          <a href="{% url 'home_tenant' %}" class="nav-link text-white">
-            <i class="fa fa-house me-2"></i>Inicio
+          <a href="{% url 'home_tenant' %}" class="nav-link text-white" aria-label="Inicio" data-sidebar-label="Inicio">
+            <i class="fa fa-house me-2"></i><span class="sidebar-label">Inicio</span>
           </a>
         </li>
       
         {% if request.user.is_authenticated %}
-          {% if request.user.is_superuser or request.user.is_staff %}
-      
           <!-- Botón de menú desplegable -->
            <li>
-            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#passwordsubmenu" aria-expanded="false">
-              <i class="fa fa-key me-2" style= "color: rgb(246, 221, 79)"></i> {% trans "Contraseñas" %}
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#passwordsubmenu" aria-expanded="false" aria-controls="passwordsubmenu" aria-label="Contraseñas" data-sidebar-label="Contraseñas">
+              <i class="fa fa-key me-2" style= "color: rgb(246, 221, 79)"></i><span class="sidebar-label">{% trans "Contraseñas" %}</span>
             </button>
             <div class="collapse ps-3" id="passwordsubmenu">
               <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
@@ -206,59 +262,96 @@
             </div>
             </li>
 
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_informationassets or perms.resources.view_vendor or perms.resources.view_project or perms.resources.view_clientcompany %}
           <li>
-            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#resourcesubmenu" aria-expanded="false">
-              <i class="fa fa-server me-2" style= "color: rgb(106, 255, 106)"></i> {% trans "Recursos" %}
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#resourcesubmenu" aria-expanded="false" aria-controls="resourcesubmenu" aria-label="Recursos" data-sidebar-label="Recursos">
+              <i class="fa fa-server me-2" style= "color: rgb(106, 255, 106)"></i><span class="sidebar-label">{% trans "Recursos" %}</span>
             </button>
             <div class="collapse ps-3" id="resourcesubmenu">
               <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                 
                 
-                <li><a href="{% url 'informationassets-list' %}" class="nav-link text-white"><i class="fa fa-microchip me-2"></i>{% trans "Activos" %}</a></li>
-                <li><a href="{% url 'vendor-list' %}" class="nav-link text-white"><i class="fa fa-handshake me-2"></i>{% trans "Proveedores" %}</a></li>
-                <li><a href="{% url 'project-list' %}" class="nav-link text-white"><i class="fa fa-bars-progress me-2"></i>{% trans "Proyectos" %}</a></li>
-                <li><a href="{% url 'clientcompany-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-user me-2"></i>{% trans "Clientes" %}</a></li>
+                {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_informationassets %}<li><a href="{% url 'informationassets-list' %}" class="nav-link text-white"><i class="fa fa-microchip me-2"></i>{% trans "Activos" %}</a></li>{% endif %}
+                {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_vendor %}<li><a href="{% url 'vendor-list' %}" class="nav-link text-white"><i class="fa fa-handshake me-2"></i>{% trans "Proveedores" %}</a></li>{% endif %}
+                {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_project %}<li><a href="{% url 'project-list' %}" class="nav-link text-white"><i class="fa fa-bars-progress me-2"></i>{% trans "Proyectos" %}</a></li>{% endif %}
+                {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_clientcompany %}<li><a href="{% url 'clientcompany-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-user me-2"></i>{% trans "Clientes" %}</a></li>{% endif %}
               </ul>
             </div>
           </li>
+          {% endif %}
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_threat or perms.resources.view_vulnerability or perms.resources.view_riskevaluation or perms.resources.view_treatment %}
           <li>
-            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#risksubmenu" aria-expanded="false">
-              <i class="fa-solid fa-triangle-exclamation me-2" style= "color: #f7ff5f"></i> {% trans "Riesgos" %}
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#risksubmenu" aria-expanded="false" aria-controls="risksubmenu" aria-label="Riesgos" data-sidebar-label="Riesgos">
+              <i class="fa-solid fa-triangle-exclamation me-2" style= "color: #f7ff5f"></i><span class="sidebar-label">{% trans "Riesgos" %}</span>
             </button>
           <div class="collapse ps-3" id="risksubmenu">
             <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="{% url 'threat-list' %}" class="nav-link text-white"><i class="fa fa-ghost me-2"></i>{% trans "Amenazas" %}</a></li>
-          <li><a href="{% url 'vulnerability-list' %}" class="nav-link text-white"><i class="fa fa-arrow-right-to-bracket me-2"></i>{% trans "Vulnerabilidades" %}</a></li>
-          <li><a href="{% url 'evaluation-list' %}" class="nav-link text-white"><i class="fa fa-magnifying-glass-chart me-2"></i>{% trans "Evaluaciones" %}</a></li>
-          <li><a href="{% url 'treatment-list' %}" class="nav-link text-white"><i class="fa fa-syringe me-2"></i>{% trans "Tratamientos" %}</a></li>
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_threat %}<li><a href="{% url 'threat-list' %}" class="nav-link text-white"><i class="fa fa-ghost me-2"></i>{% trans "Amenazas" %}</a></li>{% endif %}
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_vulnerability %}<li><a href="{% url 'vulnerability-list' %}" class="nav-link text-white"><i class="fa fa-arrow-right-to-bracket me-2"></i>{% trans "Vulnerabilidades" %}</a></li>{% endif %}
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_riskevaluation %}<li><a href="{% url 'evaluation-list' %}" class="nav-link text-white"><i class="fa fa-magnifying-glass-chart me-2"></i>{% trans "Evaluaciones" %}</a></li>{% endif %}
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_riskevaluation %}<li><a href="{% url 'risk-assistant' %}" class="nav-link text-white"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Asistente de riesgos</a></li>{% endif %}
+          {% if request.user.is_staff or request.user.is_superuser or perms.resources.view_treatment %}<li><a href="{% url 'treatment-list' %}" class="nav-link text-white"><i class="fa fa-syringe me-2"></i>{% trans "Tratamientos" %}</a></li>{% endif %}
+            </ul>
         </div>
-      </li>
-      <li>
-        <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#threatintelsubmenu" aria-expanded="false">
-          <i class="fa-solid fa-brain me-2" style= "color: #ff6b9d"></i> {% trans "Inteligencia de Amenazas" %}
-        </button>
-        <div class="collapse ps-3" id="threatintelsubmenu">
-          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-            <li><a href="{% url 'threat_intel:run-list' %}" class="nav-link text-white"><i class="fa fa-play me-2"></i>{% trans "Ejecuciones" %}</a></li>
-            <li><a href="{% url 'threat_intel:analysis-list' %}" class="nav-link text-white"><i class="fa fa-robot me-2"></i>{% trans "Análisis IA" %}</a></li>
-            <li><a href="{% url 'threat_intel:report-list' %}" class="nav-link text-white"><i class="fa fa-file-pdf me-2"></i>{% trans "Reportes" %}</a></li>
-            <li><a href="{% url 'threat_intel:review-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-check me-2"></i>{% trans "Revisiones" %}</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a href="{% url 'threat_intel:config' %}" class="nav-link text-white"><i class="fa-solid fa-sliders me-2"></i>{% trans "Config. Amenazas" %}</a></li>
-          </ul>
-        </div>
-      </li>
-      <li>
-          <li><a href="{% url 'config' %}" class="nav-link text-white"><i class="fa fa-gear me-2"></i>{% trans "Configuración" %}</a></li>
+          </li>
           {% endif %}
-          {% if request.user.is_superuser or perms.monitoring.manage_monitoring %}
-          <li><a href="{% url 'monitoring:dashboard' %}" class="nav-link text-white"><i class="fa fa-heart-pulse me-2"></i>{% trans "Monitorización" %}</a></li>
-          {% else %}
-          <li><a href="{% url 'monitoring:status' %}" class="nav-link text-white"><i class="fa fa-signal me-2"></i>Estado de servicios</a></li>
+          {% if request.user.is_superuser or perms.threat_intel.view_run or perms.threat_intel.view_aianalysis or perms.threat_intel.view_report or perms.threat_intel.view_review or perms.threat_intel.view_source %}
+          <li>
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#threatintelsubmenu" aria-expanded="false" aria-controls="threatintelsubmenu" aria-label="Inteligencia de Amenazas" data-sidebar-label="Inteligencia de Amenazas">
+              <i class="fa-solid fa-brain me-2" style="color: #ff6b9d"></i><span class="sidebar-label">{% trans "Inteligencia de Amenazas" %}</span>
+            </button>
+            <div class="collapse ps-3" id="threatintelsubmenu">
+              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                {% if request.user.is_superuser or perms.threat_intel.view_run %}<li><a href="{% url 'threat_intel:run-list' %}" class="nav-link text-white"><i class="fa fa-play me-2"></i>{% trans "Ejecuciones" %}</a></li>{% endif %}
+                {% if request.user.is_superuser or perms.threat_intel.view_aianalysis %}<li><a href="{% url 'threat_intel:analysis-list' %}" class="nav-link text-white"><i class="fa fa-robot me-2"></i>{% trans "Análisis IA" %}</a></li>{% endif %}
+                {% if request.user.is_superuser or perms.threat_intel.view_report %}<li><a href="{% url 'threat_intel:report-list' %}" class="nav-link text-white"><i class="fa fa-file-pdf me-2"></i>{% trans "Reportes" %}</a></li>{% endif %}
+                {% if request.user.is_superuser or perms.threat_intel.view_review %}<li><a href="{% url 'threat_intel:review-list' %}" class="nav-link text-white"><i class="fa fa-clipboard-check me-2"></i>{% trans "Revisiones" %}</a></li>{% endif %}
+                {% if request.user.is_superuser or perms.threat_intel.view_source %}<li><a href="{% url 'threat_intel:config' %}" class="nav-link text-white"><i class="fa-solid fa-sliders me-2"></i>{% trans "Config. Amenazas" %}</a></li>{% endif %}
+              </ul>
+            </div>
+          </li>
           {% endif %}
-          <li class="mt-3"> 
+          <li>
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#monitoringsubmenu" aria-expanded="false" aria-controls="monitoringsubmenu" aria-label="Monitorización" data-sidebar-label="Monitorización">
+              <i class="fa fa-heart-pulse me-2" style="color: #5ee4b1"></i><span class="sidebar-label">{% trans "Monitorización" %}</span>
+            </button>
+            <div class="collapse ps-3" id="monitoringsubmenu">
+              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                {% if request.user.is_superuser or perms.monitoring.manage_monitoring or perms.monitoring.read_monitoring %}
+                <li><a href="{% url 'monitoring:dashboard' %}" class="nav-link text-white"><i class="fa fa-gauge-high me-2"></i>Monitores</a></li>
+                <li><a href="{% url 'monitoring:incidents' %}" class="nav-link text-white"><i class="fa fa-triangle-exclamation me-2"></i>Incidentes</a></li>
+                <li><a href="{% url 'monitoring:maintenance_windows' %}" class="nav-link text-white"><i class="fa fa-calendar-check me-2"></i>Mantenimientos</a></li>
+                {% endif %}
+                {% if request.user.is_superuser or perms.monitoring.manage_monitoring or perms.monitoring.create_monitoring %}
+                <li><a href="{% url 'monitoring:new' %}" class="nav-link text-white"><i class="fa fa-plus me-2"></i>Nuevo monitoreo</a></li>
+                {% endif %}
+                <li><a href="{% url 'monitoring:status' %}" class="nav-link text-white"><i class="fa fa-signal me-2"></i>Estado de servicios</a></li>
+              </ul>
+            </div>
+          </li>
+          {% if request.user.is_superuser or perms.supporthub.view_support_inbox or perms.supporthub.create_support or perms.supporthub.edit_support or perms.supporthub.delete_support %}
+          <li>
+            <button class="btn btn-toggle align-items-center rounded collapsed text-white ps-0" data-bs-toggle="collapse" data-bs-target="#supportsubmenu" aria-expanded="false" aria-controls="supportsubmenu" aria-label="Central de soporte" data-sidebar-label="Central de soporte">
+              <i class="fa fa-headset me-2" style="color: #8fbeff"></i><span class="sidebar-label">Central de soporte</span>
+            </button>
+            <div class="collapse ps-3" id="supportsubmenu">
+              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                {% if request.user.is_superuser or perms.supporthub.view_support_inbox %}
+                <li><a href="{% url 'supporthub:inbox' %}" class="nav-link text-white"><i class="fa fa-inbox me-2"></i>Bandeja de avisos</a></li>
+                {% endif %}
+                {% if request.user.is_superuser or perms.supporthub.create_support or perms.supporthub.edit_support or perms.supporthub.delete_support %}
+                <li><a href="{% url 'supporthub:settings' %}" class="nav-link text-white"><i class="fa fa-sliders me-2"></i>Configurar soporte</a></li>
+                {% endif %}
+              </ul>
+            </div>
+          </li>
+          {% endif %}
+          {% if request.user.is_superuser or request.user.is_staff %}
+          <li class="mt-3 border-top border-light border-opacity-25 pt-2"><a href="{% url 'config' %}" class="nav-link text-white" aria-label="Configuración" data-sidebar-label="Configuración"><i class="fa fa-gear me-2"></i><span class="sidebar-label">{% trans "Configuración" %}</span></a></li>
+          {% endif %}
+          <li class="mt-2">
             <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-              <button class="btn btn-outline-light w-100"><i class="fa fa-right-from-bracket me-2"></i>{% trans "Salir" %}</button>
+              <button class="btn btn-outline-light w-100" aria-label="Salir" data-sidebar-label="Salir"><i class="fa fa-right-from-bracket me-2"></i><span class="sidebar-label">{% trans "Salir" %}</span></button>
             </form>
           </li>
         {% else %}
@@ -267,16 +360,6 @@
       </ul>
       
   </div>
-
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="main-content flex-grow-1">
-    
-    {% block content %}{% endblock %}
-  </div>
-</div>
-
-
-  
 
   <!-- Quick Password Generator Modal -->
   <div class="modal fade" id="quickPasswordModal" tabindex="-1" aria-labelledby="quickPasswordModalLabel" aria-hidden="true">
@@ -336,6 +419,79 @@
 
   <script>
     (function(){
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      const storageKey = 'passing.sidebar.collapsed';
+      const desktop = window.matchMedia('(min-width: 768px)');
+      let tooltip;
+
+      function isCompact() {
+        return desktop.matches && document.documentElement.classList.contains('sidebar-collapsed');
+      }
+
+      function hideTooltip() {
+        if (tooltip) tooltip.hidden = true;
+      }
+
+      function syncToggle() {
+        const compact = document.documentElement.classList.contains('sidebar-collapsed');
+        toggle.setAttribute('aria-expanded', String(!compact));
+        toggle.setAttribute('aria-label', compact ? 'Expandir menú' : 'Reducir menú');
+        toggle.dataset.sidebarLabel = compact ? 'Expandir menú' : 'Reducir menú';
+        toggle.querySelector('i').className = compact ? 'fa fa-angles-right' : 'fa fa-angles-left';
+      }
+
+      function setCompact(compact) {
+        document.documentElement.classList.toggle('sidebar-collapsed', compact);
+        try { window.localStorage.setItem(storageKey, compact ? '1' : '0'); } catch (error) { /* El menú sigue funcionando sin almacenamiento. */ }
+        hideTooltip();
+        syncToggle();
+      }
+
+      try {
+        document.documentElement.classList.toggle('sidebar-collapsed', window.localStorage.getItem(storageKey) === '1');
+      } catch (error) { /* El menú queda expandido. */ }
+      syncToggle();
+
+      toggle.addEventListener('click', function () {
+        setCompact(!document.documentElement.classList.contains('sidebar-collapsed'));
+      });
+
+      sidebar.addEventListener('click', function (event) {
+        const button = event.target.closest('.sidebar-menu > li > button[data-bs-target]');
+        if (!button || !isCompact()) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const target = document.querySelector(button.dataset.bsTarget);
+        setCompact(false);
+        if (target && window.bootstrap) window.bootstrap.Collapse.getOrCreateInstance(target, {toggle: false}).show();
+      }, true);
+
+      sidebar.querySelectorAll('[data-sidebar-label]').forEach(function (item) {
+        function showTooltip() {
+          if (!isCompact()) return;
+          if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.className = 'sidebar-tooltip';
+            tooltip.setAttribute('role', 'tooltip');
+            document.body.appendChild(tooltip);
+          }
+          const box = item.getBoundingClientRect();
+          tooltip.textContent = item.dataset.sidebarLabel;
+          tooltip.style.left = Math.round(sidebar.getBoundingClientRect().right + 10) + 'px';
+          tooltip.style.top = Math.round(box.top + box.height / 2) + 'px';
+          tooltip.style.transform = 'translateY(-50%)';
+          tooltip.hidden = false;
+        }
+        item.addEventListener('mouseenter', showTooltip);
+        item.addEventListener('focus', showTooltip);
+        item.addEventListener('mouseleave', hideTooltip);
+        item.addEventListener('blur', hideTooltip);
+        item.addEventListener('click', hideTooltip);
+      });
+      sidebar.addEventListener('scroll', hideTooltip);
+      window.addEventListener('resize', hideTooltip);
+
       function generatePassword(len, opts){
         const lower = 'abcdefghijklmnopqrstuvwxyz';
         const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

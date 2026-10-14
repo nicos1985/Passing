@@ -4,7 +4,8 @@ from __future__ import annotations
 from datetime import timedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import connection, transaction
+from django_tenants.utils import get_tenant_model, schema_context
 from django.utils import timezone
 from datetime import timezone as dt_timezone
 
@@ -42,14 +43,25 @@ class Command(BaseCommand):
     help = "Run monthly/ad-hoc threat intelligence pipeline"
 
     def add_arguments(self, parser):
+        parser.add_argument("--tenant", help="Schema del tenant a procesar")
         parser.add_argument("--days", type=int, default=None, help="Lookback window in days (default from settings)")
         parser.add_argument("--send-email", action="store_true", help="Send report email")
         parser.add_argument("--adhoc", action="store_true", help="Run as ad-hoc instead of monthly")
         parser.add_argument("--dry-run", action="store_true", help="Fetch/normalize but do not send email")
 
     def handle(self, *args, **opts):
+        tenant_schema = opts.get('tenant')
+        if tenant_schema:
+            if tenant_schema == 'public' or not get_tenant_model().objects.filter(schema_name=tenant_schema).exists():
+                raise ValueError('Indicá un tenant existente distinto de public')
+            with schema_context(tenant_schema):
+                return self.handle(*args, **{**opts, 'tenant': None})
+        if connection.schema_name == 'public':
+            raise ValueError('Indicá --tenant para ejecutar inteligencia de amenazas')
         cfg = getattr(settings, "THREAT_INTEL", {})
-        days = opts["days"] or cfg.get("DEFAULT_DAYS", 30)
+        days = opts["days"] if opts["days"] is not None else cfg.get("DEFAULT_DAYS", 30)
+        if days < 1:
+            raise ValueError("--days debe ser mayor que cero")
 
         end_dt = timezone.now()
         
@@ -71,18 +83,23 @@ class Command(BaseCommand):
 
             fetched_total = 0
             normalized_total = 0
+            raw_ids = []
+            source_errors = []
+            successful_sources = 0
 
             # 1) Ingest raw items
             for code in enabled:
 
                 connector_cls = CONNECTOR_MAP.get(code)
                 if not connector_cls:
-                    self.stderr.write(self.style.WARNING(f"Unknown source code '{code}', skipping."))
+                    source_errors.append(f"Fuente {code}: no hay conector implementado")
                     continue
 
-                source = Source.objects.filter(code=code, is_active=True).first()
+                source = Source.objects.filter(code=code).first()
                 if not source:
-                    self.stderr.write(self.style.WARNING(f"Source '{code}' not found/active in DB, skipping."))
+                    source_errors.append(f"Fuente {code}: no está configurada")
+                    continue
+                if not source.is_active:
                     continue
 
                 state, _ = SourceState.objects.get_or_create(source=source)
@@ -91,13 +108,15 @@ class Command(BaseCommand):
                     items, new_cursor = connector.fetch(start_dt, end_dt, cursor=state.cursor or None)
                 except Exception as e:
                     logger.exception("Error fetching from source %s", code)
+                    source_errors.append(f"Fuente {code}: falló la consulta ({type(e).__name__})")
                     continue
 
+                successful_sources += 1
                 fetched_total += len(items)
 
                 for it in items:
                     published_at = ensure_aware(it.get("published_at"))
-                    RawItem.objects.update_or_create(
+                    raw, _ = RawItem.objects.update_or_create(
                         source=source,
                         external_id=it["external_id"],
                         defaults={
@@ -108,6 +127,7 @@ class Command(BaseCommand):
                             "fetched_at": timezone.now(),
                         },
                     )
+                    raw_ids.append(raw.pk)
 
                 state.cursor = new_cursor or {}
                 state.last_successful_run_at = timezone.now()
@@ -115,11 +135,11 @@ class Command(BaseCommand):
 
             run.fetched_count = fetched_total
             run.save(update_fields=["fetched_count"])
+            if source_errors or not successful_sources:
+                raise RuntimeError('; '.join(source_errors) or 'Ninguna fuente se consultó correctamente')
 
             # 2) Normalize + dedupe into IntelItem and link to run (RunItem)
-            raw_qs = RawItem.objects.filter(
-                fetched_at__gte=run.started_at  # lo ingresado en esta corrida
-            ).select_related("source")
+            raw_qs = RawItem.objects.filter(pk__in=raw_ids).select_related("source")
 
             with transaction.atomic():
                 for raw in raw_qs:
@@ -148,11 +168,9 @@ class Command(BaseCommand):
                     analyzed = analyze_relevant_items_for_run(run)
                     
                     self.stdout.write(self.style.SUCCESS(f"AI analysis created for {analyzed} items"))
-                except Exception as e:
-                    import traceback
+                except Exception:
                     logger.exception("AI analysis failed")
-                    self.stderr.write(self.style.WARNING("AI analysis failed. Details:"))
-                    self.stderr.write(traceback.format_exc())
+                    raise
 
 
             # 5) Build report + persist
@@ -171,7 +189,9 @@ class Command(BaseCommand):
 
             # 6) Send email if requested
             if opts["send_email"] and not opts["dry_run"]:
-                send_report_email(report)
+                result = send_report_email(report)
+                if result.get('status') != 'success':
+                    raise RuntimeError(f"No se pudo enviar el informe: {result.get('message', 'error desconocido')}")
                 report.sent_at = timezone.now()
                 report.save(update_fields=["sent_at"])
 

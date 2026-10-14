@@ -8,7 +8,7 @@ copia restaurada de producción. No ejecutar `migrate_schemas` sobre la base ant
 ## Antes de instalar
 
 - Crear un release Git que incluya `passing/settings.py`, las migraciones de todas
-  las apps y el módulo `monitoring`. El archivo `.env` y las claves quedan fuera
+  las apps y los módulos `monitoring` y `supporthub`. El archivo `.env` y las claves quedan fuera
   de Git. Verificar con `git status --short` que no falte ningún archivo requerido.
 - Usar Python 3.12 y PostgreSQL 14 o posterior; crear una base vacía y un rol
   dedicado sin privilegios de superusuario. Restringir la conexión de PostgreSQL
@@ -21,7 +21,7 @@ copia restaurada de producción. No ejecutar `migrate_schemas` sobre la base ant
 ## Entorno de la aplicación
 
 Instalar las dependencias fijadas en `requirements.txt` en un entorno virtual
-aislado. El servicio web, el worker de monitoreo y su watchdog deben leer el mismo
+aislado. El servicio web, el worker de monitoreo, el de soporte y su watchdog deben leer el mismo
 archivo de entorno privado, propiedad del usuario del servicio y modo `0600`.
 Definir, como mínimo:
 
@@ -79,7 +79,9 @@ durante la instalación; no se necesitan credenciales ni worker de Drive.
    opcionales según la política de dominios; no activar preload sin verificarla.
 4. Iniciar Gunicorn con `passing.wsgi:application` detrás de Nginx. Iniciar una
    sola instancia de `run_monitoring` y el timer `check_monitoring_worker` según
-   `monitoring/README.md`. Si se habilita gestión documental asíncrona, configurar
+   `monitoring/README.md`. Si se habilita la central de soporte, configurar el bot,
+   los portales y una sola instancia de `run_supporthub` según `supporthub/README.md`.
+   Si se habilita gestión documental asíncrona, configurar
    y verificar aparte su broker y worker Celery.
 5. Verificar login y 2FA, acceso y denegación a credenciales y adjuntos, correo,
    Bitrix24, checks y latido del worker. Probar restauración y vuelta atrás antes

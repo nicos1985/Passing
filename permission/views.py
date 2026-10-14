@@ -5,11 +5,13 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, FormView
 from django.db.models import Count
+from login.utils import users_for_current_tenant
 from notifications.models import AdminNotification, UserNotifications
 from passing.settings import GRAN_PERMISSION_ID_USERS
 from .models import ContraPermission, PermissionRoles
 from passbase.models import Contrasena, LogData
 from .forms import PermissionRolesForm, PermissionUserForm, PermisoForm, UserRolForm
+from .module_access import module_rows
 from login.models import CustomUser
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
@@ -150,10 +152,16 @@ class PermissionRolesCreateView(CreateView):
     template_name = 'permission_roles_form.html'
     success_url = reverse_lazy('config')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['actor'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Añade las contraseñas al contexto
         context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        context['module_rows'] = module_rows(context['form'])
         return context
 # Funciones para la asignacion de Roles a usuarios. 
 
@@ -173,7 +181,7 @@ def give_permission(request, user, contrasena):
 
 def generate_rol_permissions(request, rol, user):
     rol = get_object_or_404(PermissionRoles, id=rol.id)
-    usuario = get_object_or_404(CustomUser.for_current_tenant(), id=user.id)
+    usuario = get_object_or_404(users_for_current_tenant(), id=user.id)
     contrasenas = rol.get_contrasenas() #obtengo todas las contraseñas relacionadas al Rol
     #intento eliminar todos los permisos actuales. 
     try:
@@ -220,10 +228,8 @@ def assign_rol_user(request, id_rol=None):
 
     if request.method == "POST":
         # Crear formulario POST
-        user_rol_form = UserRolForm(request.POST)
+        user_rol_form = UserRolForm(request.POST, actor=request.user)
         if user_rol_form.is_valid():
-            # Guardo el form
-            user_rol_form.save()
             # Obtengo el usuario y el rol elegidos en el form para generar los permisos
             usuario = user_rol_form.cleaned_data['user']
             rol = user_rol_form.cleaned_data['rol']
@@ -243,9 +249,9 @@ def assign_rol_user(request, id_rol=None):
         # Crear Formulario GET
         if id_rol is not None:
             rol = get_object_or_404(PermissionRoles, id=id_rol)
-            user_rol_form = UserRolForm(initial={'rol': rol})
+            user_rol_form = UserRolForm(initial={'rol': rol}, actor=request.user)
         else:
-            user_rol_form = UserRolForm()
+            user_rol_form = UserRolForm(actor=request.user)
 
     return render(request, 'assign_rol.html', {'form': user_rol_form})
 
@@ -275,10 +281,16 @@ class PermissionRolUpdate(LoginRequiredMixin, UpdateView):
     template_name = 'update_role.html'
     success_url = reverse_lazy('roles')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['actor'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Añade las contraseñas al contexto
         context['contrasenas'] = Contrasena.objects.filter(is_personal=False)
+        context['module_rows'] = module_rows(context['form'])
         return context
 
 @method_decorator(user_passes_test(is_administrator), name='dispatch')

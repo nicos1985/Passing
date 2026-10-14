@@ -16,13 +16,25 @@
 
 
 
-    <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container py-4 passing-form-page">
+        <div class="form-hero">
           <h4 class="mb-0 fw-semibold">{% trans "Agregar Rol de Permisos" %}</h4>
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}</a>
         </div>
-        <div class="card-body" style="background-color: #F7F7F7;">
+        <div class="card-body form-surface">
         <form class="form-control" method="post">
+            {% if request.user.is_superuser %}
+            <div class="card border-primary-subtle bg-primary-subtle mb-4"><div class="card-body">
+                <h5 class="card-title">Acceso a módulos</h5>
+                <p class="text-secondary small">Elegí los módulos disponibles para quienes tengan este rol.</p>
+                <p class="text-secondary small">Crear, editar o eliminar también habilita la lectura del módulo.</p>
+                <div class="role-permissions-table table-responsive"><table class="table align-middle mb-0">
+                    <thead><tr><th scope="col">Módulo</th><th scope="col">Lectura</th><th scope="col">Crear</th><th scope="col">Editar</th><th scope="col">Eliminar</th></tr></thead>
+                    <tbody>{% for row in module_rows %}<tr><th scope="row">{{ row.name }}</th>{% for label, option in row.options %}<td>{% if option %}<label class="role-permission-cell" for="{{ option.id_for_label }}">{{ option.tag }}<span class="visually-hidden">{{ row.name }} · {{ label }}</span></label>{% else %}<span class="text-muted" title="No hay acciones de eliminación en este módulo">—</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+                </table></div>
+                {{ form.module_permissions.errors }}
+            </div></div>
+            {% endif %}
             {% csrf_token %}
             <div class="form-group">
                 <label class="h5" for="{{ form.rol_name.id_for_label }}">{% trans "Nombre del Rol" %}</label>

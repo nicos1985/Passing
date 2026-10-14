@@ -10,22 +10,23 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-3">
+    <section class="container mt-3 passing-list-hero"><div>
         <h2>{% trans "Revisiones" %}</h2>
-        <p class="text-muted">{% trans "Listado de decisiones y revisiones de items" %}</p>
+        <p>{% trans "Listado de decisiones y revisiones de items" %}</p>
     </div>
 
     {% if request.user.is_authenticated %}
-        <div class="container mb-3 d-flex gap-2">
+        <div class="passing-list-hero-actions">
             <a class="btn btn-secondary" href="{% url 'threat_intel:run-list' %}">
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Runs" %}
             </a>
-            {% if not run_pk %}
-            <a class="btn btn-info" href="{% url 'threat_intel:run-list' %}">
+            {% if not run_pk and perms.threat_intel.add_review %}
+            <a class="btn btn-light" href="{% url 'threat_intel:run-list' %}">
                 <i class="fa-solid fa-plus-circle"></i> {% trans "Crear Review (desde Run)" %}
             </a>
             {% endif %}
         </div>
+    </section>
 
         <div class="container">
             {% if run_pk %}
@@ -41,7 +42,6 @@
                         <th>{% trans "CVE" %}</th>
                         <th>{% trans "Run" %}</th>
                         <th>{% trans "Decisión" %}</th>
-                        <th>{% trans "Decidido por" %}</th>
                         <th>{% trans "Fecha" %}</th>
                         <th>{% trans "Ticket" %}</th>
                         <th>{% trans "Acciones" %}</th>
@@ -50,7 +50,7 @@
                 <tbody>
                     {% for review in reviews %}
                     <tr>
-                        <td><a href="{% url 'threat_intel:item-detail' review.item.id %}">{{ review.item.cve_id }}</a></td>
+                        <td><a href="{% url 'threat_intel:item-detail' review.item.id %}">{{ review.item.canonical_id }}</a></td>
                         <td><a href="{% url 'threat_intel:run-detail' review.run.id %}">Run #{{ review.run.id }}</a></td>
                         <td>
                                 {% if review.decision == 'approve_ticket' %}
@@ -63,29 +63,24 @@
                                 <span class="badge bg-warning"><i class="fa-solid fa-clock"></i> {% trans "Postergar" %}</span>
                             {% endif %}
                         </td>
-                        <td>{{ review.decided_by.username }}</td>
                         <td>{{ review.decided_at|date:"Y-m-d H:i" }}</td>
                         <td>
                             {% if review.ticket_ref %}
                                 <a href="{{ review.ticket_ref }}" target="_blank" title="{{ review.ticket_ref }}">
-                                    {{ review.ticket_ref|truncatewords:3 }}
+                                    {{ review.ticket_ref|truncatechars:28 }}
                                 </a>
                             {% else %}
                                 <span class="text-muted">—</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <a href="{% url 'threat_intel:review-detail' review.id %}" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> {% trans "Ver" %}
+                        <td><div class="passing-table-actions">
+                            <a href="{% url 'threat_intel:review-detail' review.id %}" class="btn btn-sm btn-outline-primary" title="{% trans 'Ver revisión' %}" aria-label="{% trans 'Ver revisión' %}">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
                             </a>
-                            <a href="{% url 'threat_intel:review-update' review.id %}" class="btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i> {% trans "Editar" %}
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">{% trans "No hay revisiones disponibles" %}</td>
+                            {% if perms.threat_intel.change_review %}<a href="{% url 'threat_intel:review-update' review.id %}" class="btn btn-sm btn-outline-warning" title="{% trans 'Editar revisión' %}" aria-label="{% trans 'Editar revisión' %}">
+                                <i class="fas fa-edit" aria-hidden="true"></i>
+                            </a>{% endif %}
+                        </div></td>
                     </tr>
                     {% endfor %}
                 </tbody>

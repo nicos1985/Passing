@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block content %}
+{% timezone 'America/Argentina/Buenos_Aires' %}
+<div class="container-fluid py-3">
+  <div class="rounded-4 p-4 mb-4 text-white" style="background:linear-gradient(120deg,#12243c,#245d82)">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div><div class="text-uppercase small opacity-75 mb-2">Soporte centralizado</div><h1 class="h2 mb-2">Bandeja de avisos</h1><p class="mb-0 opacity-75">Mensajes de grupos de soporte en Bitrix24 · horario de Argentina</p></div>
+      {% if is_manager %}<a class="btn btn-light" href="{% url 'supporthub:settings' %}"><i class="fa-solid fa-gear me-1"></i>Configurar</a>{% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-4"><span class="badge text-bg-light">{{ portals|length }} portales</span><span class="badge text-bg-warning">{{ pending_count }} pendientes</span><span class="badge text-bg-danger">{{ failed_count }} sin entregar</span><span class="badge text-bg-info">Guardia: {% if active_shift %}{{ active_shift.primary }}{% else %}sin turno activo{% endif %}</span></div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap mb-3">
+    <a class="btn btn-sm {% if state == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'supporthub:inbox' %}?per_page={{ per_page }}">Todos</a>
+    <a class="btn btn-sm {% if state == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?state=pending&per_page={{ per_page }}">Pendientes</a>
+    <a class="btn btn-sm {% if state == 'sent' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?state=sent&per_page={{ per_page }}">Enviados</a>
+    <a class="btn btn-sm {% if state == 'failed' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?state=failed&per_page={{ per_page }}">Fallidos</a>
+  </div>
+  <div class="card border-0 shadow-sm rounded-4"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead class="table-light"><tr><th>Portal y grupo</th><th>Actividad (Argentina)</th><th>Mensajes</th><th>Telegram</th><th>Acciones</th></tr></thead>
+    <tbody>{% for notice in page %}<tr>
+      <td><strong>{{ notice.chat.portal.name }}</strong><div class="text-muted small">{{ notice.chat.label }}</div></td>
+      <td>{{ notice.last_at|date:'d/m/Y H:i' }}</td>
+      <td>{{ notice.message_count }}</td>
+      <td><span class="badge {% if notice.status == 'sent' %}text-bg-success{% elif notice.status == 'failed' %}text-bg-danger{% else %}text-bg-warning{% endif %}">{{ notice.get_status_display }}</span>{% if notice.last_error %}<div class="small text-danger mt-1">{{ notice.last_error }}</div>{% endif %}</td>
+      <td class="text-nowrap"><a class="btn btn-sm btn-outline-primary" href="{{ notice.chat.open_url }}" target="_blank" rel="noopener noreferrer" title="Abrir en Bitrix24"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir</a>{% if can_retry and notice.status == 'failed' %}<form class="d-inline" method="post" action="{% url 'supporthub:notice_retry' notice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" title="Reintentar Telegram"><i class="fa-solid fa-rotate"></i></button></form>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-5">Todavía no llegaron mensajes de los grupos configurados.</td></tr>{% endfor %}</tbody>
+  </table></div>
+    <div class="card-footer bg-transparent d-flex align-items-center justify-content-between flex-wrap gap-3 py-3">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="small text-muted" aria-live="polite">{% if page.paginator.count %}Mostrando {{ page.start_index }}–{{ page.end_index }} de {{ page.paginator.count }} avisos{% else %}Sin avisos{% endif %}</span>
+        <form method="get" class="d-flex align-items-center gap-2">
+          {% if state != 'all' %}<input type="hidden" name="state" value="{{ state }}">{% endif %}
+          <label for="notices-per-page" class="small text-muted mb-0">Filas por página</label>
+          <select id="notices-per-page" name="per_page" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+          </select>
+        </form>
+      </div>
+      {% if page.has_other_pages %}
+      <nav aria-label="Páginas de avisos"><ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not page.has_previous %}disabled{% endif %}">{% if page.has_previous %}<a class="page-link" href="?state={{ state }}&per_page={{ per_page }}&page={{ page.previous_page_number }}" aria-label="Página anterior">Anterior</a>{% else %}<span class="page-link">Anterior</span>{% endif %}</li>
+        {% for number in page_numbers %}
+          {% if number == pagination_ellipsis %}<li class="page-item disabled"><span class="page-link">…</span></li>
+          {% else %}<li class="page-item {% if number == page.number %}active{% endif %}"><a class="page-link" href="?state={{ state }}&per_page={{ per_page }}&page={{ number }}" {% if number == page.number %}aria-current="page"{% endif %}>{{ number }}</a></li>{% endif %}
+        {% endfor %}
+        <li class="page-item {% if not page.has_next %}disabled{% endif %}">{% if page.has_next %}<a class="page-link" href="?state={{ state }}&per_page={{ per_page }}&page={{ page.next_page_number }}" aria-label="Página siguiente">Siguiente</a>{% else %}<span class="page-link">Siguiente</span>{% endif %}</li>
+      </ul></nav>
+      {% endif %}
+    </div>
+  </div>
+  <p class="small text-muted mt-3">Passing conserva identificadores, fechas y estado de entrega. El contenido del chat permanece en Bitrix24.</p>
+</div>
+{% endtimezone %}
+{% endblock %}

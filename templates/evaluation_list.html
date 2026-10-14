@@ -29,29 +29,24 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-3">
-      <h2>{% blocktrans %}{{ verbose_name_plural }}{% endblocktrans %}</h2>
-    </div>
-
+    <section class="container mt-3 passing-list-hero">
+      <div><span class="passing-list-hero-eyebrow">Evaluaciones</span><h1>{{ verbose_name_plural }}</h1><p>Revisá el estado y abrí cada evaluación para ver sus detalles.</p></div>
     {% if request.user.is_authenticated %}
-        <div class="container mb-3 d-flex gap-2">
+        <div class="passing-list-hero-actions">
 
-            <a class="btn btn-primary btn-sm" href="{% url create_view %}">
+            {% if can_create %}<a class="btn btn-primary btn-sm" href="{% url create_view %}">
               <i class="fa-solid fa-plus"></i> {% blocktrans %}Alta de {{ verbose_name_plural }}{% endblocktrans %}
-            </a>
+            </a>{% endif %}
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse"><i class="fa-solid fa-filter me-1"></i>{% trans "Filtros" %}</button>
         </div>
+    </section>
 
         <div class="container">
             <!-- Botón de toggle -->
-<div class="mb-2">
-  <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse">
-    {Filtros
-  </button>
-</div>
 
 <!-- Contenedor colapsable de filtros -->
-  <div class="collapse" id="filtrosCollapse">
-  <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
+  <div class="collapse passing-list-filters" id="filtrosCollapse">
+  <div class="container-fluid mb-3">
     <div class="row g-3">
       {% for field in fields %}
         {% if field.name in dynamic_filters %}
@@ -86,32 +81,33 @@
     </div>
   </div>
 </div>
-            <table id="data" class="table table-sm align-middle" style="min-width: 1000px; font-size: 0.86rem !important;">
+            <table id="data" class="table table-sm align-middle" style="font-size: 0.86rem !important;">
                 <thead class="table-dark" >
                   <tr>
                     {% for field in fields %}
                       <th data-colname="{{ field.name }}">{{ field.verbose }}</th>
                     {% endfor %}
                     <th>{% trans "Acciones" %}</th>
-                    <th>{% trans "check" %}</th>
                   </tr>
                 </thead>
                 <tbody>
                     {% for obj in object_list %}
                     <tr>
                       {% for field in fields %}
-                            <td title="{{ obj|get_attr:field.name }}">
+                            <td{% if field.is_date %} data-date="{{ obj|get_raw_attr:field.name|date:'Y-m-d' }}"{% endif %}>
                             {% if field.name == 'evaluated_id' %}
                             <a href="{% evaluated_object_url obj %}">
                               <i class="fas fa-link" title="{% trans "Ver objeto evaluado" %}"></i>
-                              {{ obj.evaluated_object }}
+                              {{ obj.evaluated_object|truncatechars:38 }}
                             </a>
-                          {% elif field.name == 'description' or field.name == 'vulnerability' %}
-                            {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
+                          {% elif field.name == 'threat' or field.name == 'vulnerability' %}
+                            <span title="{{ obj|get_attr:field.name }}">{{ obj|get_attr:field.name|truncatechars:32 }}</span>
                           {% elif field.name == 'treatment' %}
-                            {{ obj.treatment_status_link }}
+                            {{ obj.treatment_status_link }}{% if obj.treatment %}<small class="d-block text-muted mt-1">{{ obj.treatment.deadline|date:"d/m/Y" }}</small>{% endif %}
                           {% elif field.name == 'risk_level' %}
                             {{ obj.get_risk_level_badge|safe }}
+                          {% elif field.name == 'is_draft' %}
+                            {% if obj.is_draft %}<span class="badge bg-warning text-dark">{% trans "Pendiente de revisión" %}</span>{% else %}<span class="badge bg-success">{% trans "Confirmada" %}</span>{% endif %}
                           {% elif field.name == 'confidenciality_impact' %}
                             {{ obj.badge_confidenciality|safe }}
                           {% elif field.name == 'integrity_impact' %}
@@ -125,19 +121,14 @@
                           {% else %}
                             {{ obj|get_attr:field.name }}
                           {% endif %}
-                        </class=>
+                        </td>
                       {% endfor %}
                       
                       <td>
                         
                         <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="{% blocktrans %}Detalle {{ verbose_name_plural }}{% endblocktrans %}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
-                        <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="{% blocktrans %}Eliminar {{ verbose_name_plural }}{% endblocktrans %}" style="color: #FF7367;"></i></a>
+                        {% if can_delete %}<a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="{% blocktrans %}Eliminar {{ verbose_name_plural }}{% endblocktrans %}" style="color: #FF7367;"></i></a>{% endif %}
                     </td>
-                    <td class="text-muted">
-  {{ forloop.counter }} —
-  status: {{ obj.treatment.get_stage_badge|safe }} —
-  deadline: {{ obj.treatment.deadline }}
-</td>
                     </tr>
                     
                   {% endfor %}

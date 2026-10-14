@@ -7,7 +7,4 @@ class ResourcesConfig(AppConfig):
 
     def ready(self):
         # Import signal handlers
-        try:
-            from . import signals  # noqa: F401
-        except Exception:
-            pass
+        from . import signals  # noqa: F401

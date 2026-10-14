@@ -1,13 +1,29 @@
 # threat_intel/forms.py
 from django import forms
+from django.core.validators import validate_email
 from .models import Report, Review, Source, TechTag
 
 
 class ReportForm(forms.ModelForm):
     """Formulario para crear o editar reportes de inteligencia de amenazas."""
+    recipients = forms.CharField(
+        label='Destinatarios',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3,
+                                     'placeholder': 'usuario1@example.com, usuario2@example.com'}),
+    )
+
+    def clean_recipients(self):
+        addresses = [value.strip() for value in self.cleaned_data['recipients'].split(',')]
+        addresses = [value for value in addresses if value]
+        if not addresses:
+            raise forms.ValidationError('Ingresá al menos un destinatario.')
+        for address in addresses:
+            validate_email(address)
+        return list(dict.fromkeys(addresses))
+
     class Meta:
         model = Report
-        fields = ['subject', 'body_md', 'body_html', 'recipients']
+        fields = ['subject', 'body_md', 'recipients']
         widgets = {
             'subject': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -17,16 +33,6 @@ class ReportForm(forms.ModelForm):
                 'class': 'form-control',
                 'rows': 10,
                 'placeholder': 'Report content in Markdown format'
-            }),
-            'body_html': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 10,
-                'placeholder': 'Report content in HTML format (optional)'
-            }),
-            'recipients': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Email addresses separated by commas (e.g., user1@example.com, user2@example.com)'
             }),
         }
 
@@ -87,12 +93,10 @@ class SourceForm(forms.ModelForm):
     """Formulario para gestionar fuentes de inteligencia de amenazas."""
     class Meta:
         model = Source
-        fields = ['name', 'url', 'api_key', 'enabled']
+        fields = ['name', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'url': forms.URLInput(attrs={'class': 'form-control'}),
-            'api_key': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 
@@ -100,13 +104,21 @@ class TechTagForm(forms.ModelForm):
     """Formulario para crear o editar etiquetas tecnológicas."""
     class Meta:
         model = TechTag
-        fields = ['name', 'category', 'keywords']
+        fields = ['name', 'keywords', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'category': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'keywords': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': 'Keywords separated by commas'
             }),
         }
+
+    def clean_keywords(self):
+        keywords = self.cleaned_data['keywords']
+        if not isinstance(keywords, list) or not all(
+            isinstance(value, str) and value.strip() for value in keywords
+        ):
+            raise forms.ValidationError('Ingresá una lista JSON de palabras o frases.')
+        return list(dict.fromkeys(value.strip().lower() for value in keywords))

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Dict, List, Tuple
+import re
 
 from django.db import transaction
 
@@ -17,8 +18,6 @@ def _build_haystack(item: IntelItem) -> str:
         item.canonical_id or "",
         item.title or "",
         item.description or "",
-        " ".join(item.references or []),
-        item.primary_url or "",
     ]
     return _norm(" ".join(parts))
 
@@ -29,7 +28,7 @@ def _compile_keywords() -> Dict[int, List[str]]:
     """
     out: Dict[int, List[str]] = {}
     for t in TechTag.objects.filter(is_active=True):
-        kws = [_norm(k) for k in (t.keywords or []) if _norm(k)]
+        kws = [_norm(k) for k in (t.keywords or []) if isinstance(k, str) and _norm(k)]
         if kws:
             out[t.id] = kws
     return out
@@ -69,7 +68,7 @@ def mark_relevance_for_run(run: Run) -> Tuple[int, int, int]:
         matched_tag_ids: List[int] = []
         for tag_id, kws in kw_by_tag.items():
             for k in kws:
-                if k and k in hay:
+                if k and re.search(r'(?<![a-z0-9])' + re.escape(k) + r'(?![a-z0-9])', hay):
                     matched_tag_ids.append(tag_id)
                     break
 

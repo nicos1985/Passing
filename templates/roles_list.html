@@ -19,9 +19,9 @@
 
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="passing-list-hero">
     <h4 class="mb-0 fw-semibold">{% trans "Roles" %}</h4>
-    <div class="d-flex gap-2">
+    <div class="passing-list-hero-actions">
       <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}</a>
       <a class="btn btn-primary btn-sm" href="{% url 'permissionrolescreate' %}"><i class="fa-solid fa-plus me-1"></i>{% trans "Agregar Rol" %}</a>
     </div>
@@ -36,6 +36,7 @@
                 <th scope="col">{% trans "Nombre Rol" %}</th>
                 <th scope="col">{% trans "Cantidad de Contraseñas" %}</th>
                 <th scope="col">{% trans "Descripción" %}</th>
+                <th scope="col">Módulos</th>
                 <th scope="col">{% trans "Creado" %}</th>
                 <th scope="col">{% trans "Acciones" %}</th>
                 
@@ -49,6 +50,7 @@
                 <td>{{object.rol_name}}</td>
                 <td>{{object.related_count}}</td>
                 <td>{{object.comment}}</td>
+                <td>{% for label in object.module_labels %}<span class="badge rounded-pill text-bg-primary me-1">{{ label }}</span>{% empty %}<span class="text-secondary">—</span>{% endfor %}</td>
                 <td>{{object.created|date:"d/m/y H:i"}}</td> 
                 <td><a href="{% url 'assignroluser_with_role' object.id %}"><i class ="fa-solid fa-user-tie" style="color:rgb(68, 94, 200);" title="{% trans 'Asignar Rol' %}"></i></a>
                     <a href="{% url 'permissionrolesupdate' object.id %}"><i class ="fa-solid fa-pen" style="color:#FFE682; margin-left: 5px;" title="{% trans 'Editar Rol' %}"></i></a>

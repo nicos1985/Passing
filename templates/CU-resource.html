@@ -6,7 +6,7 @@
 
 {% block content %}
 
-{% if not request.user.is_superuser and not request.user.is_staff %}
+{% if not resource_form_access %}
 <div class="container-fluid text-center">
     <h5 style="color: darkgrey">{% trans "Por favor, necesitas ingresar con un usuario administrador para navegar." %} 
         <br>{% trans "Si no tienes cuenta puedes registrarte." %}</h5>
@@ -19,9 +19,9 @@
         </div>
     </div>
 </div>
-{% elif request.user.is_superuser or request.user.is_staff %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+{% elif resource_form_access %}
+<div class="container py-4 passing-form-page">
+    <div class="form-hero">
         <div>
             <div class="ui-muted-title">{{ verbose_name_plural|default:verbose_name }}</div>
             <h3 class="mb-0">{{ action_type }} {{ verbose_name }}</h3>

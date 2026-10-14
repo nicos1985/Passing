@@ -2,6 +2,8 @@ from collections import OrderedDict
 from django import forms
 from login.models import CustomUser
 from .models import ContraPermission, PermissionRoles, UserRoles
+from .module_access import MODULE_ACCESS, MODULE_LABELS
+from login.utils import users_for_current_tenant
 from passbase.models import Contrasena, LogData
 from django.forms.models import ModelChoiceField, ModelChoiceIterator, ModelMultipleChoiceField
 import logging
@@ -83,19 +85,37 @@ class PermissionRolesForm(forms.ModelForm):
     contrasenas = CustomModelChoiceField(
         queryset=Contrasena.objects.filter(is_personal=False),
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        required=False,
         label='Contraseñas',
     )
-    comment = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    comment = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
+    module_permissions = forms.MultipleChoiceField(
+        choices=[(key, label) for key, (label, _) in MODULE_ACCESS.items()],
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        required=False, label='Acceso a módulos',
+    )
 
     class Meta:
         model = PermissionRoles
-        fields = ['rol_name', 'contrasenas', 'comment']
+        fields = ['rol_name', 'contrasenas', 'comment', 'module_permissions']
 
     def __init__(self, *args, **kwargs):
+        actor = kwargs.pop('actor', None)
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields['contrasenas'].initial = self.instance.contrasenas.all()
+            self.fields['module_permissions'].initial = self.instance.module_permissions
+        if actor is None or not actor.is_superuser:
+            self.fields['module_permissions'].disabled = True
         
+
+
+    def clean_module_permissions(self):
+        selected = set(self.cleaned_data['module_permissions'])
+        for module, _ in MODULE_LABELS:
+            if any(f'{module}_{action}' in selected for action in ('create', 'edit', 'delete')):
+                selected.add(f'{module}_read')
+        return [key for key in MODULE_ACCESS if key in selected]
 
 
 class UserRolForm(forms.ModelForm):
@@ -112,6 +132,10 @@ class UserRolForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        actor = kwargs.pop('actor', None)
         super(UserRolForm, self).__init__(*args, **kwargs)
-        self.fields['user'].queryset = CustomUser.for_current_tenant().filter(is_active=True)
-        self.fields['rol'].queryset = PermissionRoles.objects.filter(is_active=True)
+        self.fields['user'].queryset = users_for_current_tenant().filter(is_active=True)
+        roles = PermissionRoles.objects.filter(is_active=True)
+        if actor is None or not actor.is_superuser:
+            roles = roles.filter(module_permissions=[])
+        self.fields['rol'].queryset = roles

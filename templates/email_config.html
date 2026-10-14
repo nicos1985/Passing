@@ -36,29 +36,22 @@
 </div>
 {% elif request.user.is_superuser or request.user.is_staff %}
 
-<div class="container-fluid">
-    <h3 style="color: darkgrey; margin-top:30px;">{% trans "Configurar email" %}</h3>
-    
-        <div class="row">
-            <div class="col-md-4 mx-auto">   
+<div class="container py-4 passing-form-page" style="max-width:820px">
+    <header class="form-hero"><div><div class="ui-muted-title">Configuración / Correo</div><h1>{% trans "Configurar email" %}</h1></div></header>
+    <div class="card ui-accent-card"><div class="card-body">
         <form method="POST">
             {% csrf_token %}
             {{form.errors}}
-            <h5 style="color: darkred; margin-top:30px;">{{ message }}</h5>
+            {% if message %}<div class="alert alert-info">{{ message }}</div>{% endif %}
 
-            {% if request.method == POST %}
-                
-            {% endif %}
-
-            <div class="form-group" style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="form-group mb-3">
                 {{ form.as_p }}
             </div>
             <button type="submit" class="btn btn-primary btn-sm">
                 <i class="fas fa-save"></i> {% trans "Guardar configuración" %}
             </button>
         </form>
-            </div>
-        </div> 
+    </div></div>
     
 </div>
 {% endif %}

@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/vault.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 vault-page passing-form-page">
+  <div class="form-hero">
     <div>
-      <h4 class="mb-0 fw-semibold"><i class="fas fa-pen me-2"></i>{{ title }}</h4>
+      <div><span class="vault-eyebrow text-primary">PASSING · BÓVEDA</span><h1 class="h3 fw-bold mb-0">Editar sección</h1><p class="text-muted mb-0">Actualizá el nombre y estado de la sección.</p></div>
     </div>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'listsection' %}">
       <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver" %}

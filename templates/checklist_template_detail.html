@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+<div class="container py-4 passing-detail passing-form-page">
+  <header class="detail-hero">
+    <div class="detail-hero-main">
+      <span class="detail-hero-eyebrow">{% trans "Plantilla de checklist" %}</span>
       <h4 class="mb-0 fw-semibold"><i class="fa-solid fa-list-check me-2"></i>{{ object.name }}</h4>
       <small class="text-muted">{% trans "Edición de campos principales e ítems del checklist." %}</small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="detail-hero-actions">
       <a class="btn btn-outline-secondary btn-sm" href="{% url 'checklist-templates' %}">
         <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver" %}
       </a>
@@ -16,7 +19,7 @@
         <a class="btn btn-outline-secondary btn-sm" href="{{ link }}">{{ label }}</a>
       {% endfor %}
     </div>
-  </div>
+  </header>
 
   <form method="post">
     {% csrf_token %}

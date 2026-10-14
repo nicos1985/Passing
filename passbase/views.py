@@ -2,9 +2,10 @@
 
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, DetailView
 from django.urls import reverse, reverse_lazy
@@ -35,11 +36,11 @@ def is_superadmin(user):
     return user.is_superuser
 #####################################
 
-TEMPLATE_NAME = 'listpass.html'
+TEMPLATE_NAME = 'vault-list.html'
 ENTITY_CONTRASENA = 'Contraseña'
 ACCION_TYPE = 'edit new'
 class ContrasListView(LoginRequiredMixin, ListView):
-    """Lista contraseñas que el usuario puede ver y despliega sus datos descifrados."""
+    """Lista solo metadatos de las credenciales autorizadas."""
     model = Contrasena
     template_name = TEMPLATE_NAME
     context_object_name = 'query_perm'
@@ -51,17 +52,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
         obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
                                                     perm_active = True, 
                                                     permission = True).values_list('contra_id', flat=True)
-        #convierto en lista
-        permisos = list(obj_permiso)
-        query_perm = Contrasena.objects.filter(active=True, id__in = permisos).order_by('seccion')
-
-        # Desencriptar las contraseñas y añadirlas al queryset
-        for item in query_perm:
-            
-            item.decrypted_password = item.get_decrypted_password()
-            item.decrypted_user = item.get_decrypted_user()
-
-        return query_perm
+        return Contrasena.objects.filter(active=True, id__in=obj_permiso).select_related('seccion').order_by('seccion__nombre_seccion', 'nombre_contra')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,7 +64,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
 
 class ContrasDetailView(LoginRequiredMixin, DetailView):
     model=Contrasena
-    template_name = 'detail-cont.html'
+    template_name = 'vault-detail.html'
     login_url = 'login'
 
     def get_queryset(self):
@@ -84,7 +75,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         # Verificar permisos antes de continuar
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True, perm_active=True)
         logger.debug('users_permissions: %s', users_permissions)
         lista_permision_user = [permision.user_id for permision in users_permissions]
 
@@ -98,32 +89,38 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Obtén el objeto Contrasena y descifra los valores
-        contrasena = self.get_object()
-        contrasena.decrypted_password = contrasena.get_decrypted_password()
-        
-        contrasena.decrypted_user = contrasena.get_decrypted_user()
-
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
+        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True, perm_active=True)
         logger.debug('user permissions: %s', users_permissions)
 
-        for log in log_data:
-            try:
-                log.password = log.get_decrypted_password()
-                encrypted_user = log.get_encrypted_user()
-
-                if encrypted_user is not None:
-                    decrypted_user = log.get_decrypted_user(encrypted_user)
-                    log.detail = log.detail.replace(encrypted_user, decrypted_user)
-            except Exception as e:
-                logger.exception('Error processing log %s', log.id)
-
-        context['contraseña'] = contrasena
         context['log_data'] = log_data if log_data.exists() else None
         context['users_permissions'] = users_permissions
 
         return context
+
+
+@login_required(login_url='login')
+@require_POST
+@never_cache
+def reveal_credential(request, pk):
+    """Entrega una credencial puntualmente, con el mismo permiso activo del detalle."""
+    if request.user.is_superuser:
+        raise Http404
+    field = request.POST.get('field')
+    if field not in ('username', 'password'):
+        return JsonResponse({'error': 'Campo no válido.'}, status=400)
+    credential = get_object_or_404(
+        Contrasena,
+        pk=pk,
+        active=True,
+        pk__in=ContraPermission.objects.filter(
+            user_id=request.user, perm_active=True, permission=True,
+        ).values_list('contra_id', flat=True),
+    )
+    value = credential.get_decrypted_user() if field == 'username' else credential.get_decrypted_password()
+    response = JsonResponse({'value': value})
+    response['Cache-Control'] = 'private, no-store, max-age=0'
+    return response
     
         
 
@@ -322,6 +319,7 @@ def upload_csv(request):
 
 
 
+@method_decorator(never_cache, name='dispatch')
 class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     model = Contrasena
     form_class = ContrasenaUForm
@@ -458,26 +456,8 @@ class SectionCreateView(LoginRequiredMixin, CreateView):
 
 class SectionListView(LoginRequiredMixin, ListView):
     model = SeccionContra
-    template_name = 'listsection.html'
+    template_name = 'vault-sections.html'
     login_url = 'login'
-    
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-    
-    
-    
-    def post(self, request, *args, **kwargs):
-        data = {}
-        try:
-            data= SeccionContra.objects.get(pk=request.POST['id']).toJSON()
-
-        except Exception as e:
-            data['error'] = str(e)
-        
-        messages.success(request,  f'La {self.model.__name__} ha sido creada exitosamente.')
-
-        return JsonResponse(data)
     
     def get_queryset(self):
         return SeccionContra.objects.all()
@@ -521,7 +501,7 @@ class SectionUpdateView(LoginRequiredMixin, UpdateView):
         response = super().form_valid(form)
         context = SectionUpdateView.get_context_data(self)
         seccion = form.save()
-        LogData.objects.create(contraseña = seccion.pk, 
+        LogData.objects.create(contraseña = seccion.pk,
                                entidad = context['entity'], 
                                usuario = self.request.user, 
                                action = context['action'], 
@@ -540,27 +520,24 @@ class SectionDeleteView(LoginRequiredMixin, DeleteView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Eliminar Seccion'
+        context['title'] = 'Desactivar sección'
         context['entity'] = 'Seccion'
         context['list_url'] = reverse_lazy('listpass')
-        context['action'] = 'Inactive'
+        context['action'] = 'Desactivar'
         return context
     
     def form_valid(self, form, *args, **kwargs):
-        
-        response = super().form_valid(form)
-        id_seccion = self.kwargs['pk']
-        
         seccion = self.object
-        seccion.active = False
-        seccion.save()
-        LogData.objects.create(contraseña = id_seccion, 
-                               entidad = 'Seccion', 
-                               usuario = self.request.user, 
-                               action = 'inactive', 
-                               detail = f'Nombre: {seccion.nombre_seccion}')
+        SeccionContra.objects.filter(pk=seccion.pk).update(active=False)
+        LogData.objects.create(
+            contraseña=seccion.pk,
+            entidad='Seccion',
+            usuario=self.request.user,
+            action='inactive',
+            detail=f'Nombre: {seccion.nombre_seccion}',
+        )
         
-        return response 
+        return redirect(self.success_url)
 
 
 class SectionActiveView(LoginRequiredMixin, DetailView):

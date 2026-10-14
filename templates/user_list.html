@@ -14,9 +14,9 @@
 
 {% block content %}
     <div class="container py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-semibold">Usuarios</h4>
-        <div class="d-flex gap-2">
+      <div class="passing-list-hero">
+        <div><span class="passing-list-hero-eyebrow">Administración</span><h1>Usuarios</h1><p>Gestioná accesos, roles y autenticación.</p></div>
+        <div class="passing-list-hero-actions">
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>Configuración</a>
           <a class="btn btn-primary btn-sm" href="{% url 'register' %}"><i class="fa-solid fa-user me-1"></i>Crear Usuario</a>
         </div>
@@ -26,17 +26,10 @@
             <table class="table" id="data">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Id</th>
                         <th scope="col">{% trans "Usuario" %}</th>
-                        <th scope="col">{% trans "Nombre y apellido" %}</th>
-                        <th scope="col">{% trans "Documento" %}</th>
                         <th scope="col">{% trans "eMail" %}</th>
-                        <th scope="col">{% trans "Posición" %}</th>
-                        <th scope="col">{% trans "Domicilio" %}</th>
                         <th scope="col">{% trans "Rol" %}</th>
-                        <th scope="col">{% trans "2FA" %}</th>
-                        <th scope="col">{% trans "Fech. Ingreso" %}</th>
-                        <th scope="col">{% trans "Fech. Egreso" %}</th>
+                        <th scope="col">{% trans "Estado y 2FA" %}</th>
                         <th scope="col">{% trans "Acciones" %}</th>
                     </tr>
                 </thead>
@@ -44,48 +37,39 @@
                     {% for object in users %}
                         <tr>
                             <td>
-                                {% if object.is_active %}
-                                    <i class="fas fa-circle-check" title="{% trans "Usuario Activo" %}" style="color:#7CFF6D; font-size: 12px;"></i>
-                                {% else %}
-                                    <i class="fas fa-circle-check" title="{% trans "Usuario Inactivo" %}" style="color:rgba(182, 182, 182, 0.918); font-size: 12px;"></i>
-                                {% endif %}
-                                {{ object.id }}
-                            </td>
-                            <td>
                                 {% if object.is_superuser %}
                                     <i class="fas fa-crown" title="{% trans "Super user" %}" style="color:#FFE682; font-size: 12px;"></i>
                                 {% elif object.is_staff %}
                                     <i class="fas fa-user-tie" title="{% trans "Staff" %}" style="color:#253199; font-size: 12px;"></i>
                                 {% endif %}
-                                {{ object.username }}
+                                <a href="{% url 'detail-user' object.id %}">{{ object.username }}</a>
+                                <small class="d-block text-muted">{{ object.first_name }} {{ object.last_name }}</small>
                             </td>
-                            <td>{{ object.first_name }}, {{ object.last_name }}</td>
-                            <td>{{ object.documento }}</td>
                             <td>{{ object.email }}</td>
-                            <td>{{ object.position }}</td>
-                            <td>{{ object.address }}</td>
                             <td>{{ object.assigned_role }}</td>
                             <td>
+                                {% if object.is_active %}<span class="badge bg-success me-1">Activo</span>{% elif not object.password or not object.has_usable_password %}<span class="badge bg-warning text-dark me-1">Pendiente de activación</span>{% else %}<span class="badge bg-secondary me-1">Inactivo</span>{% endif %}
                                 {% if object.is_2fa_enabled %}
-                                    <i class="fas fa-circle-check" title="{% trans "2FA activado" %}" style="color: #7CFF6D;"></i>
+                                    <span class="badge bg-info text-dark">2FA activo</span>
                                 {% else %}
-                                    <i class="fas fa-circle-xmark" title="{% trans "2FA desactivado" %}" style="color: #FF7367;"></i>
+                                    <span class="badge bg-light text-secondary border">Sin 2FA</span>
                                 {% endif %}
                             </td>
-                            <td>{{ object.admission_date|date:"d/m/y" }}</td>
-                            <td>{{ object.departure_date|date:"d/m/y" }}</td>
                             <td>
-                                <a href="{% url 'updateuser' object.id %}"><i class="fas fa-user-edit" title="{% trans "Editar usuario" %}" style="color: #FFE682;"></i></a>
-                                
+                                {% if request.user.is_superuser or not object.is_staff and not object.is_superuser %}
+                                <a href="{% url 'updateuser' object.id %}" title="{% trans 'Editar usuario' %}" aria-label="Editar a {{ object.username }}"><i class="fas fa-user-edit" aria-hidden="true"></i></a>
                                 {% if object.is_2fa_enabled %}
-                                    <a href="{% url 'send-qr-email-for-user-ondemand' object.id %}"><i class="fas fa-qrcode" title="{% trans "Enviar QR" %}" style="color:rgb(8, 4, 79);"></i></a>
+                                    <form class="d-inline" method="post" action="{% url 'send-qr-email-for-user-ondemand' object.id %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0" title="{% trans 'Enviar QR' %}" aria-label="Enviar QR a {{ object.username }}"><i class="fas fa-qrcode" aria-hidden="true"></i></button></form>
                                 {% else %}
-                                    <i class="fas fa-qrcode" title="{% trans "2FA desactivado" %}" style="color:rgb(177, 177, 177);"></i>
+                                    <i class="fas fa-qrcode text-muted" title="{% trans '2FA desactivado' %}" aria-hidden="true"></i>
                                 {% endif %}
                                 {% if object.is_active %}
-                                    <a href="{% url 'deactivateuser' object.id %}"><i class="fas fa-trash" title="{% trans "Desactivar usuario" %}" style="color: #FF7367;"></i></a>
+                                    <a href="{% url 'deactivateuser' object.id %}" title="{% trans 'Desactivar usuario' %}" aria-label="Desactivar a {{ object.username }}"><i class="fas fa-user-slash" aria-hidden="true"></i></a>
+                                {% elif not object.password or not object.has_usable_password %}
+                                    <form class="d-inline" method="post" action="{% url 'resend-activation' object.id %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0" title="Reenviar invitación" aria-label="Reenviar invitación a {{ object.username }}"><i class="fas fa-envelope" aria-hidden="true"></i></button></form>
                                 {% else %}
-                                    <a href="{% url 'activateuser' object.id %}"><i class="fas fa-person-arrow-up-from-line" title="{% trans "Activar usuario" %}"  style="color: #7CFF6D;"></i></a>
+                                    <form class="d-inline" method="post" action="{% url 'activateuser' object.id %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0" title="{% trans 'Activar usuario' %}" aria-label="Activar a {{ object.username }}"><i class="fas fa-person-arrow-up-from-line" aria-hidden="true"></i></button></form>
+                                {% endif %}
                                 {% endif %}
                                 <a href="{% url 'detail-user' object.id %}"><i class="fas fa-eye" title="{% trans "Detalle usuario" %}" style="color:rgb(8, 4, 79);"></i></a>
                             </td>

@@ -1,0 +1,60 @@
+/* Form pages share the same heading and surface language as the current dashboards. */
+.passing-form-page { max-width: 1500px; margin-left: auto; margin-right: auto; color: var(--ui-text); }
+.passing-form-page .form-hero { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 18px; padding: 26px 30px; margin-bottom: 22px; border-radius: 22px; color: #fff; background: linear-gradient(125deg, #122c57, #244c86 70%, #31649e); box-shadow: 0 16px 36px rgba(26,58,104,.16); }
+.passing-form-page .form-hero > :first-child { min-width: 0; flex: 1 1 280px; }
+.passing-form-page .form-hero:has(> .back-button) { flex-direction: row-reverse; }
+.passing-form-page .form-hero:has(> .back-button) > :first-child { flex: 0 0 auto; }
+.passing-form-page .form-hero:has(> .back-button) > .mb-4 { flex: 1 1 280px; margin: 0 !important; }
+.passing-form-page .form-hero h1, .passing-form-page .form-hero h2, .passing-form-page .form-hero h3, .passing-form-page .form-hero h4 { color: #fff !important; font-size: clamp(1.6rem, 2.4vw, 2.2rem); font-weight: 760; letter-spacing: -.025em; line-height: 1.2; margin: 0 0 5px !important; overflow-wrap: anywhere; }
+.passing-form-page .form-hero .ui-muted-title, .passing-form-page .form-hero .vault-eyebrow, .passing-form-page .form-hero .text-uppercase { color: #9ed9ff !important; font-size: .68rem; font-weight: 800; letter-spacing: .15em; }
+.passing-form-page .form-hero p, .passing-form-page .form-hero small, .passing-form-page .form-hero .text-muted { color: #d6e5fa !important; font-size: .84rem; margin: 0; }
+.passing-form-page .form-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.passing-form-page .form-hero .btn { border-radius: 10px; font-size: .82rem; font-weight: 700; padding: 8px 12px; white-space: nowrap; }
+.passing-form-page .form-hero .btn-outline-secondary, .passing-form-page .form-hero .btn-secondary, .passing-form-page .form-hero .btn-outline-info, .passing-form-page .form-hero .btn-outline-primary, .passing-form-page .form-hero .btn-outline-light { color: #fff; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.35); }
+.passing-form-page .form-hero .btn-outline-secondary:hover, .passing-form-page .form-hero .btn-secondary:hover, .passing-form-page .form-hero .btn-outline-info:hover, .passing-form-page .form-hero .btn-outline-primary:hover, .passing-form-page .form-hero .btn-outline-light:hover { color: #fff; background: rgba(255,255,255,.24); }
+.passing-form-page .form-hero .btn-primary { background: #16a8dc; border-color: #16a8dc; color: #fff; }
+.passing-form-page .form-hero .btn-primary:hover { background: #078cbf; border-color: #078cbf; }
+.passing-form-page .card.ui-accent-card, .passing-form-page .card.form-card, .passing-form-page .form-surface { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 17px; box-shadow: 0 7px 22px rgba(22,48,88,.055); overflow: hidden; }
+.passing-form-page > .form-surface { padding: 20px; }
+.passing-form-page form.form-control { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.passing-form-page .card.ui-accent-card > .card-header, .passing-form-page .card.form-card > .card-header, .passing-form-page .form-surface > .card-header { background: var(--ui-surface-muted) !important; color: var(--ui-text) !important; border-bottom: 1px solid var(--ui-border); border-radius: 0 !important; padding: 15px 19px; font-size: .9rem; font-weight: 750; }
+.passing-form-page .card.ui-accent-card > .card-header h5, .passing-form-page .card.form-card > .card-header h5 { color: var(--ui-text); font-size: .9rem; font-weight: 750; margin: 0; }
+.passing-form-page .card.ui-accent-card > .card-body, .passing-form-page .card.form-card > .card-body, .passing-form-page .form-surface > .card-body { background: var(--ui-surface); color: var(--ui-text); padding: 20px; }
+.passing-form-page .card.ui-accent-card > .card-body.p-0, .passing-form-page .form-surface > .card-body.p-0 { padding: 0; }
+.passing-form-page .card.ui-accent-card > .card-footer, .passing-form-page .card.form-card > .card-footer, .passing-form-page .form-surface > .card-footer { border-top: 1px solid var(--ui-border); padding: 13px 20px; }
+.passing-form-page form .form-label, .passing-form-page form .form-group > label, .passing-form-page form p > label { color: var(--ui-text); font-size: .81rem; font-weight: 700; margin-bottom: 6px; }
+.passing-form-page form > p, .passing-form-page form .card-body > p { margin-bottom: 16px; }
+.passing-form-page form :is(.form-control,.form-select,textarea), .passing-form-page form p > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .passing-form-page form p > select, .passing-form-page form p > textarea { background-color: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 9px; max-width: 100%; }
+.passing-form-page form p > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .passing-form-page form p > select, .passing-form-page form p > textarea { display: block; width: 100%; padding: .5rem .75rem; }
+.passing-form-page form :is(.form-control,.form-select,textarea):focus, .passing-form-page form p > input:focus, .passing-form-page form p > select:focus { border-color: #28a4cb; box-shadow: 0 0 0 3px rgba(40,164,203,.14); outline: none; }
+.passing-form-page form .form-text, .passing-form-page form .helptext { color: var(--ui-text-muted); font-size: .75rem; }
+.passing-form-page form .errorlist { color: #bd3446; font-size: .78rem; margin: 5px 0 12px; padding-left: 18px; }
+.passing-form-page form .btn-primary, .passing-form-page .btn-submit-primary { background: #168eb8 !important; border: 1px solid #168eb8 !important; color: #fff !important; border-radius: 9px; box-shadow: none !important; }
+.passing-form-page form .btn-primary:hover, .passing-form-page .btn-submit-primary:hover { background: #087fa9 !important; border-color: #087fa9 !important; transform: none; }
+.passing-form-page .btn-group-submit { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--ui-border); }
+.passing-form-page .btn-submit { flex: 0 0 auto; border-radius: 9px; font-size: .82rem; font-weight: 700; padding: 9px 14px; }
+.passing-form-page .btn-submit-secondary { background: var(--ui-surface-muted); border: 1px solid var(--ui-border); color: var(--ui-text); }
+.passing-form-page .back-button { display: inline-flex; align-items: center; gap: 6px; color: #d6e5fa; font-size: .82rem; font-weight: 700; text-decoration: none; }
+.passing-form-page .form-hero .back-button { border: 1px solid rgba(255,255,255,.35); border-radius: 10px; background: rgba(255,255,255,.13); color: #fff; margin: 0; padding: 8px 12px; white-space: nowrap; }
+.passing-form-page .back-button:hover { color: #fff; transform: none; }
+.passing-form-page .role-permissions-table { border: 1px solid var(--ui-border); border-radius: 12px; overflow-x: auto; background: var(--ui-surface); }
+.passing-form-page .role-permissions-table th:first-child { min-width: 185px; text-align: left; }
+.passing-form-page .role-permissions-table td, .passing-form-page .role-permissions-table thead th:not(:first-child) { min-width: 84px; text-align: center; }
+.passing-form-page .role-permissions-table tbody tr:last-child > * { border-bottom: 0; }
+.passing-form-page .role-permission-cell { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0; cursor: pointer; }
+.passing-form-page .role-permission-cell .form-check-input { float: none; width: 1.15em; height: 1.15em; margin: 0; padding: 0; cursor: pointer; }
+.passing-form-page .info-card, .passing-form-page .decision-guide, .passing-form-page .analysis-item { background: var(--ui-surface-muted); border: 1px solid var(--ui-border); border-radius: 11px; color: var(--ui-text); }
+.passing-form-page .info-card h6, .passing-form-page .decision-guide strong { color: var(--ui-text); }
+.passing-form-page.legacy-form-layout { max-width: 800px; margin: 0 auto !important; padding: 20px 0; }
+.passing-form-page.legacy-form-layout > .d-flex { padding-top: 0 !important; }
+.passing-form-page .legacy-form-card { width: 100%; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 17px; box-shadow: 0 7px 22px rgba(22,48,88,.055); overflow: hidden; }
+.passing-form-page .legacy-form-card > .card-title { margin: 0; padding: 22px 25px; background: linear-gradient(125deg, #122c57, #244c86 70%, #31649e); }
+.passing-form-page .legacy-form-card > .card-title > .container { height: auto !important; padding: 0 !important; }
+.passing-form-page .legacy-form-card > .card-title h2 { color: #fff; font-size: 1.55rem; font-weight: 750; margin: 0; }
+.passing-form-page .legacy-form-card > .card-body { background: var(--ui-surface) !important; color: var(--ui-text); padding: 23px !important; width: auto !important; }
+.passing-form-page .legacy-form-card > .card-footer { background: var(--ui-surface-muted); border-top: 1px solid var(--ui-border); }
+.passing-form-page.auth-form-page { max-width: 850px; margin-left: auto; margin-right: auto; }
+.passing-form-page.auth-form-page .card.shadow-sm { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 17px !important; box-shadow: 0 7px 22px rgba(22,48,88,.055) !important; }
+.passing-form-page.auth-form-page .card.shadow-sm h1 { color: #173b6d; font-size: 1.45rem; font-weight: 750; }
+.passing-form-page.auth-form-page .card.shadow-sm .card-body { color: var(--ui-text); }
+@media (max-width: 767px) { .passing-form-page .form-hero, .passing-form-page .form-hero:has(> .back-button) { align-items: flex-start; flex-direction: column; padding: 22px; } .passing-form-page .form-hero-actions { justify-content: flex-start; } .passing-form-page .card.ui-accent-card > .card-body, .passing-form-page .card.form-card > .card-body { padding: 16px; } }

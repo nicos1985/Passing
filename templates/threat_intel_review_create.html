@@ -36,15 +36,17 @@
 {% endblock %}
 
 {% block content %}
-    <div class="form-container">
+    <div class="form-container passing-form-page">
+      <header class="form-hero">
         <a href="{% url 'threat_intel:runitem-list' run.id %}" class="back-button">
             <i class="fa-solid fa-arrow-left"></i> {% trans "Volver a Items" %}
         </a>
 
         <div class="mb-4">
             <h2 style="color: #333; font-weight: 700;">{% trans "Crear Revisión de Seguridad" %}</h2>
-            <p class="text-muted">{% blocktrans with cve=item.cve_id rid=run.id %}Para {{ cve }} en Run #{{ rid }}{% endblocktrans %}</p>
+            <p class="text-muted">{% blocktrans with cve=item.canonical_id rid=run.id %}Para {{ cve }} en Run #{{ rid }}{% endblocktrans %}</p>
         </div>
+      </header>
 
         {% if request.user.is_authenticated %}
             <!-- Información del Item -->
@@ -52,15 +54,15 @@
                 <div class="row">
                     <div class="col-md-6">
                         <h6><i class="fa-solid fa-virus"></i> {% trans "CVE" %}</h6>
-                        <p style="font-size: 1.1rem; color: #dc3545; font-weight: 600;">{{ item.cve_id }}</p>
+                        <p style="font-size: 1.1rem; color: #dc3545; font-weight: 600;">{{ item.canonical_id }}</p>
                     </div>
                     <div class="col-md-6">
                         <h6><i class="fa-solid fa-chart-line"></i> {% trans "Severidad" %}</h6>
                         <p>
                             <span class="badge" style="background: 
-                                {% if item.severity == 'CRITICAL' %}#dc3545
-                                {% elif item.severity == 'HIGH' %}#fd7e14
-                                {% elif item.severity == 'MEDIUM' %}#ffc107
+                                {% if item.severity == 'critical' %}#dc3545
+                                {% elif item.severity == 'high' %}#fd7e14
+                                {% elif item.severity == 'medium' %}#ffc107
                                 {% else %}#28a745{% endif %};
                                 padding: 0.5rem 1rem; font-size: 1rem;">
                                 {{ item.severity }}

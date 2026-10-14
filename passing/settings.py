@@ -117,6 +117,7 @@ TENANT_APPS = [
     "threat_intel",   # inteligencia de amenazas
     "docmanager",      # gestión documental
     "monitoring",     # disponibilidad de servicios
+    "supporthub",     # bandeja y avisos de soporte Bitrix24
 ]
 
 INSTALLED_APPS = SHARED_APPS + TENANT_APPS
@@ -184,6 +185,7 @@ AUTHENTICATION_BACKENDS = [
     "accounts.backends.EmailOrUsernameBackend",
     "django.contrib.auth.backends.ModelBackend",  # login programático (SSO)
     "allauth.account.auth_backends.AuthenticationBackend",
+    "permission.backends.ModuleRoleBackend",
 ]
 HUB_ORIGIN = os.getenv("HUB_ORIGIN", "http://localhost:8000").rstrip("/")
 if not DEBUG:
@@ -265,6 +267,7 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 #  Threat Intel
 # =========================
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+RISK_ASSISTANT_AI_ENABLED = os.getenv('RISK_ASSISTANT_AI_ENABLED', 'true').lower() in {'1', 'true', 'yes'}
 THREAT_INTEL = {
     "ENABLED_SOURCES": ["NVD", "AWS"],  # luego "FORTINET"
     "DEFAULT_DAYS": 30,
@@ -411,6 +414,10 @@ LOGGING = {
     "root": {
         "handlers": ["console", "file"],
         "level": "DEBUG",
+    },
+    "loggers": {
+        # urllib3 incluye los códigos secretos de los webhooks en la ruta HTTP.
+        "urllib3": {"level": "WARNING"},
     },
 }
 if not DEBUG:

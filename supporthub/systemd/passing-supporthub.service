@@ -1,0 +1,21 @@
+[Unit]
+Description=Passing support notification worker
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/Passing
+EnvironmentFile=/etc/passing.env
+ExecStart=/home/Passing/env/bin/python manage.py run_supporthub
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

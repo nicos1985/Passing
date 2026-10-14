@@ -1,0 +1,38 @@
+.passing-config { max-width: 1500px; margin: 0 auto; }
+.passing-config .config-hero { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px; padding: 30px 34px; margin-bottom: 30px; border-radius: 22px; color: #fff; background: linear-gradient(125deg, #122c57, #244c86 70%, #31649e); box-shadow: 0 16px 36px rgba(26,58,104,.16); }
+.passing-config .config-eyebrow { display: block; color: #9ed9ff; font-size: .68rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; margin-bottom: 7px; }
+.passing-config .config-hero h1 { color: #fff; font-size: clamp(1.7rem, 2.5vw, 2.3rem); font-weight: 760; letter-spacing: -.03em; margin: 0 0 5px; }
+.passing-config .config-hero p { color: #d6e5fa; font-size: .87rem; margin: 0; }
+.passing-config .config-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.passing-config .config-hero .btn { border-radius: 10px; font-size: .82rem; font-weight: 700; padding: 8px 12px; }
+.passing-config .config-hero .btn-light { background: #fff; border-color: #fff; color: #173b6d; }
+.passing-config .config-hero .btn-outline-light { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.35); color: #fff; }
+.passing-config .config-hero .btn-outline-light:hover { background: rgba(255,255,255,.24); }
+.passing-config .section-header { margin: 0 0 14px; padding: 0; border: 0; }
+.passing-config .section-header h3 { display: flex; align-items: center; gap: 8px; color: var(--ui-text); font-size: 1.05rem; font-weight: 750; margin: 0; }
+.passing-config .section-header h3 i { color: #168eb8; font-size: .9rem; }
+.passing-config .config-section { margin-bottom: 28px; }
+.passing-config .admin-link { display: block; height: 100%; text-decoration: none; color: var(--ui-text); }
+.passing-config .admin-link:hover { color: var(--ui-text); }
+.passing-config .admin-card { height: 100%; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 15px; box-shadow: 0 7px 22px rgba(22,48,88,.055); transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.passing-config .admin-link:hover .admin-card { transform: translateY(-2px); border-color: #90cfe4; box-shadow: 0 12px 26px rgba(22,48,88,.11); }
+.passing-config .admin-card .card-body { display: grid; grid-template-columns: 46px minmax(0,1fr); grid-template-rows: auto auto; align-content: center; column-gap: 13px; padding: 18px; text-align: left; min-height: 91px; }
+.passing-config .admin-card-icon { grid-column: 1; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border-radius: 12px; background: color-mix(in srgb, var(--accent-color, #168eb8) 12%, var(--ui-surface)); color: var(--accent-color, #168eb8); font-size: 1.1rem; }
+.passing-config .admin-card h5 { grid-column: 2; grid-row: 1; color: var(--ui-text); font-size: .89rem; font-weight: 750; line-height: 1.3; margin: 0; }
+.passing-config .admin-card small { grid-column: 2; grid-row: 2; color: var(--ui-text-muted) !important; font-size: .75rem; line-height: 1.3; margin-top: 4px; }
+.passing-config .config-restricted { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 16px; padding: 24px; }
+.passing-settings { max-width: 1180px; }
+.passing-settings .settings-panel { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 17px; box-shadow: 0 7px 22px rgba(22,48,88,.055); overflow: hidden; }
+.passing-settings .settings-panel > .card-header { display: flex; align-items: center; gap: 12px; padding: 18px 22px; background: transparent; border-bottom: 1px solid var(--ui-border); }
+.passing-settings .settings-panel > .card-header h2 { color: var(--ui-text); font-size: 1rem; font-weight: 750; margin: 0; }
+.passing-settings .settings-panel > .card-header p { color: var(--ui-text-muted); font-size: .77rem; margin: 3px 0 0; }
+.passing-settings .settings-panel-icon { display: inline-flex; align-items: center; justify-content: center; width: 41px; height: 41px; border-radius: 12px; background: color-mix(in srgb, #168eb8 12%, var(--ui-surface)); color: #168eb8; }
+.passing-settings .settings-panel > .card-body { padding: 22px; color: var(--ui-text); }
+.passing-settings .settings-panel .form-label { color: var(--ui-text); font-size: .82rem; font-weight: 700; }
+.passing-settings .settings-panel .form-text, .passing-settings .settings-panel .text-muted { color: var(--ui-text-muted) !important; }
+.passing-settings .settings-panel .form-control, .passing-settings .settings-panel .form-select { background: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); border-radius: 9px; }
+.passing-settings .settings-panel .btn { border-radius: 9px; }
+.passing-settings .settings-recipient, .passing-settings .settings-discovery { background: var(--ui-surface-muted); border: 1px solid var(--ui-border); border-radius: 11px; padding: 12px 14px; }
+.passing-settings .settings-recipient strong { color: var(--ui-text); }
+.passing-settings .settings-recipient .btn { display: inline-flex; align-items: center; justify-content: center; min-width: 33px; min-height: 33px; }
+@media (max-width: 767px) { .passing-config .config-hero { align-items: flex-start; flex-direction: column; padding: 24px; } }

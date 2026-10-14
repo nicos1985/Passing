@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4 passing-form-page" style="max-width:800px">
+  <header class="form-hero"><div><div class="ui-muted-title">Recursos / Acciones</div><h1>Confirmar {{ action.get_action_type_display|lower }}</h1></div></header>
+  <div class="card ui-accent-card"><div class="card-body">
+    <p>Activo: <strong>{{ action.asset.name }}</strong></p>
+    <p>Destinatario: {{ action.user }}</p>
+    <form method="post">{% csrf_token %}<button type="submit" class="btn btn-primary">Confirmar</button></form>
+  </div></div>
+</div>
+{% endblock %}

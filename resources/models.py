@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 from calendar import monthrange
 import logging
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from login.models import CustomUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -33,8 +34,8 @@ class RiskEvaluableObject(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
     personal_data_level = models.IntegerField(choices=PersonalDataLevelChoice.choices, default=PersonalDataLevelChoice.NONE, verbose_name=_('Nivel de datos personales'))
     owner = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='owned_%(class)s', related_query_name='owned_%(class)s', verbose_name=_('Propietario'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -75,7 +76,7 @@ class InformationAssets(RiskEvaluableObject):
     """Representa un activo de información y hereda campos comunes de `RiskEvaluableObject`."""
 
     value = models.FloatField(blank=True, null=True, verbose_name=_('Valor monetario'))
-    acquisition_date = models.DateField(auto_now=True, verbose_name=_('Fecha de adquisicion'))
+    acquisition_date = models.DateField(default=timezone.localdate, verbose_name=_('Fecha de adquisicion'))
     asset_type = models.IntegerField(choices=AssetType, verbose_name=_('Tipo activo'))
     location = models.CharField(max_length=255, blank=True, null=True ,verbose_name=_("Localizacion"))
     serial_number = models.CharField(max_length=200, blank=True, null=True, verbose_name=_('Nro serie'))
@@ -93,7 +94,7 @@ class InformationAssets(RiskEvaluableObject):
         """Devuelve el usuario que actualmente tiene el activo (si está prestado), o None."""
         try:
             # Only consider confirmed actions when determining current holder
-            last_action = self.actions.filter(status='CONFIRMED').order_by('-timestamp').first()
+            last_action = self.actions.filter(status='CONFIRMED').select_related('user').order_by('-timestamp', '-pk').first()
             if last_action and last_action.action_type == AssetActionType.LOAN:
                 return last_action.user
         except Exception:
@@ -132,8 +133,8 @@ class ChecklistTemplate(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name=_('Descripcion'))
     created_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='created_checklist_templates')
     active = models.BooleanField(default=True, verbose_name=_('Activa'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Plantilla de checklist')
@@ -150,8 +151,8 @@ class ChecklistItem(models.Model):
     text = models.TextField(verbose_name=_('Pregunta / Punto a evaluar'))
     required = models.BooleanField(default=True, verbose_name=_('Requerido'))
     controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name=_('Control relacionado'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Item de checklist')
@@ -168,8 +169,8 @@ class VendorChecklist(models.Model):
     template = models.ForeignKey(ChecklistTemplate, on_delete=models.CASCADE, related_name='vendor_assignments', verbose_name=_('Plantilla'))
     customized = models.BooleanField(default=False, verbose_name=_('Personalizada'))
     notes = models.TextField(blank=True, null=True, verbose_name=_('Notas de personalizacion'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Checklist asignada a proveedor')
@@ -201,8 +202,8 @@ class VendorEvaluation(models.Model):
     performed_at = models.DateTimeField(blank=True, null=True, verbose_name=_('Fecha de evaluacion'))
     status = models.CharField(max_length=20, choices=VendorEvaluationStatus.choices, default=VendorEvaluationStatus.PENDING, verbose_name=_('Estado'))
     notes = models.TextField(blank=True, null=True, verbose_name=_('Observaciones generales'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     reminder_sent_at = models.DateTimeField(blank=True, null=True, verbose_name=_('Fecha aviso enviado'))
 
     class Meta:
@@ -257,17 +258,23 @@ class VendorEvaluation(models.Model):
         assignment = self.vendor.checklist_assignments.first()
         if not assignment:
             return 0
-        count = 0
+        existing_ids = set(
+            self.items.exclude(checklist_item_id__isnull=True)
+            .values_list('checklist_item_id', flat=True)
+        )
+        snapshots = []
         for item in assignment.template.items.all():
-            VendorEvaluationItem.objects.create(
+            if item.pk in existing_ids:
+                continue
+            snapshots.append(VendorEvaluationItem(
                 evaluation=self,
                 checklist_item=item,
                 question_text=item.text,
                 required=item.required,
                 controls=item.controls,
-            )
-            count += 1
-        return count
+            ))
+        VendorEvaluationItem.objects.bulk_create(snapshots)
+        return len(snapshots)
 
     def ensure_treatment_for_failures(self):
         """Genera un tratamiento automático cuando hay items que no cumplen."""
@@ -279,7 +286,10 @@ class VendorEvaluation(models.Model):
             logger.debug('ensure_treatment_for_failures: evaluation %s has no failing items', self.pk)
             return
         ct = ContentType.objects.get_for_model(self.vendor)
-        existing = Treatment.objects.filter(content_type=ct, object_id=self.vendor.pk, name__icontains=f"Evaluacion {self.pk}").first()
+        existing = Treatment.objects.filter(
+            content_type=ct, object_id=self.vendor.pk,
+            name=f'Tratamiento por Evaluacion de proveedor {self.pk}',
+        ).first()
         if existing:
             logger.debug('ensure_treatment_for_failures: treatment already exists for evaluation %s', self.pk)
             return
@@ -338,8 +348,8 @@ class VendorEvaluationItem(models.Model):
     controls = models.IntegerField(choices=Controls.choices, default=Controls.A15_SUPPLIER_RELATIONSHIPS, verbose_name=_('Control relacionado'))
     result = models.IntegerField(choices=EvaluationResult.choices, default=EvaluationResult.COMPLIES, verbose_name=_('Resultado'))
     observations = models.TextField(blank=True, null=True, verbose_name=_('Observaciones'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Item de evaluacion')
@@ -474,7 +484,6 @@ class Vendor(RiskEvaluableObject):
             scheduled_date=due_date,
             status=VendorEvaluationStatus.PENDING,
         )
-        evaluation.create_items_from_assigned_checklist()
         return evaluation
 
     @property
@@ -568,8 +577,8 @@ class Threat(models.Model):
     name = models.CharField(max_length=255, verbose_name=_("Nombre"))
     type_threat = models.IntegerField(choices=TypeThreat.choices, default=TypeThreat.OTHERS, verbose_name=_('Tipo de amenaza'))
     description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Amenaza')
@@ -592,10 +601,10 @@ class TypeVulnerability(models.IntegerChoices):
 class Vulnerability(models.Model):
     """Catalogo de vulnerabilidades detectables sobre los recursos."""
     name = models.CharField(max_length=255, verbose_name=_("Nombre"))
-    type_vulnerability = models.IntegerField(choices=TypeVulnerability.choices, default=TypeThreat.OTHERS, verbose_name=_('Tipo de vulnerabilidad'))
+    type_vulnerability = models.IntegerField(choices=TypeVulnerability.choices, default=TypeVulnerability.OTHERS, verbose_name=_('Tipo de vulnerabilidad'))
     description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Vulnerabilidad')
@@ -634,8 +643,8 @@ class RiskEvaluation(models.Model):
     evaluated_object = GenericForeignKey('evaluated_type', 'evaluated_id')
     evaluated_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     #Aca los campos de evaluacion de riesgo
-    threat = models.ForeignKey('Threat', on_delete=models.CASCADE, verbose_name=_('Amenaza'))
-    vulnerability = models.ForeignKey('Vulnerability', on_delete=models.CASCADE, verbose_name=_('Vulnerabilidad'))
+    threat = models.ForeignKey('Threat', on_delete=models.PROTECT, verbose_name=_('Amenaza'))
+    vulnerability = models.ForeignKey('Vulnerability', on_delete=models.PROTECT, verbose_name=_('Vulnerabilidad'))
     description = models.TextField(blank=True, null=True, verbose_name=_("Descripcion"))
     confidenciality_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name=_('Impacto en confidencialidad'))
     integrity_impact = models.IntegerField(choices=LevelOfImpact.choices, default=LevelOfImpact.INCIDENTAL, verbose_name=_('Impacto en integridad'))
@@ -644,9 +653,13 @@ class RiskEvaluation(models.Model):
     probability = models.IntegerField(choices=LevelOfProbability.choices, default=LevelOfProbability.UNLIKELY, verbose_name=_('Probabilidad'))
     risk_value = models.FloatField(blank=True, null=True, verbose_name=_('Valor de riesgo'))
     risk_level = models.IntegerField(blank=True, null=True, choices=LevelOfRisk.choices, default=LevelOfRisk.VERY_LOW, verbose_name=_('Nivel de riesgo'))
-    treatment = models.OneToOneField('Treatment', on_delete=models.CASCADE, blank=True, null=True, verbose_name=_('Tratamiento asociado'), related_name='risk_evaluation',)
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    treatment = models.OneToOneField('Treatment', on_delete=models.PROTECT, blank=True, null=True, verbose_name=_('Tratamiento asociado'), related_name='risk_evaluation',)
+    followup_for = models.OneToOneField('Treatment', on_delete=models.PROTECT, blank=True, null=True, related_name='followup_evaluation', verbose_name=_('Reevaluación posterior a tratamiento'))
+    is_draft = models.BooleanField(default=False, verbose_name=_('Pendiente de reevaluación'))
+    reviewed_at = models.DateTimeField(blank=True, null=True, editable=False, verbose_name=_('Fecha de confirmación'))
+    reviewed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, editable=False, related_name='reviewed_risk_evaluations', verbose_name=_('Confirmada por'))
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Evaluacion de riesgo')
@@ -657,6 +670,16 @@ class RiskEvaluation(models.Model):
     
     def save(self, *args, **kwargs):
         """Calcula métricas de riesgo y genera tratamientos automáticos según el nivel."""
+        if self.treatment_id and (
+            self.treatment.content_type_id != self.evaluated_type_id
+            or self.treatment.object_id != self.evaluated_id
+        ):
+            raise ValidationError('El tratamiento debe corresponder al recurso evaluado.')
+        if self.followup_for_id and (
+            self.followup_for.content_type_id != self.evaluated_type_id
+            or self.followup_for.object_id != self.evaluated_id
+        ):
+            raise ValidationError('La reevaluación debe corresponder al recurso del tratamiento.')
         # Calcular impact_value si no está seteado
         self.impact_value = (
             self.confidenciality_impact +
@@ -679,38 +702,39 @@ class RiskEvaluation(models.Model):
         else:
             self.risk_level = LevelOfRisk.VERY_HIGH
 
-        is_new = self.pk is None  # <=== importante
-        super().save(*args, **kwargs)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and set(update_fields) & {
+            'confidenciality_impact', 'integrity_impact', 'availability_impact', 'probability'
+        }:
+            kwargs['update_fields'] = set(update_fields) | {'impact_value', 'risk_value', 'risk_level'}
 
-        # Si no tiene tratamiento, crearlo solo para riesgo moderado o superior
-        if (
-            not self.treatment
-            and not getattr(self, 'skip_treatment', False)
-            and self.risk_level is not None
-            and self.risk_level >= LevelOfRisk.MODERATE
-        ):
-            # Determinar tipo de tratamiento según nivel de riesgo (por ahora siempre REDUCE)
-            treatment_type = TypeTreatment.REDUCE
+        with transaction.atomic():
+            super().save(*args, **kwargs)
 
-            # Crear tratamiento
-            treatment = Treatment.objects.create(
-                name=f"Tratamiento para evaluación {self.pk}",
-                treatment_type=treatment_type,
-                description=None,
-                controls=Controls.A5_INFORMATION_SECURITY_POLICIES,
-                content_type=self.evaluated_type,
-                object_id=self.evaluated_id,
-                deadline=timezone.now().date() + timedelta(days=30),
-                treatment_responsible=CustomUser.for_current_tenant().first(),
-                treatment_oportunity=TreatmentOportunity.PREVENTIVE,
-                application_periodicity=ApplicationPeriodicity.PERMANENT,
-                control_automation=ControlAutomation.MANUAL,
-                priority=Priority.NO_PRIORITY,
-            )
+            # Un borrador nunca genera tratamiento hasta que se confirme la evaluación.
+            if not self.treatment_id and not self.is_draft and self.risk_level >= LevelOfRisk.MODERATE:
+                self._create_default_treatment()
 
-            # Asociar y volver a guardar la evaluación con su tratamiento
-            self.treatment = treatment
-            super().save(update_fields=["treatment"])
+    def _create_default_treatment(self):
+        responsible = CustomUser.for_current_tenant().filter(is_active=True).first()
+        if responsible is None:
+            raise ValidationError('Se necesita un usuario activo del tenant para asignar el tratamiento.')
+        treatment = Treatment.objects.create(
+            name=f"Tratamiento para evaluación {self.pk}",
+            treatment_type=TypeTreatment.REDUCE,
+            description=None,
+            controls=Controls.A5_INFORMATION_SECURITY_POLICIES,
+            content_type=self.evaluated_type,
+            object_id=self.evaluated_id,
+            deadline=timezone.now().date() + timedelta(days=30),
+            treatment_responsible=responsible,
+            treatment_oportunity=TreatmentOportunity.PREVENTIVE,
+            application_periodicity=ApplicationPeriodicity.PERMANENT,
+            control_automation=ControlAutomation.MANUAL,
+            priority=Priority.NO_PRIORITY,
+        )
+        self.treatment = treatment
+        super().save(update_fields=['treatment'])
     
     def get_risk_level_badge(self):
         """Renderiza un badge HTML que muestra gráficamente el nivel de riesgo."""
@@ -793,7 +817,7 @@ class AssetAction(models.Model):
 
         # Determine current holder by looking at latest action excluding this instance (if editing)
         # Only consider confirmed actions when deciding current state
-        qs = AssetAction.objects.filter(asset_id=self.asset_id, status='CONFIRMED').exclude(pk=self.pk).order_by('-timestamp')
+        qs = AssetAction.objects.filter(asset_id=self.asset_id, status='CONFIRMED').exclude(pk=self.pk).order_by('-timestamp', '-pk')
         last = qs.first()
 
         if self.action_type == AssetActionType.LOAN:
@@ -914,7 +938,7 @@ class Treatment(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     deadline = models.DateField(verbose_name=_('Fecha de cumplimiento'))
-    treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Responsable de tratamiento'))
+    treatment_responsible = models.ForeignKey(CustomUser, on_delete=models.PROTECT, verbose_name=_('Responsable de tratamiento'))
     treatment_oportunity = models.IntegerField(choices=TreatmentOportunity.choices, default=TreatmentOportunity.PREVENTIVE, verbose_name=_('Oportunidad de tratamiento'))
     application_periodicity = models.IntegerField(choices=ApplicationPeriodicity.choices, default=ApplicationPeriodicity.PERMANENT, verbose_name=_('Periodicidad de aplicacion'))
     control_automation = models.IntegerField(choices=ControlAutomation.choices, default=ControlAutomation.MANUAL, verbose_name=_('Automatizacion de control'))
@@ -929,8 +953,8 @@ class Treatment(models.Model):
     corrective_actions = models.TextField(blank=True, null=True, verbose_name=_('Acciones correctivas'))
     stage_changed_at = models.DateTimeField(blank=True, null=True, editable=False, verbose_name=_('Fecha cambio de etapa'))
     stage_changed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='treatment_stage_changes', editable=False, verbose_name=_('Usuario que cambió etapa'))
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('Tratamiento')
@@ -938,6 +962,17 @@ class Treatment(models.Model):
     
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.implementation_status = {
+            TreatmentStage.PENDING: ImplementationStatus.PENDING,
+            TreatmentStage.ANALYSIS: ImplementationStatus.IN_PROGRESS,
+            TreatmentStage.IN_PROGRESS: ImplementationStatus.IN_PROGRESS,
+            TreatmentStage.IMPLEMENTED: ImplementationStatus.COMPLETED,
+        }[self.stage]
+        if kwargs.get('update_fields') is not None and 'stage' in kwargs['update_fields']:
+            kwargs['update_fields'] = set(kwargs['update_fields']) | {'implementation_status'}
+        super().save(*args, **kwargs)
     
     # legacy `get_status_badge` removed; use `get_stage_badge` which reflects lifecycle stages
 
@@ -965,14 +1000,75 @@ class Treatment(models.Model):
         self.stage_changed_at = timezone.now()
         if user and isinstance(user, CustomUser):
             self.stage_changed_by = user
-        self.save(update_fields=['stage', 'stage_changed_at', 'stage_changed_by'])
+        with transaction.atomic():
+            self.save(update_fields=['stage', 'stage_changed_at', 'stage_changed_by', 'updated'])
     
     def get_deadline_badge(self):
         """Badge que colorea el deadline según si está vencido, hoy o pendiente."""
         
         if self.deadline > timezone.now().date():
-            return f'<span class="badge bg-danger text-white">{self.deadline}</span>'
+            return f'<span class="badge bg-success text-white">{self.deadline}</span>'
         elif self.deadline == timezone.now().date():
             return f'<span class="badge bg-warning text-white">{self.deadline}</span>'
         else:
-            return f'<span class="badge bg-success text-white">{self.deadline}</span>'
+            return f'<span class="badge bg-danger text-white">{self.deadline}</span>'
+
+
+class RiskAssistantRun(models.Model):
+    day = models.DateField(unique=True)
+    started_at = models.DateTimeField(default=timezone.now)
+    finished_at = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=16, default='running')
+    created_count = models.PositiveIntegerField(default=0)
+    ai_used = models.BooleanField(default=False)
+    digest_text = models.TextField(blank=True)
+    digest_ai_used = models.BooleanField(default=False)
+    error_code = models.CharField(max_length=40, blank=True)
+
+    class Meta:
+        ordering = ['-day']
+        verbose_name = _('Ejecución del asistente de riesgos')
+
+
+class RiskInsight(models.Model):
+    class Kind(models.TextChoices):
+        REVIEW_DRAFT = 'review_draft', _('Reevaluación pendiente')
+        OVERDUE_TREATMENT = 'overdue_treatment', _('Tratamiento vencido')
+        STALE_HIGH_RISK = 'stale_high_risk', _('Riesgo alto sin revisión reciente')
+        MISSING_TREATMENT = 'missing_treatment', _('Riesgo alto sin tratamiento')
+
+    class Status(models.TextChoices):
+        OPEN = 'open', _('Abierta')
+        SNOOZED = 'snoozed', _('Pospuesta')
+        REVIEWED = 'reviewed', _('Revisada')
+        DISMISSED = 'dismissed', _('Descartada')
+        SUPERSEDED = 'superseded', _('Reemplazada')
+
+    class Priority(models.TextChoices):
+        NORMAL = 'normal', _('Normal')
+        HIGH = 'high', _('Alta')
+
+    evaluation = models.ForeignKey(RiskEvaluation, on_delete=models.PROTECT, related_name='assistant_insights')
+    run = models.ForeignKey(RiskAssistantRun, on_delete=models.PROTECT, related_name='insights')
+    kind = models.CharField(max_length=32, choices=Kind.choices)
+    fingerprint = models.CharField(max_length=64)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    priority = models.CharField(max_length=8, choices=Priority.choices, default=Priority.NORMAL)
+    reason_code = models.CharField(max_length=40)
+    summary = models.CharField(max_length=240)
+    tip = models.CharField(max_length=300, blank=True)
+    tip_ai_used = models.BooleanField(default=False)
+    suggested_action = models.CharField(max_length=32)
+    ai_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    snoozed_until = models.DateField(blank=True, null=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = _('Sugerencia del asistente de riesgos')
+        constraints = [models.UniqueConstraint(
+            fields=['evaluation', 'kind', 'fingerprint'], name='risk_insight_once_per_facts',
+        )]

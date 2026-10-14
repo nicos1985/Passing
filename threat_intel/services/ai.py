@@ -8,7 +8,7 @@ from typing import Any
 
 from django.utils import timezone
 import traceback
-from threat_intel.models import AIAnalysis, IntelItem, Run
+from threat_intel.models import AIAnalysis, IntelItem, Run, TechTag
 from threat_intel.services.openai_api import get_openai_api_client
 import logging
 
@@ -23,13 +23,7 @@ Si falta un dato, indicá "No especificado".
 Respondé ÚNICAMENTE en JSON válido, sin texto adicional.
 
 Stack de la organización (para evaluar aplicabilidad):
-- Ubuntu
-- MySQL
-- Laravel (PHP + Composer)
-- Frontend (Node/NPM supply chain)
-- AWS (EC2, IAM, VPC, SSM, ALB, CloudWatch, RDS)
-- Cloudflare WAF
-- Fortinet (si aparece)
+{stack}
 
 Clasificación por CVSS:
 - critical >= 9.0
@@ -61,6 +55,22 @@ If you cannot find a field in the provided text, set it to "No especificado" (fo
 
 # Para recortar el texto y evitar costos / desbordes
 MAX_TEXT_CHARS = 4500
+
+PUBLIC_TECH_LABELS = {
+    'ubuntu linux': 'Ubuntu Linux', 'mysql': 'MySQL',
+    'postgresql': 'PostgreSQL', 'laravel': 'Laravel',
+    'react / node / npm': 'React / Node / npm',
+    'aws / ec2': 'AWS / EC2', 'cloudflare waf': 'Cloudflare WAF',
+    'fortinet': 'Fortinet',
+}
+
+
+def _stack_for_prompt() -> str:
+    """Only send public, allowlisted technology names from active tags."""
+    names = TechTag.objects.filter(is_active=True).values_list('name', flat=True)
+    labels = sorted({PUBLIC_TECH_LABELS[name.strip().lower()] for name in names
+                     if name.strip().lower() in PUBLIC_TECH_LABELS})
+    return ', '.join(labels) if labels else 'No especificado; no asumir aplicabilidad.'
 
 
 def _build_item_text(item: IntelItem) -> str:
@@ -191,7 +201,7 @@ def analyze_item(client: Any, item: IntelItem, model_name: str, prompt_version: 
 
     try:
         out = client.create_message(
-            system_prompt=PROMPT_V1_SYSTEM,
+            system_prompt=PROMPT_V1_SYSTEM.format(stack=_stack_for_prompt()),
             user_message=user_text,
             temperature=0.7,
             max_tokens=2000,
@@ -261,6 +271,7 @@ def analyze_relevant_items_for_run(run: Run) -> int:
     logger.debug("Items to analyze: %d", len(to_analyze))
 
     processed = 0
+    failed = 0
     for item in to_analyze:
         if AIAnalysis.objects.filter(run=run, item=item).exists():
             continue
@@ -270,6 +281,7 @@ def analyze_relevant_items_for_run(run: Run) -> int:
         except Exception as e:
             logger.exception("[AI] Failed for %s", item.canonical_id)
             logger.debug(traceback.format_exc())
+            failed += 1
             continue
         #print(f"[AI] Analysis for {item.canonical_id}: {data}")
         # Sanitize/normalize values to avoid DB field length errors and
@@ -311,4 +323,6 @@ def analyze_relevant_items_for_run(run: Run) -> int:
         )
         processed += 1
 
+    if failed:
+        raise RuntimeError(f"El análisis IA falló para {failed} ítem(s) de la corrida")
     return processed

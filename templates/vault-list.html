@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/vault.css' %}">{% endblock %}
+{% block content %}
+<div class="vault-page">
+  <header class="vault-hero"><div><span class="vault-eyebrow">PASSING · BÓVEDA</span><h1>Contraseñas</h1><p>Accedé a tus credenciales y organizalas por sección.</p></div><div class="vault-hero-actions"><a class="btn btn-light" href="{% url 'listsection' %}"><i class="fas fa-layer-group me-2"></i>Secciones</a><a class="btn btn-primary" href="{% url 'createpass' %}"><i class="fas fa-plus me-2"></i>Nueva contraseña</a></div></header>
+  <section class="vault-panel"><div class="vault-panel-heading"><div><h2>Mis accesos</h2><p>Buscá por nombre, sección o enlace. Las claves se consultan al solicitarlas.</p></div><span class="vault-count">{{ query_perm|length }} registros</span></div>
+    <div class="table-responsive"><table class="table vault-table" data-passing-table data-order-column="0"><thead><tr><th>Nombre</th><th>Sección</th><th>Rotación</th><th>Enlace</th><th data-no-sort>Acciones</th></tr></thead><tbody>{% for contra in query_perm %}<tr>
+      <td><a class="vault-name" href="{% url 'detailpass' contra.id %}"><span class="vault-icon"><i class="fas fa-key"></i></span><span>{{ contra.nombre_contra }}{% if contra.is_personal %}<small>Personal</small>{% endif %}</span></a></td>
+      <td><span class="vault-section">{{ contra.seccion.nombre_seccion }}</span></td><td><span class="vault-muted">Cada {{ contra.actualizacion }} días</span></td>
+      <td>{% if contra.safe_link %}<a class="vault-link" href="{{ contra.safe_link }}" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square me-1"></i>{{ contra.link|truncatechars:28 }}</a>{% else %}<span class="vault-muted">—</span>{% endif %}</td>
+      <td><div class="vault-actions"><a class="vault-action" href="{% url 'detailpass' contra.id %}" title="Ver detalle" aria-label="Ver detalle"><i class="fas fa-arrow-right"></i></a>{% if not user.is_superuser %}<button class="vault-action" type="button" data-vault-action="copy" data-field="password" data-url="{% url 'revealpass' contra.id %}" title="Copiar contraseña" aria-label="Copiar contraseña"><i class="far fa-copy"></i></button>{% endif %}<a class="vault-action" href="{% url 'updatepass' contra.id %}" title="Editar" aria-label="Editar"><i class="fas fa-pen"></i></a>{% if contra.file %}<a class="vault-action" href="{% url 'downloadfile' contra.id %}" title="Descargar adjunto" aria-label="Descargar adjunto"><i class="fas fa-download"></i></a>{% endif %}{% if not contra.is_personal %}<a class="vault-action" href="{% url 'createnotiadmin' contrasena=contra.id %}" title="Compartir" aria-label="Compartir"><i class="fas fa-share-nodes"></i></a>{% endif %}<a class="vault-action vault-action-danger" href="{% url 'deletepass' contra.id %}" title="Eliminar" aria-label="Eliminar"><i class="fas fa-trash"></i></a></div></td>
+    </tr>{% endfor %}</tbody></table></div>
+  </section><div class="vault-toast" role="status" aria-live="polite" hidden></div>
+</div><form class="vault-csrf" hidden>{% csrf_token %}</form>
+{% endblock %}
+{% block javascript %}<script src="{% static 'js/passing-datatable.js' %}"></script><script src="{% static 'js/vault-secrets.js' %}"></script>{% endblock %}

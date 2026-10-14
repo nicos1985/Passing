@@ -9,6 +9,7 @@ from django.db import models
 from login.models import CustomUser
 from passbase.models import Contrasena
 from django.utils.translation import gettext_lazy as _
+from .module_access import ACTION_LABELS, MODULE_ACTIONS, MODULE_LABELS
 
 
 class ContraPermission(models.Model):
@@ -38,11 +39,21 @@ class PermissionRoles(models.Model):
     rol_name = models.CharField(max_length=60, verbose_name=_('Nombre del rol'))
     contrasenas = models.ManyToManyField(Contrasena, related_name='roles', verbose_name=_('Contraseñas'))
     comment = models.CharField(max_length=200, blank=True, verbose_name=_('Comentario'))
+    module_permissions = models.JSONField(default=list, blank=True, verbose_name=_('Acceso a módulos'))
     is_active = models.BooleanField(default=True, verbose_name=_('Activo'))
     created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
 
     def __str__(self):
         return self.rol_name
+
+    @property
+    def module_labels(self):
+        selected = set(self.module_permissions or [])
+        return [
+            f'{label}: {", ".join(ACTION_LABELS[action].lower() for action in MODULE_ACTIONS if f"{module}_{action}" in selected)}'
+            for module, label in MODULE_LABELS
+            if any(f'{module}_{action}' in selected for action in MODULE_ACTIONS)
+        ]
 
     def get_contrasenas(self):
         """Devuelve el queryset de contraseñas asociadas al rol."""

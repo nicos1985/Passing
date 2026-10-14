@@ -372,10 +372,10 @@ class TestAnalyzeRelevantItemsForRun(TenantTestCase):
         RunItem.objects.create(run=self.run, item=item2)
 
         # Execute
-        processed = analyze_relevant_items_for_run(self.run)
+        with self.assertRaisesRegex(RuntimeError, 'falló para 1'):
+            analyze_relevant_items_for_run(self.run)
 
-        # Verify - el segundo debería haberse creado
-        self.assertEqual(processed, 1)
+        # El segundo se conserva para poder reintentar solo el pendiente.
         self.assertFalse(AIAnalysis.objects.filter(run=self.run, item=item1).exists())
         self.assertTrue(AIAnalysis.objects.filter(run=self.run, item=item2).exists())
 

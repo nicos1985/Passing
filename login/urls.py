@@ -16,6 +16,7 @@ urlpatterns = [
     path('show-qr-code-2fa/', views.show_qr_code_2fa, name='show-qr-code-2fa'),
     path('send-qr-email-for-user-ondemand/<int:pk>', views.send_qr_email_for_user_ondemand, name='send-qr-email-for-user-ondemand'),
     path('register/', views.register , name='register'),
+    path('resend-activation/<int:pk>/', views.resend_activation, name='resend-activation'),
     path('configuracion-global/', TenantSettingsUpdateView.as_view(), name='configuracion-global'),
     path('recive-mail/', recive_mail, name='recive-mail'),
     path('resend-mail/', resend_mail, name='resend-mail'),

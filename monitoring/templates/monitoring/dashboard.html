@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static l10n %}
 {% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
 {% block content %}
 <div class="container-fluid py-3 monitoring-dashboard monitor-screen">
   <header class="monitor-hero mb-4">
     <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
       <div><div class="monitor-eyebrow mb-2">Centro de operaciones</div><h1 class="mb-2">Monitorización</h1><p class="mb-0">Estado de los servicios y señales de la última hora, desde este servidor.</p></div>
-      <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:incidents' %}"><i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i>Historial de incidentes</a><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:information' %}"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Información</a><a class="btn btn-light btn-sm fw-semibold" href="{% url 'monitoring:new' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Nuevo monitoreo</a></div>
+      <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:incidents' %}"><i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i>Historial de incidentes</a><a class="btn btn-outline-light btn-sm" href="{% url 'monitoring:information' %}"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Información</a>{% if can_create %}<a class="btn btn-light btn-sm fw-semibold" href="{% url 'monitoring:new' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Nuevo monitoreo</a>{% endif %}</div>
     </div>
     <div class="d-flex flex-wrap gap-2 mt-4">
       <span class="monitor-live-pill" id="live-connection"><span class="live-dot"></span>Conectando…</span>
@@ -32,15 +32,17 @@
       </span>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap px-3 py-3 border-bottom">
-      <label class="visually-hidden" for="monitor-search">Buscar monitoreos</label><div class="input-group input-group-sm monitor-search"><span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span><input id="monitor-search" type="search" class="form-control" placeholder="Buscar servicio o destino" autocomplete="off"></div>
+      <label class="visually-hidden" for="monitor-search">Buscar monitoreos</label><div class="input-group input-group-sm monitor-search"><span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span><input id="monitor-search" type="search" class="form-control" placeholder="Buscar nombre, destino o tipo" autocomplete="off"></div>
       <div class="d-flex gap-1 flex-wrap" role="group" aria-label="Filtrar monitoreos"><button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">Todos</button><button type="button" class="filter-chip" data-filter="healthy" aria-pressed="false">Saludables</button><button type="button" class="filter-chip" data-filter="attention" aria-pressed="false">Atención</button><button type="button" class="filter-chip" data-filter="paused" aria-pressed="false">Detenidos</button></div>
+      <label class="small text-muted" for="monitor-sort">Ordenar por</label><select id="monitor-sort" class="form-select form-select-sm monitor-sort-select" aria-label="Ordenar monitores"><option value="name">Nombre</option><option value="destination">Destino</option><option value="status">Estado</option><option value="last-check">Último check</option><option value="latency">Latencia</option></select>
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="monitor-sort-direction" aria-label="Orden ascendente" title="Cambiar dirección del orden"><i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i></button>
       <span class="small text-muted ms-auto" id="visible-count"></span>
     </div>
     <div class="table-responsive"><table class="table table-hover align-middle service-table">
-      <thead><tr><th>Nombre</th><th>Destino</th><th>Estado actual</th><th>Últimos 60 minutos</th><th>Último check</th><th>Latencia</th><th>Acciones</th></tr></thead>
+      <thead><tr><th aria-sort="ascending"><button type="button" class="monitor-sort-heading" data-sort="name">Nombre <span aria-hidden="true">↑</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="destination">Destino <span aria-hidden="true">↕</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="status">Estado actual <span aria-hidden="true">↕</span></button></th><th class="monitor-heading-static">Últimos 60 minutos</th><th><button type="button" class="monitor-sort-heading" data-sort="last-check">Último check <span aria-hidden="true">↕</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="latency">Latencia <span aria-hidden="true">↕</span></button></th><th class="monitor-heading-static">Acciones</th></tr></thead>
       <tbody>
       {% for monitor in monitors %}
-        <tr data-monitor-id="{{ monitor.pk }}" data-monitor-name="{{ monitor.name }}" data-search="{{ monitor.name }} {{ monitor.host }} {{ monitor.get_kind_display }}" data-filter-state="{% if not monitor.enabled %}paused{% elif monitor.live_badge == 'success' %}healthy{% elif monitor.live_badge == 'danger' or monitor.live_badge == 'warning' or monitor.live_badge == 'secondary' %}attention{% else %}other{% endif %}">
+        <tr data-monitor-id="{{ monitor.pk }}" data-monitor-name="{{ monitor.name }}" data-destination="{{ monitor.host }}" data-last-check="{{ monitor.last_checked_at|date:'c' }}" data-latency="{{ monitor.last_latency_ms|default_if_none:''|unlocalize }}" data-search="{{ monitor.name }} {{ monitor.host }} {{ monitor.get_kind_display }}" data-filter-state="{% if not monitor.enabled %}paused{% elif monitor.live_badge == 'success' %}healthy{% elif monitor.live_badge == 'danger' or monitor.live_badge == 'warning' or monitor.live_badge == 'secondary' %}attention{% else %}other{% endif %}">
           <td data-label="Servicio"><div class="d-flex align-items-center gap-2"><span class="service-icon"><i class="fa-solid {% if monitor.kind == 'ping' %}fa-satellite-dish{% elif monitor.kind == 'http' %}fa-globe{% elif monitor.kind == 'tcp' %}fa-network-wired{% elif monitor.kind == 'heartbeat' %}fa-heart-pulse{% else %}fa-lock{% endif %}" aria-hidden="true"></i></span><span><a href="{% url 'monitoring:detail' monitor.pk %}" class="service-name">{{ monitor.name }}</a><span class="service-type d-block">{{ monitor.get_kind_display }}</span></span></div></td>
           <td data-label="Destino"><code class="service-destination">{{ monitor.host }}</code></td>
           <td data-label="Estado"><span><span class="badge bg-{{ monitor.live_badge }}" data-role="status">{{ monitor.live_label }}</span><small class="check-reason" data-role="check-reason">{{ monitor.last_detail }}</small></span></td>
@@ -52,10 +54,10 @@
           <td data-label="Latencia" data-role="latency">{% if monitor.last_latency_ms is not None %}{{ monitor.last_latency_ms }} ms{% else %}—{% endif %}</td>
           <td class="text-nowrap" data-label="Acciones">
             <div class="d-flex align-items-center gap-1" role="group" aria-label="Acciones de {{ monitor.name }}">
-              <a class="btn btn-sm btn-outline-primary monitor-action" href="{% url 'monitoring:edit' monitor.pk %}" title="Editar" aria-label="Editar {{ monitor.name }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a>
-              <form method="post" action="{% url 'monitoring:maintenance' monitor.pk %}">{% csrf_token %}<input type="hidden" name="hours" data-role="maintenance-hours" value="{% if monitor.manual_maintenance %}0{% else %}1{% endif %}"><button class="btn btn-sm btn-outline-warning monitor-action" type="submit" data-role="maintenance-button" title="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %}" aria-label="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %} de {{ monitor.name }}"><i class="fa-solid {% if monitor.manual_maintenance %}fa-check{% else %}fa-screwdriver-wrench{% endif %}" aria-hidden="true"></i></button></form>
+              {% if can_edit %}<a class="btn btn-sm btn-outline-primary monitor-action" href="{% url 'monitoring:edit' monitor.pk %}" title="Editar" aria-label="Editar {{ monitor.name }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a>{% endif %}
+              {% if can_edit %}<form method="post" action="{% url 'monitoring:maintenance' monitor.pk %}">{% csrf_token %}<input type="hidden" name="hours" data-role="maintenance-hours" value="{% if monitor.manual_maintenance %}0{% else %}1{% endif %}"><button class="btn btn-sm btn-outline-warning monitor-action" type="submit" data-role="maintenance-button" title="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %}" aria-label="{% if monitor.manual_maintenance %}Finalizar mantenimiento{% else %}Mantenimiento por 1 hora{% endif %} de {{ monitor.name }}"><i class="fa-solid {% if monitor.manual_maintenance %}fa-check{% else %}fa-screwdriver-wrench{% endif %}" aria-hidden="true"></i></button></form>
               <form method="post" action="{% url 'monitoring:toggle' monitor.pk %}">{% csrf_token %}<button class="btn btn-sm monitor-action {% if monitor.enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit" data-role="toggle-button" title="{% if monitor.enabled %}Detener{% else %}Iniciar{% endif %}" aria-label="{% if monitor.enabled %}Detener{% else %}Iniciar{% endif %} {{ monitor.name }}"><i class="fa-solid {% if monitor.enabled %}fa-stop{% else %}fa-play{% endif %}" aria-hidden="true"></i></button></form>
-              <a class="btn btn-sm btn-outline-danger monitor-action" href="{% url 'monitoring:delete' monitor.pk %}" title="Eliminar" aria-label="Eliminar {{ monitor.name }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>
+              {% endif %}{% if can_delete %}<a class="btn btn-sm btn-outline-danger monitor-action" href="{% url 'monitoring:delete' monitor.pk %}" title="Eliminar" aria-label="Eliminar {{ monitor.name }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>{% endif %}
             </div>
           </td>
         </tr>
@@ -65,6 +67,7 @@
         <tr id="filter-empty" hidden><td colspan="7" class="text-muted text-center py-4">No hay servicios que coincidan con la búsqueda o el filtro.</td></tr>
       </tbody>
     </table></div>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2 border-top monitor-table-footer"><label class="small text-muted mb-0" for="monitor-page-size">Mostrar <select id="monitor-page-size" class="form-select form-select-sm d-inline-block monitor-page-size" aria-label="Monitores por página"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="all">Todos</option></select> por página</label><div class="d-flex align-items-center gap-2"><button type="button" class="btn btn-outline-secondary btn-sm" id="monitor-page-prev" aria-label="Página anterior">Anterior</button><span class="small text-muted" id="monitor-page-label" aria-live="polite"></span><button type="button" class="btn btn-outline-secondary btn-sm" id="monitor-page-next" aria-label="Página siguiente">Siguiente</button></div></div>
   </div>
   <div class="row g-3">
     <div class="col-xl-7"><div class="card monitor-panel h-100"><div class="card-header"><h2 class="monitor-section-title">Actividad reciente</h2><p class="monitor-section-subtitle">Los 10 checks más recientes de todos los servicios.</p></div><div class="list-group list-group-flush" id="recent-checks"><div class="list-group-item text-muted">Esperando resultados…</div></div></div></div>
@@ -85,27 +88,110 @@
   const rows = new Map([...document.querySelectorAll('[data-monitor-id]')].map(row => [Number(row.dataset.monitorId), row]));
   const connectionLabel = document.getElementById('live-connection');
   const search = document.getElementById('monitor-search');
+  const sortSelect = document.getElementById('monitor-sort');
+  const sortDirectionButton = document.getElementById('monitor-sort-direction');
+  const pageSizeSelect = document.getElementById('monitor-page-size');
+  const previousPageButton = document.getElementById('monitor-page-prev');
+  const nextPageButton = document.getElementById('monitor-page-next');
+  const tableBody = document.querySelector('.service-table tbody');
+  const emptyRow = document.getElementById('filter-empty');
+  const orderedRows = [...rows.values()];
+  const originalPosition = new Map(orderedRows.map((row, index) => [row, index]));
   let activeFilter = 'all';
+  let sortKey = 'name';
+  let sortDirection = 'asc';
+  let currentPage = 1;
   let inFlight = false;
   let historyInFlight = false;
 
+  function sortValue(row) {
+    if (sortKey === 'destination') return row.dataset.destination;
+    if (sortKey === 'status') return row.querySelector('[data-role="status"]').textContent.trim();
+    if (sortKey === 'last-check') return row.dataset.lastCheck ? Date.parse(row.dataset.lastCheck) : null;
+    if (sortKey === 'latency') return row.dataset.latency === '' ? null : Number(row.dataset.latency);
+    return row.dataset.monitorName;
+  }
+
+  function sortRows() {
+    const numeric = sortKey === 'last-check' || sortKey === 'latency';
+    const previousOrder = [...orderedRows];
+    orderedRows.sort((a, b) => {
+      const left = sortValue(a);
+      const right = sortValue(b);
+      if (left === null && right !== null) return 1;
+      if (right === null && left !== null) return -1;
+      let result = 0;
+      if (left !== null && right !== null) {
+        result = numeric ? left - right : left.localeCompare(right, 'es', { sensitivity: 'base', numeric: true });
+      }
+      return (sortDirection === 'asc' ? result : -result) || originalPosition.get(a) - originalPosition.get(b);
+    });
+    if (orderedRows.some((row, index) => row !== previousOrder[index])) {
+      const fragment = document.createDocumentFragment();
+      orderedRows.forEach(row => fragment.append(row));
+      tableBody.insertBefore(fragment, emptyRow);
+    }
+    sortSelect.value = sortKey;
+    sortDirectionButton.textContent = sortDirection === 'asc' ? '↑' : '↓';
+    sortDirectionButton.setAttribute('aria-label', `Orden ${sortDirection === 'asc' ? 'ascendente' : 'descendente'}`);
+    document.querySelectorAll('.monitor-sort-heading').forEach(button => {
+      const selected = button.dataset.sort === sortKey;
+      button.parentElement.setAttribute('aria-sort', selected ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none');
+      button.querySelector('span').textContent = selected ? (sortDirection === 'asc' ? '↑' : '↓') : '↕';
+    });
+  }
+
   function applyFilters() {
     const query = search.value.trim().toLocaleLowerCase('es-AR');
-    let visible = 0;
-    for (const row of rows.values()) {
-      const matches = (!query || row.dataset.search.toLocaleLowerCase('es-AR').includes(query)) && (activeFilter === 'all' || row.dataset.filterState === activeFilter);
-      row.hidden = !matches;
-      if (matches) visible++;
-    }
-    document.getElementById('visible-count').textContent = `${visible} de ${rows.size} visibles`;
-    document.getElementById('filter-empty').hidden = rows.size === 0 || visible !== 0;
+    const matches = orderedRows.filter(row =>
+      (!query || row.dataset.search.toLocaleLowerCase('es-AR').includes(query)) &&
+      (activeFilter === 'all' || row.dataset.filterState === activeFilter)
+    );
+    const pageSize = pageSizeSelect.value === 'all' ? Math.max(matches.length, 1) : Number(pageSizeSelect.value);
+    const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+    currentPage = Math.min(currentPage, pageCount);
+    const visibleRows = new Set(matches.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+    orderedRows.forEach(row => { row.hidden = !visibleRows.has(row); });
+    document.getElementById('visible-count').textContent = `Mostrando ${visibleRows.size} de ${matches.length} · ${rows.size} total`;
+    emptyRow.hidden = rows.size === 0 || matches.length !== 0;
+    document.getElementById('monitor-page-label').textContent = `Página ${currentPage} de ${pageCount}`;
+    previousPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = currentPage === pageCount;
   }
-  search.addEventListener('input', applyFilters);
+  search.addEventListener('input', () => { currentPage = 1; applyFilters(); });
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
     document.querySelectorAll('[data-filter]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+    currentPage = 1;
     applyFilters();
   }));
+  sortSelect.addEventListener('change', () => {
+    sortKey = sortSelect.value;
+    sortDirection = ['last-check', 'latency'].includes(sortKey) ? 'desc' : 'asc';
+    currentPage = 1;
+    sortRows();
+    applyFilters();
+  });
+  sortDirectionButton.addEventListener('click', () => {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    currentPage = 1;
+    sortRows();
+    applyFilters();
+  });
+  document.querySelectorAll('.monitor-sort-heading').forEach(button => button.addEventListener('click', () => {
+    if (sortKey === button.dataset.sort) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    else {
+      sortKey = button.dataset.sort;
+      sortDirection = ['last-check', 'latency'].includes(sortKey) ? 'desc' : 'asc';
+    }
+    currentPage = 1;
+    sortRows();
+    applyFilters();
+  }));
+  pageSizeSelect.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  previousPageButton.addEventListener('click', () => { if (currentPage > 1) { currentPage--; applyFilters(); } });
+  nextPageButton.addEventListener('click', () => { currentPage++; applyFilters(); });
+  sortRows();
   applyFilters();
 
   function formatTime(value) {
@@ -269,7 +355,10 @@
         row.querySelector('[data-role="maintenance-hours"]').value = item.manual_maintenance ? '0' : '1';
         row.querySelector('[data-role="last-check"]').textContent = formatTime(item.last_checked_at);
         row.querySelector('[data-role="latency"]').textContent = item.last_latency_ms === null ? '—' : `${item.last_latency_ms} ms`;
+        row.dataset.lastCheck = item.last_checked_at || '';
+        row.dataset.latency = item.last_latency_ms === null ? '' : String(item.last_latency_ms);
       }
+      if (['status', 'last-check', 'latency'].includes(sortKey)) sortRows();
       applyFilters();
       drawRecent(data.recent);
       drawIncidents(data.incidents);

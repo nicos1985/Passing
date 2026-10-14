@@ -4,12 +4,16 @@ from django.views import View
 from django.views.generic import DetailView, ListView, CreateView, UpdateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from django.utils import timezone
 from resources.views import DynamicModelListView
 from .models import Run, RunItem, IntelItem, AIAnalysis, Report, Review, Source, TechTag
 from .models import IntelThreatLink
+from .forms import ReportForm, TechTagForm
 from resources.models import Threat as ResourcesThreat
 from .services.ai import analyze_relevant_items_for_run
 from .services.emailer import send_report_email
@@ -20,10 +24,34 @@ import json
 from django.shortcuts import render
 
 
-class RunListView(LoginRequiredMixin, DynamicModelListView):
+class ThreatIntelPermissionMixin(LoginRequiredMixin, PermissionRequiredMixin):
+    """Enforce model permissions on direct URLs, including POST actions."""
+
+    permission_action = 'view'
+    permission_model = None
+    raise_exception = True
+
+    def get_permission_required(self):
+        model = self.permission_model or self.model
+        return (f'{model._meta.app_label}.{self.permission_action}_{model._meta.model_name}',)
+
+    def has_permission(self):
+        return self.request.user.is_active and super().has_permission()
+
+
+def _safe_csv_cell(value):
+    """Prevent spreadsheet formula evaluation for fields from external feeds."""
+    cell = str(value or '')
+    if cell.lstrip().startswith(('=', '+', '-', '@', '\t', '\r')):
+        return "'" + cell
+    return cell
+
+
+class RunListView(ThreatIntelPermissionMixin, DynamicModelListView):
     """Listado de corridas registradas para el pipeline de inteligencia."""
     model = Run
     template_name = 'threat_intel_run_list.html'
+    DISPLAY_FIELDS = ('id', 'period_start', 'period_end', 'status', 'relevant_count')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,7 +59,7 @@ class RunListView(LoginRequiredMixin, DynamicModelListView):
         return context
 
 
-class RunDetailView(LoginRequiredMixin, DetailView):
+class RunDetailView(ThreatIntelPermissionMixin, DetailView):
     """Detalle de una corrida con métricas, items detectados y enlaces de acción."""
     model = Run
     template_name = 'threat_intel_run_detail.html'
@@ -75,7 +103,9 @@ class RunDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class RunRerunView(LoginRequiredMixin, View):
+class RunRerunView(ThreatIntelPermissionMixin, View):
+    permission_model = Run
+    permission_action = 'change'
     """Dispara un nuevo análisis de items para una corrida existente."""
     def post(self, request, pk):
         run = get_object_or_404(Run, pk=pk)
@@ -87,7 +117,8 @@ class RunRerunView(LoginRequiredMixin, View):
         return redirect('threat_intel:run-detail', pk=pk)
 
 
-class RunExportView(LoginRequiredMixin, View):
+class RunExportView(ThreatIntelPermissionMixin, View):
+    permission_model = Run
     """Exporta los items de una corrida en CSV o JSON para auditoría."""
     def get(self, request, pk):
         run = get_object_or_404(Run, pk=pk)
@@ -115,11 +146,15 @@ class RunExportView(LoginRequiredMixin, View):
         writer.writerow(['canonical_id', 'title', 'severity', 'cvss', 'primary_url'])
         for ri in items:
             it = ri.item
-            writer.writerow([it.canonical_id, it.title, it.severity, str(it.cvss) if it.cvss is not None else '', it.primary_url])
+            writer.writerow([
+                _safe_csv_cell(it.canonical_id), _safe_csv_cell(it.title),
+                _safe_csv_cell(it.severity), str(it.cvss) if it.cvss is not None else '',
+                _safe_csv_cell(it.primary_url),
+            ])
         return resp
 
 
-class RunItemListView(LoginRequiredMixin, ListView):
+class RunItemListView(ThreatIntelPermissionMixin, ListView):
     """Lista los items detectados en una corrida, con filtros de severidad y relevancia."""
     model = RunItem
     template_name = 'threat_intel_runitem_list.html'
@@ -152,7 +187,7 @@ class RunItemListView(LoginRequiredMixin, ListView):
         return context
 
 
-class IntelItemDetailView(LoginRequiredMixin, DetailView):
+class IntelItemDetailView(ThreatIntelPermissionMixin, DetailView):
     """Muestra el detalle de un IntelItem con contexto de run y análisis."""
     model = IntelItem
     template_name = 'threat_intel_item_detail.html'
@@ -200,7 +235,9 @@ class IntelItemDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class IntelItemToggleRelevantView(LoginRequiredMixin, View):
+class IntelItemToggleRelevantView(ThreatIntelPermissionMixin, View):
+    permission_model = IntelItem
+    permission_action = 'change'
     """Alterna el indicador de relevancia para un IntelItem."""
     def post(self, request, pk):
         item = get_object_or_404(IntelItem, pk=pk)
@@ -214,7 +251,9 @@ class IntelItemToggleRelevantView(LoginRequiredMixin, View):
         return redirect('threat_intel:run-list')
 
 
-class LinkThreatView(LoginRequiredMixin, View):
+class LinkThreatView(ThreatIntelPermissionMixin, View):
+    permission_model = IntelThreatLink
+    permission_action = 'add'
     """Página para vincular manualmente un IntelItem con una amenaza del catálogo."""
     def get(self, request, pk):
         item = get_object_or_404(IntelItem, pk=pk)
@@ -255,6 +294,8 @@ class LinkThreatView(LoginRequiredMixin, View):
         return redirect('threat_intel:item-detail', pk=pk)
 
 
+@login_required
+@permission_required('resources.view_threat', raise_exception=True)
 def search_threats_ajax(request):
     """Busca amenazas existentes para llenar selects AJAX de vinculación."""
     q = request.GET.get('q', '')
@@ -266,7 +307,7 @@ def search_threats_ajax(request):
     return JsonResponse({'results': results})
 
 
-class AIAnalysisListView(LoginRequiredMixin, ListView):
+class AIAnalysisListView(ThreatIntelPermissionMixin, ListView):
     """Lista los resultados de análisis IA con filtros por corrida, prioridad y búsqueda."""
     model = AIAnalysis
     template_name = 'threat_intel_analysis_list.html'
@@ -304,7 +345,7 @@ class AIAnalysisListView(LoginRequiredMixin, ListView):
         return context
 
 
-class AIAnalysisDetailView(LoginRequiredMixin, DetailView):
+class AIAnalysisDetailView(ThreatIntelPermissionMixin, DetailView):
     """Detalle de un análisis IA mostrando métricas y enlaces auxiliares."""
     model = AIAnalysis
     template_name = 'threat_intel_analysis_detail.html'
@@ -337,7 +378,9 @@ class AIAnalysisDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class AIAnalysisRerunView(LoginRequiredMixin, View):
+class AIAnalysisRerunView(ThreatIntelPermissionMixin, View):
+    permission_model = AIAnalysis
+    permission_action = 'change'
     """Re-ejecuta el análisis IA para un item específico en una corrida."""
     def post(self, request, pk):
         analysis = get_object_or_404(AIAnalysis, pk=pk)
@@ -379,7 +422,8 @@ class AIAnalysisRerunView(LoginRequiredMixin, View):
         return redirect('threat_intel:analysis-detail', pk=pk)
 
 
-class AIAnalysisExportView(LoginRequiredMixin, View):
+class AIAnalysisExportView(ThreatIntelPermissionMixin, View):
+    permission_model = AIAnalysis
     """Exporta un análisis IA detallado en JSON."""
     def get(self, request, pk):
         analysis = get_object_or_404(AIAnalysis, pk=pk)
@@ -418,7 +462,7 @@ class AIAnalysisExportView(LoginRequiredMixin, View):
         return resp
 
 
-class ReportListView(LoginRequiredMixin, ListView):
+class ReportListView(ThreatIntelPermissionMixin, ListView):
     """Lista de reportes preparados, con acceso rápido a la corrida asociada."""
     model = Report
     template_name = 'threat_intel_report_list.html'
@@ -434,7 +478,7 @@ class ReportListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ReportDetailView(LoginRequiredMixin, DetailView):
+class ReportDetailView(ThreatIntelPermissionMixin, DetailView):
     """Previsualiza el reporte generado incluyendo análisis y revisiones relacionadas."""
     model = Report
     template_name = 'threat_intel_report_detail.html'
@@ -456,11 +500,12 @@ class ReportDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ReportCreateView(LoginRequiredMixin, CreateView):
+class ReportCreateView(ThreatIntelPermissionMixin, CreateView):
+    permission_action = 'add'
     """Genera un reporte a partir de una corrida y su análisis asociado."""
     model = Report
     template_name = 'threat_intel_report_create.html'
-    fields = ['subject', 'body_md', 'recipients']
+    form_class = ReportForm
 
     def get_initial(self):
         run_pk = self.kwargs.get('run_pk')
@@ -521,7 +566,9 @@ This report contains the threat intelligence analysis for the period above.
         return reverse('threat_intel:report-detail', args=[self.object.pk])
 
 
-class ReportSendView(LoginRequiredMixin, View):
+class ReportSendView(ThreatIntelPermissionMixin, View):
+    permission_model = Report
+    permission_action = 'change'
     """Envía el reporte vía email y opcionalmente adjunta un PDF."""
     def post(self, request, pk):
         report = get_object_or_404(Report, pk=pk)
@@ -559,15 +606,13 @@ class ReportSendView(LoginRequiredMixin, View):
             else:
                 messages.error(request, f"Error enviando email: {result['message']}")
         else:
-            # Mark as sent even without email
-            report.sent_at = timezone.now()
-            report.save()
-            messages.success(request, 'Reporte marcado como enviado')
+            messages.info(request, 'Reporte preparado. Activá el envío por email para marcarlo como enviado.')
         
         return redirect('threat_intel:report-detail', pk=pk)
 
 
-class ReviewCreateView(LoginRequiredMixin, CreateView):
+class ReviewCreateView(ThreatIntelPermissionMixin, CreateView):
+    permission_action = 'add'
     """Registra una decisión para un item dentro de una corrida."""
     model = Review
     template_name = 'threat_intel_review_create.html'
@@ -603,7 +648,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         return reverse('threat_intel:runitem-list', args=[run_pk])
 
 
-class ReviewListView(LoginRequiredMixin, ListView):
+class ReviewListView(ThreatIntelPermissionMixin, ListView):
     """Lista las revisiones registradas, filtradas por corrida o de forma global."""
     model = Review
     template_name = 'threat_intel_review_list.html'
@@ -630,7 +675,7 @@ class ReviewListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ReviewDetailView(LoginRequiredMixin, DetailView):
+class ReviewDetailView(ThreatIntelPermissionMixin, DetailView):
     """Muestra el detalle de una revisión y enlaces para edición."""
     model = Review
     template_name = 'threat_intel_review_detail.html'
@@ -644,7 +689,8 @@ class ReviewDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ReviewUpdateView(LoginRequiredMixin, UpdateView):
+class ReviewUpdateView(ThreatIntelPermissionMixin, UpdateView):
+    permission_action = 'change'
     """Edita una revisión manteniendo el contexto del item y la corrida."""
     model = Review
     template_name = 'threat_intel_review_update.html'
@@ -663,7 +709,7 @@ class ReviewUpdateView(LoginRequiredMixin, UpdateView):
 
 
 # Configuration Views
-class SourceListView(LoginRequiredMixin, ListView):
+class SourceListView(ThreatIntelPermissionMixin, ListView):
     """Lista las fuentes de inteligencia disponibles con indicadores de estado."""
     model = Source
     template_name = 'threat_intel_source_list.html'
@@ -679,7 +725,7 @@ class SourceListView(LoginRequiredMixin, ListView):
         return context
 
 
-class SourceDetailView(LoginRequiredMixin, DetailView):
+class SourceDetailView(ThreatIntelPermissionMixin, DetailView):
     """Detalle de una fuente de datos con accesos para editarla."""
     model = Source
     template_name = 'threat_intel_source_detail.html'
@@ -693,26 +739,12 @@ class SourceDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class SourceCreateView(LoginRequiredMixin, CreateView):
-    """Crea una nueva fuente de datos con sus parámetros mínimos."""
-    model = Source
-    template_name = 'threat_intel_source_create.html'
-    fields = ['code', 'name', 'kind', 'base_url', 'is_active']
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['back_url'] = reverse('threat_intel:source-list')
-        return context
-
-    def get_success_url(self):
-        return reverse('threat_intel:source-detail', args=[self.object.pk])
-
-
-class SourceUpdateView(LoginRequiredMixin, UpdateView):
+class SourceUpdateView(ThreatIntelPermissionMixin, UpdateView):
+    permission_action = 'change'
     """Actualiza los detalles de una fuente de datos."""
     model = Source
     template_name = 'threat_intel_source_update.html'
-    fields = ['code', 'name', 'kind', 'base_url', 'is_active']
+    fields = ['name', 'is_active']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -725,7 +757,7 @@ class SourceUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('threat_intel:source-detail', args=[self.object.pk])
 
 
-class TechTagListView(LoginRequiredMixin, ListView):
+class TechTagListView(ThreatIntelPermissionMixin, ListView):
     """Lista las etiquetas tecnológicas disponibles con búsqueda y filtros."""
     model = TechTag
     template_name = 'threat_intel_techtag_list.html'
@@ -746,7 +778,7 @@ class TechTagListView(LoginRequiredMixin, ListView):
         return context
 
 
-class TechTagDetailView(LoginRequiredMixin, DetailView):
+class TechTagDetailView(ThreatIntelPermissionMixin, DetailView):
     """Detalle de una etiqueta tecnológica y sus palabras clave."""
     model = TechTag
     template_name = 'threat_intel_techtag_detail.html'
@@ -760,11 +792,12 @@ class TechTagDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class TechTagCreateView(LoginRequiredMixin, CreateView):
+class TechTagCreateView(ThreatIntelPermissionMixin, CreateView):
+    permission_action = 'add'
     """Crea una etiqueta tecnológica y define sus palabras clave."""
     model = TechTag
     template_name = 'threat_intel_techtag_create.html'
-    fields = ['name', 'keywords', 'is_active']
+    form_class = TechTagForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -776,11 +809,12 @@ class TechTagCreateView(LoginRequiredMixin, CreateView):
         return reverse('threat_intel:techtag-detail', args=[self.object.pk])
 
 
-class TechTagUpdateView(LoginRequiredMixin, UpdateView):
+class TechTagUpdateView(ThreatIntelPermissionMixin, UpdateView):
+    permission_action = 'change'
     """Actualiza una etiqueta tecnológica existente."""
     model = TechTag
     template_name = 'threat_intel_techtag_update.html'
-    fields = ['name', 'keywords', 'is_active']
+    form_class = TechTagForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -793,7 +827,7 @@ class TechTagUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('threat_intel:techtag-detail', args=[self.object.pk])
 
 
-class ConfigView(LoginRequiredMixin, ListView):
+class ConfigView(ThreatIntelPermissionMixin, ListView):
     """Resumen de configuración con métricas de fuentes y etiquetas."""
     model = Source
     template_name = 'threat_intel_config.html'

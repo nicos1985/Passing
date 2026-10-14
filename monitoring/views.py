@@ -29,8 +29,11 @@ from .time_display import COOKIE_NAME, monitoring_timezone, validated_zone
 from .worker_health import worker_health
 
 
-def _authorized(user):
-    return user.is_active and (user.is_superuser or user.has_perm("monitoring.manage_monitoring"))
+def _authorized(user, action='read'):
+    return user.is_active and (
+        user.is_superuser or user.has_perm('monitoring.manage_monitoring')
+        or user.has_perm(f'monitoring.{action}_monitoring')
+    )
 
 
 def _monitor_live_state(monitor, now):
@@ -76,7 +79,7 @@ def dashboard(request):
     health = worker_health(monitors, now)
     open_incidents = Incident.objects.filter(recovered_at__isnull=True)
     incidents = list(open_incidents.select_related("monitor")[:20])
-    return render(request, "monitoring/dashboard.html", {"monitors": monitors, "incidents": incidents, "incident_count": open_incidents.count(), "healthy_count": sum(monitor.enabled and monitor.live_badge == "success" for monitor in monitors), "attention_count": sum(monitor.enabled and monitor.live_badge in {"danger", "warning", "secondary"} for monitor in monitors), "worker_label": health["worker_label"], "worker_healthy": health["worker_healthy"], "last_cycle_at": health["last_cycle_at"], "overdue_count": health["overdue_count"], "now": now})
+    return render(request, "monitoring/dashboard.html", {"monitors": monitors, "incidents": incidents, "incident_count": open_incidents.count(), "healthy_count": sum(monitor.enabled and monitor.live_badge == "success" for monitor in monitors), "attention_count": sum(monitor.enabled and monitor.live_badge in {"danger", "warning", "secondary"} for monitor in monitors), "worker_label": health["worker_label"], "worker_healthy": health["worker_healthy"], "last_cycle_at": health["last_cycle_at"], "overdue_count": health["overdue_count"], "now": now, "can_create": _authorized(request.user, 'create'), "can_edit": _authorized(request.user, 'edit'), "can_delete": _authorized(request.user, 'delete')})
 
 
 @login_required
@@ -185,6 +188,9 @@ def monitor_detail(request, pk):
     return render(request, "monitoring/monitor_detail.html", {
         "monitor": monitor,
         "live": live,
+        "can_create": _authorized(request.user, 'create'),
+        "can_edit": _authorized(request.user, 'edit'),
+        "can_delete": _authorized(request.user, 'delete'),
         "incidents": Incident.objects.filter(monitor=monitor).order_by("-started_at")[:10],
         "deployments": monitor.deployments.all()[:20],
         "maintenance_windows": monitor.maintenance_windows.all(),
@@ -253,7 +259,7 @@ def monitor_availability_data(request, pk):
 @login_required
 @monitoring_timezone
 def monitor_form(request, pk=None):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit' if pk else 'create'):
         return HttpResponseForbidden()
     monitor = get_object_or_404(Monitor, pk=pk) if pk else None
     previous_kind = monitor.kind if monitor else None
@@ -288,7 +294,7 @@ def _heartbeat_token_page(request, monitor, token):
 @require_POST
 @never_cache
 def regenerate_heartbeat_token(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     with transaction.atomic():
         monitor = get_object_or_404(Monitor.objects.select_for_update(), pk=pk, kind=Monitor.Kind.HEARTBEAT)
@@ -345,14 +351,14 @@ def maintenance_windows(request):
     windows = list(MaintenanceWindow.objects.select_related("monitor").order_by("monitor__name", "starts_at"))
     for window in windows:
         window.next_start = next_window_start(window, now)
-    return render(request, "monitoring/maintenance_windows.html", {"windows": windows})
+    return render(request, "monitoring/maintenance_windows.html", {"windows": windows, "can_create": _authorized(request.user, 'create'), "can_edit": _authorized(request.user, 'edit'), "can_delete": _authorized(request.user, 'delete')})
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 @monitoring_timezone
 def maintenance_window_form(request, pk=None):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit' if pk else 'create'):
         return HttpResponseForbidden()
     window = get_object_or_404(MaintenanceWindow, pk=pk) if pk else None
     form = MaintenanceWindowForm(request.POST or None, instance=window, initial={"monitor": request.GET.get("monitor")})
@@ -368,7 +374,7 @@ def maintenance_window_form(request, pk=None):
 @login_required
 @require_POST
 def maintenance_window_delete(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'delete'):
         return HttpResponseForbidden()
     get_object_or_404(MaintenanceWindow, pk=pk).delete()
     messages.success(request, "Ventana eliminada.")
@@ -379,7 +385,7 @@ def maintenance_window_delete(request, pk):
 @require_http_methods(["GET", "POST"])
 @monitoring_timezone
 def deployment_form(request, pk, marker_pk=None):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit' if marker_pk else 'create'):
         return HttpResponseForbidden()
     monitor = get_object_or_404(Monitor, pk=pk)
     marker_instance = get_object_or_404(DeploymentMarker, pk=marker_pk, monitor=monitor) if marker_pk else None
@@ -408,7 +414,7 @@ def deployment_form(request, pk, marker_pk=None):
 @login_required
 @require_POST
 def deployment_delete(request, pk, marker_pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'delete'):
         return HttpResponseForbidden()
     get_object_or_404(DeploymentMarker, pk=marker_pk, monitor_id=pk).delete()
     messages.success(request, "Marca de despliegue eliminada.")
@@ -418,7 +424,7 @@ def deployment_delete(request, pk, marker_pk):
 @login_required
 @require_POST
 def acknowledge(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     incident = get_object_or_404(Incident, pk=pk)
     if not incident.acknowledged_at:
@@ -431,7 +437,7 @@ def acknowledge(request, pk):
 @login_required
 @require_POST
 def maintenance(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     monitor = get_object_or_404(Monitor, pk=pk)
     hours = request.POST.get("hours", "0")
@@ -446,7 +452,7 @@ def maintenance(request, pk):
 @login_required
 @require_POST
 def toggle_active(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     with transaction.atomic():
         monitor = get_object_or_404(Monitor.objects.select_for_update(), pk=pk)
@@ -468,7 +474,7 @@ def toggle_active(request, pk):
 @login_required
 @require_http_methods(["GET", "POST"])
 def delete_monitor(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'delete'):
         return HttpResponseForbidden()
     if request.method == "POST":
         with transaction.atomic():
@@ -498,13 +504,14 @@ def incident_detail(request, pk):
     for delivery in deliveries:
         delivery.error_display = delivery_error_message(delivery.last_error, delivery.channel) if delivery.last_error else ""
     test_email_default = request.user.email or (incident.monitor.recipients_list[0] if incident.monitor.recipients_list else "")
-    return render(request, "monitoring/incident_detail.html", {"incident": incident, "opening_result": opening_result, "results": results, "deliveries": deliveries, "test_email_default": test_email_default, "bitrix_deal_url": bitrix_deal_url(incident.bitrix_deal_id) if incident.bitrix_deal_id else None, "json_evidence": decrypt_evidence(incident.json_evidence_encrypted)})
+    can_edit = _authorized(request.user, 'edit')
+    return render(request, "monitoring/incident_detail.html", {"incident": incident, "opening_result": opening_result, "results": results, "deliveries": deliveries, "test_email_default": test_email_default if can_edit else "", "bitrix_deal_url": bitrix_deal_url(incident.bitrix_deal_id) if incident.bitrix_deal_id else None, "json_evidence": decrypt_evidence(incident.json_evidence_encrypted) if can_edit else None, "can_edit": can_edit})
 
 
 @login_required
 @require_POST
 def retry_delivery(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     with transaction.atomic():
         delivery = get_object_or_404(Delivery.objects.select_for_update(), pk=pk)
@@ -523,7 +530,7 @@ def retry_delivery(request, pk):
 @login_required
 @require_POST
 def test_notification_connection(request, pk, channel):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     get_object_or_404(Incident, pk=pk)
     if channel not in {Delivery.Channel.EMAIL, Delivery.Channel.BITRIX}:
@@ -546,7 +553,7 @@ def test_notification_connection(request, pk, channel):
 @login_required
 @require_POST
 def test_email_delivery(request, pk):
-    if not _authorized(request.user):
+    if not _authorized(request.user, 'edit'):
         return HttpResponseForbidden()
     incident = get_object_or_404(Incident.objects.select_related("monitor"), pk=pk)
     address = request.POST.get("email", "").strip()

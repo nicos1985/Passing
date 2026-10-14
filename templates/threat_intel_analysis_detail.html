@@ -2,17 +2,19 @@
 
 {% load static %}
 {% load i18n %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/detail-pages.css' %}">{% endblock %}
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+<div class="container py-4 passing-detail">
+    <header class="detail-hero">
+        <div class="detail-hero-main">
+            <span class="detail-hero-eyebrow">{% trans "Inteligencia de amenazas" %}</span>
             <h4 class="mb-0 fw-semibold">{{ item.canonical_id }} &ndash; {% trans "Análisis IA" %}</h4>
             <p class="text-muted mb-0 small">{% blocktrans with rid=run.id name=analysis.model_name %}Run #{{ rid }} | Modelo: {{ name }}{% endblocktrans %}</p>
         </div>
         <a class="btn btn-outline-secondary btn-sm" href="{{ back_url }}">
             <i class="fa-solid fa-arrow-left me-1"></i>{% trans "Volver" %}
         </a>
-    </div>
+    </header>
 
         <div class="row">
             <!-- Información del Item -->
@@ -40,12 +42,12 @@
                         <span>{% trans "Acciones" %}</span>
                     </div>
                     <div class="card-body d-flex flex-column gap-2">
-                        <form method="post" action="{{ rerun_url }}" style="margin: 0;">
+                        {% if perms.threat_intel.change_aianalysis %}<form method="post" action="{{ rerun_url }}" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning w-100">
                                 <i class="fas fa-sync"></i> {% trans "Re-ejecutar" %}
                             </button>
-                        </form>
+                        </form>{% endif %}
                         <a href="{{ export_url }}" class="btn btn-success">
                             <i class="fas fa-download"></i> {% trans "Descargar JSON" %}
                         </a>

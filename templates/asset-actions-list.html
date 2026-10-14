@@ -16,13 +16,13 @@
 {% block content %}
 <div class="container pt-4">
     <div class="col-lg-11 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="passing-list-hero">
             <h4>
                 {% blocktrans with asset_name=asset.name %}Historial de acciones - {{ asset_name }}{% endblocktrans %}
                 {% if not asset %}{% trans "Todos" %}{% endif %}
             </h4>
-            <div>
-                <a class="btn btn-secondary" href="{% url 'informationassets-list' %}">{% trans "Volver" %}</a>
+            <div class="passing-list-hero-actions">
+                <a class="btn btn-light" href="{% url 'informationassets-list' %}">{% trans "Volver" %}</a>
             </div>
         </div>
 
@@ -34,9 +34,7 @@
                             <th>{% trans "Acción" %}</th>
                             <th>{% trans "Activo" %}</th>
                             <th>{% trans "Usuario" %}</th>
-                            <th>{% trans "Accionado por" %}</th>
                             <th>{% trans "Estado" %}</th>
-                            <th>{% trans "Vto estimado" %}</th>
                             <th>{% trans "Fecha / Hora" %}</th>
                             <th>{% trans "Descripción" %}</th>
                         </tr>
@@ -63,13 +61,6 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if act.performed_by %}
-                                    <a href="{% url 'asset-actions-user' act.performed_by.pk %}">{{ act.performed_by.get_full_name|default:act.performed_by.username }}</a>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td>
                                 {% if act.status == 'PENDING' %}
                                     <span class="badge bg-warning text-dark">{% trans "Pendiente" %}</span>
                                 {% elif act.status == 'CONFIRMED' %}
@@ -79,10 +70,10 @@
                                 {% else %}
                                     {{ act.get_status_display }}
                                 {% endif %}
+                                {% if item.due_date %}<small class="d-block text-muted mt-1">Vence {{ item.due_date|date:"d/m/Y" }}</small>{% endif %}
                             </td>
-                            <td>{% if item.due_date %}{{ item.due_date }}{% else %}—{% endif %}</td>
-                            <td>{{ act.timestamp }}</td>
-                            <td>{% if act.description %}{{ act.description }}{% else %}—{% endif %}</td>
+                            <td>{{ act.timestamp|date:"d/m/Y H:i" }}</td>
+                            <td>{% if act.description %}<span title="{{ act.description }}">{{ act.description|truncatechars:48 }}</span>{% else %}—{% endif %}</td>
                         </tr>
                         {% endwith %}
                         {% endfor %}

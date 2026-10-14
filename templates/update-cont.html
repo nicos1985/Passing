@@ -3,12 +3,13 @@
 {% load i18n %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'css/vault.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0 fw-semibold"><i class="fas fa-pen me-2"></i>{{ title }}</h4>
+<div class="container py-4 vault-page passing-form-page">
+  <div class="form-hero">
+    <div><span class="vault-eyebrow text-primary">PASSING · BÓVEDA</span><h1 class="h3 fw-bold mb-0">Editar contraseña</h1><p class="text-muted mb-0">Actualizá los datos de este acceso.</p></div>
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'listpass' %}">
       <i class="fa-solid fa-bars me-1"></i>{% trans "Lista" %}
     </a>
@@ -37,7 +38,7 @@
                 <div class="row g-2 align-items-end">
                   <div class="col-auto">
                     <label for="longitud" class="form-label small mb-1">{% trans "Longitud:" %}</label>
-                    <input class="form-control form-control-sm" type="number" id="longitud" name="longitud" value="12" min="6" max="32" style="width:80px;">
+                    <input class="form-control form-control-sm" type="number" id="longitud" name="longitud" value="20" min="12" max="64" style="width:80px;">
                   </div>
                   <div class="col-auto d-flex flex-column gap-1">
                     <label class="small"><input class="form-check-input me-1" type="checkbox" id="incluirMayusculas" checked>{% trans "Mayúsculas" %}</label>
@@ -108,14 +109,16 @@
         if (incluirMinusculas) chars += 'abcdefghijklmnopqrstuvwxyz';
         if (incluirNumeros) chars += '0123456789';
         if (incluirSimbolos) chars += '!@#$%^&_+=|:"<>?/~';
+        if (!chars || !window.crypto || !window.crypto.getRandomValues) { mostrarMensajeTemporal('Seleccioná caracteres y usá una conexión segura.', 3000); return; }
         var pass = '';
-        for (var i = 0; i < longitud; i++) {
-            pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        var buffer = new Uint32Array(1);
+        var limit = Math.floor(4294967296 / chars.length) * chars.length;
+        while (pass.length < Number(longitud)) {
+            crypto.getRandomValues(buffer);
+            if (buffer[0] < limit) pass += chars[buffer[0] % chars.length];
         }
-        document.getElementById('password').setAttribute('value', pass);
-        navigator.clipboard.writeText(pass).then(function() {
-            mostrarMensajeTemporal('Contraseña copiada', 2000);
-        }).catch(function() {});
+        document.getElementById('password').value = pass;
+        mostrarMensajeTemporal('Contraseña generada', 2000);
     });
 
     function mostrarMensajeTemporal(mensaje, duracion) {

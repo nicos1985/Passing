@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block content %}
+{% timezone 'America/Argentina/Buenos_Aires' %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div><h1 class="h2 mb-1">Configurar soporte</h1><p class="text-muted mb-0">Portales, grupos y guardias · fechas en Argentina</p></div>
+    <div class="d-flex gap-2">
+      {% if request.user.is_superuser %}<a class="btn btn-outline-primary" href="{% url 'configuracion-global' %}#notificaciones">Notificaciones</a>{% endif %}
+      <a class="btn btn-outline-secondary" href="{% url 'supporthub:inbox' %}">Volver a la bandeja</a>
+    </div>
+  </div>
+  <div class="row g-4">
+    <div class="col-xl-6"><section class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Portales Bitrix24</h2>{% if can_create %}<a class="btn btn-sm btn-primary" href="{% url 'supporthub:portal_new' %}">Agregar</a>{% endif %}</div>
+      <div class="card-body">
+        <p class="small text-muted">Usá un webhook con permiso <code>im</code> de una cuenta que participe en los grupos de soporte.</p>
+        {% for portal in portals %}
+          <div class="border rounded-3 p-3 mb-2">
+            <div class="d-flex justify-content-between gap-2"><strong>{{ portal.name }}</strong><span class="d-flex gap-2">
+              {% if can_edit %}<a href="{% url 'supporthub:portal_edit' portal.pk %}" title="Editar portal" aria-label="Editar {{ portal.name }}"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}
+              {% if can_delete %}<a class="text-danger" href="{% url 'supporthub:delete_item' 'portal' portal.pk %}" title="Eliminar portal" aria-label="Eliminar {{ portal.name }}"><i class="fa-solid fa-trash"></i></a>{% endif %}
+            </span></div>
+            <div class="small text-muted">{{ portal.base_url }}</div>
+            <div class="small mt-1">{% if not portal.enabled %}<span class="text-secondary">Detenido</span>{% elif portal.last_error %}<span class="text-danger">{{ portal.last_error }}</span>{% elif portal.poll_is_stale %}<span class="text-danger">Sin actividad desde {{ portal.last_polled_at|date:'d/m H:i' }}. Revisá el worker.</span>{% elif portal.last_polled_at %}<span class="text-success">Consultado {{ portal.last_polled_at|date:'d/m H:i' }}</span>{% else %}<span class="text-warning">Esperando primer ciclo</span>{% endif %}</div>
+          </div>
+        {% empty %}<p class="text-muted">No hay portales configurados.</p>{% endfor %}
+      </div>
+    </section></div>
+    <div class="col-xl-6"><section class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Grupos vigilados</h2>{% if can_create %}<a class="btn btn-sm btn-primary" href="{% url 'supporthub:chat_new' %}">Agregar</a>{% endif %}</div>
+      <div class="card-body">
+        <p class="small text-muted">Solo estos grupos generan avisos. Copiá el enlace del chat desde Bitrix24 para abrirlo directamente.</p>
+        {% for portal in portals %}{% for chat in portal.chats.all %}
+          <div class="border rounded-3 p-3 mb-2 d-flex justify-content-between gap-2"><span><strong>{{ chat.label }}</strong><small class="d-block text-muted">{{ portal.name }} · {{ chat.dialog_id }} {% if not chat.enabled %}· Detenido{% endif %}</small></span><span class="d-flex gap-2">
+            {% if can_edit %}<a href="{% url 'supporthub:chat_edit' chat.pk %}" title="Editar grupo" aria-label="Editar {{ chat.label }}"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}
+            {% if can_delete %}<a class="text-danger" href="{% url 'supporthub:delete_item' 'chat' chat.pk %}" title="Eliminar grupo" aria-label="Eliminar {{ chat.label }}"><i class="fa-solid fa-trash"></i></a>{% endif %}
+          </span></div>
+        {% endfor %}{% endfor %}
+      </div>
+    </section></div>
+    <div class="col-xl-6"><section class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Turnos de guardia</h2>{% if can_create %}<a class="btn btn-sm btn-primary" href="{% url 'supporthub:shift_new' %}">Programar</a>{% endif %}</div>
+      <div class="card-body">
+        <p class="small text-muted">Programá cada fin de semana con inicio y fin. Si Telegram rechaza al principal, se intenta avisar al suplente.</p>
+        {% for shift in shifts %}
+          <div class="border rounded-3 p-3 mb-2 d-flex justify-content-between gap-2"><span><strong>{{ shift.primary }}</strong>{% if shift.backup %}<span class="text-muted"> · suplente {{ shift.backup }}</span>{% endif %}<small class="d-block text-muted">{{ shift.starts_at|date:'d/m H:i' }} a {{ shift.ends_at|date:'d/m H:i' }}{% if shift.ends_at < now %} · finalizado{% endif %}</small></span><span class="d-flex gap-2">
+            {% if can_edit %}<a href="{% url 'supporthub:shift_edit' shift.pk %}" title="Editar turno"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}
+            {% if can_delete %}<a class="text-danger" href="{% url 'supporthub:delete_item' 'shift' shift.pk %}" title="Eliminar turno"><i class="fa-solid fa-trash"></i></a>{% endif %}
+          </span></div>
+        {% empty %}<p class="text-muted">No hay turnos programados.</p>{% endfor %}
+      </div>
+    </section></div>
+  </div>
+</div>
+{% endtimezone %}
+{% endblock %}

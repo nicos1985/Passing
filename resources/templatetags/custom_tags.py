@@ -3,6 +3,11 @@ from django.urls import reverse
 register = template.Library()
 
 @register.filter
+def get_raw_attr(obj, attr_name):
+    """Devuelve el valor original para filtros de fecha del listado."""
+    return getattr(obj, attr_name, None)
+
+@register.filter
 def get_attr(obj, attr_name):
     # Primero probamos con get_<field>_display (para campos con choices)
     display_method = f'get_{attr_name}_display'

@@ -14,52 +14,47 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-3">
-        <h2>{{verbose_name_plural}}</h2>
-    </div>
-
+    <section class="container mt-3 passing-list-hero">
+      <div><span class="passing-list-hero-eyebrow">Recursos</span><h1>{{ verbose_name_plural }}</h1><p>Consultá y administrá los registros de esta sección.</p></div>
     {% if request.user.is_authenticated %}
-        <div class="container mb-3 d-flex gap-2">
+        <div class="passing-list-hero-actions">
 {% comment %}
                 <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}">
                     <i class="fa-solid fa-gear"></i> Configuración
                 </a>
 {% endcomment %}
-            <a class="btn btn-primary btn-sm" href="{% url create_view %}">
+            {% if can_create %}<a class="btn btn-primary btn-sm" href="{% url create_view %}">
                 <i class="fa-solid fa-plus"></i> Alta de {{verbose_name_plural}}
-            </a>
+            </a>{% endif %}
             {% if model_name == 'informationassets' %}
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'asset-actions-all' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'asset-actions-all' %}">
               <i class="fas fa-history"></i> {% trans "Historial de préstamos" %}
             </a>
             {% endif %}
             {% if model_name == 'vendor' %}
-            <a class="btn btn-secondary btn-sm" href="{% url 'checklist-template-create' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'checklist-template-create' %}">
               <i class="fa-solid fa-list-check"></i> {% trans "Crear plantilla de checklist" %}
             </a>
-            <a class="btn btn-success btn-sm" href="{% url 'vendor-evaluation-create' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'vendor-evaluation-create' %}">
               <i class="fa-solid fa-file-pen"></i> {% trans "Crear evaluación" %}
             </a>
-            <a class="btn btn-info btn-sm" href="{% url 'vendor-evaluations-pending' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'vendor-evaluations-pending' %}">
               <i class="fa-solid fa-clock-rotate-left"></i> {% trans "Evaluaciones pendientes" %}
             </a>
             {% endif %}
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse"><i class="fa-solid fa-filter me-1"></i>{% trans "Filtros" %}</button>
         </div>
+    </section>
 
         
         
         <div class="container">
 
 <!-- Botón de toggle -->
-<div class="mb-2">
-  <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="false" aria-controls="filtrosCollapse">
-    {% trans "Filtros" %}
-  </button>
-</div>
 
 <!-- Contenedor colapsable de filtros -->
-<div class="collapse" id="filtrosCollapse">
-  <div class="container-fluid mb-3" style="background-color: #f0f0f0ff; padding: 20px; border-radius: 5px;">
+<div class="collapse passing-list-filters" id="filtrosCollapse">
+  <div class="container-fluid mb-3">
     <div class="row g-3">
       {% for field in fields %}
         {% if field.name in dynamic_filters %}
@@ -116,9 +111,11 @@
                     <tr>
 
                       {% for field in fields %}
-                      <td title="{{ obj|get_attr:field.name }}">
+                      <td{% if field.is_date %} data-date="{{ obj|get_raw_attr:field.name|date:'Y-m-d' }}"{% endif %}>
                         {% if field.name == "object_id" %}
-                          {{ obj.content_object }}
+                          <span title="{{ obj.content_object }}">{{ obj.content_object|truncatechars:36 }}</span>
+                        {% elif field.name == 'name' %}
+                          <a href="{% url detail_view obj.id %}" title="{{ obj.name }}">{{ obj.name|truncatechars:42 }}</a>
                         {% elif field.name == 'description' %}
                           {{ obj|get_attr:field.name|slice:":30" }}{% if obj|get_attr:field.name|length > 30 %}...{% endif %}
                         {% elif field.name == 'implementation_status' %}
@@ -138,9 +135,9 @@
                                                 
                       {% endfor %}
                       <td>
-                        <a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="{% trans "Editar" %} {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>
+                        {% if can_change %}<a href="{% url update_view obj.id %}"><i class="fas fa-pen" title="{% trans "Editar" %} {{verbose_name_plural}}" style="color: #FFE682; margin-right:5px;"></i></a>{% endif %}
                         <a href="{% url detail_view obj.id %}"><i class="fas fa-eye" title="{% trans "Detalle" %} {{verbose_name_plural}}" style="color:rgb(60, 28, 167); margin-right:5px;"></i></a>
-                        <a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="{% trans "Eliminar" %} {{verbose_name_plural}}" style="color: #FF7367;"></i></a>
+                        {% if can_delete %}<a href="{% url delete_view obj.id %}"><i class="fas fa-trash" title="{% trans "Eliminar" %} {{verbose_name_plural}}" style="color: #FF7367;"></i></a>{% endif %}
                         {% if model_name == 'vendor' %}
                           <a href="{% url 'vendor-checklist-create' %}?vendor={{ obj.id }}" title="{% trans "Asignar plantilla" %}"><i class="fa-solid fa-link" style="color:#0d6efd; margin-left:8px;"></i></a>
                           <a href="{% url 'vendor-evaluation-create' %}?vendor={{ obj.id }}" title="{% trans "Crear evaluación" %}"><i class="fa-solid fa-file-pen" style="color:#198754; margin-left:8px;"></i></a>
