@@ -83,7 +83,7 @@
 .monitor-screen .latency-chart { width: 100%; height: 260px; display: block; background: #fff; }
 .monitor-screen .latency-plot { position: relative; flex: 1; min-width: 0; }
 .monitor-screen .latency-limit-legend { display: flex; align-items: center; gap: .45rem; color: #a75b06; font-size: .8rem; font-weight: 600; }
-.monitor-screen .latency-limit-swatch { width: 1.5rem; border-top: 2px dashed #d97706; }
+.monitor-screen .latency-limit-swatch { width: 1rem; border-top: 2px dashed #d97706; }
 .monitor-screen .latency-tooltip { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: .15rem; width: max-content; max-width: min(240px, 90%); padding: .45rem .65rem; border-radius: .5rem; background: #173e62; color: #fff; box-shadow: 0 5px 16px rgba(10, 36, 59, .22); font-size: .78rem; line-height: 1.35; pointer-events: none; transform: translate(-50%, calc(-100% - 12px)); }
 .monitor-screen .latency-tooltip[hidden] { display: none; }
 .monitor-screen .latency-tooltip.below { transform: translate(-50%, 12px); }
