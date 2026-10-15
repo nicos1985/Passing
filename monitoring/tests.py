@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from contextlib import nullcontext
 import json
 import smtplib
@@ -18,13 +18,25 @@ from .models import CheckResult, Delivery, HourlySummary, Incident, MaintenanceW
 from .maintenance import window_active
 from .worker_health import worker_health
 from .management.commands.check_monitoring_worker import _send_bitrix as _send_worker_bitrix
-from .services import execute_monitor
+from .services import _next_scheduled_check, execute_monitor
 from .retention import compact_history
 from .deliveries import _send_bitrix, bitrix_deal_url, deliver_pending, delivery_error_message, send_test_email, sync_bitrix_resolutions, test_bitrix_connection, test_smtp_connection
 from .checks import http_check, ping, tcp_check, tls_check
 from .availability import availability_history
 from .evidence import decrypt_evidence, encrypt_evidence, json_evidence
 from .views import delete_monitor, hourly_history, incident_detail, information, live_status, monitor_availability_data, monitor_detail_data, retry_delivery, test_email_delivery, test_notification_connection, toggle_active
+
+
+class CheckScheduleTests(SimpleTestCase):
+    def test_completion_time_does_not_shift_the_minute_cadence(self):
+        scheduled = datetime(2026, 10, 15, 12, 0, tzinfo=dt_timezone.utc)
+        finished = scheduled + timedelta(seconds=5)
+        self.assertEqual(_next_scheduled_check(scheduled, 60, finished), scheduled + timedelta(minutes=1))
+
+    def test_overdue_checks_skip_missed_slots_without_catching_up_in_a_burst(self):
+        scheduled = datetime(2026, 10, 15, 12, 0, tzinfo=dt_timezone.utc)
+        finished = scheduled + timedelta(seconds=127)
+        self.assertEqual(_next_scheduled_check(scheduled, 60, finished), scheduled + timedelta(minutes=3))
 
 
 class ValidationTests(SimpleTestCase):

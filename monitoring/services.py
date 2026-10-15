@@ -12,6 +12,15 @@ from .models import CheckResult, Delivery, Incident, Monitor
 from supporthub.telegram_events import queue_monitoring_event
 
 
+def _next_scheduled_check(scheduled_at, interval_seconds, finished_at):
+    """Keep the configured cadence without replaying missed checks."""
+    if scheduled_at > finished_at:
+        return scheduled_at
+    interval = timedelta(seconds=interval_seconds)
+    elapsed_intervals = (finished_at - scheduled_at) // interval
+    return scheduled_at + (elapsed_intervals + 1) * interval
+
+
 def execute_monitor(monitor_id):
     monitor = Monitor.objects.get(pk=monitor_id)
     if not monitor.enabled:
@@ -70,7 +79,7 @@ def _save_result(monitor_id, status, latency, detail, http_status_code=None, evi
                 monitor.heartbeat_last_signal_at = now
             monitor.next_check_at = now + timedelta(minutes=monitor.heartbeat_interval_minutes + (monitor.heartbeat_grace_minutes if signal else 0))
         else:
-            monitor.next_check_at = now + timedelta(seconds=monitor.interval_seconds)
+            monitor.next_check_at = _next_scheduled_check(monitor.next_check_at, monitor.interval_seconds, now)
         in_maintenance = monitor_in_maintenance(monitor, now)
         if status == CheckResult.Status.OK:
             monitor.consecutive_successes += 1
