@@ -65,7 +65,7 @@
         <div class="latency-plot"><svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg><div id="latency-tooltip" class="latency-tooltip" hidden></div></div>
       </div>
       <div class="d-flex justify-content-between detail-muted ms-5"><span id="axis-start"></span><span id="axis-end"></span></div>
-      <div id="chart-hover" class="detail-muted mt-2" aria-live="polite">Pasá el cursor por el gráfico para ver un check.</div>
+      <div id="chart-hover" class="visually-hidden" aria-live="polite">Pasá el cursor por el gráfico para ver un check.</div>
       <div class="row g-2 mt-2" aria-label="Resumen de latencias del período seleccionado">
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Promedio</span><strong id="latency-average">—</strong></div></div>
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Más baja</span><strong id="latency-minimum">—</strong></div></div>
@@ -98,12 +98,13 @@
   const dataUrl = "{% url 'monitoring:detail_data' monitor.pk %}";
   const svg = document.getElementById('latency-chart');
   const tooltip = document.getElementById('latency-tooltip');
+  document.body.append(tooltip);
   const latencyLimit = {% if monitor.kind != 'heartbeat' and monitor.max_latency_ms %}{{ monitor.max_latency_ms }}{% else %}null{% endif %};
   const ns = 'http://www.w3.org/2000/svg';
   let hours = 24;
   let busy = false;
   let plotted = [];
-  let chartStart = 0, chartEnd = 0, chartCeiling = 10;
+  let chartStart = 0, chartEnd = 0;
 
   function formatTime(value) {
     return value ? new Intl.DateTimeFormat('es-AR', { timeZone: window.monitoringTimeZone, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(value)) : '—';
@@ -149,12 +150,11 @@
     document.getElementById('latency-sample-count').textContent = measured.length ? `${measured.length} mediciones con latencia en este período (OK y fallas).` : 'No hay mediciones de latencia en este período.';
     const max = Math.max(10, latencyLimit || 0, ...points.filter(item => item.latency_ms !== null).map(item => item.latency_ms));
     const ceiling = Math.ceil(max / 10) * 10;
-    chartCeiling = ceiling;
     const x = time => 8 + (time - start) / (end - start) * 984;
     const y = latency => 248 - latency / ceiling * 236;
     svg.replaceChildren();
     for (const value of [0, ceiling / 2, ceiling]) svg.append(svgElement('line', { x1: 8, y1: y(value), x2: 992, y2: y(value), stroke: '#e9ecef', 'stroke-width': 1 }));
-    if (latencyLimit !== null) svg.append(svgElement('line', { x1: 8, y1: y(latencyLimit), x2: 992, y2: y(latencyLimit), stroke: '#d97706', 'stroke-width': 2, 'stroke-dasharray': '7 5', 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
+    if (latencyLimit !== null) svg.append(svgElement('line', { x1: 8, y1: y(latencyLimit), x2: 992, y2: y(latencyLimit), stroke: '#ac854e', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
     let path = '';
     let run = [];
     function appendSmoothRun() {
@@ -206,7 +206,7 @@
     document.getElementById('axis-mid').textContent = `${ceiling / 2} ms`;
     document.getElementById('axis-start').textContent = formatTime(start);
     document.getElementById('axis-end').textContent = formatTime(end);
-    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea amarilla: límite de latencia' : ''}` : 'No hay checks en este período.';
+    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea ámbar: límite de latencia' : ''}` : 'No hay checks en este período.';
   }
   svg.addEventListener('mousemove', event => {
     const deployment = event.target.getAttribute('data-deployment-label');
@@ -227,13 +227,13 @@
     measurement.textContent = `Latencia: ${latency}`;
     tooltip.replaceChildren(title, measurement);
     tooltip.hidden = false;
-    const pointX = 8 + (point.time - chartStart) / (chartEnd - chartStart) * 984;
-    const pointY = point.latency_ms === null ? 248 : 248 - point.latency_ms / chartCeiling * 236;
-    const pixelX = pointX / 1000 * rect.width;
-    const pixelY = pointY / 260 * rect.height;
-    tooltip.style.left = `${Math.max(tooltip.offsetWidth / 2 + 6, Math.min(rect.width - tooltip.offsetWidth / 2 - 6, pixelX))}px`;
-    tooltip.style.top = `${pixelY}px`;
-    tooltip.classList.toggle('below', pixelY < tooltip.offsetHeight + 18);
+    const gap = 14;
+    const fitsRight = event.clientX + gap + tooltip.offsetWidth + 8 <= window.innerWidth;
+    const left = fitsRight ? event.clientX + gap : Math.max(8, event.clientX - tooltip.offsetWidth - gap);
+    const fitsBelow = event.clientY + gap + tooltip.offsetHeight + 8 <= window.innerHeight;
+    const top = fitsBelow ? event.clientY + gap : Math.max(8, event.clientY - tooltip.offsetHeight - gap);
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
   });
   svg.addEventListener('mouseleave', () => { tooltip.hidden = true; });
   svg.addEventListener('focusin', event => {
