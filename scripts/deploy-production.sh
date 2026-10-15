@@ -4,6 +4,12 @@ set -Eeuo pipefail
 APP_DIR=/opt/passing/app
 PYTHON=/opt/passing/.venv/bin/python
 ENV_FILE=/etc/passing.env
+BRANCH=${1:-main}
+
+case "$BRANCH" in
+  main|gestion-documental) ;;
+  *) echo 'Rama no permitida. Usá main o gestion-documental.' >&2; exit 1 ;;
+esac
 
 if (( EUID != 0 )); then
   echo 'Ejecutá este script con sudo.' >&2
@@ -19,8 +25,8 @@ if [[ ! -f "$ENV_FILE" || ! -x "$PYTHON" ]]; then
 fi
 
 git_app() { sudo -u passing -H git -C "$APP_DIR" "$@"; }
-if [[ "$(git_app branch --show-current)" != main ]]; then
-  echo 'El checkout de producción debe estar en la rama main.' >&2
+if [[ "$(git_app branch --show-current)" != "$BRANCH" ]]; then
+  echo "El checkout de producción debe estar en la rama $BRANCH." >&2
   exit 1
 fi
 if [[ -n "$(git_app status --porcelain --untracked-files=no)" ]]; then
@@ -29,19 +35,19 @@ if [[ -n "$(git_app status --porcelain --untracked-files=no)" ]]; then
   exit 1
 fi
 
-git_app fetch origin main
-if ! git_app merge-base --is-ancestor HEAD origin/main; then
-  echo 'La rama local y origin/main divergieron; no se realizará una mezcla automática.' >&2
+git_app fetch origin "$BRANCH"
+if ! git_app merge-base --is-ancestor HEAD "origin/$BRANCH"; then
+  echo "La rama local y origin/$BRANCH divergieron; no se realizará una mezcla automática." >&2
   exit 1
 fi
 
-changed_files=$(git_app diff --name-only HEAD origin/main)
+changed_files=$(git_app diff --name-only HEAD "origin/$BRANCH")
 if grep -Eq '(^|/)migrations/[0-9][^/]*\.py$|^requirements[^/]*\.txt$' <<< "$changed_files"; then
   echo 'La actualización incluye migraciones o dependencias. Requiere un despliegue revisado.' >&2
   exit 1
 fi
 
-git_app merge --ff-only origin/main
+git_app merge --ff-only "origin/$BRANCH"
 
 run_manage() {
   systemd-run --quiet --wait --pipe --collect \
