@@ -221,11 +221,13 @@
     const point = low && Math.abs(plotted[low - 1].time - time) < Math.abs(plotted[low].time - time) ? plotted[low - 1] : plotted[low];
     const status = point.status === 'ok' ? 'OK' : point.status === 'slow' ? 'Respuesta lenta' : point.status === 'error' ? 'Error del monitor' : 'Falla';
     const latency = point.latency_ms === null ? 'Sin latencia' : `${point.latency_ms} ms`;
-    const title = document.createElement('strong');
-    title.textContent = `${formatFullTime(point.checked_at)} · ${status}`;
+    const timestamp = document.createElement('span');
+    timestamp.textContent = formatFullTime(point.checked_at);
+    const state = document.createElement('strong');
+    state.textContent = `Estado: ${status}`;
     const measurement = document.createElement('span');
     measurement.textContent = `Latencia: ${latency}`;
-    tooltip.replaceChildren(title, measurement);
+    tooltip.replaceChildren(timestamp, state, measurement);
     tooltip.style.display = 'flex';
     const gap = 14;
     const fitsRight = event.clientX + gap + tooltip.offsetWidth + 8 <= window.innerWidth;
