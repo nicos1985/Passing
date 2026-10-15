@@ -62,10 +62,9 @@
       {% if monitor.kind != 'heartbeat' and monitor.max_latency_ms %}<div class="latency-limit-legend mb-2"><span class="latency-limit-swatch" aria-hidden="true"></span> Límite configurado: {{ monitor.max_latency_ms }} ms</div>{% endif %}
       <div class="d-flex gap-2 align-items-stretch detail-chart-wrap">
         <div class="d-flex flex-column justify-content-between detail-muted text-end" style="min-width: 48px"><span id="axis-max"></span><span id="axis-mid"></span><span>0 ms</span></div>
-        <div class="latency-plot"><svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg><div id="latency-tooltip" class="latency-tooltip" hidden></div></div>
+        <div class="latency-plot"><svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg></div>
       </div>
       <div class="d-flex justify-content-between detail-muted ms-5"><span id="axis-start"></span><span id="axis-end"></span></div>
-      <div id="chart-hover" class="visually-hidden" aria-live="polite">Pasá el cursor por el gráfico para ver un check.</div>
       <div class="row g-2 mt-2" aria-label="Resumen de latencias del período seleccionado">
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Promedio</span><strong id="latency-average">—</strong></div></div>
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Más baja</span><strong id="latency-minimum">—</strong></div></div>
@@ -97,7 +96,9 @@
 (() => {
   const dataUrl = "{% url 'monitoring:detail_data' monitor.pk %}";
   const svg = document.getElementById('latency-chart');
-  const tooltip = document.getElementById('latency-tooltip');
+  const tooltip = document.createElement('div');
+  tooltip.className = 'latency-tooltip';
+  tooltip.style.cssText = 'display:none;position:fixed;z-index:2147483647;pointer-events:none';
   document.body.append(tooltip);
   const latencyLimit = {% if monitor.kind != 'heartbeat' and monitor.max_latency_ms %}{{ monitor.max_latency_ms }}{% else %}null{% endif %};
   const ns = 'http://www.w3.org/2000/svg';
@@ -153,8 +154,9 @@
     const x = time => 8 + (time - start) / (end - start) * 984;
     const y = latency => 248 - latency / ceiling * 236;
     svg.replaceChildren();
+    svg.append(svgElement('rect', { x: 0, y: 0, width: 1000, height: 260, fill: 'transparent', 'pointer-events': 'all' }));
     for (const value of [0, ceiling / 2, ceiling]) svg.append(svgElement('line', { x1: 8, y1: y(value), x2: 992, y2: y(value), stroke: '#e9ecef', 'stroke-width': 1 }));
-    if (latencyLimit !== null) svg.append(svgElement('line', { x1: 8, y1: y(latencyLimit), x2: 992, y2: y(latencyLimit), stroke: '#ac854e', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
+    if (latencyLimit !== null) svg.append(svgElement('line', { x1: 8, y1: y(latencyLimit), x2: 992, y2: y(latencyLimit), stroke: '#eab308', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
     let path = '';
     let run = [];
     function appendSmoothRun() {
@@ -201,17 +203,16 @@
       svg.append(hitbox);
     }
     plotted = points;
-    tooltip.hidden = true;
+    tooltip.style.display = 'none';
     document.getElementById('axis-max').textContent = `${ceiling} ms`;
     document.getElementById('axis-mid').textContent = `${ceiling / 2} ms`;
     document.getElementById('axis-start').textContent = formatTime(start);
     document.getElementById('axis-end').textContent = formatTime(end);
-    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea ámbar: límite de latencia' : ''}` : 'No hay checks en este período.';
+    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea amarilla: límite de latencia' : ''}` : 'No hay checks en este período.';
   }
   svg.addEventListener('mousemove', event => {
     const deployment = event.target.getAttribute('data-deployment-label');
-    if (deployment) { tooltip.hidden = true; document.getElementById('chart-hover').textContent = deployment; return; }
-    if (!plotted.length) { tooltip.hidden = true; return; }
+    if (deployment || !plotted.length) { tooltip.style.display = 'none'; return; }
     const rect = svg.getBoundingClientRect();
     const target = (event.clientX - rect.left) / rect.width;
     const time = chartStart + target * (chartEnd - chartStart);
@@ -220,13 +221,12 @@
     const point = low && Math.abs(plotted[low - 1].time - time) < Math.abs(plotted[low].time - time) ? plotted[low - 1] : plotted[low];
     const status = point.status === 'ok' ? 'OK' : point.status === 'slow' ? 'Respuesta lenta' : point.status === 'error' ? 'Error del monitor' : 'Falla';
     const latency = point.latency_ms === null ? 'Sin latencia' : `${point.latency_ms} ms`;
-    document.getElementById('chart-hover').textContent = `${formatTime(point.checked_at)} · ${status}${point.detail ? ` · ${point.detail}` : ''} · ${latency}`;
     const title = document.createElement('strong');
     title.textContent = `${formatFullTime(point.checked_at)} · ${status}`;
     const measurement = document.createElement('span');
     measurement.textContent = `Latencia: ${latency}`;
     tooltip.replaceChildren(title, measurement);
-    tooltip.hidden = false;
+    tooltip.style.display = 'flex';
     const gap = 14;
     const fitsRight = event.clientX + gap + tooltip.offsetWidth + 8 <= window.innerWidth;
     const left = fitsRight ? event.clientX + gap : Math.max(8, event.clientX - tooltip.offsetWidth - gap);
@@ -235,11 +235,7 @@
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
   });
-  svg.addEventListener('mouseleave', () => { tooltip.hidden = true; });
-  svg.addEventListener('focusin', event => {
-    const deployment = event.target.getAttribute('data-deployment-label');
-    if (deployment) document.getElementById('chart-hover').textContent = deployment;
-  });
+  svg.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
   function drawResults(items) {
     const body = document.getElementById('detail-results');
     body.replaceChildren();
