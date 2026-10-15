@@ -4,7 +4,7 @@ set -Eeuo pipefail
 APP_DIR=/opt/passing/app
 PYTHON=/opt/passing/.venv/bin/python
 ENV_FILE=/etc/passing.env
-BRANCH=${1:-main}
+BRANCH=${1:-gestion-documental}
 
 case "$BRANCH" in
   main|gestion-documental) ;;
