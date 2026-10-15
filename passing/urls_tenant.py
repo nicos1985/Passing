@@ -18,8 +18,10 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
 from .views import home_tenant, set_language
+from .private_media import private_image
 
 urlpatterns = [
+    path("media/<path:media_path>", private_image, name="private_image"),
     path("i18n/", include("django.conf.urls.i18n")),
     path("i18n/setlang/", set_language, name="set_language"),
     path("login/", include("login.urls")),                

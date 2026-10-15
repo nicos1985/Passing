@@ -25,7 +25,7 @@ class TwoFactorAuthMiddleware:
         schema = getattr(connection, "schema_name", None)
         if not schema or schema == "public":
             return self.get_response(request)
-        if request.path.startswith((settings.STATIC_URL, settings.MEDIA_URL)):
+        if request.path.startswith(settings.STATIC_URL):
             return self.get_response(request)
 
         # Si el usuario está autenticado y no ha completado 2FA
