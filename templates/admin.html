@@ -107,6 +107,7 @@
         <header class="config-hero">
             <div><span class="config-eyebrow">Passing · {% trans "Administración" %}</span><h1>{% trans "Configuración" %}</h1><p>{% trans "Administrá la plataforma, los accesos y las fuentes de información." %}</p></div>
             <div class="config-hero-actions">
+                <a class="module-help-trigger" href="{% url 'module_help' 'configuracion' %}" title="Ayuda de Configuración" aria-label="Ayuda de Configuración"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
                 <a class="btn btn-outline-light" href="{% url 'home_tenant' %}"><i class="fa-solid fa-house me-1" aria-hidden="true"></i>{% trans "Inicio" %}</a>
                 <a class="btn btn-light" href="{% url 'configuracion-global' %}"><i class="fa-solid fa-sliders me-1" aria-hidden="true"></i>{% trans "Configuración general" %}</a>
             </div>

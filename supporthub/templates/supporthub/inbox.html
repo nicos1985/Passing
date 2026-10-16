@@ -6,7 +6,7 @@
   <div class="rounded-4 p-4 mb-4 text-white" style="background:linear-gradient(120deg,#12243c,#245d82)">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
       <div><div class="text-uppercase small opacity-75 mb-2">Soporte centralizado</div><h1 class="h2 mb-2">Bandeja de avisos</h1><p class="mb-0 opacity-75">Mensajes de grupos de soporte en Bitrix24 · horario de Argentina</p></div>
-      {% if is_manager %}<a class="btn btn-light" href="{% url 'supporthub:settings' %}"><i class="fa-solid fa-gear me-1"></i>Configurar</a>{% endif %}
+      <div class="d-flex gap-2 align-items-center"><a class="module-help-trigger" href="{% url 'module_help' 'soporte' %}" title="Ayuda de Central de soporte" aria-label="Ayuda de Central de soporte"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>{% if is_manager %}<a class="btn btn-light" href="{% url 'supporthub:settings' %}"><i class="fa-solid fa-gear me-1"></i>Configurar</a>{% endif %}</div>
     </div>
     <div class="d-flex gap-2 flex-wrap mt-4"><span class="badge text-bg-light">{{ portals|length }} portales</span><span class="badge text-bg-warning">{{ pending_count }} pendientes</span><span class="badge text-bg-danger">{{ failed_count }} sin entregar</span><span class="badge text-bg-info">Guardia: {% if active_shift %}{{ active_shift.primary }}{% else %}sin turno activo{% endif %}</span></div>
   </div>

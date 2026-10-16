@@ -33,6 +33,7 @@
       <div><span class="passing-list-hero-eyebrow">Evaluaciones</span><h1>{{ verbose_name_plural }}</h1><p>Revisá el estado y abrí cada evaluación para ver sus detalles.</p></div>
     {% if request.user.is_authenticated %}
         <div class="passing-list-hero-actions">
+            <a class="module-help-trigger" href="{% url 'module_help' 'riesgos' %}" title="Ayuda de Riesgos" aria-label="Ayuda de Riesgos"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
 
             {% if can_create %}<a class="btn btn-primary btn-sm" href="{% url create_view %}">
               <i class="fa-solid fa-plus"></i> {% blocktrans %}Alta de {{ verbose_name_plural }}{% endblocktrans %}

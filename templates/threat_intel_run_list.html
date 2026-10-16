@@ -18,6 +18,7 @@
       <div><span class="passing-list-hero-eyebrow">Inteligencia de amenazas</span><h1>{{ verbose_name_plural }}</h1><p>Consultá las ejecuciones y sus resultados.</p></div>
     {% if request.user.is_authenticated %}
         <div class="passing-list-hero-actions">
+          <a class="module-help-trigger" href="{% url 'module_help' 'inteligencia' %}" title="Ayuda de Inteligencia de amenazas" aria-label="Ayuda de Inteligencia de amenazas"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
           <a class="btn btn-primary btn-sm" href="{% url 'threat_intel:run-list' %}">
             <i class="fa-solid fa-refresh"></i> {% trans "Refrescar" %}
           </a>

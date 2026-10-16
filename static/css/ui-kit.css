@@ -24,6 +24,10 @@
 
 body { background: var(--ui-bg); color: var(--ui-text); }
 
+.module-help-trigger { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 2.15rem; height: 2.15rem; padding: 0; border: 1px solid rgba(255,255,255,.55); border-radius: .65rem; background: rgba(255,255,255,.13); color: #fff; font-size: 1.05rem; text-decoration: none; transition: background .15s ease, transform .15s ease; }
+.module-help-trigger:hover, .module-help-trigger:focus-visible { background: #fff; color: #195c91; transform: translateY(-1px); }
+.module-help-trigger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
 .ui-accent-card {
   background: var(--ui-surface);
   border: 1px solid var(--ui-border);

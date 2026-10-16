@@ -16,6 +16,7 @@
       <p>{% trans "Tu información de seguimiento y los accesos de trabajo, en un solo lugar." %}</p>
     </div>
     <div class="home-hero-actions">
+      <a class="module-help-trigger" href="{% url 'module_help' 'inicio' %}" title="Ayuda sobre Passing" aria-label="Ayuda sobre Passing"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
       <a class="btn btn-outline-light" href="{% url 'profile' %}"><i class="fa-solid fa-user me-1" aria-hidden="true"></i>{% trans "Mi perfil" %}</a>
       <a class="btn btn-light" href="{% url 'listpass' %}"><i class="fa-solid fa-key me-1" aria-hidden="true"></i>{% trans "Contraseñas" %}</a>
     </div>

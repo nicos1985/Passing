@@ -20,6 +20,7 @@
 
     {% if request.user.is_authenticated %}
         <div class="passing-list-hero-actions">
+            <a class="module-help-trigger" href="{% url 'module_help' 'inteligencia' %}" title="Ayuda de Inteligencia de amenazas" aria-label="Ayuda de Inteligencia de amenazas"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
             <a class="btn btn-secondary" href="{{ back_url }}">
                 <i class="fa-solid fa-arrow-left"></i> {% trans "Volver" %}
             </a>

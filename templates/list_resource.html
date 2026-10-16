@@ -18,6 +18,11 @@
       <div><span class="passing-list-hero-eyebrow">Recursos</span><h1>{{ verbose_name_plural }}</h1><p>Consultá y administrá los registros de esta sección.</p></div>
     {% if request.user.is_authenticated %}
         <div class="passing-list-hero-actions">
+            {% if model_name == 'threat' or model_name == 'vulnerability' or model_name == 'treatment' %}
+            <a class="module-help-trigger" href="{% url 'module_help' 'riesgos' %}" title="Ayuda de Riesgos" aria-label="Ayuda de Riesgos"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
+            {% else %}
+            <a class="module-help-trigger" href="{% url 'module_help' 'recursos' %}" title="Ayuda de Recursos" aria-label="Ayuda de Recursos"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
+            {% endif %}
 {% comment %}
                 <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}">
                     <i class="fa-solid fa-gear"></i> Configuración

@@ -18,6 +18,7 @@
         <div class="passing-list-hero">
           <h4 class="mb-0 fw-semibold">{% trans "Activos de la información" %}</h4>
           <div class="passing-list-hero-actions">
+            <a class="module-help-trigger" href="{% url 'module_help' 'recursos' %}" title="Ayuda de Recursos" aria-label="Ayuda de Recursos"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></a>
             <a class="btn btn-outline-secondary btn-sm" href="{% url 'config' %}"><i class="fa-solid fa-gear me-1"></i>{% trans "Configuración" %}</a>
             <a class="btn btn-primary btn-sm" href="{% url 'asset-create' %}"><i class="fa-solid fa-toolbox me-1"></i>{% trans "Alta de activo" %}</a>
           </div>
