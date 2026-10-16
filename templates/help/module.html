@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/passing-help.css' %}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/passing-help.css' %}?v=module-help-2">{% endblock %}
 {% block content %}
 <main class="container-fluid py-3 passing-help">
   <header class="help-hero">
     <div class="help-hero-copy">
       <span class="help-eyebrow">Passing · {{ topic.eyebrow }}</span>
-      <div class="d-flex align-items-center gap-3 mt-2"><span class="help-hero-icon"><i class="fa-solid {{ topic.icon }}" aria-hidden="true"></i></span><h1 class="mb-0">{{ topic.title }}</h1></div>
-      <p class="mb-0 mt-3">{{ topic.lead }}</p>
+      <div class="help-title-row">
+        <span class="help-hero-icon"><i class="fa-solid {{ topic.icon }}" aria-hidden="true"></i></span>
+        <h1>{{ topic.title }}</h1>
+      </div>
+      <p>{{ topic.lead }}</p>
     </div>
     <div class="help-hero-actions">
       <a class="btn btn-outline-light btn-sm" href="{{ landing_url }}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Volver al módulo</a>
@@ -15,39 +18,78 @@
     </div>
   </header>
 
-  <nav class="help-anchors" aria-label="Secciones de esta guía">
-    <a href="#funciones">Qué podés hacer</a><a href="#flujo">Flujo recomendado</a><a href="#claves">Para tener en cuenta</a>{% if slug == 'inicio' %}<a href="#modulos">Módulos</a>{% endif %}
-  </nav>
+  <div class="help-layout">
+    <aside class="help-guide-nav" aria-label="Secciones de esta guía">
+      <div class="help-guide-nav-title"><i class="fa-solid fa-list" aria-hidden="true"></i><span>En esta guía</span></div>
+      <a href="#funciones"><span>01</span>Qué podés hacer</a>
+      <a href="#flujo"><span>02</span>Flujo recomendado</a>
+      <a href="#claves"><span>03</span>Para tener en cuenta</a>
+      <a href="#modulos"><span>04</span>{% if slug == 'inicio' %}Módulos de Passing{% else %}Otras guías{% endif %}</a>
+    </aside>
 
-  <section id="funciones" class="help-section" aria-labelledby="help-functions-title">
-    <div class="help-heading"><span class="help-heading-icon"><i class="fa-solid fa-compass" aria-hidden="true"></i></span><div><h2 id="help-functions-title">Qué podés hacer</h2><p>Las funciones visibles dependen de los permisos de tu rol.</p></div></div>
-    <div class="row g-3">
-      {% for title, description in topic.features %}
-      <div class="col-md-6"><div class="help-feature h-100"><span class="help-feature-number">0{{ forloop.counter }}</span><h3>{{ title }}</h3><p>{{ description }}</p></div></div>
-      {% endfor %}
+    <div class="help-content">
+      <section id="funciones" class="help-section help-section-functions" aria-labelledby="help-functions-title">
+        <header class="help-section-header">
+          <span class="help-heading-icon"><i class="fa-solid fa-compass" aria-hidden="true"></i></span>
+          <div><h2 id="help-functions-title">Qué podés hacer</h2><p>Las funciones visibles dependen de los permisos de tu rol.</p></div>
+        </header>
+        <div class="help-section-body">
+          <div class="row g-3">
+            {% for title, description in topic.features %}
+            <div class="col-md-6">
+              <article class="help-feature help-feature-{{ forloop.counter }} h-100">
+                <div class="help-feature-top"><span class="help-feature-number">{{ forloop.counter|stringformat:"02d" }}</span><span class="help-feature-mark"><i class="fa-solid fa-check" aria-hidden="true"></i></span></div>
+                <h3>{{ title }}</h3><p>{{ description }}</p>
+              </article>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section id="flujo" class="help-section help-section-flow" aria-labelledby="help-flow-title">
+        <header class="help-section-header">
+          <span class="help-heading-icon"><i class="fa-solid fa-route" aria-hidden="true"></i></span>
+          <div><h2 id="help-flow-title">Flujo recomendado</h2><p>Una forma simple de empezar y mantener el trabajo al día.</p></div>
+        </header>
+        <div class="help-section-body">
+          <ol class="help-steps">
+            {% for step in topic.steps %}<li><span class="help-step-number">{{ forloop.counter }}</span><div><strong>Paso {{ forloop.counter }}</strong><span>{{ step }}</span></div></li>{% endfor %}
+          </ol>
+        </div>
+      </section>
+
+      <section id="claves" class="help-section help-section-tips" aria-labelledby="help-tips-title">
+        <header class="help-section-header">
+          <span class="help-heading-icon"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></span>
+          <div><h2 id="help-tips-title">Para tener en cuenta</h2><p>Detalles que ayudan a interpretar y usar el módulo.</p></div>
+        </header>
+        <div class="help-section-body">
+          <div class="help-tips">{% for tip in topic.tips %}<div><span class="help-tip-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span><span>{{ tip }}</span></div>{% endfor %}</div>
+          {% if topic.reference %}<a class="help-reference" href="{% url topic.reference.1 %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>{{ topic.reference.0 }}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>{% endif %}
+        </div>
+      </section>
+
+      <section id="modulos" class="help-section help-section-modules" aria-labelledby="help-modules-title">
+        <header class="help-section-header">
+          <span class="help-heading-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span>
+          <div><h2 id="help-modules-title">{% if slug == 'inicio' %}Explorá los módulos{% else %}Otras guías{% endif %}</h2><p>Elegí un módulo para conocer sus tareas y su flujo.</p></div>
+        </header>
+        <div class="help-section-body">
+          <div class="row g-3">
+            {% for module in modules %}{% if module.slug != slug %}
+            <div class="col-md-6 col-xl-4">
+              {% if module.url %}<a class="help-module" href="{{ module.url }}">{% else %}<div class="help-module help-module-locked">{% endif %}
+                <span class="help-module-icon"><i class="fa-solid {{ module.icon }}" aria-hidden="true"></i></span>
+                <span class="help-module-copy"><strong>{{ module.title }}</strong><small>{{ module.lead|truncatechars:105 }}</small>{% if not module.url %}<small class="help-module-access"><i class="fa-solid fa-lock me-1" aria-hidden="true"></i>Disponible según permisos</small>{% endif %}</span>
+                {% if module.url %}<span class="help-module-arrow"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
+              {% if module.url %}</a>{% else %}</div>{% endif %}
+            </div>
+            {% endif %}{% endfor %}
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
-
-  <section id="flujo" class="help-section" aria-labelledby="help-flow-title">
-    <div class="help-heading"><span class="help-heading-icon"><i class="fa-solid fa-route" aria-hidden="true"></i></span><div><h2 id="help-flow-title">Flujo recomendado</h2><p>Una forma simple de empezar y mantener el trabajo al día.</p></div></div>
-    <ol class="help-steps">
-      {% for step in topic.steps %}<li><span class="help-step-number">{{ forloop.counter }}</span><span>{{ step }}</span></li>{% endfor %}
-    </ol>
-  </section>
-
-  <section id="claves" class="help-section" aria-labelledby="help-tips-title">
-    <div class="help-heading"><span class="help-heading-icon"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></span><div><h2 id="help-tips-title">Para tener en cuenta</h2><p>Detalles que ayudan a interpretar y usar el módulo.</p></div></div>
-    <div class="help-tips">{% for tip in topic.tips %}<div><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>{{ tip }}</span></div>{% endfor %}</div>
-    {% if topic.reference %}<a class="help-reference" href="{% url topic.reference.1 %}"><i class="fa-solid fa-circle-info me-2" aria-hidden="true"></i>{{ topic.reference.0 }} <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i></a>{% endif %}
-  </section>
-
-  <section id="modulos" class="help-section" aria-labelledby="help-modules-title">
-    <div class="help-heading"><span class="help-heading-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span><div><h2 id="help-modules-title">{% if slug == 'inicio' %}Explorá los módulos{% else %}Otras guías{% endif %}</h2><p>Elegí un módulo para conocer sus tareas y su flujo.</p></div></div>
-    <div class="row g-3">
-      {% for module in modules %}{% if module.slug != slug %}
-      <div class="col-md-6 col-xl-4">{% if module.url %}<a class="help-module" href="{{ module.url }}">{% else %}<div class="help-module help-module-locked">{% endif %}<span class="help-module-icon"><i class="fa-solid {{ module.icon }}" aria-hidden="true"></i></span><span><strong>{{ module.title }}</strong><small>{{ module.lead|truncatechars:110 }}</small>{% if not module.url %}<small class="help-module-access">Disponible según permisos</small>{% endif %}</span>{% if module.url %}<i class="fa-solid fa-arrow-right help-module-arrow" aria-hidden="true"></i>{% endif %}{% if module.url %}</a>{% else %}</div>{% endif %}</div>
-      {% endif %}{% endfor %}
-    </div>
-  </section>
+  </div>
 </main>
 {% endblock %}
