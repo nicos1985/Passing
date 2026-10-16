@@ -41,9 +41,11 @@
 </head>
 <body>
   <div class="d-flex">
-    {% if tenant_schema != "public" %}
-      {% include "tenant_navbar copy.html" %}
-    {% endif %}
+    {% block tenant_navigation %}
+      {% if tenant_schema != "public" %}
+        {% include "tenant_navbar copy.html" %}
+      {% endif %}
+    {% endblock %}
     <div class="main-content flex-grow-1 p-4">
         <!-- Mensajes -->
         <div class="container fluid" style="padding-top: 35px;">

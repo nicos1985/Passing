@@ -1,12 +1,14 @@
 from unittest.mock import patch
 
+import pyotp
 from django.test import RequestFactory
 from django.core.management import call_command
 from django.urls import Resolver404, resolve
 from django_tenants.test.cases import TenantTestCase
 from django_tenants.test.client import TenantClient
 
-from accounts.models import CustomUser, MultiFactorStatus, TenantSettings
+from accounts.models import CustomUser, MultiFactorStatus, TenantMembership, TenantSettings
+from accounts.utils import build_sso_token
 from login.middleware import TwoFactorAuthMiddleware
 
 
@@ -38,6 +40,51 @@ class TenantMfaPolicyTests(TenantTestCase):
         self.settings.multifactor_status = MultiFactorStatus.OPTIONAL
         self.settings.save(update_fields=['multifactor_status'])
         self.assertIsNone(self._response())
+
+    def test_sso_policy_blocks_authenticated_user_without_verified_otp(self):
+        self.settings.sso_google_requires_2fa = True
+        self.settings.save(update_fields=['sso_google_requires_2fa'])
+        self.user.otp_secret = pyotp.random_base32()
+        self.user.save(update_fields=['otp_secret'])
+        response = self._response()
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/verify-2fa/', response['Location'])
+
+    def test_sso_pending_blocks_navigation_even_with_an_old_verified_session(self):
+        self.settings.sso_google_requires_2fa = True
+        self.settings.save(update_fields=['sso_google_requires_2fa'])
+        self.user.otp_secret = pyotp.random_base32()
+        self.user.save(update_fields=['otp_secret'])
+        TenantMembership.objects.create(user=self.user, client=self.tenant, is_active=True)
+
+        client = TenantClient(self.tenant)
+        client.force_login(self.user)
+        session = client.session
+        session['is_2fa_verified'] = True
+        session['twofa_verified_user_id'] = self.user.pk
+        session['twofa_verified_client_id'] = self.tenant.pk
+        session.save()
+
+        token = build_sso_token(self.user.pk, self.tenant.schema_name, '/login/home/')
+        response = client.get('/login/sso/consume/', {'token': token})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/sso/verify-2fa/', response['Location'])
+        self.assertNotIn('_auth_user_id', client.session)
+        self.assertNotIn('is_2fa_verified', client.session)
+
+        blocked = client.get('/monitoring/')
+        self.assertEqual(blocked.status_code, 302)
+        self.assertIn('/login/sso/verify-2fa/', blocked['Location'])
+        form = client.get('/login/sso/verify-2fa/')
+        self.assertEqual(form.status_code, 200)
+        self.assertNotContains(form, 'id="sidebar"')
+
+        verified = client.post('/login/sso/verify-2fa/', {
+            'code': pyotp.TOTP(self.user.otp_secret).now(),
+        })
+        self.assertEqual(verified.status_code, 302)
+        self.assertEqual(verified['Location'], '/login/home/')
+        self.assertEqual(client.get('/login/home/').status_code, 200)
 
     def test_required_policy_with_secret_routes_to_enrollment_until_confirmed(self):
         self.settings.multifactor_status = MultiFactorStatus.REQUIRED

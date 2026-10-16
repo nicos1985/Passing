@@ -50,7 +50,7 @@ from threat_intel.models import IntelItem, Run, AIAnalysis
 from django.db.models import Count
 from accounts.models import TenantMembership, TenantSettings, AuthEvent
 from accounts.utils import get_ip, get_ua
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.core.exceptions import PermissionDenied
 from .utils import user_belongs_to_current_tenant, users_for_current_tenant
 from .mixins import TenantScopedUserMixin
@@ -626,15 +626,15 @@ def _resolve_2fa_user_from_request(request):
     En flujo normal: devuelve request.user si está autenticado.
     En flujo SSO: usa la sesión (twofa_pending_uid) seteada en sso_consume.
     """
-    if request.user.is_authenticated:
-        return request.user
-
     pending_uid = request.session.get("twofa_pending_uid")
     client_id = request.session.get("twofa_client_id")
     if pending_uid and client_id:
         tenant = get_tenant(request)
         if tenant and tenant.id == client_id:
             return User.objects.filter(pk=pending_uid, is_active=True).first()
+
+    if request.user.is_authenticated:
+        return request.user
 
     return None
 
@@ -918,7 +918,9 @@ def sso_consume(request):
     ))
 
     if require_2fa:
-        # seteo de sesión para el flujo SSO 2FA
+        # A previous tenant session must not remain usable while this SSO
+        # handoff waits for its second factor.
+        auth_logout(request)
         request.session["twofa_pending_uid"] = user.id
         request.session["twofa_next"] = next_path
         request.session["twofa_client_id"] = client.id

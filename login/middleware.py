@@ -11,11 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class TwoFactorAuthMiddleware:
-    """Middleware que obliga al usuario a completar 2FA antes de continuar.
-
-    Añadí trazas para depurar por qué un usuario con `is_2fa_enabled=False`
-    podría ser redirigido inesperadamente.
-    """
+    """Block tenant routes until the required second factor is verified."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -28,20 +24,33 @@ class TwoFactorAuthMiddleware:
         if request.path.startswith(settings.STATIC_URL):
             return self.get_response(request)
 
+        tenant = getattr(request, 'tenant', None) or getattr(connection, 'tenant', None)
+        urlconf = getattr(request, 'urlconf', None)
+        if (
+            request.session.get('twofa_pending_uid')
+            and request.session.get('twofa_client_id') == getattr(tenant, 'pk', None)
+        ):
+            allowed = {reverse(name, urlconf=urlconf) for name in (
+                'verify_2fa_sso', 'show-qr-code-2fa', 'sso_consume', 'logout',
+            )}
+            if request.path not in allowed:
+                return redirect(reverse('verify_2fa_sso', urlconf=urlconf))
+            return self.get_response(request)
+
         # Si el usuario está autenticado y no ha completado 2FA
         if request.user.is_authenticated:
-            tenant = getattr(request, 'tenant', None) or getattr(connection, 'tenant', None)
             policy = TenantSettings.for_client(tenant)
             status = policy.multifactor_status if policy else MultiFactorStatus.DISABLED
             required = status == MultiFactorStatus.REQUIRED
-            enabled = required or (status == MultiFactorStatus.OPTIONAL and request.user.is_2fa_enabled)
+            enabled = bool(policy and policy.sso_google_requires_2fa) or required or (
+                status == MultiFactorStatus.OPTIONAL and request.user.is_2fa_enabled
+            )
             verified = (
                 request.session.get('is_2fa_verified') is True
                 and request.session.get('twofa_verified_user_id') == request.user.pk
                 and request.session.get('twofa_verified_client_id') == getattr(tenant, 'pk', None)
             )
             if enabled and not verified:
-                urlconf = getattr(request, 'urlconf', None)
                 allowed = {reverse(name, urlconf=urlconf) for name in ('verify_2fa', 'show-qr-code-2fa', 'logout')}
                 if request.path not in allowed:
                     messages.info(request, 'Completá la verificación en dos pasos para continuar.')
