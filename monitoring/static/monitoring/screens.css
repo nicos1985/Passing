@@ -165,3 +165,19 @@
   .monitor-screen .health-legend { gap: .4rem .75rem; }
 }
 @media (prefers-reduced-motion: no-preference) { .monitor-screen .filter-chip, .monitor-screen .monitor-action { transition: background-color .15s ease, border-color .15s ease, transform .15s ease; } .monitor-screen .monitor-action:hover { transform: translateY(-2px); } }
+
+.monitor-screen .monitor-group-row td { padding: .45rem .65rem; background: #f4f8fc; border-top: 1px solid #dce7f1; border-bottom: 1px solid #dce7f1; }
+.monitor-screen .monitor-group-toggle { display: flex; align-items: center; gap: .75rem; width: 100%; padding: .5rem .35rem; border: 0; background: transparent; color: #234f73; text-align: left; }
+.monitor-screen .monitor-group-toggle:hover, .monitor-screen .monitor-group-toggle:focus-visible { color: #0b6eae; }
+.monitor-screen .monitor-group-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; border-radius: .55rem; background: #dceeff; color: #176aa5; flex: none; }
+.monitor-screen .monitor-group-icon i { transition: transform .18s ease; }
+.monitor-screen .monitor-group-row.is-open .monitor-group-icon i { transform: rotate(90deg); }
+.monitor-screen .monitor-group-copy { display: flex; flex-direction: column; min-width: 0; }
+.monitor-screen .monitor-group-copy strong { font-size: .9rem; }
+.monitor-screen .monitor-group-copy small { color: #718599; font-size: .74rem; margin-top: .08rem; }
+.monitor-screen .monitor-group-status { margin-left: auto; color: #5e7488; font-size: .74rem; font-weight: 650; background: #fff; border: 1px solid #d9e5ef; border-radius: 999px; padding: .3rem .65rem; white-space: nowrap; }
+[data-theme="dark"] .monitor-screen .monitor-group-row td { background: #203246; border-color: #34506b; }
+[data-theme="dark"] .monitor-screen .monitor-group-toggle { color: #cfe8fb; }
+[data-theme="dark"] .monitor-screen .monitor-group-copy small { color: #a9bacb; }
+[data-theme="dark"] .monitor-screen .monitor-group-status { background: #182431; color: #c7d6e5; border-color: #3b536b; }
+@media (max-width: 900px) { .monitor-screen .monitor-group-row { display: block !important; } .monitor-screen .monitor-group-row td { display: block !important; width: 100%; } .monitor-screen .monitor-group-row td::before { display: none !important; } .monitor-screen .monitor-group-status { white-space: normal; text-align: right; } }

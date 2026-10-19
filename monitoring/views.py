@@ -18,11 +18,11 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .forms import DeploymentMarkerForm, MaintenanceWindowForm, MonitorForm
+from .forms import DeploymentMarkerForm, MaintenanceWindowForm, MonitorForm, MonitorGroupForm
 from .evidence import decrypt_evidence
 from .availability import PERIODS, availability_history
 from .deliveries import bitrix_deal_url, delivery_error_message, send_test_email, test_bitrix_connection, test_smtp_connection
-from .models import CheckResult, Delivery, DeploymentMarker, Incident, MaintenanceWindow, Monitor
+from .models import CheckResult, Delivery, DeploymentMarker, Incident, MaintenanceWindow, Monitor, MonitorGroup
 from .maintenance import monitor_in_maintenance, next_window_start
 from .services import record_heartbeat
 from .time_display import COOKIE_NAME, monitoring_timezone, validated_zone
@@ -71,7 +71,7 @@ def _monitor_live_state(monitor, now):
 def dashboard(request):
     if not _authorized(request.user):
         return HttpResponseForbidden()
-    monitors = list(Monitor.objects.prefetch_related("maintenance_windows"))
+    monitors = list(Monitor.objects.select_related("group").prefetch_related("maintenance_windows").order_by("group__sort_order", "group__name", "name"))
     now = timezone.now()
     for monitor in monitors:
         live = _monitor_live_state(monitor, now)
@@ -83,7 +83,17 @@ def dashboard(request):
     health = worker_health(monitors, now)
     open_incidents = Incident.objects.filter(recovered_at__isnull=True)
     incidents = list(open_incidents.select_related("monitor")[:20])
-    return render(request, "monitoring/dashboard.html", {"monitors": monitors, "incidents": incidents, "incident_count": open_incidents.count(), "healthy_count": sum(monitor.enabled and monitor.live_badge == "success" for monitor in monitors), "attention_count": sum(monitor.enabled and monitor.live_badge in {"danger", "warning", "secondary"} for monitor in monitors), "worker_label": health["worker_label"], "worker_healthy": health["worker_healthy"], "last_cycle_at": health["last_cycle_at"], "overdue_count": health["overdue_count"], "now": now, "can_create": _authorized(request.user, 'create'), "can_edit": _authorized(request.user, 'edit'), "can_delete": _authorized(request.user, 'delete')})
+    monitor_groups = []
+    grouped = {}
+    for monitor in monitors:
+        grouped.setdefault(monitor.group_id, []).append(monitor)
+    for group in MonitorGroup.objects.all():
+        members = grouped.get(group.pk, [])
+        if members:
+            monitor_groups.append({"key": f"group-{group.pk}", "name": group.name, "description": group.description, "monitors": members})
+    if grouped.get(None):
+        monitor_groups.append({"key": "ungrouped", "name": "Sin grupo", "description": "Servicios que todavía no fueron asignados a un grupo.", "monitors": grouped[None]})
+    return render(request, "monitoring/dashboard.html", {"monitors": monitors, "monitor_groups": monitor_groups, "incidents": incidents, "incident_count": open_incidents.count(), "healthy_count": sum(monitor.enabled and monitor.live_badge == "success" for monitor in monitors), "attention_count": sum(monitor.enabled and monitor.live_badge in {"danger", "warning", "secondary"} for monitor in monitors), "worker_label": health["worker_label"], "worker_healthy": health["worker_healthy"], "last_cycle_at": health["last_cycle_at"], "overdue_count": health["overdue_count"], "now": now, "can_create": _authorized(request.user, 'create'), "can_edit": _authorized(request.user, 'edit'), "can_delete": _authorized(request.user, 'delete')})
 
 
 @login_required
@@ -260,6 +270,45 @@ def monitor_availability_data(request, pk):
     if days not in PERIODS:
         return JsonResponse({"error": "Período inválido"}, status=400)
     return JsonResponse(availability_history(monitor, days))
+
+
+@login_required
+def monitor_group_list(request):
+    if not _authorized(request.user):
+        return HttpResponseForbidden()
+    groups = list(MonitorGroup.objects.prefetch_related("monitors"))
+    return render(request, "monitoring/group_list.html", {
+        "groups": groups,
+        "ungrouped_count": Monitor.objects.filter(group__isnull=True).count(),
+        "can_create": _authorized(request.user, "create"),
+        "can_edit": _authorized(request.user, "edit"),
+        "can_delete": _authorized(request.user, "delete"),
+    })
+
+
+@login_required
+def monitor_group_form(request, pk=None):
+    if not _authorized(request.user, "edit" if pk else "create"):
+        return HttpResponseForbidden()
+    group = get_object_or_404(MonitorGroup, pk=pk) if pk else None
+    form = MonitorGroupForm(request.POST or None, instance=group)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Grupo de monitores guardado.")
+        return redirect("monitoring:groups")
+    return render(request, "monitoring/group_form.html", {"form": form, "group": group})
+
+
+@login_required
+def monitor_group_delete(request, pk):
+    if not _authorized(request.user, "delete"):
+        return HttpResponseForbidden()
+    group = get_object_or_404(MonitorGroup, pk=pk)
+    if request.method == "POST":
+        group.delete()
+        messages.success(request, "Grupo eliminado. Sus monitores quedaron en Sin grupo.")
+        return redirect("monitoring:groups")
+    return render(request, "monitoring/group_confirm_delete.html", {"group": group})
 
 
 @login_required

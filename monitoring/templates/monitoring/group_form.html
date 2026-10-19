@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/forms.css' %}">{% endblock %}
+{% block content %}
+<div class="container py-4 monitor-form passing-form-page" style="max-width:700px"><header class="form-hero"><div><div class="ui-muted-title">Monitoreo / Grupos</div><h1>{% if group %}Editar grupo{% else %}Nuevo grupo{% endif %}</h1></div><a class="btn btn-outline-light" href="{% url 'monitoring:groups' %}">Volver</a></header><div class="card form-card"><div class="card-body p-4"><form method="post" novalidate>{% csrf_token %}{% for field in form %}<div class="mb-3">{% include 'monitoring/form_field.html' with field=field %}</div>{% endfor %}<div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Guardar</button><a class="btn btn-outline-secondary" href="{% url 'monitoring:groups' %}">Cancelar</a></div></form></div></div></div>
+{% endblock %}

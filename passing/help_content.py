@@ -117,6 +117,7 @@ HELP_TOPICS = {
         "landing": "monitoring:dashboard",
         "features": [
             ("Monitores", "Configurá ping, HTTP, TCP, TLS o heartbeat. En HTTP podés definir códigos esperados, latencia máxima y una condición JSON."),
+            ("Grupos", "Organizá los monitores por cliente, área o plataforma y abrí solamente las secciones que necesitás consultar."),
             ("Tablero", "Cada barra resume un check reciente: verde OK, amarillo lento, rojo falla y gris sin dato."),
             ("Incidentes", "Cuando se alcanza el umbral de fallas o lentitud se abre un incidente; su recuperación y su gestión en Bitrix24 son eventos distintos."),
             ("Contexto", "Usá el detalle, los históricos, los mantenimientos y las marcas de despliegue para investigar cambios."),

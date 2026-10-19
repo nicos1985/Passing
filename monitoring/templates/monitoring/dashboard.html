@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static l10n %}
-{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-groups-1">{% endblock %}
 {% block content %}
 <div class="container-fluid py-3 monitoring-dashboard monitor-screen">
   <header class="monitor-hero mb-4">
@@ -15,7 +15,7 @@
       <span class="monitor-live-pill">Atrasados <strong id="worker-overdue">{{ overdue_count }}</strong></span>
     </div>
   </header>
-  <div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:maintenance_windows' %}">Mantenimientos programados</a><a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:status' %}">Página de estado</a></div>
+  <div class="d-flex flex-wrap gap-2 mb-3">{% if can_edit %}<a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:groups' %}"><i class="fa-solid fa-layer-group me-1" aria-hidden="true"></i>Organizar grupos</a>{% endif %}<a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:maintenance_windows' %}">Mantenimientos programados</a><a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:status' %}">Página de estado</a></div>
   <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Monitoreos</span><span class="monitor-kpi-icon blue"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="monitor-count">{{ monitors|length }}</div><div class="monitor-kpi-hint">Servicios configurados</div></div></div>
     <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="d-flex justify-content-between align-items-center"><span class="monitor-kpi-label">Saludables</span><span class="monitor-kpi-icon green"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span></div><div class="monitor-kpi-value" id="healthy-count">{{ healthy_count }}</div><div class="monitor-kpi-hint">Con check reciente OK</div></div></div>
@@ -42,8 +42,18 @@
     <div class="table-responsive"><table class="table table-hover align-middle service-table">
       <thead><tr><th aria-sort="ascending"><button type="button" class="monitor-sort-heading" data-sort="name">Nombre <span aria-hidden="true">↑</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="destination">Destino <span aria-hidden="true">↕</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="status">Estado actual <span aria-hidden="true">↕</span></button></th><th class="monitor-heading-static">Últimos 60 minutos</th><th><button type="button" class="monitor-sort-heading" data-sort="last-check">Último check <span aria-hidden="true">↕</span></button></th><th><button type="button" class="monitor-sort-heading" data-sort="latency">Latencia <span aria-hidden="true">↕</span></button></th><th class="monitor-heading-static">Acciones</th></tr></thead>
       <tbody>
-      {% for monitor in monitors %}
-        <tr data-monitor-id="{{ monitor.pk }}" data-monitor-name="{{ monitor.name }}" data-destination="{{ monitor.host }}" data-last-check="{{ monitor.last_checked_at|date:'c' }}" data-latency="{{ monitor.last_latency_ms|default_if_none:''|unlocalize }}" data-search="{{ monitor.name }} {{ monitor.host }} {{ monitor.get_kind_display }}" data-filter-state="{% if not monitor.enabled %}paused{% elif monitor.live_badge == 'success' %}healthy{% elif monitor.live_badge == 'danger' or monitor.live_badge == 'warning' or monitor.live_badge == 'secondary' %}attention{% else %}other{% endif %}">
+      {% for group in monitor_groups %}
+        <tr class="monitor-group-row" data-group-header="{{ group.key }}" data-collapsed="{% if forloop.first %}false{% else %}true{% endif %}">
+          <td colspan="7">
+            <button type="button" class="monitor-group-toggle" data-role="group-toggle" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
+              <span class="monitor-group-icon"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+              <span class="monitor-group-copy"><strong>{{ group.name }}</strong>{% if group.description %}<small>{{ group.description }}</small>{% endif %}</span>
+              <span class="monitor-group-status" data-role="group-status">{{ group.monitors|length }} servicio{{ group.monitors|length|pluralize }}</span>
+            </button>
+          </td>
+        </tr>
+        {% for monitor in group.monitors %}
+        <tr data-monitor-id="{{ monitor.pk }}" data-group-key="{{ group.key }}" data-monitor-name="{{ monitor.name }}" data-destination="{{ monitor.host }}" data-last-check="{{ monitor.last_checked_at|date:'c' }}" data-latency="{{ monitor.last_latency_ms|default_if_none:''|unlocalize }}" data-search="{{ group.name }} {{ group.description }} {{ monitor.name }} {{ monitor.host }} {{ monitor.get_kind_display }}" data-filter-state="{% if not monitor.enabled %}paused{% elif monitor.live_badge == 'success' %}healthy{% elif monitor.live_badge == 'danger' or monitor.live_badge == 'warning' or monitor.live_badge == 'secondary' %}attention{% else %}other{% endif %}">
           <td data-label="Servicio"><div class="d-flex align-items-center gap-2"><span class="service-icon"><i class="fa-solid {% if monitor.kind == 'ping' %}fa-satellite-dish{% elif monitor.kind == 'http' %}fa-globe{% elif monitor.kind == 'tcp' %}fa-network-wired{% elif monitor.kind == 'heartbeat' %}fa-heart-pulse{% else %}fa-lock{% endif %}" aria-hidden="true"></i></span><span><a href="{% url 'monitoring:detail' monitor.pk %}" class="service-name">{{ monitor.name }}</a><span class="service-type d-block">{{ monitor.get_kind_display }}</span></span></div></td>
           <td data-label="Destino"><code class="service-destination">{{ monitor.host }}</code></td>
           <td data-label="Estado"><span><span class="badge bg-{{ monitor.live_badge }}" data-role="status">{{ monitor.live_label }}</span><small class="check-reason" data-role="check-reason">{{ monitor.last_detail }}</small></span></td>
@@ -62,6 +72,7 @@
             </div>
           </td>
         </tr>
+        {% endfor %}
       {% empty %}
         <tr><td colspan="7" class="text-muted text-center py-4">Todavía no hay monitoreos. Creá el primero para comenzar.</td></tr>
       {% endfor %}
@@ -95,6 +106,7 @@
   const previousPageButton = document.getElementById('monitor-page-prev');
   const nextPageButton = document.getElementById('monitor-page-next');
   const tableBody = document.querySelector('.service-table tbody');
+  const groupHeaders = [...document.querySelectorAll('[data-group-header]')];
   const emptyRow = document.getElementById('filter-empty');
   const orderedRows = [...rows.values()];
   const originalPosition = new Map(orderedRows.map((row, index) => [row, index]));
@@ -115,7 +127,6 @@
 
   function sortRows() {
     const numeric = sortKey === 'last-check' || sortKey === 'latency';
-    const previousOrder = [...orderedRows];
     orderedRows.sort((a, b) => {
       const left = sortValue(a);
       const right = sortValue(b);
@@ -127,23 +138,37 @@
       }
       return (sortDirection === 'asc' ? result : -result) || originalPosition.get(a) - originalPosition.get(b);
     });
-    if (orderedRows.some((row, index) => row !== previousOrder[index])) {
+    groupHeaders.forEach(header => {
       const fragment = document.createDocumentFragment();
-      orderedRows.forEach(row => fragment.append(row));
-      tableBody.insertBefore(fragment, emptyRow);
-    }
+      orderedRows.filter(row => row.dataset.groupKey === header.dataset.groupHeader).forEach(row => fragment.append(row));
+      header.after(fragment);
+    });
+    tableBody.append(emptyRow);
     sortSelect.value = sortKey;
     sortDirectionButton.textContent = sortDirection === 'asc' ? '↑' : '↓';
     sortDirectionButton.setAttribute('aria-label', `Orden ${sortDirection === 'asc' ? 'ascendente' : 'descendente'}`);
     document.querySelectorAll('.monitor-sort-heading').forEach(button => {
       const selected = button.dataset.sort === sortKey;
       button.parentElement.setAttribute('aria-sort', selected ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none');
-      button.querySelector('span').textContent = selected ? (sortDirection === 'asc' ? '↑' : '↓') : '↕';
+      button.querySelector('span').textContent = selected ? (sortDirection === 'asc' ? '↑' : '↓') : '⇕';
     });
+  }
+
+  function updateGroupStatus(header) {
+    const groupRows = orderedRows.filter(row => row.dataset.groupKey === header.dataset.groupHeader);
+    const healthy = groupRows.filter(row => row.dataset.filterState === 'healthy').length;
+    const attention = groupRows.filter(row => row.dataset.filterState === 'attention').length;
+    const paused = groupRows.filter(row => row.dataset.filterState === 'paused').length;
+    const parts = [`${groupRows.length} servicio${groupRows.length === 1 ? '' : 's'}`];
+    if (healthy) parts.push(`${healthy} OK`);
+    if (attention) parts.push(`${attention} con atención`);
+    if (paused) parts.push(`${paused} detenido${paused === 1 ? '' : 's'}`);
+    header.querySelector('[data-role="group-status"]').textContent = parts.join(' · ');
   }
 
   function applyFilters() {
     const query = search.value.trim().toLocaleLowerCase('es-AR');
+    const filtering = Boolean(query) || activeFilter !== 'all';
     const matches = orderedRows.filter(row =>
       (!query || row.dataset.search.toLocaleLowerCase('es-AR').includes(query)) &&
       (activeFilter === 'all' || row.dataset.filterState === activeFilter)
@@ -152,13 +177,32 @@
     const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
     currentPage = Math.min(currentPage, pageCount);
     const visibleRows = new Set(matches.slice((currentPage - 1) * pageSize, currentPage * pageSize));
-    orderedRows.forEach(row => { row.hidden = !visibleRows.has(row); });
+    orderedRows.forEach(row => { row.hidden = true; });
+    groupHeaders.forEach(header => {
+      const pageRows = orderedRows.filter(row => row.dataset.groupKey === header.dataset.groupHeader && visibleRows.has(row));
+      header.hidden = pageRows.length === 0;
+      const expanded = filtering || header.dataset.collapsed !== 'true';
+      pageRows.forEach(row => { row.hidden = !expanded; });
+      const button = header.querySelector('[data-role="group-toggle"]');
+      button.setAttribute('aria-expanded', String(expanded));
+      header.classList.toggle('is-open', expanded);
+      updateGroupStatus(header);
+    });
     document.getElementById('visible-count').textContent = `Mostrando ${visibleRows.size} de ${matches.length} · ${rows.size} total`;
     emptyRow.hidden = rows.size === 0 || matches.length !== 0;
     document.getElementById('monitor-page-label').textContent = `Página ${currentPage} de ${pageCount}`;
     previousPageButton.disabled = currentPage === 1;
     nextPageButton.disabled = currentPage === pageCount;
   }
+  groupHeaders.forEach(header => {
+    const stored = localStorage.getItem(`passing-monitor-group:${header.dataset.groupHeader}`);
+    if (stored === 'open' || stored === 'closed') header.dataset.collapsed = String(stored === 'closed');
+    header.querySelector('[data-role="group-toggle"]').addEventListener('click', () => {
+      header.dataset.collapsed = String(header.dataset.collapsed !== 'true');
+      localStorage.setItem(`passing-monitor-group:${header.dataset.groupHeader}`, header.dataset.collapsed === 'true' ? 'closed' : 'open');
+      applyFilters();
+    });
+  });
   search.addEventListener('input', () => { currentPage = 1; applyFilters(); });
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
@@ -350,16 +394,20 @@
         const monitorName = row.dataset.monitorName;
         const toggle = row.querySelector('[data-role="toggle-button"]');
         const toggleLabel = item.enabled ? 'Detener' : 'Iniciar';
+        if (toggle) {
         toggle.className = `btn btn-sm monitor-action ${item.enabled ? 'btn-outline-danger' : 'btn-outline-success'}`;
         toggle.title = toggleLabel;
         toggle.setAttribute('aria-label', `${toggleLabel} ${monitorName}`);
         toggle.querySelector('i').className = `fa-solid ${item.enabled ? 'fa-stop' : 'fa-play'}`;
+        }
         const maintenance = row.querySelector('[data-role="maintenance-button"]');
         const maintenanceLabel = item.manual_maintenance ? 'Finalizar mantenimiento' : 'Mantenimiento por 1 hora';
+        if (maintenance) {
         maintenance.title = maintenanceLabel;
         maintenance.setAttribute('aria-label', `${maintenanceLabel} de ${monitorName}`);
         maintenance.querySelector('i').className = `fa-solid ${item.manual_maintenance ? 'fa-check' : 'fa-screwdriver-wrench'}`;
         row.querySelector('[data-role="maintenance-hours"]').value = item.manual_maintenance ? '0' : '1';
+        }
         row.querySelector('[data-role="last-check"]').textContent = formatTime(item.last_checked_at);
         row.querySelector('[data-role="latency"]').textContent = item.last_latency_ms === null ? '—' : `${item.last_latency_ms} ms`;
         row.dataset.lastCheck = item.last_checked_at || '';

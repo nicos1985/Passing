@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-groups-1">{% endblock %}
+{% block content %}
+<div class="container py-3 monitor-screen">
+  <header class="monitor-hero mb-4"><div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><a href="{% url 'monitoring:dashboard' %}" class="hero-back">← Volver a monitorización</a><div class="monitor-eyebrow mt-3 mb-1">Organización</div><h1 class="mb-2">Grupos de monitores</h1><p class="mb-0">Organizá los servicios en secciones plegables del dashboard.</p></div>{% if can_create %}<a class="btn btn-light btn-sm fw-semibold" href="{% url 'monitoring:group_new' %}"><i class="fa-solid fa-plus me-1"></i>Nuevo grupo</a>{% endif %}</div></header>
+  <div class="card monitor-panel"><div class="card-header"><h2 class="monitor-section-title">Grupos configurados</h2><p class="monitor-section-subtitle">Al eliminar un grupo, sus monitores quedan disponibles en Sin grupo.</p></div><div class="list-group list-group-flush">
+    {% for group in groups %}<div class="list-group-item d-flex justify-content-between align-items-center gap-3 flex-wrap"><div><strong>{{ group.name }}</strong><span class="badge bg-light text-dark ms-2">{{ group.monitors.all|length }} servicios</span>{% if group.description %}<div class="small text-muted mt-1">{{ group.description }}</div>{% endif %}<div class="small text-muted">Orden {{ group.sort_order }}</div></div><div class="d-flex gap-1">{% if can_edit %}<a class="btn btn-sm btn-outline-primary monitor-icon-action" href="{% url 'monitoring:group_edit' group.pk %}" title="Editar {{ group.name }}" aria-label="Editar {{ group.name }}"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}{% if can_delete %}<a class="btn btn-sm btn-outline-danger monitor-icon-action" href="{% url 'monitoring:group_delete' group.pk %}" title="Eliminar {{ group.name }}" aria-label="Eliminar {{ group.name }}"><i class="fa-solid fa-trash-can"></i></a>{% endif %}</div></div>{% empty %}<div class="list-group-item text-muted py-4 text-center">Todavía no hay grupos creados.</div>{% endfor %}
+    {% if ungrouped_count %}<div class="list-group-item d-flex justify-content-between"><span><strong>Sin grupo</strong><small class="d-block text-muted">Asigná estos servicios desde la edición de cada monitor.</small></span><span class="badge bg-secondary align-self-center">{{ ungrouped_count }}</span></div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}

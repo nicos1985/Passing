@@ -4,6 +4,20 @@ from django.db import models
 from django.utils import timezone
 
 
+class MonitorGroup(models.Model):
+    name = models.CharField(max_length=80, unique=True)
+    description = models.CharField(max_length=180, blank=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Monitor(models.Model):
     class Kind(models.TextChoices):
         PING = "ping", "Ping (ICMP)"
@@ -18,6 +32,7 @@ class Monitor(models.Model):
         SLOW = "slow", "Respuesta lenta"
         DOWN = "down", "Caído"
 
+    group = models.ForeignKey(MonitorGroup, null=True, blank=True, on_delete=models.SET_NULL, related_name="monitors")
     name = models.CharField(max_length=120)
     description = models.TextField(blank=True)
     host = models.CharField(max_length=500)

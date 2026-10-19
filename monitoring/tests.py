@@ -12,9 +12,9 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from django_tenants.test.cases import TenantTestCase
 from django.utils import timezone
 
-from .forms import DeploymentMarkerForm, MonitorForm, normalize_http_target, normalize_ping_target, normalize_socket_target, parse_http_codes, validate_host
+from .forms import DeploymentMarkerForm, MonitorForm, MonitorGroupForm, normalize_http_target, normalize_ping_target, normalize_socket_target, parse_http_codes, validate_host
 from .time_display import validated_zone
-from .models import CheckResult, Delivery, HourlySummary, Incident, MaintenanceWindow, Monitor, WorkerHeartbeat
+from .models import CheckResult, Delivery, HourlySummary, Incident, MaintenanceWindow, Monitor, MonitorGroup, WorkerHeartbeat
 from .maintenance import window_active
 from .worker_health import worker_health
 from .management.commands.check_monitoring_worker import _send_bitrix as _send_worker_bitrix
@@ -24,7 +24,7 @@ from .deliveries import _send_bitrix, bitrix_deal_url, deliver_pending, delivery
 from .checks import http_check, ping, tcp_check, tls_check
 from .availability import availability_history
 from .evidence import decrypt_evidence, encrypt_evidence, json_evidence
-from .views import delete_monitor, hourly_history, incident_detail, information, live_status, monitor_availability_data, monitor_detail_data, retry_delivery, test_email_delivery, test_notification_connection, toggle_active
+from .views import dashboard, delete_monitor, hourly_history, incident_detail, information, live_status, monitor_availability_data, monitor_detail_data, retry_delivery, test_email_delivery, test_notification_connection, toggle_active
 
 
 class CheckScheduleTests(SimpleTestCase):
@@ -823,3 +823,33 @@ class IncidentEmailTests(TenantTestCase):
                 self.assertIn("80 ms", kwargs["html_message"])
                 self.assertNotIn("HTTP &lt;503&gt;", kwargs["html_message"])
                 start += timedelta(minutes=10)
+
+
+class MonitorGroupTests(TenantTestCase):
+    def test_group_form_normalizes_name_and_monitor_can_be_assigned(self):
+        form = MonitorGroupForm(data={"name": "  Servicios   críticos  ", "description": "Producción", "sort_order": 1})
+        self.assertTrue(form.is_valid(), form.errors)
+        group = form.save()
+        monitor = Monitor.objects.create(name="API", host="example.com", group=group)
+        self.assertEqual(group.name, "Servicios críticos")
+        self.assertEqual(monitor.group, group)
+
+    def test_deleting_group_preserves_monitors_as_ungrouped(self):
+        group = MonitorGroup.objects.create(name="Clientes")
+        monitor = Monitor.objects.create(name="Portal", host="example.com", group=group)
+        group.delete()
+        monitor.refresh_from_db()
+        self.assertIsNone(monitor.group)
+
+    @patch("monitoring.views.render")
+    def test_dashboard_builds_grouped_and_ungrouped_sections(self, render_mock):
+        render_mock.return_value = HttpResponse("ok")
+        group = MonitorGroup.objects.create(name="Infraestructura", sort_order=1)
+        Monitor.objects.create(name="Servidor", host="server.example", group=group)
+        Monitor.objects.create(name="Web", host="web.example")
+        request = RequestFactory().get("/monitoring/")
+        request.user = MagicMock(is_active=True, is_superuser=True)
+        dashboard(request)
+        context = render_mock.call_args.args[2]
+        self.assertEqual([item["name"] for item in context["monitor_groups"]], ["Infraestructura", "Sin grupo"])
+        self.assertEqual([item["monitors"][0].name for item in context["monitor_groups"]], ["Servidor", "Web"])

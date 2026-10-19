@@ -7,7 +7,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from .models import DeploymentMarker, MaintenanceWindow, Monitor
+from .models import DeploymentMarker, MaintenanceWindow, Monitor, MonitorGroup
 
 
 HOST_LABEL = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$")
@@ -111,9 +111,10 @@ def parse_http_codes(value):
 class MonitorForm(forms.ModelForm):
     class Meta:
         model = Monitor
-        fields = ["name", "description", "kind", "host", "interval_seconds", "timeout_seconds", "expected_http_codes", "max_latency_ms", "json_path", "json_expected_value", "tls_min_days", "heartbeat_interval_minutes", "heartbeat_grace_minutes", "failure_threshold", "recovery_threshold", "recipients"]
-        labels = {"host": "Destino", "expected_http_codes": "Códigos HTTP aceptados", "max_latency_ms": "Latencia máxima (ms)", "json_path": "Ruta del valor JSON", "json_expected_value": "Valor JSON esperado", "tls_min_days": "Avisar si vence en menos de (días)"}
+        fields = ["group", "name", "description", "kind", "host", "interval_seconds", "timeout_seconds", "expected_http_codes", "max_latency_ms", "json_path", "json_expected_value", "tls_min_days", "heartbeat_interval_minutes", "heartbeat_grace_minutes", "failure_threshold", "recovery_threshold", "recipients"]
+        labels = {"group": "Grupo", "host": "Destino", "expected_http_codes": "Códigos HTTP aceptados", "max_latency_ms": "Latencia máxima (ms)", "json_path": "Ruta del valor JSON", "json_expected_value": "Valor JSON esperado", "tls_min_days": "Avisar si vence en menos de (días)"}
         help_texts = {
+            "group": "Opcional. Agrupa el servicio en el dashboard para abrirlo o cerrarlo junto con otros monitores.",
             "name": "Nombre visible en el dashboard, incidentes y avisos.",
             "description": "Contexto opcional para el equipo. Evitá incluir contraseñas o datos sensibles.",
             "kind": "Elegí cómo comprobar el servicio: ping, HTTP, puerto TCP, certificado TLS o señal de una tarea.",
@@ -267,3 +268,32 @@ class DeploymentMarkerForm(forms.ModelForm):
             field.widget.attrs["class"] = "form-control"
             if field.help_text:
                 field.widget.attrs["aria-describedby"] = f"id_{name}_help"
+
+
+class MonitorGroupForm(forms.ModelForm):
+    class Meta:
+        model = MonitorGroup
+        fields = ["name", "description", "sort_order"]
+        labels = {"name": "Nombre", "description": "Descripción", "sort_order": "Orden"}
+        help_texts = {
+            "name": "Título que se mostrará en el acordeón del dashboard.",
+            "description": "Contexto breve opcional, por ejemplo el cliente, área o plataforma.",
+            "sort_order": "Los números menores aparecen primero.",
+        }
+        widgets = {"description": forms.Textarea(attrs={"rows": 2})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs["class"] = "form-control"
+            if field.help_text:
+                field.widget.attrs["aria-describedby"] = f"id_{name}_help"
+
+    def clean_name(self):
+        name = " ".join(self.cleaned_data["name"].split())
+        duplicates = MonitorGroup.objects.filter(name__iexact=name)
+        if self.instance.pk:
+            duplicates = duplicates.exclude(pk=self.instance.pk)
+        if duplicates.exists():
+            raise ValidationError("Ya existe un grupo con ese nombre.")
+        return name
