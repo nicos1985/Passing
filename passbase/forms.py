@@ -76,6 +76,7 @@ class ContrasenaUForm(ModelForm):
     """Formulario de edición para `Contrasena` que pre-puebla campos desencriptados."""
 
     def __init__(self, *args, **kwargs):
+        actor = kwargs.pop('actor', None)
         decrypted_user = kwargs.pop('decrypted_user', None)
         decrypted_password = kwargs.pop('decrypted_password', None)
         super().__init__(*args, **kwargs)
@@ -92,6 +93,10 @@ class ContrasenaUForm(ModelForm):
                 logger.exception('no se pudo hacer esto: %s', e)
                 form.field.widget.attrs['class'] = 'form-control'
                 form.field.widget.attrs['autocomplete'] = 'off'
+
+        self.fields['is_personal'].help_text = 'Las contraseñas personales son exclusivas del propietario; no se comparten ni se asignan a roles.'
+        if actor is not None and self.instance.owner_id != actor.pk:
+            self.fields['is_personal'].disabled = True
 
         if decrypted_user:
             self.fields['usuario'].initial = decrypted_user

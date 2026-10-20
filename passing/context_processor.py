@@ -1,5 +1,6 @@
 from notifications.models import AdminNotification, InboxNotification, UserNotifications
 from accounts.models import TenantSettings
+from passbase.access import accessible_credentials
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,19 +11,19 @@ def counter_admin_notifications(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             try:
-                contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+                contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False, id_contrasena__is_personal=False).count()
             except Exception:
                 logger.exception('Error en counter_admin_notifications')
                 return {'contador_notis': 0}
         elif request.user.is_staff:
             try:
-                contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+                contador_notis = AdminNotification.objects.filter(type_user=1, viewed=False, id_contrasena__is_personal=False).count()
             except Exception:
                 logger.exception('Error en counter_admin_notifications')
                 return {'contador_notis': 0}
         else:
             try:
-                contador_notis = UserNotifications.objects.filter(id_user=request.user, viewed=False).count()
+                contador_notis = UserNotifications.objects.filter(id_user=request.user, viewed=False, id_contrasena_id__in=accessible_credentials(request.user)).count()
             except Exception as e:
                 logger.exception('Error en counter_user_notifications')
                 return {'contador_notis': 0}

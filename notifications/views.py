@@ -18,6 +18,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
 from passbase.models import Contrasena
+from passbase.access import accessible_credentials
 from permission.models import ContraPermission
 from django.db.models import Case, When, Value, IntegerField
 from supporthub.telegram_events import queue_password_request
@@ -26,8 +27,7 @@ from supporthub.telegram_events import queue_password_request
 def can_view_contrasena(user, request):
     """Indica si el usuario puede ver la contraseña solicitada."""
     contrasena_id = int(request.GET.get('contrasena'))
-    contrasena_obj = get_object_or_404(Contrasena, id=contrasena_id)
-    return user.is_staff or ContraPermission.objects.filter(user_id=user, contra_id=contrasena_obj, permission=True).exists()
+    return accessible_credentials(user).filter(pk=contrasena_id, is_personal=False).exists()
 
 def is_administrator(user):
     """Determina si el usuario pertenece al staff o es superusuario."""
@@ -39,11 +39,11 @@ def notification_inbox(request):
     notices = InboxNotification.objects.filter(user=request.user).order_by('-created_at')
     page = Paginator(notices, 20).get_page(request.GET.get('page'))
     if is_administrator(request.user):
-        legacy_count = AdminNotification.objects.filter(type_user=1, viewed=False).count()
+        legacy_count = AdminNotification.objects.filter(type_user=1, viewed=False, id_contrasena__is_personal=False).count()
         legacy_url = reverse('listnotifadmin')
         legacy_label = 'Solicitudes de contraseñas pendientes'
     else:
-        legacy_count = UserNotifications.objects.filter(id_user=request.user, viewed=False).count()
+        legacy_count = UserNotifications.objects.filter(id_user=request.user, viewed=False, id_contrasena_id__in=accessible_credentials(request.user)).count()
         legacy_url = reverse('listnotifuser')
         legacy_label = 'Avisos de contraseñas sin leer'
     return render(request, 'notification_inbox.html', {
@@ -120,12 +120,14 @@ def test_notification_email(request):
 @login_required
 def share_contrasena_form(request, contrasena):
     """Recibe la solicitud de compartir y crea notificación para admins."""
+    contrasena_obj = get_object_or_404(
+        accessible_credentials(request.user), pk=contrasena, is_personal=False,
+    )
     if request.method == 'POST':
         form = CreateNotificationForm(request.POST)
         if form.is_valid():
             share = form.cleaned_data['id_user_share']
             comment = form.cleaned_data['comment']
-            contrasena_obj = get_object_or_404(Contrasena, id=contrasena)
 
             obj_permission = ContraPermission.objects.filter(user_id=share, contra_id=contrasena, permission=True).first()
             if not obj_permission:
@@ -170,7 +172,7 @@ class ListNotificationsUser(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         
-        queryset = UserNotifications.objects.filter(id_user=self.request.user).order_by('viewed', '-created')
+        queryset = UserNotifications.objects.filter(id_user=self.request.user, id_contrasena_id__in=accessible_credentials(self.request.user)).order_by('viewed', '-created')
         return queryset
 
     
@@ -199,6 +201,9 @@ class ListNotificationsAdmin(LoginRequiredMixin, UserPassesTestMixin, ListView):
     template_name = 'admin-noti-list.html'
     context_object_name = 'notifications'
     login_url = 'login'
+
+    def get_queryset(self):
+        return AdminNotification.objects.filter(id_contrasena__is_personal=False, id_contrasena__active=True)
 
     def test_func(self):
         return is_administrator(self.request.user)

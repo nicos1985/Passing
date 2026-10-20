@@ -30,7 +30,7 @@ HELP_TOPICS = {
         "landing": "listpass",
         "features": [
             ("Bóveda y secciones", "Buscá una credencial por nombre o sección y abrí su detalle para consultar sus datos y adjuntos."),
-            ("Accesos", "Las credenciales pueden ser personales o compartidas. Los roles y permisos individuales determinan quién puede usarlas."),
+            ("Accesos", "Las contraseñas personales son exclusivas de su propietario: no se comparten, no se asignan a roles y no son visibles para otros usuarios ni administradores. Para las demás contraseñas, el acceso se gestiona mediante roles y permisos individuales."),
             ("Solicitudes", "Cuando alguien necesita una clave compartida, puede solicitar acceso; los responsables reciben el pedido y deciden si autorizarlo."),
             ("Rotación", "La fecha de actualización ayuda a seguir cuándo conviene revisar o reemplazar una credencial."),
         ],

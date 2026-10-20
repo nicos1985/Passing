@@ -107,11 +107,12 @@ def gestion_permisos(request, usuario_id):
         
 @user_passes_test(is_administrator)
 def grant_permission(request, id_cont, id_user_share, id_noti, id_user):
+    # Validate outside the legacy error handler so personal records always 404.
+    contrasena = get_object_or_404(Contrasena, id=id_cont, active=True, is_personal=False)
     try:
         # Obtener o crear el objeto de permiso
         user = get_object_or_404(CustomUser.for_current_tenant(), username = id_user)
         notificacion = get_object_or_404(AdminNotification, id=id_noti)
-        contrasena = get_object_or_404(Contrasena, id=id_cont)
         user_share = get_object_or_404(CustomUser.for_current_tenant(), id=id_user_share)
         permission_obj, created = ContraPermission.objects.get_or_create(
             user_id=user_share, 
@@ -168,6 +169,8 @@ class PermissionRolesCreateView(CreateView):
 # Funciones para la asignacion de Roles a usuarios. 
 
 def give_permission(request, user, contrasena):
+    if contrasena.is_personal:
+        return False
     try:
         permission=ContraPermission.objects.get_or_create(
                         user_id=user,
@@ -324,7 +327,7 @@ def obtener_reporte_contrasenas_repetidas():
     contrasenas_desencriptadas = {}
 
     # Recorrer todas las contraseñas en el modelo
-    for contrasena_obj in Contrasena.objects.all():
+    for contrasena_obj in Contrasena.objects.filter(active=True, is_personal=False):
         try:
             # Desencriptar la contraseña
             decrypted_password = contrasena_obj.get_decrypted_password()

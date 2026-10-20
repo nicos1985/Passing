@@ -56,6 +56,9 @@ def queue_monitoring_event(incident_id, event):
 
 
 def queue_password_request(notification_id):
+    from notifications.models import AdminNotification
+    if AdminNotification.objects.filter(pk=notification_id, id_contrasena__is_personal=True).exists():
+        return
     _queue(TelegramEventDelivery.Category.PASSWORD_REQUEST, notification_id, 'opened')
 
 
@@ -92,7 +95,7 @@ def _message(delivery):
         return f'{label}: {incident.monitor.name}\nAbrir en Passing: {_absolute_url(reverse("monitoring:incident", args=[incident.pk], urlconf="passing.urls_tenant"))}'
     if delivery.category == TelegramEventDelivery.Category.PASSWORD_REQUEST:
         from notifications.models import AdminNotification
-        if not AdminNotification.objects.filter(pk=delivery.source_id).exists():
+        if not AdminNotification.objects.filter(pk=delivery.source_id, id_contrasena__is_personal=False, id_contrasena__active=True).exists():
             return None
         return f'Nueva solicitud de acceso a contraseña\nAbrir en Passing: {_absolute_url(reverse("listnotifadmin", urlconf="passing.urls_tenant"))}'
     return None

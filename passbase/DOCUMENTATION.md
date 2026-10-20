@@ -29,3 +29,12 @@ secciones temáticas y un sistema simple de auditoría (`LogData`).
 ## Notas para desarrolladores
 - `scraping.py` es prototipo y no debería usarse en producción.
 - `signals.py` está preparado para receptores; agregar `@receiver` cuando se desee auditar eventos adicionales.
+
+
+## Privacidad de contraseñas personales
+
+- `accessible_credentials` limita una contraseña personal a su propietario, incluso si existen permisos antiguos para terceros o administradores.
+- Las solicitudes de compartir y su aprobación rechazan contraseñas personales; los roles las excluyen y su relación M2M valida nuevas asignaciones.
+- Al convertir una contraseña en personal se eliminan permisos a terceros y vínculos con roles dentro de la misma transacción.
+- Las auditorías corporativas y las notificaciones administrativas excluyen las personales. El admin de Django filtra también sus registros.
+- Solo el propietario puede cambiar el indicador de privacidad en el formulario de edición de la bóveda.

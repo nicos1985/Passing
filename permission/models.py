@@ -6,6 +6,7 @@
 """
 
 from django.db import models
+from django.core.exceptions import ValidationError
 from login.models import CustomUser
 from passbase.models import Contrasena
 from django.utils.translation import gettext_lazy as _
@@ -24,6 +25,11 @@ class ContraPermission(models.Model):
     perm_active = models.BooleanField(default=True, verbose_name=_('Permiso activo'))
     created = models.DateTimeField(auto_now=True, verbose_name=_('Creado'))
     updated = models.DateTimeField(auto_now_add=True, verbose_name=_('Actualizado'))
+
+    def clean(self):
+        super().clean()
+        if self.contra_id_id and self.contra_id.is_personal and self.contra_id.owner_id != self.user_id_id:
+            raise ValidationError('Las contraseñas personales son exclusivas de su propietario.')
 
     class Meta:
         verbose_name = _('Permiso')
@@ -57,7 +63,7 @@ class PermissionRoles(models.Model):
 
     def get_contrasenas(self):
         """Devuelve el queryset de contraseñas asociadas al rol."""
-        return self.contrasenas.all()
+        return self.contrasenas.filter(is_personal=False)
 
     def get_contrasenas_not_personal(self):
         """Filtra las contraseñas públicas (no personales)."""

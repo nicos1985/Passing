@@ -4,7 +4,7 @@ import hashlib
 import logging
 from django.utils import timezone
 from datetime import datetime
-from django.db import models
+from django.db import models, transaction
 from django.forms import model_to_dict
 from django.db.models.signals import post_save, pre_save
 import re
@@ -77,12 +77,13 @@ class Contrasena(models.Model):
         item = model_to_dict(self)
         return item
     
+    @transaction.atomic
     def save(self, *args, **kwargs):
         """ Sobrescribe el método save para encriptar y generar un log. """
 
         is_new = self._state.adding
         update_fields = kwargs.get('update_fields')
-        previous = None if is_new else type(self).objects.filter(pk=self.pk).values('usuario', 'contraseña').first()
+        previous = None if is_new else type(self).objects.filter(pk=self.pk).values('usuario', 'contraseña', 'is_personal', 'owner_id').first()
         for field in ('usuario', 'contraseña'):
             if update_fields is not None and field not in update_fields:
                 continue
@@ -95,6 +96,11 @@ class Contrasena(models.Model):
             else:
                 setattr(self, field, encrypt_data(value))
 
+        if previous and previous['is_personal'] and not self.is_personal and (update_fields is None or 'is_personal' in update_fields):
+            # Making an old personal record corporate must not resurrect stale grants.
+            from permission.models import ContraPermission
+            ContraPermission.objects.filter(contra_id=self).exclude(user_id=previous['owner_id']).delete()
+            self.roles.clear()
         super().save(*args, **kwargs)
 
         # Si es una nueva contraseña, crear un log (redactando datos sensibles)

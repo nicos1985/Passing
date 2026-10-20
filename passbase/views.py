@@ -71,7 +71,7 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
         
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
         users_permissions = ContraPermission.objects.filter(
-            contra_id=self.kwargs['pk'], permission=True, perm_active=True,
+            contra_id=self.kwargs['pk'], contra_id__is_personal=False, permission=True, perm_active=True,
         ).exclude(user_id=self.object.owner_id).select_related('user_id')
         logger.debug('user permissions: %s', users_permissions)
 
@@ -86,12 +86,12 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
 @never_cache
 def reveal_credential(request, pk):
     """Entrega una credencial puntualmente, con el mismo permiso activo del detalle."""
-    if request.user.is_superuser:
-        raise Http404
     field = request.POST.get('field')
     if field not in ('username', 'password'):
         return JsonResponse({'error': 'Campo no válido.'}, status=400)
     credential = get_object_or_404(accessible_credentials(request.user), pk=pk)
+    if request.user.is_superuser and not (credential.is_personal and credential.owner_id == request.user.pk):
+        raise Http404
     value = credential.get_decrypted_user() if field == 'username' else credential.get_decrypted_password()
     response = JsonResponse({'value': value})
     response['Cache-Control'] = 'private, no-store, max-age=0'
@@ -133,7 +133,7 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
                 objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
                 if objeto_repetido:
                     logger.info('hash already exists, existing object: %s', objeto_repetido)
-                    messages.error(self.request, f"La combinación de usuario y contraseña ya existe. \n Propietario: <strong>{objeto_repetido.owner}</strong> | Nombre: <strong>{objeto_repetido.nombre_contra}</strong> ")
+                    messages.error(self.request, "La combinación de usuario y contraseña ya existe. Revisá los datos ingresados.")
                     return self.form_invalid(form)
 
                 if contrasena:
@@ -326,6 +326,7 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         objeto = self.get_object()
         kwargs.update({
+            'actor': self.request.user,
             'decrypted_user': objeto.get_decrypted_user(),
             'decrypted_password': objeto.get_decrypted_password(),
         })
@@ -356,7 +357,7 @@ class ContrasDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         queryset = Contrasena.objects.filter(active=True)
         if self.request.user.is_superuser:
-            return queryset
+            return queryset.filter(is_personal=False) | queryset.filter(owner=self.request.user)
         return queryset.filter(owner=self.request.user)
 
     def form_valid(self, form, *args, **kwargs):
@@ -554,7 +555,7 @@ class DescargarArchivo(LoginRequiredMixin, DetailView):
 @user_passes_test(is_administrator)
 @require_POST
 def denypermission(request, pk):
-    permission = get_object_or_404(ContraPermission.objects.select_related('contra_id'), id=pk)
+    permission = get_object_or_404(ContraPermission.objects.select_related('contra_id'), id=pk, contra_id__is_personal=False)
     if permission.contra_id.owner_id == permission.user_id_id:
         messages.warning(request, 'El propietario mantiene acceso a su contraseña.')
         return redirect('detailpass', pk=permission.contra_id_id)

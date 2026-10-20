@@ -105,7 +105,7 @@ class PermissionRolesForm(forms.ModelForm):
         actor = kwargs.pop('actor', None)
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields['contrasenas'].initial = self.instance.contrasenas.all()
+            self.fields['contrasenas'].initial = self.instance.get_contrasenas_not_personal()
             self.fields['module_permissions'].initial = self.instance.module_permissions
         if actor is None or not actor.is_superuser:
             self.fields['module_permissions'].disabled = True
