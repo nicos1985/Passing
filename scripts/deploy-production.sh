@@ -4,6 +4,7 @@ set -Eeuo pipefail
 APP_DIR=/opt/passing/app
 PYTHON=/opt/passing/.venv/bin/python
 ENV_FILE=/etc/passing/produccion.env
+STATIC_PUBLISH_DIR=/var/www/passing/static
 BRANCH=${1:-gestion-documental}
 
 case "$BRANCH" in
@@ -60,6 +61,11 @@ run_manage() {
 
 run_manage migrate_schemas --check --noinput
 run_manage collectstatic --noinput
+# Nginx serves this public directory; /opt/passing remains private.
+install -d -m 0755 "$STATIC_PUBLISH_DIR"
+cp -R --no-preserve=ownership "$APP_DIR/staticfiles/." "$STATIC_PUBLISH_DIR/"
+find "$STATIC_PUBLISH_DIR" -type d -exec chmod 0755 {} +
+find "$STATIC_PUBLISH_DIR" -type f -exec chmod 0644 {} +
 systemctl restart passing-produccion.service passing-monitoring.service passing-supporthub.service
 for service in passing-produccion.service passing-monitoring.service passing-supporthub.service; do
   systemctl is-active --quiet "$service" || { echo "$service no quedó activo." >&2; exit 1; }
