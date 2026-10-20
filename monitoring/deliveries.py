@@ -18,8 +18,14 @@ from notifications.service import record_email_notice
 from .models import CheckResult, Delivery, Incident
 
 
-BITRIX_CLIENT_FIELD = "UF_CRM_1751302650"  # "Cuenta" in this portal's API
-BITRIX_CLIENT_OPTION_ID = 7258  # "MONITOR PASSING"
+# Verified against the Tickets Previ pipeline metadata.
+BITRIX_CATEGORY_ID = 2
+BITRIX_SUBJECT_FIELD = "UF_CRM_1675705962"
+BITRIX_TICKET_OPTIONS = (
+    ("UF_CRM_1651255181856", "Criticidad", "Media"),
+    ("UF_CRM_1774028164424", "Origen Ticket", "Monitoreo Passing"),
+    ("UF_CRM_1725892589", "Tipo Ticket", "Incidente de Disponibilidad"),
+)
 
 SAFE_BITRIX_ERRORS = {
     "Webhook Bitrix24 HTTPS no configurado",
@@ -28,7 +34,8 @@ SAFE_BITRIX_ERRORS = {
     "Bitrix24 no devolvió el ID de negociación",
     "Bitrix24 rechazó la consulta CRM",
     "Bitrix24 no devolvió los campos de negociación",
-    "Bitrix24 no tiene un campo de criticidad con la opción Crítica",
+    "Bitrix24 no tiene disponible el campo Asunto de Tickets Previ",
+    *(f"Bitrix24 no tiene disponible {label} con la opción {value}" for _, label, value in BITRIX_TICKET_OPTIONS),
     "Bitrix24 rechazó la consulta de la negociación",
     "Bitrix24 no devolvió el estado de la negociación",
 }
@@ -116,7 +123,12 @@ def _field_label(value):
     return "".join(char for char in unicodedata.normalize("NFKD", str(value).casefold()) if not unicodedata.combining(char)).strip()
 
 
-def _bitrix_incident_fields(webhook, title):
+def _bitrix_incident_fields(webhook, title, comment=""):
+    """Validate the Tickets Previ fields before creating a deal.
+
+    Resolve enum IDs from their labels, so renamed/deleted options produce an
+    actionable error instead of sending an obsolete ID or an incomplete ticket.
+    """
     response = requests.post(
         f"{webhook}/crm.item.fields.json",
         json={"entityTypeId": 2, "useOriginalUfNames": "Y"}, timeout=5,
@@ -126,26 +138,25 @@ def _bitrix_incident_fields(webhook, title):
     fields = data.get("result", {}).get("fields")
     if "error" in data or not isinstance(fields, dict):
         raise RuntimeError("Bitrix24 no devolvió los campos de negociación")
-    extra = {}
-    criticality_found = False
-    for key, field in fields.items():
-        if not key.startswith("UF_") or not isinstance(field, dict) or field.get("isReadOnly"):
-            continue
-        labels = {_field_label(field.get(name, "")) for name in ("title", "formLabel", "listLabel", "upperName")}
-        if "asunto" in labels and field.get("type") in {"string", "text"}:
-            extra[key] = title
-        if "criticidad" in labels or "criticality" in labels:
-            if field.get("type") == "enumeration":
-                for option in field.get("items", []):
-                    if _field_label(option.get("VALUE", "")) in {"critica", "critical"} and option.get("ID"):
-                        extra[key] = int(option["ID"])
-                        criticality_found = True
-                        break
-            elif field.get("type") in {"string", "text"}:
-                extra[key] = "Crítica"
-                criticality_found = True
-    if not criticality_found:
-        raise RuntimeError("Bitrix24 no tiene un campo de criticidad con la opción Crítica")
+    subject = fields.get(BITRIX_SUBJECT_FIELD, {})
+    if subject.get("isReadOnly") or subject.get("type") not in {"string", "text"}:
+        raise RuntimeError("Bitrix24 no tiene disponible el campo Asunto de Tickets Previ")
+    extra = {
+        "categoryId": BITRIX_CATEGORY_ID,
+        BITRIX_SUBJECT_FIELD: title,
+        "comments": comment,
+    }
+    for code, label, value in BITRIX_TICKET_OPTIONS:
+        field = fields.get(code, {})
+        option_id = None
+        if field.get("type") == "enumeration" and not field.get("isReadOnly"):
+            for option in field.get("items", []):
+                if _field_label(option.get("VALUE", "")) == _field_label(value):
+                    option_id = option.get("ID")
+                    break
+        if not str(option_id).isdigit():
+            raise RuntimeError(f"Bitrix24 no tiene disponible {label} con la opción {value}")
+        extra[code] = int(option_id)
     return extra
 
 
@@ -280,18 +291,30 @@ def _send_bitrix(delivery):
         incident.bitrix_error = ""
         incident.save(update_fields=["bitrix_deal_id", "bitrix_error"])
         return
-    extra_fields = _bitrix_incident_fields(webhook, title)
+    comment = (
+        f"Monitor: {incident.monitor.name}\nDestino: {incident.monitor.host}\n"
+        f"Inicio: {_mail_timestamp(incident.started_at)}\n"
+        f"Motivo: {_incident_reason(incident)}\nIncidente interno: {incident.pk}"
+    )
+    result = CheckResult.objects.filter(
+        monitor=incident.monitor, checked_at__gte=incident.started_at,
+    ).order_by("checked_at").first()
+    if result and result.latency_ms is not None:
+        comment += f"\nLatencia: {result.latency_ms} ms"
+    if result and result.http_status_code is not None:
+        comment += f"\nHTTP: {result.http_status_code}"
+    incident_url = _incident_mail_url(incident)
+    if incident_url:
+        comment += f"\nVer incidente: {incident_url}"
+    extra_fields = _bitrix_incident_fields(webhook, title, comment)
     payload = {
         "entityTypeId": 2,
         "useOriginalUfNames": "Y",
         "fields": {
             "title": title,
-            "categoryId": 174,
             "originatorId": "passing-monitoring",
             "originId": origin_id,
-            BITRIX_CLIENT_FIELD: BITRIX_CLIENT_OPTION_ID,
             **extra_fields,
-            "comments": f"Destino: {incident.monitor.host}\nInicio: {incident.started_at.isoformat()}\nMotivo: {_incident_reason(incident)}\nIncidente interno: {incident.pk}",
         },
     }
     response = requests.post(f"{webhook}/crm.item.add.json", json=payload, timeout=5)

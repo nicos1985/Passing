@@ -14,7 +14,7 @@ from django.urls import reverse
 from django_tenants.utils import get_tenant_model, tenant_context
 from notifications.service import record_email_notice
 
-from monitoring.deliveries import BITRIX_CLIENT_FIELD, BITRIX_CLIENT_OPTION_ID, delivery_error_message
+from monitoring.deliveries import _bitrix_incident_fields, delivery_error_message
 from monitoring.models import Monitor, WorkerHeartbeat
 from monitoring.worker_health import worker_health
 
@@ -46,15 +46,16 @@ def _send_bitrix(schema, heartbeat):
     items = body.get("result", {}).get("items", [])
     if items:
         return str(items[0]["id"])
+    title = f"[Monitorización] Worker sin actividad ({schema})"
+    comment = f"Tenant: {schema}\nÚltimo ciclo: {heartbeat.last_cycle_at or 'nunca'}\nDetectado: {heartbeat.alert_opened_at.isoformat()}"
+    ticket_fields = _bitrix_incident_fields(webhook, title, comment)
     created = requests.post(
         f"{webhook}/crm.item.add.json",
         json={"entityTypeId": 2, "useOriginalUfNames": "Y", "fields": {
-            "title": f"[Monitorización] Worker sin actividad ({schema})",
-            "categoryId": 174,
+            "title": title,
             "originatorId": "passing-monitoring",
             "originId": origin_id,
-            BITRIX_CLIENT_FIELD: BITRIX_CLIENT_OPTION_ID,
-            "comments": f"Tenant: {schema}\nÚltimo ciclo: {heartbeat.last_cycle_at or 'nunca'}\nDetectado: {heartbeat.alert_opened_at.isoformat()}",
+            **ticket_fields,
         }},
         timeout=5,
     )

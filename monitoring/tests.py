@@ -20,11 +20,26 @@ from .worker_health import worker_health
 from .management.commands.check_monitoring_worker import _send_bitrix as _send_worker_bitrix
 from .services import _next_scheduled_check, execute_monitor
 from .retention import compact_history
-from .deliveries import _send_bitrix, bitrix_deal_url, deliver_pending, delivery_error_message, send_test_email, sync_bitrix_resolutions, test_bitrix_connection, test_smtp_connection
+from .deliveries import _bitrix_incident_fields, _send_bitrix, bitrix_deal_url, deliver_pending, delivery_error_message, send_test_email, sync_bitrix_resolutions, test_bitrix_connection, test_smtp_connection
 from .checks import http_check, ping, tcp_check, tls_check
 from .availability import availability_history
 from .evidence import decrypt_evidence, encrypt_evidence, json_evidence
 from .views import dashboard, delete_monitor, hourly_history, incident_detail, information, live_status, monitor_availability_data, monitor_detail_data, retry_delivery, test_email_delivery, test_notification_connection, toggle_active
+
+
+def bitrix_ticket_metadata():
+    return {"result": {"fields": {
+        "UF_CRM_1675705962": {"title": "Asunto", "type": "string"},
+        "UF_CRM_1651255181856": {"title": "Criticidad", "type": "enumeration", "items": [
+            {"ID": "714", "VALUE": "Baja"}, {"ID": "716", "VALUE": "Media"}, {"ID": "1360", "VALUE": "Alta"},
+        ]},
+        "UF_CRM_1774028164424": {"title": "Origen Ticket", "type": "enumeration", "items": [
+            {"ID": "7262", "VALUE": "Monitoreo Passing"},
+        ]},
+        "UF_CRM_1725892589": {"title": "Tipo Ticket", "type": "enumeration", "items": [
+            {"ID": "6890", "VALUE": "Incidente de Disponibilidad"},
+        ]},
+    }}}
 
 
 class CheckScheduleTests(SimpleTestCase):
@@ -103,10 +118,51 @@ class ValidationTests(SimpleTestCase):
     @patch("monitoring.deliveries.requests.post")
     @patch("monitoring.deliveries.os.getenv", return_value="https://example.bitrix24.com/rest/1/secret/")
     def test_bitrix_connection_is_read_only(self, getenv, post):
-        post.return_value.json.return_value = {"result": {"fields": {"UF_CRM_CRITICIDAD": {"title": "Criticidad", "type": "enumeration", "items": [{"ID": "900", "VALUE": "Crítica"}]}}}}
+        post.return_value.json.return_value = bitrix_ticket_metadata()
         test_bitrix_connection()
         self.assertTrue(post.call_args.args[0].endswith("/crm.item.fields.json"))
         self.assertEqual(post.call_args.kwargs["json"], {"entityTypeId": 2, "useOriginalUfNames": "Y"})
+
+    @patch("monitoring.deliveries.requests.post")
+    def test_bitrix_missing_options_report_the_exact_field(self, post):
+        for code, label, option in (
+            ("UF_CRM_1651255181856", "Criticidad", "Media"),
+            ("UF_CRM_1774028164424", "Origen Ticket", "Monitoreo Passing"),
+            ("UF_CRM_1725892589", "Tipo Ticket", "Incidente de Disponibilidad"),
+        ):
+            with self.subTest(field=label):
+                data = bitrix_ticket_metadata()
+                data["result"]["fields"][code]["items"] = []
+                post.return_value.json.return_value = data
+                with self.assertRaisesRegex(RuntimeError, f"{label} con la opción {option}") as caught:
+                    _bitrix_incident_fields("https://example.com/rest/1/secret", "Prueba")
+                self.assertEqual(delivery_error_message(caught.exception, Delivery.Channel.BITRIX), str(caught.exception))
+
+    @patch("monitoring.deliveries.requests.post")
+    def test_bitrix_missing_subject_is_rejected(self, post):
+        data = bitrix_ticket_metadata()
+        del data["result"]["fields"]["UF_CRM_1675705962"]
+        post.return_value.json.return_value = data
+        with self.assertRaisesRegex(RuntimeError, "campo Asunto"):
+            _bitrix_incident_fields("https://example.com/rest/1/secret", "Prueba")
+
+    @patch("monitoring.management.commands.check_monitoring_worker.requests.post")
+    @patch("monitoring.management.commands.check_monitoring_worker.os.getenv", return_value="https://example.bitrix24.com/rest/1/secret/")
+    def test_worker_bitrix_creation_uses_same_ticket_fields(self, getenv, post):
+        post.return_value.json.side_effect = [
+            {"result": {"items": []}}, bitrix_ticket_metadata(),
+            {"result": {"item": {"id": 123}}},
+        ]
+        heartbeat = WorkerHeartbeat(alert_opened_at=timezone.now())
+        self.assertEqual(_send_worker_bitrix("tenant", heartbeat), "123")
+        fields = post.call_args.kwargs["json"]["fields"]
+        self.assertEqual(fields["categoryId"], 2)
+        self.assertEqual(fields["UF_CRM_1651255181856"], 716)
+        self.assertEqual(fields["UF_CRM_1774028164424"], 7262)
+        self.assertEqual(fields["UF_CRM_1725892589"], 6890)
+        self.assertEqual(fields["UF_CRM_1675705962"], fields["title"])
+        self.assertIn("Último ciclo:", fields["comments"])
+        self.assertNotIn("UF_CRM_1751302650", fields)
 
     def test_host_rejects_command_syntax(self):
         for host in ["example.com;cat /etc/passwd", "-c 10", "https://example.com", "example.com localhost"]:
@@ -722,17 +778,14 @@ class IncidentStateTests(TenantTestCase):
 
     @patch("monitoring.deliveries.requests.post")
     @patch("monitoring.deliveries.os.getenv", return_value="https://example.bitrix24.com/rest/1/secret/")
-    def test_bitrix_deal_is_created_once_and_uses_category_174(self, getenv, post):
+    def test_bitrix_deal_is_created_once_in_tickets_previ(self, getenv, post):
         monitor = Monitor.objects.create(name="Servidor", host="example.com")
         incident = Incident.objects.create(monitor=monitor)
         delivery = Delivery.objects.create(incident=incident, channel=Delivery.Channel.BITRIX, event="opened")
         post.return_value.raise_for_status.return_value = None
         post.return_value.json.side_effect = [
             {"result": {"items": []}},
-            {"result": {"fields": {
-                "UF_CRM_ASUNTO": {"title": "Asunto", "type": "string"},
-                "UF_CRM_CRITICIDAD": {"title": "Criticidad", "type": "enumeration", "items": [{"ID": "900", "VALUE": "Crítica"}]},
-            }}},
+            bitrix_ticket_metadata(),
             {"result": {"item": {"id": 123}}},
         ]
         connection.schema_name = "test"
@@ -740,10 +793,16 @@ class IncidentStateTests(TenantTestCase):
         incident.refresh_from_db()
         self.assertEqual(incident.bitrix_deal_id, "123")
         fields = post.call_args_list[2].kwargs["json"]["fields"]
-        self.assertEqual(fields["categoryId"], 174)
-        self.assertEqual(fields["UF_CRM_1751302650"], 7258)
-        self.assertEqual(fields["UF_CRM_ASUNTO"], fields["title"])
-        self.assertEqual(fields["UF_CRM_CRITICIDAD"], 900)
+        self.assertEqual(fields["categoryId"], 2)
+        self.assertNotIn("UF_CRM_1751302650", fields)
+        self.assertEqual(fields["UF_CRM_1675705962"], fields["title"])
+        self.assertEqual(fields["UF_CRM_1651255181856"], 716)
+        self.assertEqual(fields["UF_CRM_1774028164424"], 7262)
+        self.assertEqual(fields["UF_CRM_1725892589"], 6890)
+        self.assertIn("Incidente interno:", fields["comments"])
+        calls = post.call_count
+        _send_bitrix(delivery)
+        self.assertEqual(post.call_count, calls)
         self.assertEqual(post.call_args_list[2].kwargs["json"]["useOriginalUfNames"], "Y")
         self.assertNotIn("stageId", fields)
 
