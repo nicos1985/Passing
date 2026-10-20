@@ -80,7 +80,9 @@ def gestion_permisos(request, usuario_id):
                     contra_id=contrasena
                 )
                 logger.debug('permissions: %s', permissions)
-                permissions.permission = permiso
+                permissions.permission = True if contrasena.owner_id == usuario.pk else permiso
+                if contrasena.owner_id == usuario.pk:
+                    permissions.perm_active = True
                 logger.debug('permissions.permission: %s', permissions.permission)
                 permissions.save()
 
@@ -189,7 +191,7 @@ def generate_rol_permissions(request, rol, user):
         flush_permissions = ContraPermission.objects.filter(user_id=usuario)
 
         # Excluir aquellos que tienen una contraseña con is_personal=True
-        flush_permissions = flush_permissions.exclude(contra_id__is_personal=True)
+        flush_permissions = flush_permissions.exclude(contra_id__is_personal=True).exclude(contra_id__owner=usuario)
 
         # Eliminar los objetos que cumplen con los criterios
         flush_permissions.delete()

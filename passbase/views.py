@@ -1,6 +1,6 @@
 """Vistas y endpoints que administran contraseñas, secciones y tareas de cifrado."""
 
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -18,6 +18,7 @@ from notifications.models import UserNotifications
 from passbase.crypto import credential_fingerprint, encrypt_data
 from .forms import ContrasenaForm, ContrasenaUForm, SectionForm, CSVUploadForm
 from .models import Contrasena, SeccionContra, LogData
+from .access import accessible_credentials
 from permission.models import ContraPermission
 from django.contrib.auth.decorators import user_passes_test
 import csv
@@ -47,12 +48,7 @@ class ContrasListView(LoginRequiredMixin, ListView):
     login_url = 'login'
 
     def get_queryset(self):
-        
-        # busco los objetos de permiso con el user logueado y extraigo los id de contraseña. 
-        obj_permiso = ContraPermission.objects.filter(user_id = self.request.user, 
-                                                    perm_active = True, 
-                                                    permission = True).values_list('contra_id', flat=True)
-        return Contrasena.objects.filter(active=True, id__in=obj_permiso).select_related('seccion').order_by('seccion__nombre_seccion', 'nombre_contra')
+        return accessible_credentials(self.request.user).select_related('seccion').order_by('seccion__nombre_seccion', 'nombre_contra')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -68,29 +64,15 @@ class ContrasDetailView(LoginRequiredMixin, DetailView):
     login_url = 'login'
 
     def get_queryset(self):
-        allowed_ids = ContraPermission.objects.filter(
-            user_id=self.request.user, perm_active=True, permission=True,
-        ).values_list('contra_id', flat=True)
-        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
-
-    def get(self, request, *args, **kwargs):
-        # Verificar permisos antes de continuar
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True, perm_active=True)
-        logger.debug('users_permissions: %s', users_permissions)
-        lista_permision_user = [permision.user_id for permision in users_permissions]
-
-        if request.user not in lista_permision_user:
-            # Redirigir si no tiene permisos
-            messages.error(request, 'No tienes permisos para ingresar a este detalle.')
-            return redirect(reverse('listpass'))
-
-        return super().get(request, *args, **kwargs)
+        return accessible_credentials(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
         log_data = LogData.objects.filter(contraseña=self.kwargs['pk']).order_by('-created')[:10]
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True, perm_active=True)
+        users_permissions = ContraPermission.objects.filter(
+            contra_id=self.kwargs['pk'], permission=True, perm_active=True,
+        ).exclude(user_id=self.object.owner_id).select_related('user_id')
         logger.debug('user permissions: %s', users_permissions)
 
         context['log_data'] = log_data if log_data.exists() else None
@@ -109,14 +91,7 @@ def reveal_credential(request, pk):
     field = request.POST.get('field')
     if field not in ('username', 'password'):
         return JsonResponse({'error': 'Campo no válido.'}, status=400)
-    credential = get_object_or_404(
-        Contrasena,
-        pk=pk,
-        active=True,
-        pk__in=ContraPermission.objects.filter(
-            user_id=request.user, perm_active=True, permission=True,
-        ).values_list('contra_id', flat=True),
-    )
+    credential = get_object_or_404(accessible_credentials(request.user), pk=pk)
     value = credential.get_decrypted_user() if field == 'username' else credential.get_decrypted_password()
     response = JsonResponse({'value': value})
     response['Cache-Control'] = 'private, no-store, max-age=0'
@@ -146,62 +121,62 @@ class ContrasCreateView(LoginRequiredMixin, CreateView):
         cleaned_data['owner'] = self.request.user
         
         try:
-            # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
-            contrasena = form.save(commit=False)
-            contrasena.owner = self.request.user
-            contraseña = cleaned_data.get('contraseña')
-            usuario = cleaned_data.get('usuario')
+            with transaction.atomic():
+                # Guarda el objeto usando form.save(commit=False) para no guardar inmediatamente
+                contrasena = form.save(commit=False)
+                contrasena.owner = self.request.user
+                contraseña = cleaned_data.get('contraseña')
+                usuario = cleaned_data.get('usuario')
 
-            hash_combination = credential_fingerprint(usuario, contraseña)
-            # Verifica si el hash ya existe en la base de datos
-            objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
-            if objeto_repetido:
-                logger.info('hash already exists, existing object: %s', objeto_repetido)
-                messages.error(self.request, f"La combinación de usuario y contraseña ya existe. \n Propietario: <strong>{objeto_repetido.owner}</strong> | Nombre: <strong>{objeto_repetido.nombre_contra}</strong> ")
-                return self.form_invalid(form)
+                hash_combination = credential_fingerprint(usuario, contraseña)
+                # Verifica si el hash ya existe en la base de datos
+                objeto_repetido = Contrasena.objects.filter(hash=hash_combination).first()
+                if objeto_repetido:
+                    logger.info('hash already exists, existing object: %s', objeto_repetido)
+                    messages.error(self.request, f"La combinación de usuario y contraseña ya existe. \n Propietario: <strong>{objeto_repetido.owner}</strong> | Nombre: <strong>{objeto_repetido.nombre_contra}</strong> ")
+                    return self.form_invalid(form)
 
-            if contrasena:
-                contrasena.hash = hash_combination
-                contrasena.save()
+                if contrasena:
+                    contrasena.hash = hash_combination
+                    contrasena.save()
             
-            # Gestión de permisos de acceso
-            user_creator = self.request.user
-            auto_permission_users = [user_creator]
+                # Gestión de permisos de acceso
+                user_creator = self.request.user
+                auto_permission_users = [user_creator]
 
-            if not contrasena.is_personal:
+                if not contrasena.is_personal:
                 
-                # Obtener TenantSettings asociado al cliente/tenant actual
-                client = getattr(self.request.user, 'client', None)
-                if client is None:
-                    client = get_tenant(self.request)
+                    # Obtener TenantSettings asociado al cliente/tenant actual
+                    client = getattr(self.request.user, 'client', None)
+                    if client is None:
+                        client = get_tenant(self.request)
 
-                tenant_settings = TenantSettings.for_client(client) if client else None
-                if tenant_settings:
-                    grant_permission_user_ids = tenant_settings.set_admins.values_list('id', flat=True)
-                    logger.debug('grant_permission_user_ids: %s', list(grant_permission_user_ids))
-                else:
-                    grant_permission_user_ids = []
+                    tenant_settings = TenantSettings.for_client(client) if client else None
+                    if tenant_settings:
+                        grant_permission_user_ids = tenant_settings.set_admins.values_list('id', flat=True)
+                        logger.debug('grant_permission_user_ids: %s', list(grant_permission_user_ids))
+                    else:
+                        grant_permission_user_ids = []
 
-                for user_id in grant_permission_user_ids:
-                    try:
-                        user = get_object_or_404(CustomUser.for_current_tenant(), id=user_id)
-                        if user not in auto_permission_users:
-                            auto_permission_users.append(user)
-                    except Http404:
-                        continue
+                    for user_id in grant_permission_user_ids:
+                        try:
+                            user = get_object_or_404(CustomUser.for_current_tenant(), id=user_id)
+                            if user not in auto_permission_users:
+                                auto_permission_users.append(user)
+                        except Http404:
+                            continue
 
-            for user in auto_permission_users:
-                if user is not None:
-                    try:
-                        ContraPermission.objects.create(user_id=user, permission=True, contra_id=contrasena)
-                    except Exception as e:
-                        messages.error(self.request, f'Error al crear permiso de acceso: {e}')
+                for user in auto_permission_users:
+                    if user is not None:
+                        ContraPermission.objects.create(
+                            user_id=user, permission=True, perm_active=True, contra_id=contrasena,
+                        )
 
-            self.object = contrasena
-            return redirect(self.success_url)
+                self.object = contrasena
+                return redirect(self.success_url)
         
         except IntegrityError:
-            form.add_error('nombre_contra', 'El nombre de la contraseña ya existe. Por favor, elige otro.')
+            form.add_error(None, 'No se pudo guardar la contraseña y sus permisos. Revisá los datos e intentá nuevamente.')
             return self.form_invalid(form)
         
 
@@ -328,24 +303,8 @@ class ContrasUpdateView(LoginRequiredMixin, UpdateView):
     login_url = 'login'
 
     def get_queryset(self):
-        allowed_ids = ContraPermission.objects.filter(
-            user_id=self.request.user, perm_active=True, permission=True,
-        ).values_list('contra_id', flat=True)
-        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
+        return accessible_credentials(self.request.user)
 
-    def get(self, request, *args, **kwargs):
-        # Verificar permisos antes de continuar
-        users_permissions = ContraPermission.objects.filter(contra_id=self.kwargs['pk'], permission=True)
-        logger.debug('users_permissions: %s', users_permissions)
-        lista_permision_user = [permision.user_id for permision in users_permissions]
-
-        if request.user not in lista_permision_user:
-            # Redirigir si no tiene permisos
-            messages.error(request, 'No tienes permisos para ingresar a editar esta contraseña.')
-            return redirect(reverse('listpass'))
-
-        return super().get(request, *args, **kwargs)
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -580,10 +539,7 @@ class DescargarArchivo(LoginRequiredMixin, DetailView):
     template_name = 'filedownload.html'
 
     def get_queryset(self):
-        allowed_ids = ContraPermission.objects.filter(
-            user_id=self.request.user, perm_active=True, permission=True,
-        ).values_list('contra_id', flat=True)
-        return Contrasena.objects.filter(active=True, pk__in=allowed_ids)
+        return accessible_credentials(self.request.user)
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -598,7 +554,10 @@ class DescargarArchivo(LoginRequiredMixin, DetailView):
 @user_passes_test(is_administrator)
 @require_POST
 def denypermission(request, pk):
-    permission = ContraPermission.objects.get(id=pk)
+    permission = get_object_or_404(ContraPermission.objects.select_related('contra_id'), id=pk)
+    if permission.contra_id.owner_id == permission.user_id_id:
+        messages.warning(request, 'El propietario mantiene acceso a su contraseña.')
+        return redirect('detailpass', pk=permission.contra_id_id)
     permission.permission = False
     permission.save()
     notificacion_user = UserNotifications.objects.create(

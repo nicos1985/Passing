@@ -48,7 +48,9 @@ class PermisoForm(forms.Form):
             # Crea el campo del permiso (siempre)
             self.fields[f'permiso_{contrasena.nombre_contra}'] = forms.BooleanField(
                 label=contrasena.nombre_contra,
-                initial=initial_value,
+                initial=True if contrasena.owner_id == usuario.pk else initial_value,
+                disabled=contrasena.owner_id == usuario.pk,
+                help_text='Acceso permanente por ser propietario.' if contrasena.owner_id == usuario.pk else '',
                 widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'seccion': contrasena.seccion, 'info': contrasena.info, 'usuario': creator_user} ),
                 required=False
             )

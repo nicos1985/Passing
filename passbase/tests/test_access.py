@@ -11,7 +11,9 @@ from accounts.models import CustomUser
 from passbase.forms import ContrasenaForm
 from passbase.models import Contrasena, LogData, SeccionContra
 from passbase.views import ContrasCreateView, ContrasDeleteView, ContrasDetailView, ContrasUpdateView, ContrasListView, SectionDeleteView, reveal_credential, DescargarArchivo
-from permission.models import ContraPermission
+from permission.models import ContraPermission, PermissionRoles
+from permission.views import generate_rol_permissions
+from permission.forms import PermisoForm
 from passing import settings as project_settings
 
 
@@ -52,7 +54,7 @@ class VaultAccessTests(TenantTestCase):
             entry = Contrasena.objects.create(
                 nombre_contra='Revelación puntual', seccion=self.password.seccion,
                 link='https://example.test', usuario='alice', contraseña='secret-value',
-                info='prueba', owner=self.owner,
+                info='prueba', owner=None,
             )
             permission = ContraPermission.objects.create(
                 user_id=self.owner, contra_id=entry, permission=True, perm_active=True,
@@ -142,6 +144,10 @@ class VaultAccessTests(TenantTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(saved.get_decrypted_user(), "alice")
             self.assertEqual(saved.get_decrypted_password(), "example-secret")
+            self.assertEqual(saved.owner_id, self.owner.pk)
+            self.assertTrue(ContraPermission.objects.filter(
+                contra_id=saved, user_id=self.owner, permission=True, perm_active=True,
+            ).exists())
 
     def test_metadata_save_preserves_existing_ciphertext(self):
         with patch.object(project_settings, "CRYPTOGRAPHY_KEY", Fernet.generate_key()):
@@ -199,3 +205,83 @@ class VaultAccessTests(TenantTestCase):
             log = LogData.objects.filter(contraseña=entry.pk, action='change pass').get()
             self.assertEqual(log.password, '[REDACTED]')
             self.assertNotIn('cambiada', log.detail)
+
+    @override_settings(ROOT_URLCONF='passing.urls_tenant')
+    def test_owner_can_access_existing_credential_without_permission_row(self):
+        with patch.object(project_settings, 'CRYPTOGRAPHY_KEY', Fernet.generate_key()):
+            entry = Contrasena.objects.create(
+                nombre_contra='Acceso por propiedad', seccion=self.password.seccion,
+                link='https://example.test', usuario='owner-user', contraseña='owner-secret',
+                info='prueba', owner=self.owner,
+            )
+            # Covers existing credentials affected by a role reassignment.
+            self.assertFalse(ContraPermission.objects.filter(contra_id=entry).exists())
+            for view_class in (ContrasListView, ContrasDetailView, ContrasUpdateView, DescargarArchivo):
+                view = view_class()
+                view.request = self._request('get', '/', self.owner)
+                self.assertIn(entry, view.get_queryset())
+            response = ContrasDetailView.as_view()(
+                self._request('get', '/', self.owner), pk=entry.pk,
+            )
+            response.render()
+            self.assertEqual(response.status_code, 200)
+            self.assertNotIn(b'owner-secret', response.content)
+            edit = ContrasUpdateView.as_view()(
+                self._request('get', '/', self.owner), pk=entry.pk,
+            )
+            self.assertEqual(edit.status_code, 200)
+            reveal = self.factory.post('/', {'field': 'password'})
+            reveal.user = self.owner
+            self.assertEqual(json.loads(reveal_credential(reveal, entry.pk).content), {'value': 'owner-secret'})
+            # A denied/inactive grant cannot accidentally remove ownership access.
+            ContraPermission.objects.create(contra_id=entry, user_id=self.owner, permission=False, perm_active=False)
+            self.assertEqual(reveal_credential(reveal, entry.pk).status_code, 200)
+            reveal.user = self.other
+            with self.assertRaises(Http404):
+                reveal_credential(reveal, entry.pk)
+            with self.assertRaises(Http404):
+                ContrasDetailView.as_view()(self._request('get', '/', self.other), pk=entry.pk)
+            Contrasena.objects.filter(pk=entry.pk).update(active=False)
+            reveal.user = self.owner
+            with self.assertRaises(Http404):
+                reveal_credential(reveal, entry.pk)
+
+    def test_reassigning_role_preserves_owner_permission(self):
+        foreign = Contrasena.objects.bulk_create([
+            Contrasena(nombre_contra='Permiso anterior', seccion=self.password.seccion,
+                       usuario='token-user', contraseña='token-password', owner=self.other),
+        ])[0]
+        ContraPermission.objects.create(user_id=self.owner, contra_id=foreign, permission=True)
+        role = PermissionRoles.objects.create(rol_name='Rol sin contraseñas')
+        request = self._request('post', '/', self.owner)
+        generate_rol_permissions(request, role, self.owner)
+        self.assertTrue(ContraPermission.objects.filter(
+            user_id=self.owner, contra_id=self.password, permission=True, perm_active=True,
+        ).exists())
+        self.assertFalse(ContraPermission.objects.filter(user_id=self.owner, contra_id=foreign).exists())
+
+    def test_owner_permission_checkbox_cannot_be_unchecked(self):
+        form = PermisoForm(self.owner, data={})
+        field = f'permiso_{self.password.nombre_contra}'
+        self.assertTrue(form.fields[field].disabled)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.cleaned_data[field])
+
+    def test_permission_failure_rolls_back_credential_creation(self):
+        form = ContrasenaForm(data={
+            'nombre_contra': 'Creación atómica', 'seccion': self.password.seccion_id,
+            'link': 'https://example.test', 'usuario': 'rollback-user',
+            'contraseña': 'rollback-secret', 'actualizacion': 30,
+            'info': 'prueba', 'is_personal': True,
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        view = ContrasCreateView()
+        view.request = self._request('post', '/', self.owner)
+        view.success_url = '/pass/listpass'
+        count = LogData.objects.count()
+        with patch.object(project_settings, 'CRYPTOGRAPHY_KEY', Fernet.generate_key()):
+            with patch('passbase.views.ContraPermission.objects.create', side_effect=RuntimeError('grant failed')):
+                with self.assertRaisesRegex(RuntimeError, 'grant failed'):
+                    view.form_valid(form)
+        self.assertFalse(Contrasena.objects.filter(nombre_contra='Creación atómica').exists())
+        self.assertEqual(LogData.objects.count(), count)
