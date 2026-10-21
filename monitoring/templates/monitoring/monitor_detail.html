@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=tooltip-blue-3">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-green-1">{% endblock %}
 {% block content %}
 <div class="container-fluid py-3 monitor-detail monitor-screen">
   <header class="monitor-hero mb-3">
@@ -21,7 +21,7 @@
     <div class="col-sm-6 col-xl-3"><div class="monitor-kpi"><div class="monitor-kpi-label">Regla de incidente</div><div class="fw-semibold mt-2">{{ monitor.failure_threshold }} fallas / {{ monitor.recovery_threshold }} OK</div><div class="monitor-kpi-hint">Timeout {{ monitor.timeout_seconds }} segundos</div></div></div>
   </div>
   <div class="card monitor-panel mb-4" id="ultima-hora">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="monitor-section-title">Última hora</h2><p class="monitor-section-subtitle">Un segmento por minuto para detectar fallas y respuestas lentas.</p></div><span class="health-legend"><span><i style="background:#22c55e"></i>OK</span><span><i style="background:#f59e0b"></i>Respuesta lenta</span><span><i style="background:#dc3545"></i>Falla</span><span><i style="background:#adb5bd"></i>Sin check</span></span></div>
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="monitor-section-title">Última hora</h2><p class="monitor-section-subtitle">Un segmento por minuto para detectar fallas y respuestas lentas.</p></div><span class="health-legend"><span><i style="background:var(--monitor-green)"></i>OK</span><span><i style="background:#f59e0b"></i>Respuesta lenta</span><span><i style="background:#dc3545"></i>Falla</span><span><i style="background:#adb5bd"></i>Sin check</span></span></div>
     <div class="card-body"><div id="detail-bars" class="detail-bars" aria-label="Resultados por minuto durante la última hora"></div><div id="detail-summary" class="detail-muted mt-2">Cargando historial…</div></div>
   </div>
   <div class="card monitor-panel mb-4" id="disponibilidad">
@@ -143,6 +143,8 @@
     chartStart = start; chartEnd = end;
     const points = data.latencies.map(item => ({ ...item, time: new Date(item.checked_at).getTime() }));
     const values = points.filter(item => item.latency_ms !== null && item.status === 'ok');
+    const dense = points.length > 120;
+    const pointRadius = dense ? 1 : 1.5;
     const measured = points.filter(item => Number.isFinite(item.latency_ms)).map(item => item.latency_ms);
     const number = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 });
     document.getElementById('latency-average').textContent = measured.length ? `${number.format(measured.reduce((sum, latency) => sum + latency, 0) / measured.length)} ms` : '—';
@@ -163,7 +165,7 @@
       if (!run.length) return;
       const coords = run.map(point => ({ x: x(point.time), y: y(point.latency_ms) }));
       path += `M${coords[0].x.toFixed(2)},${coords[0].y.toFixed(2)} `;
-      if (coords.length === 1) svg.append(svgElement('circle', { cx: coords[0].x, cy: coords[0].y, r: 2.5, fill: '#0d6efd' }));
+      if (coords.length === 1) svg.append(svgElement('circle', { cx: coords[0].x, cy: coords[0].y, r: pointRadius, fill: '#3BD671' }));
       for (let index = 0; index < coords.length - 1; index++) {
         const before = coords[Math.max(0, index - 1)];
         const current = coords[index];
@@ -183,13 +185,13 @@
         run.push(point);
       } else {
         appendSmoothRun();
-        svg.append(svgElement('circle', { cx: x(point.time), cy: point.latency_ms === null ? 248 : y(point.latency_ms), r: 3, fill: '#dc3545' }));
+        svg.append(svgElement('circle', { cx: x(point.time), cy: point.latency_ms === null ? 248 : y(point.latency_ms), r: dense ? 1.2 : 2, fill: '#dc3545' }));
       }
     }
     appendSmoothRun();
-    svg.append(svgElement('path', { d: path, fill: 'none', stroke: '#0d6efd', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }));
-    if (values.length <= 120) for (const point of values) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: 2.5, fill: '#0d6efd' }));
-    for (const point of points.filter(item => item.status === 'slow' && item.latency_ms !== null)) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: 4, fill: '#f59e0b', stroke: '#ffffff', 'stroke-width': 1.5 }));
+    svg.append(svgElement('path', { d: path, fill: 'none', stroke: '#3BD671', 'stroke-width': 1, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }));
+    if (values.length <= 120) for (const point of values) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: pointRadius, fill: '#3BD671' }));
+    for (const point of points.filter(item => item.status === 'slow' && item.latency_ms !== null)) svg.append(svgElement('circle', { cx: x(point.time), cy: y(point.latency_ms), r: dense ? 1.2 : 2, fill: '#f59e0b' }));
     for (const marker of data.deployments || []) {
       const time = new Date(marker.deployed_at).getTime();
       if (time < start || time > end) continue;
@@ -208,7 +210,7 @@
     document.getElementById('axis-mid').textContent = `${ceiling / 2} ms`;
     document.getElementById('axis-start').textContent = formatTime(start);
     document.getElementById('axis-end').textContent = formatTime(end);
-    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Azul: OK · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea amarilla: límite de latencia' : ''}` : 'No hay checks en este período.';
+    document.getElementById('chart-empty').textContent = points.length ? `${points.length} checks en el período · Verde: latencia · Ámbar: lenta · Rojo: falla/error${latencyLimit !== null ? ' · Línea amarilla: límite de latencia' : ''}` : 'No hay checks en este período.';
   }
   svg.addEventListener('mousemove', event => {
     const deployment = event.target.getAttribute('data-deployment-label');
@@ -315,7 +317,7 @@
         const count = bucket.ok + bucket.slow + bucket.failure;
         const failureEnd = 100 * bucket.failure / count;
         const slowEnd = 100 * (bucket.failure + bucket.slow) / count;
-        bar.style.background = `linear-gradient(to top, #e45460 0%, #e45460 ${failureEnd}%, #f59e0b ${failureEnd}%, #f59e0b ${slowEnd}%, #20c766 ${slowEnd}%, #20c766 100%)`;
+        bar.style.background = `linear-gradient(to top, #e45460 0%, #e45460 ${failureEnd}%, #f59e0b ${failureEnd}%, #f59e0b ${slowEnd}%, #3BD671 ${slowEnd}%, #3BD671 100%)`;
       }
       bar.title = `${label} · ${pct === null ? 'Sin checks' : `${number.format(pct)}% disponible (${bucket.ok} OK, ${bucket.slow} lentos, ${bucket.failure} fallas)`} · ${bucket.error} errores de monitor · Promedio ${bucket.latency_avg_ms === null ? '—' : `${bucket.latency_avg_ms} ms`} · p95 ${bucket.latency_p95_ms === null ? '—' : `${bucket.latency_p95_ms} ms`}`;
       bar.setAttribute('role', 'img');

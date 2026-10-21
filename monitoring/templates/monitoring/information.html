@@ -1,17 +1,19 @@
 {% extends "base.html" %}
+{% load static %}
 {% block head %}
+<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-green-1">
 <style>
   .info-hero { background: linear-gradient(120deg, #123d73, #3157a7 60%, #347fbc); color: #fff; border-radius: 1rem; padding: 1.6rem 1.8rem; }
   .info-hero a { color: #d9edff; }
   .info-nav a { text-decoration: none; border-radius: 999px; padding: .35rem .8rem; background: #eef4ff; color: #194775; font-size: .88rem; font-weight: 600; }
   .info-nav a:hover { background: #dbeafe; }
   .info-card { border: 1px solid #e5eaf0; border-radius: .75rem; padding: 1rem; background: #fff; height: 100%; box-shadow: 0 2px 10px rgba(31,53,87,.04); }
-  .info-card.ok { border-left: 5px solid #22c55e; }
+  .info-card.ok { border-left: 5px solid var(--monitor-green); }
   .info-card.fail { border-left: 5px solid #dc3545; }
   .info-card.error { border-left: 5px solid #f59e0b; }
   .info-card.empty { border-left: 5px solid #adb5bd; }
   .info-icon { width: 2.2rem; height: 2.2rem; border-radius: .6rem; display: inline-flex; align-items: center; justify-content: center; margin-right: .5rem; }
-  .info-icon.ok { background: #dcfce7; color: #16803d; }
+  .info-icon.ok { background: var(--monitor-green-soft); color: var(--monitor-green); }
   .info-icon.fail { background: #fee2e2; color: #b4232f; }
   .info-icon.error { background: #fff1cf; color: #a66300; }
   .info-icon.empty { background: #edf0f3; color: #66717e; }
@@ -25,7 +27,7 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="container py-3" style="max-width:1050px">
+<div class="monitor-screen container py-3" style="max-width:1050px">
   <div class="info-hero mb-3">
     <a href="{% url 'monitoring:dashboard' %}" class="small text-decoration-none">← Volver a monitorización</a>
     <div class="d-flex gap-3 align-items-center mt-3"><i class="fa-solid fa-circle-info fa-2x" aria-hidden="true"></i><div><h1 class="h3 mb-1">Entender los resultados</h1><p class="mb-0 opacity-75">Qué indica cada estado, código y motivo, y qué revisar cuando aparece una falla.</p></div></div>

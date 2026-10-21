@@ -201,7 +201,7 @@ def _send_email(delivery):
         label = "Latencia normalizada" if slow else "Servicio recuperado"
         summary = ("La respuesta volvió a estar dentro del umbral configurado." if slow
                    else "El servicio volvió a responder correctamente.")
-        accent = "#16834b"
+        accent = "#3BD671"
     else:
         label = "Respuesta lenta" if slow else "Servicio caído"
         summary = ("La latencia superó el umbral configurado." if slow

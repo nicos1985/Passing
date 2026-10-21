@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-groups-1">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-green-1">{% endblock %}
 {% block content %}
 <div class="container py-3 monitor-screen">
   <header class="monitor-hero mb-4"><div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><a href="{% url 'monitoring:dashboard' %}" class="hero-back">← Volver a monitorización</a><div class="monitor-eyebrow mt-3 mb-1">Organización</div><h1 class="mb-2">Grupos de monitores</h1><p class="mb-0">Organizá los servicios en secciones plegables del dashboard.</p></div>{% if can_create %}<a class="btn btn-light btn-sm fw-semibold" href="{% url 'monitoring:group_new' %}"><i class="fa-solid fa-plus me-1"></i>Nuevo grupo</a>{% endif %}</div></header>
