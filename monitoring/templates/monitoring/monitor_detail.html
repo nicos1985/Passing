@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-green-1">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'monitoring/screens.css' %}?v=monitor-day-axis-1">{% endblock %}
 {% block content %}
 <div class="container-fluid py-3 monitor-detail monitor-screen">
   <header class="monitor-hero mb-3">
@@ -61,10 +61,10 @@
       <div id="chart-empty" class="detail-muted mb-2">Cargando latencias…</div>
       {% if monitor.kind != 'heartbeat' and monitor.max_latency_ms %}<div class="latency-limit-legend mb-2"><span class="latency-limit-swatch" aria-hidden="true"></span> Límite configurado: {{ monitor.max_latency_ms }} ms</div>{% endif %}
       <div class="d-flex gap-2 align-items-stretch detail-chart-wrap">
-        <div class="d-flex flex-column justify-content-between detail-muted text-end" style="min-width: 48px"><span id="axis-max"></span><span id="axis-mid"></span><span>0 ms</span></div>
-        <div class="latency-plot"><svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg></div>
+        <div class="d-flex flex-column justify-content-between detail-muted text-end latency-y-axis" style="min-width: 48px"><span id="axis-max"></span><span id="axis-mid"></span><span>0 ms</span></div>
+        <div class="latency-plot"><svg id="latency-chart" class="latency-chart" viewBox="0 0 1000 260" preserveAspectRatio="none" role="img" aria-label="Gráfico de línea de latencia por check"></svg><div id="axis-days" class="latency-day-axis" hidden aria-label="Fechas a las 00:00 en la zona horaria seleccionada"></div></div>
       </div>
-      <div class="d-flex justify-content-between detail-muted ms-5"><span id="axis-start"></span><span id="axis-end"></span></div>
+      <div id="axis-range" class="latency-range detail-muted ms-5"><span id="axis-start"></span><span id="axis-end"></span></div>
       <div class="row g-2 mt-2" aria-label="Resumen de latencias del período seleccionado">
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Promedio</span><strong id="latency-average">—</strong></div></div>
         <div class="col-sm-4"><div class="latency-stat"><span class="latency-stat-label">Más baja</span><strong id="latency-minimum">—</strong></div></div>
@@ -157,6 +157,29 @@
     const y = latency => 248 - latency / ceiling * 236;
     svg.replaceChildren();
     svg.append(svgElement('rect', { x: 0, y: 0, width: 1000, height: 260, fill: 'transparent', 'pointer-events': 'all' }));
+    const dayAxis = document.getElementById('axis-days');
+    const dayTicks = hours === 168 ? (data.day_ticks || []) : [];
+    dayAxis.replaceChildren();
+    dayAxis.hidden = !dayTicks.length;
+    document.getElementById('axis-range').hidden = dayTicks.length > 0;
+    for (const tick of dayTicks) {
+      const position = x(new Date(tick.at).getTime());
+      svg.append(svgElement('line', { x1: position, y1: 248, x2: position, y2: 257, stroke: '#718398', 'stroke-width': 0.8, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
+      const mark = document.createElement('span');
+      mark.className = 'latency-day-tick';
+      mark.style.left = `${position / 10}%`;
+      const label = document.createElement('span');
+      label.className = 'latency-day-label';
+      if (position < 50) label.classList.add('edge-start');
+      if (position > 950) label.classList.add('edge-end');
+      const date = document.createElement('span');
+      date.textContent = tick.label;
+      const hour = document.createElement('small');
+      hour.textContent = '00:00';
+      label.append(date, hour);
+      mark.append(label);
+      dayAxis.append(mark);
+    }
     for (const value of [0, ceiling / 2, ceiling]) svg.append(svgElement('line', { x1: 8, y1: y(value), x2: 992, y2: y(value), stroke: '#e9ecef', 'stroke-width': 1 }));
     if (latencyLimit !== null) svg.append(svgElement('line', { x1: 8, y1: y(latencyLimit), x2: 992, y2: y(latencyLimit), stroke: '#eab308', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
     let path = '';

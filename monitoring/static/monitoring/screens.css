@@ -189,3 +189,13 @@
 .monitor-screen .btn-outline-success { --bs-btn-color: var(--monitor-green); }
 .monitor-screen .btn-success { --bs-btn-bg: var(--monitor-green); --bs-btn-color: #18324d; }
 .monitor-screen .alert-success { --bs-alert-bg: var(--monitor-green-soft); --bs-alert-border-color: var(--monitor-green); --bs-alert-color: var(--monitor-ink); }
+
+.monitor-screen .latency-y-axis { height: 260px; }
+.monitor-screen .latency-range { display: flex; justify-content: space-between; }
+.monitor-screen .latency-range[hidden], .monitor-screen .latency-day-axis[hidden] { display: none; }
+.monitor-screen .latency-day-axis { position: relative; height: 2.25rem; margin-top: .15rem; color: var(--monitor-muted); }
+.monitor-screen .latency-day-tick { position: absolute; top: 0; }
+.monitor-screen .latency-day-label { display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); white-space: nowrap; font-size: clamp(.58rem, 1.5vw, .7rem); line-height: 1.35; font-variant-numeric: tabular-nums; }
+.monitor-screen .latency-day-label small { font-size: .85em; opacity: .8; }
+.monitor-screen .latency-day-label.edge-start { transform: none; align-items: flex-start; }
+.monitor-screen .latency-day-label.edge-end { transform: translateX(-100%); align-items: flex-end; }

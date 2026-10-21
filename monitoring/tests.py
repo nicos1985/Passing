@@ -13,7 +13,8 @@ from django_tenants.test.cases import TenantTestCase
 from django.utils import timezone
 
 from .forms import DeploymentMarkerForm, MonitorForm, MonitorGroupForm, normalize_http_target, normalize_ping_target, normalize_socket_target, parse_http_codes, validate_host
-from .time_display import validated_zone
+from .time_display import midnight_ticks, validated_zone
+from zoneinfo import ZoneInfo
 from .models import CheckResult, Delivery, HourlySummary, Incident, MaintenanceWindow, Monitor, MonitorGroup, WorkerHeartbeat
 from .maintenance import window_active
 from .worker_health import worker_health
@@ -40,6 +41,30 @@ def bitrix_ticket_metadata():
             {"ID": "6890", "VALUE": "Incidente de Disponibilidad"},
         ]},
     }}}
+
+
+class MidnightAxisTests(SimpleTestCase):
+    def test_argentina_ticks_are_local_midnight_inside_the_seven_day_range(self):
+        end = datetime(2026, 10, 21, 15, tzinfo=dt_timezone.utc)
+        ticks = midnight_ticks(end - timedelta(days=7), end, ZoneInfo('America/Argentina/Buenos_Aires'))
+        self.assertEqual(len(ticks), 7)
+        self.assertEqual([tick['label'] for tick in ticks], [f'{day}/10' for day in range(15, 22)])
+        self.assertTrue(all(datetime.fromisoformat(tick['at']).hour == 0 for tick in ticks))
+        self.assertTrue(all(datetime.fromisoformat(tick['at']).astimezone(dt_timezone.utc).hour == 3 for tick in ticks))
+
+    def test_italy_ticks_follow_the_local_calendar_across_the_clock_change(self):
+        start = datetime(2026, 10, 23, 12, tzinfo=dt_timezone.utc)
+        end = datetime(2026, 10, 27, 12, tzinfo=dt_timezone.utc)
+        ticks = midnight_ticks(start, end, ZoneInfo('Europe/Rome'))
+        instants = [datetime.fromisoformat(tick['at']) for tick in ticks]
+        self.assertEqual(len(instants), 4)
+        self.assertTrue(all(tick.hour == 0 for tick in instants))
+        self.assertEqual(instants[2] - instants[1], timedelta(hours=25))
+
+    def test_midnight_at_the_range_boundary_is_included(self):
+        start = datetime(2026, 10, 21, tzinfo=dt_timezone.utc)
+        ticks = midnight_ticks(start, start + timedelta(days=1), ZoneInfo('UTC'))
+        self.assertEqual([tick['label'] for tick in ticks], ['21/10', '22/10'])
 
 
 class CheckScheduleTests(SimpleTestCase):
@@ -678,6 +703,13 @@ class IncidentStateTests(TenantTestCase):
         self.assertEqual([item["latency_ms"] for item in payload["latencies"]], [18, None])
         self.assertEqual([item["http_status_code"] for item in payload["latencies"]], [200, 500])
         self.assertEqual(len(payload["recent"]), 2)
+        self.assertEqual(payload['day_ticks'], [])
+        request.GET = request.GET.copy()
+        request.GET['hours'] = '168'
+        request.COOKIES['monitoring_tz'] = 'America/Argentina/Buenos_Aires'
+        days = json.loads(monitor_detail_data(request, monitor.pk).content)['day_ticks']
+        self.assertEqual(len(days), 7)
+        self.assertTrue(all(tick['at'].endswith('T00:00:00-03:00') for tick in days))
 
     def test_monitor_detail_data_rejects_unprivileged_user_and_bad_range(self):
         monitor = Monitor.objects.create(name="Servidor", host="example.com")

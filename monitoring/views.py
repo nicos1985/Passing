@@ -25,7 +25,7 @@ from .deliveries import bitrix_deal_url, delivery_error_message, send_test_email
 from .models import CheckResult, Delivery, DeploymentMarker, Incident, MaintenanceWindow, Monitor, MonitorGroup
 from .maintenance import monitor_in_maintenance, next_window_start
 from .services import record_heartbeat
-from .time_display import COOKIE_NAME, monitoring_timezone, validated_zone
+from .time_display import COOKIE_NAME, midnight_ticks, monitoring_timezone, validated_zone
 from .worker_health import worker_health
 
 
@@ -215,6 +215,7 @@ def monitor_detail(request, pk):
 
 @login_required
 @never_cache
+@monitoring_timezone
 def monitor_detail_data(request, pk):
     if not _authorized(request.user):
         return HttpResponseForbidden()
@@ -243,6 +244,7 @@ def monitor_detail_data(request, pk):
     live = _monitor_live_state(monitor, now)
     return JsonResponse({
         "server_time": now.isoformat(),
+        "day_ticks": midnight_ticks(now - timedelta(hours=hours), now, timezone.get_current_timezone()) if hours == 168 else [],
         "state": live["label"], "badge": live["badge"], "enabled": monitor.enabled,
         "last_checked_at": monitor.last_checked_at.isoformat() if monitor.last_checked_at else None,
         "last_latency_ms": monitor.last_latency_ms,
