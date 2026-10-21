@@ -197,6 +197,15 @@ class ShiftForm(forms.ModelForm):
         active = TelegramRecipient.objects.filter(active=True, notify_support=True, user__is_active=True).select_related('user')
         self.fields['primary'].queryset = active
         self.fields['backup'].queryset = active
+        tooltip = 'Solo aparecen usuarios activos de Passing con Telegram vinculado, recepción de avisos habilitada y la suscripción a Soporte activada. Se configura en Mi perfil → Avisos por Telegram.'
+        available = active.exists()
+        for name in ('primary', 'backup'):
+            self.fields[name].tooltip = tooltip
+            self.fields[name].widget.attrs['title'] = tooltip
+            self.fields[name].help_text = (
+                'Personas con Telegram activo y suscripción a Soporte.' if available else
+                'No hay personas disponibles. Vinculá Telegram desde Mi perfil → Avisos por Telegram y activá la recepción de avisos y la suscripción a Soporte.'
+            )
         for name in ('starts_at', 'ends_at'):
             if self.instance.pk:
                 self.initial[name] = getattr(self.instance, name).astimezone(ARGENTINA).strftime('%Y-%m-%dT%H:%M')
