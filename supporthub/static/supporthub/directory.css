@@ -1,0 +1,18 @@
+.support-directory { padding: 1rem; border: 1px solid #dce7f1; border-radius: .85rem; background: #f4f8fc; }
+.support-directory .directory-heading { display: flex; align-items: flex-start; gap: .7rem; margin-bottom: .8rem; }
+.support-directory .directory-icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border-radius: .65rem; background: #dceeff; color: #176aa5; }
+.support-directory h2 { font-size: .95rem; font-weight: 700; color: #234f73; margin: 0 0 .2rem; }
+.support-directory .directory-heading p, .support-directory .directory-status { font-size: .78rem; color: #61758b; margin: 0; }
+.support-directory .directory-status { margin-top: .5rem; }
+.support-directory .directory-people { max-height: 260px; overflow-y: auto; border-radius: .5rem; }
+.support-directory .directory-person { display: flex; align-items: center; gap: .6rem; padding: .6rem .7rem; margin: 0; background: #fff; border-bottom: 1px solid #e3eaf2; cursor: pointer; }
+.support-directory .directory-person:last-child { border-bottom: 0; }
+.support-directory .directory-person input { flex: none; }
+.support-directory .directory-person span { min-width: 0; overflow-wrap: anywhere; font-size: .82rem; color: #234f73; }
+.support-directory .directory-person small { color: #718398; font-size: .73rem; display: block; }
+[data-theme="dark"] .support-directory { background: #203246; border-color: #34506b; }
+[data-theme="dark"] .support-directory h2, [data-theme="dark"] .support-directory .directory-person span { color: #cfe8fb; }
+[data-theme="dark"] .support-directory .directory-person { background: #182431; border-color: #34506b; }
+[data-theme="dark"] .support-directory .directory-heading p, [data-theme="dark"] .support-directory .directory-status, [data-theme="dark"] .support-directory .directory-person small { color: #a9bacb; }
+
+#support-chat-form [hidden] { display: none !important; }

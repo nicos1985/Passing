@@ -140,13 +140,13 @@ HELP_TOPICS = {
         "icon": "fa-headset",
         "landing": "supporthub:inbox",
         "features": [
-            ("Portales y grupos", "Vinculá cada portal y seleccioná los chats o grupos que querés vigilar."),
+            ("Portales y grupos", "Vinculá cada portal con su webhook de chat. En el formulario de grupo, consultá chats recientes o buscá por nombre para elegir el ID y generar el enlace directo."),
             ("Bandeja", "Consultá actividad, cantidad de mensajes y estado de entrega. Abrí el enlace para responder directamente en Bitrix24."),
             ("Guardias", "Asigná turnos con horario de Argentina para distribuir avisos según quién esté disponible."),
             ("Telegram", "El bot se configura en Configuración general y cada usuario vincula su chat y sus suscripciones desde Mi perfil."),
         ],
         "steps": [
-            "Configurá el portal y el grupo que recibirá consultas; verificá que el worker de soporte esté activo.",
+            "Configurá el portal, consultá los grupos desde Passing y elegí el que recibirá consultas. Consultá participantes o buscá personas para seleccionar sus IDs a ignorar; verificá que el worker de soporte esté activo.",
             "Designá personas y turnos de guardia, y pediles que vinculen Telegram en su perfil.",
             "Revisá la bandeja; si falla una entrega, examiná el estado y reintentá cuando corresponda.",
         ],

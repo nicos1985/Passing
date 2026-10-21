@@ -1,0 +1,9 @@
+<section class="support-directory mb-3" id="bitrix-group-directory" aria-labelledby="bitrix-groups-title">
+  <div class="directory-heading"><span class="directory-icon"><i class="fa-solid fa-comments" aria-hidden="true"></i></span><div><h2 id="bitrix-groups-title">Elegir grupo desde Bitrix24</h2><p>Consultá los grupos de la cuenta del webhook o buscá por nombre. No se guardan mensajes.</p></div></div>
+  <div class="d-flex gap-2 flex-wrap mb-2"><button type="button" class="btn btn-outline-primary btn-sm" id="bitrix-recent-groups" data-api-button="groups"><i class="fa-solid fa-rotate me-1" aria-hidden="true"></i>Consultar grupos recientes</button></div>
+  <div class="input-group input-group-sm mb-2"><input type="search" id="bitrix-group-query" class="form-control" maxlength="100" placeholder="Buscar grupo por nombre (mínimo 2 letras)" aria-label="Buscar grupo en Bitrix24"><button type="button" class="btn btn-outline-primary" id="bitrix-search-groups" data-api-button="groups">Buscar</button></div>
+  <label for="bitrix-group-picker" class="form-label small">Nombre e ID del grupo</label><select id="bitrix-group-picker" class="form-select form-select-sm"><option value="">Consultá los grupos para elegir uno</option></select>
+  <div id="bitrix-groups-status" class="directory-status" role="status" aria-live="polite">Primero elegí el portal. Solo se muestran chats accesibles para la cuenta del webhook.</div>
+  <button type="button" class="btn btn-link btn-sm px-0" id="bitrix-more-groups" data-api-button="groups" hidden>Cargar más grupos</button>
+  <p class="small text-muted mb-0 mt-2">Al elegir uno se completan nombre, ID y enlace. También podés ingresar los datos manualmente.</p>
+</section>

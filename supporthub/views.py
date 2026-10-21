@@ -3,15 +3,17 @@ from zoneinfo import ZoneInfo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
 
-from .forms import BotTokenForm, ChatForm, PortalForm, RecipientForm, ShiftForm
+from .forms import BitrixDirectoryForm, BotTokenForm, ChatForm, PortalForm, RecipientForm, ShiftForm
 from .models import BitrixPortal, DutyShift, SupportChat, SupportNotice, TelegramBotConfig, TelegramDelivery, TelegramPairing, TelegramRecipient
+from .bitrix_directory import list_groups, list_people
 from .services import SupportIntegrationError, _telegram_call, list_private_telegram_chats
 
 
@@ -83,7 +85,11 @@ def _form_view(request, *, model, form_class, pk, title, return_url='supporthub:
         form.save()
         messages.success(request, 'Configuración guardada.')
         return redirect(return_url)
-    return render(request, 'supporthub/form.html', {'form': form, 'title': title, 'return_url': return_url})
+    return render(request, 'supporthub/form.html', {
+        'form': form, 'title': title, 'return_url': return_url,
+        'is_chat_form': isinstance(form, ChatForm),
+        'portal_origins': {str(portal.pk): portal.base_url for portal in form.fields['portal'].queryset} if isinstance(form, ChatForm) else {},
+    })
 
 
 @login_required
@@ -231,3 +237,27 @@ def delete_item(request, kind, pk):
             DutyShift.objects.filter(primary=item).exists() or DutyShift.objects.filter(backup=item).exists()
         ),
     })
+
+
+@login_required
+@require_POST
+@never_cache
+def bitrix_directory(request, pk):
+    if not any(_can_manage(request.user, action) for action in ('create', 'edit')):
+        return HttpResponseForbidden()
+    portal = get_object_or_404(BitrixPortal, pk=pk)
+    form = BitrixDirectoryForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'error': 'Revisá la consulta: buscá por dos o más letras, elegí un grupo válido y usá la paginación disponible.'}, status=400)
+    data = form.cleaned_data
+    try:
+        if data['kind'] == 'groups':
+            result = list_groups(portal, query=data['query'], offset=data['offset'] or 0,
+                                 cursor=data['cursor'].isoformat() if data['cursor'] else None)
+        else:
+            result = list_people(portal, query=data['query'], dialog=data['dialog'], offset=data['offset'] or 0)
+    except SupportIntegrationError as exc:
+        return JsonResponse({'error': str(exc)}, status=502)
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'No se pudo consultar Bitrix24. Revisá el webhook guardado y su permiso im.'}, status=502)
+    return JsonResponse(result)

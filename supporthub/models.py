@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from passbase.crypto import decrypt_data, encrypt_data
+from .links import group_url
 
 
 class BitrixPortal(models.Model):
@@ -65,7 +66,7 @@ class SupportChat(models.Model):
 
     @property
     def open_url(self):
-        return self.link_url or self.portal.base_url
+        return self.link_url or group_url(self.portal.base_url, self.dialog_id) or self.portal.base_url
 
     @property
     def ignored_ids(self):

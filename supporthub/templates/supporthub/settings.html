@@ -31,9 +31,10 @@
     <div class="col-xl-6"><section class="card shadow-sm h-100">
       <div class="card-header d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Grupos vigilados</h2>{% if can_create %}<a class="btn btn-sm btn-primary" href="{% url 'supporthub:chat_new' %}">Agregar</a>{% endif %}</div>
       <div class="card-body">
-        <p class="small text-muted">Solo estos grupos generan avisos. Copiá el enlace del chat desde Bitrix24 para abrirlo directamente.</p>
+        <p class="small text-muted">Elegí los grupos y las personas a ignorar consultando Bitrix24 desde el formulario. Cada grupo tiene un enlace directo.</p>
         {% for portal in portals %}{% for chat in portal.chats.all %}
           <div class="border rounded-3 p-3 mb-2 d-flex justify-content-between gap-2"><span><strong>{{ chat.label }}</strong><small class="d-block text-muted">{{ portal.name }} · {{ chat.dialog_id }} {% if not chat.enabled %}· Detenido{% endif %}</small></span><span class="d-flex gap-2">
+            <a href="{{ chat.open_url }}" target="_blank" rel="noopener noreferrer" title="Abrir grupo en Bitrix24" aria-label="Abrir {{ chat.label }} en Bitrix24"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
             {% if can_edit %}<a href="{% url 'supporthub:chat_edit' chat.pk %}" title="Editar grupo" aria-label="Editar {{ chat.label }}"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}
             {% if can_delete %}<a class="text-danger" href="{% url 'supporthub:delete_item' 'chat' chat.pk %}" title="Eliminar grupo" aria-label="Eliminar {{ chat.label }}"><i class="fa-solid fa-trash"></i></a>{% endif %}
           </span></div>

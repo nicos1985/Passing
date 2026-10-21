@@ -1,12 +1,21 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block head %}{% if is_chat_form %}<link rel="stylesheet" href="{% static 'supporthub/directory.css' %}?v=bitrix-directory-1">{% endif %}{% endblock %}
 {% block content %}
 <div class="container py-4 passing-form-page" style="max-width:780px">
   <header class="form-hero"><div><div class="ui-muted-title">Central de soporte / Configuración</div><h1>{{ title }}</h1></div><a class="btn btn-outline-light" href="{% url return_url %}">Volver</a></header>
-  <div class="card ui-accent-card"><div class="card-body"><form method="post">
+  <div class="card ui-accent-card"><div class="card-body"><form method="post"{% if is_chat_form %} id="support-chat-form" data-directory-url="{% url 'supporthub:bitrix_directory' 0 %}"{% endif %}>
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-    {% for field in form %}<div class="mb-3"><label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
+    {% for field in form %}<div class="mb-3"><label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      {% if is_chat_form and field.name == 'link_url' %}<a id="bitrix-open-group" class="btn btn-outline-primary btn-sm mt-2" target="_blank" rel="noopener noreferrer" hidden><i class="fa-solid fa-arrow-up-right-from-square me-1" aria-hidden="true"></i>Abrir grupo en Bitrix24</a>{% endif %}
+    </div>
+    {% if is_chat_form and field.name == 'portal' %}{% include 'supporthub/chat_directory.html' %}{% endif %}
+    {% if is_chat_form and field.name == 'ignored_sender_ids' %}{% include 'supporthub/people_directory.html' %}{% endif %}
+    {% endfor %}
     <div class="d-flex gap-2 flex-wrap"><button class="btn btn-primary">Guardar</button><a class="btn btn-outline-secondary" href="{% url return_url %}">Cancelar</a></div>
   </form></div></div>
 </div>
 {% endblock %}
+
+{% block javascript %}{% if is_chat_form %}{{ portal_origins|json_script:"bitrix-portal-origins" }}<script src="{% static 'supporthub/directory.js' %}?v=bitrix-directory-1"></script>{% endif %}{% endblock %}

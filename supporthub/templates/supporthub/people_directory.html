@@ -1,0 +1,10 @@
+<section class="support-directory mb-3" id="bitrix-people-directory" aria-labelledby="bitrix-people-title">
+  <div class="directory-heading"><span class="directory-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span><div><h2 id="bitrix-people-title">Personas a ignorar</h2><p>Marcá a las personas del equipo de soporte. Sus IDs se agregan al campo de arriba.</p></div></div>
+  <button type="button" class="btn btn-outline-primary btn-sm mb-2" id="bitrix-chat-people" data-api-button="people"><i class="fa-solid fa-users me-1" aria-hidden="true"></i>Consultar participantes del grupo</button>
+  <div class="input-group input-group-sm mb-2"><input type="search" id="bitrix-person-query" class="form-control" maxlength="100" placeholder="Buscar persona por nombre (mínimo 2 letras)" aria-label="Buscar persona en Bitrix24"><button type="button" class="btn btn-outline-primary" id="bitrix-search-people" data-api-button="people">Buscar</button></div>
+  <div id="bitrix-people-results" class="directory-people" role="group" aria-label="Personas cuyos mensajes se ignoran"></div>
+  <div id="bitrix-people-status" class="directory-status" role="status" aria-live="polite">Consultá participantes o buscá una persona para ver su nombre e ID.</div>
+  <button type="button" class="btn btn-link btn-sm px-0" id="bitrix-more-people" data-api-button="people" hidden>Cargar más personas</button>
+  <div id="bitrix-ignored-count" class="small text-muted mt-2"></div>
+  <p class="small text-muted mb-0 mt-2">El usuario del webhook ya se ignora automáticamente. Los IDs corresponden al portal elegido; podés seleccionar hasta 30.</p>
+</section>

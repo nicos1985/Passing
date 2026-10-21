@@ -16,6 +16,7 @@ urlpatterns = [
     path('telegram/bot/', views.bot_form, name='bot_edit'),
     path('telegram/bot/test/', views.bot_test, name='bot_test'),
     path('telegram/chats/discover/', views.discover_telegram_chats, name='telegram_chats_discover'),
+    path('portals/<int:pk>/directory/', views.bitrix_directory, name='bitrix_directory'),
     path('portals/new/', views.portal_form, name='portal_new'),
     path('portals/<int:pk>/edit/', views.portal_form, name='portal_edit'),
     path('chats/new/', views.chat_form, name='chat_new'),

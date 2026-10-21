@@ -92,8 +92,8 @@ class ChatForm(forms.ModelForm):
         labels = {'portal': 'Portal', 'label': 'Nombre visible', 'dialog_id': 'ID del grupo',
                   'link_url': 'Enlace al chat en Bitrix24', 'ignored_sender_ids': 'IDs de personas de soporte a ignorar', 'enabled': 'Activo'}
         help_texts = {'dialog_id': 'Por ejemplo chat123. Solo se reciben eventos de grupos agregados aquí.',
-                      'link_url': 'Pegá el enlace para abrir este grupo. Si queda vacío, se enlaza al portal.',
-                      'ignored_sender_ids': 'Separados por comas; evita avisos por mensajes del propio equipo.'}
+                      'link_url': 'Se genera un enlace directo al grupo. Podés dejarlo vacío o usar otro enlace del mismo portal.',
+                      'ignored_sender_ids': 'Seleccioná personas en la consulta de Bitrix o ingresá hasta 30 IDs separados por comas. Sus mensajes no generan avisos.'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -223,4 +223,20 @@ class ShiftForm(forms.ModelForm):
                 overlap = overlap.exclude(pk=self.instance.pk)
             if overlap.exists():
                 self.add_error('starts_at', 'Este turno se superpone con otro ya programado.')
+        return data
+
+
+class BitrixDirectoryForm(forms.Form):
+    kind = forms.ChoiceField(choices=[('groups', 'Grupos'), ('people', 'Personas')])
+    query = forms.CharField(required=False, min_length=2, max_length=100)
+    dialog = forms.RegexField(GROUP_DIALOG, required=False, max_length=50)
+    offset = forms.IntegerField(required=False, min_value=0, max_value=10000)
+    cursor = forms.DateTimeField(required=False)
+
+    def clean(self):
+        data = super().clean()
+        if data.get('kind') == 'people' and not data.get('query') and not data.get('dialog'):
+            raise ValidationError('Elegí un grupo o escribí al menos dos letras para buscar personas.')
+        if data.get('kind') == 'groups' and not data.get('query') and data.get('offset'):
+            raise ValidationError('Para los grupos recientes usá la fecha de la siguiente página.')
         return data

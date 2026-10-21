@@ -81,8 +81,8 @@ def _bitrix_call(portal, method, payload=None):
     if not isinstance(data, dict) or data.get('error'):
         code = data.get('error', '') if isinstance(data, dict) else ''
         if code in {'ACCESS_DENIED', 'insufficient_scope', 'ERROR_METHOD_NOT_FOUND'}:
-            raise SupportIntegrationError('Bitrix24 no permite leer eventos; comprobá plan y permiso im.')
-        raise SupportIntegrationError('Bitrix24 rechazó la consulta de eventos.')
+            raise SupportIntegrationError('Bitrix24 no permite la consulta; comprobá el permiso im y que la cuenta del webhook tenga acceso al chat.')
+        raise SupportIntegrationError('Bitrix24 rechazó la consulta. Revisá los permisos de la cuenta del webhook.')
     return data.get('result')
 
 
